@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { StatusBadge, type Status } from "@/components/admin-ui";
 import { InvitationCanvas } from "@/components/block-render";
 import { useBlocksHistory, VisualEditor } from "@/components/visual-editor";
+import type { AssetScope } from "@/lib/assets";
 import { CATEGORIES, categoryLabel, STARTERS, type Block, type Template, type TemplateValues } from "@/lib/templates";
 import { normalizeBlocks, validateContent } from "@/lib/blocks";
 
@@ -48,8 +49,8 @@ export function BlocksPreview({ blocks }: { blocks: Block[] }) {
   return <InvitationCanvas blocks={blocks} className="max-w-sm" />;
 }
 
-export function TemplateForm({ initial, isNew, submitLabel, onSubmit, onCancel }: {
-  initial: TemplateValues; isNew: boolean; submitLabel: string;
+export function TemplateForm({ initial, isNew, submitLabel, onSubmit, onCancel, assets }: {
+  initial: TemplateValues; isNew: boolean; submitLabel: string; assets?: AssetScope | undefined;
   onSubmit: (v: TemplateValues) => Promise<void>; onCancel?: () => void;
 }) {
   const [v, setV] = useState(initial);
@@ -112,7 +113,7 @@ export function TemplateForm({ initial, isNew, submitLabel, onSubmit, onCancel }
         )}
       </div>
 
-      <VisualEditor h={h} toolbarExtra={<>
+      <VisualEditor h={h} assets={assets} toolbarExtra={<>
         {onCancel && <Button type="button" size="sm" variant="outline" onClick={onCancel}>Cancelar</Button>}
         <Button type="submit" size="sm" disabled={busy}>{busy && <Loader2 className="h-4 w-4 animate-spin" />}{submitLabel}</Button>
       </>} />

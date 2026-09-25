@@ -26,7 +26,7 @@ export function TemplateDetail({ id, canEdit, back, extraActions, startEditing =
       <div>
         {back}
         <PageHeader title={`Editar: ${t.name}`} />
-        <TemplateForm initial={toValues(t)} isNew={false} submitLabel="Salvar alterações" onCancel={() => setEditing(false)}
+        <TemplateForm assets={{ kind: "template", id: t.id, companyId: t.company_id }} initial={toValues(t)} isNew={false} submitLabel="Salvar alterações" onCancel={() => setEditing(false)}
           onSubmit={async (v) => {
             try { await updateTemplate(t.id, v); toast.success("Modelo atualizado."); await refresh(); setEditing(false); }
             catch (e) { toast.error(templateError(e)); }
