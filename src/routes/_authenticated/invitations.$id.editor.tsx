@@ -1,68 +1,130 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
-import { Eye, Loader2 } from "lucide-react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { AlertCircle, ArrowLeft, Check, Eye, Loader2, Settings2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { EmptyState, LoadingState, PageHeader } from "@/components/admin-ui";
-import { EventFields, InvitationRender, InvitationStatusBadge } from "@/components/invitation-ui";
-import { BlocksEditor } from "@/components/template-ui";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { EmptyState, LoadingState } from "@/components/admin-ui";
+import { EventFields, InvitationStatusBadge, invitationCtx } from "@/components/invitation-ui";
+import { useBlocksHistory, VisualEditor } from "@/components/visual-editor";
 import { customersKey, listCustomers } from "@/lib/customers-data";
 import { getInvitation, invitationError, invitationsKey, toEventValues, updateInvitation, validateEvent, type EventValues, type Invitation } from "@/lib/invitations";
-import type { Block } from "@/lib/templates";
+import { normalizeBlocks, validateContent } from "@/lib/blocks";
 
 export const Route = createFileRoute("/_authenticated/invitations/$id/editor")({
-  head: () => ({ meta: [{ title: "Editar convite — Convitely" }] }),
+  head: () => ({ meta: [{ title: "Editor do convite — Convitely" }] }),
   component: EditorPage,
 });
 
 function EditorPage() {
   const { id } = Route.useParams();
-  const q = useQuery({ queryKey: [...invitationsKey, id], queryFn: () => getInvitation(id) });
-  return (
-    <div>
-      <Link to="/invitations" className="mb-3 inline-block text-sm text-muted-foreground hover:text-foreground">← Convites</Link>
-      {q.isLoading ? <LoadingState /> : !q.data ? <EmptyState>Convite não encontrado.</EmptyState> : <EditorForm key={q.data.updated_at} inv={q.data} />}
-    </div>
-  );
+  const q = useQuery({ queryKey: [...invitationsKey, id], queryFn: () => getInvitation(id), refetchOnWindowFocus: false });
+  if (q.isLoading) return <LoadingState />;
+  if (!q.data) return <div><BackLink /><EmptyState>Convite não encontrado.</EmptyState></div>;
+  // Keyed by id only: background refetches never reset the editor state/history.
+  return <EditorForm key={q.data.id} inv={q.data} />;
 }
+
+const BackLink = () => <Link to="/invitations" className="mb-3 inline-block text-sm text-muted-foreground hover:text-foreground">← Convites</Link>;
+
+type SaveState = "saved" | "dirty" | "saving" | "error";
+const AUTOSAVE_MS = 1500;
 
 function EditorForm({ inv }: { inv: Invitation }) {
   const qc = useQueryClient();
   const customers = useQuery({ queryKey: customersKey, queryFn: listCustomers });
   const [v, setV] = useState<EventValues>(() => toEventValues(inv));
   const [customerId, setCustomerId] = useState(inv.customer_id);
-  const [blocks, setBlocks] = useState<Block[]>(() => structuredClone(inv.content?.blocks ?? []));
+  const h = useBlocksHistory(normalizeBlocks(inv.content));
   const [errors, setErrors] = useState<Partial<Record<keyof EventValues, string>>>({});
-  const [busy, setBusy] = useState(false);
-  useEffect(() => setErrors({}), [inv.id]);
+  const [eventOpen, setEventOpen] = useState(false);
+  const [state, setState] = useState<SaveState>("saved");
+  const [errMsg, setErrMsg] = useState("");
 
+  // Latest snapshot + version counter so an in-flight save never overwrites newer edits.
+  const snap = useRef({ v, customerId, blocks: h.blocks });
+  snap.current = { v, customerId, blocks: h.blocks };
+  const version = useRef(0);
+  const savedVersion = useRef(0);
+  const inFlight = useRef(false);
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const first = useRef(true);
+
+  const save = useCallback(async (manual = false): Promise<boolean> => {
+    if (timer.current) { clearTimeout(timer.current); timer.current = null; }
+    if (inFlight.current) { timer.current = setTimeout(() => void save(manual), 300); return false; }
+    const { v: ev, customerId: cid, blocks } = snap.current;
+    const e = validateEvent(ev); setErrors(e);
+    if (Object.keys(e).length) { setState("error"); setErrMsg("Dados do evento incompletos"); if (manual) { toast.error("Verifique os dados do evento."); setEventOpen(true); } return false; }
+    const content = { version: 1 as const, blocks };
+    const invalid = validateContent(content);
+    if (invalid) { setState("error"); setErrMsg(invalid); if (manual) toast.error(invalid); return false; }
+    const target = version.current;
+    inFlight.current = true; setState("saving");
+    try {
+      await updateInvitation(inv.id, cid, ev, content);
+      savedVersion.current = target;
+      setState(version.current === target ? "saved" : "dirty");
+      if (manual) toast.success("Convite salvo.");
+      void qc.invalidateQueries({ queryKey: invitationsKey });
+      return true;
+    } catch (err) {
+      setState("error"); setErrMsg(invitationError(err));
+      if (manual) toast.error(invitationError(err));
+      return false;
+    } finally { inFlight.current = false; }
+  }, [inv.id, qc]);
+
+  // Debounced autosave on any change.
+  useEffect(() => {
+    if (first.current) { first.current = false; return; }
+    version.current += 1;
+    setState("dirty");
+    if (timer.current) clearTimeout(timer.current);
+    timer.current = setTimeout(() => void save(), AUTOSAVE_MS);
+  }, [v, customerId, h.blocks, save]);
+
+  // Re-run a pending save once the in-flight one ends with newer edits.
+  useEffect(() => {
+    if (state === "dirty" && !inFlight.current && !timer.current && version.current !== savedVersion.current) {
+      timer.current = setTimeout(() => void save(), AUTOSAVE_MS);
+    }
+  }, [state, save]);
+
+  // Warn before leaving with unsaved changes.
+  useEffect(() => {
+    const on = (e: BeforeUnloadEvent) => { if (state === "dirty" || state === "saving") e.preventDefault(); };
+    window.addEventListener("beforeunload", on);
+    return () => { window.removeEventListener("beforeunload", on); if (timer.current) clearTimeout(timer.current); };
+  }, [state]);
+
+  const ctx = useMemo(() => invitationCtx(inv, v), [inv, v]);
   const options = (customers.data ?? []).filter((c) => c.company_id === inv.company_id && (c.status === "active" || c.id === inv.customer_id));
 
-  async function save() {
-    const e = validateEvent(v); setErrors(e);
-    if (Object.keys(e).length) { toast.error("Verifique os campos obrigatórios."); return; }
-    setBusy(true);
-    try {
-      await updateInvitation(inv.id, customerId, v, { version: 1, blocks });
-      toast.success("Convite salvo.");
-      await qc.invalidateQueries({ queryKey: invitationsKey });
-    } catch (err) { toast.error(invitationError(err)); }
-    finally { setBusy(false); }
-  }
-
   return (
-    <>
-      <PageHeader title={inv.name} description={`Link reservado: /convite/${inv.slug}`}
-        action={<div className="flex items-center gap-2"><InvitationStatusBadge status={inv.status} />
-          <Button variant="outline" asChild><Link to="/invitations/$id/preview" params={{ id: inv.id }}><Eye className="h-4 w-4" />Visualizar</Link></Button>
-          <Button onClick={save} disabled={busy}>{busy && <Loader2 className="h-4 w-4 animate-spin" />}Salvar</Button></div>} />
-      <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
-        <div className="space-y-5">
-          <section className="space-y-4 rounded-xl border bg-card p-4">
-            <h2 className="font-medium">Dados do evento</h2>
+    <div className="space-y-3">
+      <div className="flex flex-wrap items-center gap-2">
+        <Button variant="ghost" size="sm" asChild><Link to="/invitations"><ArrowLeft className="h-4 w-4" />Voltar</Link></Button>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2"><h1 className="truncate font-display text-lg font-semibold">{v.name || inv.name}</h1><InvitationStatusBadge status={inv.status} /></div>
+          <p className="truncate text-xs text-muted-foreground">Link reservado: /convite/{inv.slug}</p>
+        </div>
+        <SaveIndicator state={state} msg={errMsg} onRetry={() => void save(true)} />
+      </div>
+
+      <VisualEditor h={h} ctx={ctx} toolbarExtra={<>
+        <Button type="button" size="sm" variant="outline" onClick={() => setEventOpen(true)}><Settings2 className="h-4 w-4" /><span className="hidden sm:inline">Dados do evento</span></Button>
+        <Button type="button" size="sm" variant="outline" asChild><Link to="/invitations/$id/preview" params={{ id: inv.id }}><Eye className="h-4 w-4" /><span className="hidden sm:inline">Visualizar</span></Link></Button>
+        <Button type="button" size="sm" onClick={() => void save(true)} disabled={state === "saving"}>{state === "saving" && <Loader2 className="h-4 w-4 animate-spin" />}Salvar</Button>
+      </>} />
+
+      <Sheet open={eventOpen} onOpenChange={setEventOpen}>
+        <SheetContent className="w-full overflow-y-auto sm:max-w-lg">
+          <SheetHeader><SheetTitle>Dados do evento</SheetTitle></SheetHeader>
+          <div className="mt-4 space-y-4">
             <div className="space-y-1.5">
               <Label>Cliente</Label>
               <Select value={customerId} onValueChange={setCustomerId}>
@@ -71,18 +133,22 @@ function EditorForm({ inv }: { inv: Invitation }) {
               </Select>
             </div>
             <EventFields v={v} setV={setV} errors={errors} />
-          </section>
-          <section className="space-y-3 rounded-xl border bg-card p-4">
-            <div>
-              <h2 className="font-medium">Conteúdo do convite</h2>
-              <p className="text-xs text-muted-foreground">Edição básica da estrutura. O editor visual completo chegará em breve.</p>
-            </div>
-            <BlocksEditor blocks={blocks} setBlocks={setBlocks} />
-          </section>
-          <Button onClick={save} disabled={busy} className="w-full sm:w-auto">{busy && <Loader2 className="h-4 w-4 animate-spin" />}Salvar alterações</Button>
-        </div>
-        <aside className="lg:sticky lg:top-20 lg:self-start"><InvitationRender blocks={blocks} /></aside>
-      </div>
-    </>
+            <p className="text-xs text-muted-foreground">Blocos de data, horário, local e contagem usam estes dados quando a origem é "Dados do evento".</p>
+          </div>
+        </SheetContent>
+      </Sheet>
+    </div>
+  );
+}
+
+function SaveIndicator({ state, msg, onRetry }: { state: SaveState; msg: string; onRetry: () => void }) {
+  if (state === "saving") return <span className="flex items-center gap-1.5 text-xs text-muted-foreground" role="status"><Loader2 className="h-3.5 w-3.5 animate-spin" />Salvando...</span>;
+  if (state === "saved") return <span className="flex items-center gap-1.5 text-xs text-muted-foreground" role="status"><Check className="h-3.5 w-3.5" />Salvo</span>;
+  if (state === "dirty") return <span className="text-xs text-muted-foreground" role="status">Alterações não salvas</span>;
+  return (
+    <span className="flex items-center gap-1.5 text-xs text-destructive" role="alert" title={msg}>
+      <AlertCircle className="h-3.5 w-3.5" />Não foi possível salvar
+      <Button type="button" size="sm" variant="link" className="h-auto p-0 text-xs" onClick={onRetry}>Tentar novamente</Button>
+    </span>
   );
 }

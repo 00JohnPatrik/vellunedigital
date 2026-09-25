@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { EmptyState, LoadingState, PageHeader } from "@/components/admin-ui";
-import { InvitationRender, InvitationStatusBadge } from "@/components/invitation-ui";
+import { InvitationRender, InvitationStatusBadge, invitationCtx } from "@/components/invitation-ui";
 import { fmtEventDate, getInvitation, invitationsKey } from "@/lib/invitations";
 
 export const Route = createFileRoute("/_authenticated/invitations/$id/preview")({
@@ -25,7 +25,7 @@ function PreviewPage() {
             action={<div className="flex items-center gap-2"><InvitationStatusBadge status={inv.status} />
               <Button asChild><Link to="/invitations/$id/editor" params={{ id: inv.id }}><Pencil className="h-4 w-4" />Editar</Link></Button></div>} />
           <p className="mb-4 text-center text-xs text-muted-foreground">Pré-visualização interna — ainda não publicada.</p>
-          <InvitationRender blocks={inv.content?.blocks ?? []} />
+          <InvitationRender blocks={inv.content?.blocks ?? []} ctx={invitationCtx(inv)} />
         </>
       )}
     </div>
