@@ -21,6 +21,12 @@ import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authentic
 import { Route as AuthenticatedAdminSectionRouteImport } from './routes/_authenticated/admin.$section'
 import { Route as AuthenticatedDashboardIndexRouteImport } from './routes/_authenticated/dashboard.index'
 import { Route as AuthenticatedDashboardSectionRouteImport } from './routes/_authenticated/dashboard.$section'
+import { Route as AuthenticatedAdminCompaniesIndexRouteImport } from './routes/_authenticated/admin.companies.index'
+import { Route as AuthenticatedAdminCompaniesIdRouteImport } from './routes/_authenticated/admin.companies.$id'
+import { Route as AuthenticatedAdminCompaniesNewRouteImport } from './routes/_authenticated/admin.companies.new'
+import { Route as AuthenticatedAdminUsersIndexRouteImport } from './routes/_authenticated/admin.users.index'
+import { Route as AuthenticatedAdminUsersIdRouteImport } from './routes/_authenticated/admin.users.$id'
+import { Route as AuthenticatedAdminUsersNewRouteImport } from './routes/_authenticated/admin.users.new'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -84,6 +90,42 @@ const AuthenticatedDashboardSectionRoute =
     path: '/$section',
     getParentRoute: () => AuthenticatedDashboardRoute,
   } as any)
+const AuthenticatedAdminCompaniesIndexRoute =
+  AuthenticatedAdminCompaniesIndexRouteImport.update({
+    id: '/companies/',
+    path: '/companies/',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminCompaniesIdRoute =
+  AuthenticatedAdminCompaniesIdRouteImport.update({
+    id: '/companies/$id',
+    path: '/companies/$id',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminCompaniesNewRoute =
+  AuthenticatedAdminCompaniesNewRouteImport.update({
+    id: '/companies/new',
+    path: '/companies/new',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminUsersIndexRoute =
+  AuthenticatedAdminUsersIndexRouteImport.update({
+    id: '/users/',
+    path: '/users/',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminUsersIdRoute =
+  AuthenticatedAdminUsersIdRouteImport.update({
+    id: '/users/$id',
+    path: '/users/$id',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminUsersNewRoute =
+  AuthenticatedAdminUsersNewRouteImport.update({
+    id: '/users/new',
+    path: '/users/new',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -97,6 +139,12 @@ export interface FileRoutesByFullPath {
   '/dashboard/$section': typeof AuthenticatedDashboardSectionRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/dashboard/': typeof AuthenticatedDashboardIndexRoute
+  '/admin/companies/$id': typeof AuthenticatedAdminCompaniesIdRoute
+  '/admin/companies/new': typeof AuthenticatedAdminCompaniesNewRoute
+  '/admin/users/$id': typeof AuthenticatedAdminUsersIdRoute
+  '/admin/users/new': typeof AuthenticatedAdminUsersNewRoute
+  '/admin/companies/': typeof AuthenticatedAdminCompaniesIndexRoute
+  '/admin/users/': typeof AuthenticatedAdminUsersIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -108,6 +156,12 @@ export interface FileRoutesByTo {
   '/dashboard/$section': typeof AuthenticatedDashboardSectionRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/dashboard': typeof AuthenticatedDashboardIndexRoute
+  '/admin/companies/$id': typeof AuthenticatedAdminCompaniesIdRoute
+  '/admin/companies/new': typeof AuthenticatedAdminCompaniesNewRoute
+  '/admin/users/$id': typeof AuthenticatedAdminUsersIdRoute
+  '/admin/users/new': typeof AuthenticatedAdminUsersNewRoute
+  '/admin/companies': typeof AuthenticatedAdminCompaniesIndexRoute
+  '/admin/users': typeof AuthenticatedAdminUsersIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -123,6 +177,12 @@ export interface FileRoutesById {
   '/_authenticated/dashboard/$section': typeof AuthenticatedDashboardSectionRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/dashboard/': typeof AuthenticatedDashboardIndexRoute
+  '/_authenticated/admin/companies/$id': typeof AuthenticatedAdminCompaniesIdRoute
+  '/_authenticated/admin/companies/new': typeof AuthenticatedAdminCompaniesNewRoute
+  '/_authenticated/admin/users/$id': typeof AuthenticatedAdminUsersIdRoute
+  '/_authenticated/admin/users/new': typeof AuthenticatedAdminUsersNewRoute
+  '/_authenticated/admin/companies/': typeof AuthenticatedAdminCompaniesIndexRoute
+  '/_authenticated/admin/users/': typeof AuthenticatedAdminUsersIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -138,6 +198,12 @@ export interface FileRouteTypes {
     | '/dashboard/$section'
     | '/admin/'
     | '/dashboard/'
+    | '/admin/companies/$id'
+    | '/admin/companies/new'
+    | '/admin/users/$id'
+    | '/admin/users/new'
+    | '/admin/companies/'
+    | '/admin/users/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -149,6 +215,12 @@ export interface FileRouteTypes {
     | '/dashboard/$section'
     | '/admin'
     | '/dashboard'
+    | '/admin/companies/$id'
+    | '/admin/companies/new'
+    | '/admin/users/$id'
+    | '/admin/users/new'
+    | '/admin/companies'
+    | '/admin/users'
   id:
     | '__root__'
     | '/'
@@ -163,6 +235,12 @@ export interface FileRouteTypes {
     | '/_authenticated/dashboard/$section'
     | '/_authenticated/admin/'
     | '/_authenticated/dashboard/'
+    | '/_authenticated/admin/companies/$id'
+    | '/_authenticated/admin/companies/new'
+    | '/_authenticated/admin/users/$id'
+    | '/_authenticated/admin/users/new'
+    | '/_authenticated/admin/companies/'
+    | '/_authenticated/admin/users/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -260,17 +338,71 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardSectionRouteImport
       parentRoute: typeof AuthenticatedDashboardRoute
     }
+    '/_authenticated/admin/companies/': {
+      id: '/_authenticated/admin/companies/'
+      path: '/companies'
+      fullPath: '/admin/companies/'
+      preLoaderRoute: typeof AuthenticatedAdminCompaniesIndexRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/companies/$id': {
+      id: '/_authenticated/admin/companies/$id'
+      path: '/companies/$id'
+      fullPath: '/admin/companies/$id'
+      preLoaderRoute: typeof AuthenticatedAdminCompaniesIdRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/companies/new': {
+      id: '/_authenticated/admin/companies/new'
+      path: '/companies/new'
+      fullPath: '/admin/companies/new'
+      preLoaderRoute: typeof AuthenticatedAdminCompaniesNewRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/users/': {
+      id: '/_authenticated/admin/users/'
+      path: '/users'
+      fullPath: '/admin/users/'
+      preLoaderRoute: typeof AuthenticatedAdminUsersIndexRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/users/$id': {
+      id: '/_authenticated/admin/users/$id'
+      path: '/users/$id'
+      fullPath: '/admin/users/$id'
+      preLoaderRoute: typeof AuthenticatedAdminUsersIdRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/users/new': {
+      id: '/_authenticated/admin/users/new'
+      path: '/users/new'
+      fullPath: '/admin/users/new'
+      preLoaderRoute: typeof AuthenticatedAdminUsersNewRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
   }
 }
 
 interface AuthenticatedAdminRouteChildren {
   AuthenticatedAdminSectionRoute: typeof AuthenticatedAdminSectionRoute
   AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
+  AuthenticatedAdminCompaniesIdRoute: typeof AuthenticatedAdminCompaniesIdRoute
+  AuthenticatedAdminCompaniesNewRoute: typeof AuthenticatedAdminCompaniesNewRoute
+  AuthenticatedAdminUsersIdRoute: typeof AuthenticatedAdminUsersIdRoute
+  AuthenticatedAdminUsersNewRoute: typeof AuthenticatedAdminUsersNewRoute
+  AuthenticatedAdminCompaniesIndexRoute: typeof AuthenticatedAdminCompaniesIndexRoute
+  AuthenticatedAdminUsersIndexRoute: typeof AuthenticatedAdminUsersIndexRoute
 }
 
 const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
   AuthenticatedAdminSectionRoute: AuthenticatedAdminSectionRoute,
   AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
+  AuthenticatedAdminCompaniesIdRoute: AuthenticatedAdminCompaniesIdRoute,
+  AuthenticatedAdminCompaniesNewRoute: AuthenticatedAdminCompaniesNewRoute,
+  AuthenticatedAdminUsersIdRoute: AuthenticatedAdminUsersIdRoute,
+  AuthenticatedAdminUsersNewRoute: AuthenticatedAdminUsersNewRoute,
+  AuthenticatedAdminCompaniesIndexRoute: AuthenticatedAdminCompaniesIndexRoute,
+  AuthenticatedAdminUsersIndexRoute: AuthenticatedAdminUsersIndexRoute,
 }
 
 const AuthenticatedAdminRouteWithChildren =

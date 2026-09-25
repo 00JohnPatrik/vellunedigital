@@ -15,3 +15,4 @@
 - Public signup is disabled; accounts are pre-registered and activated via `/first-access` server fn — no open registration.
 - Phone login resolves the account server-side (`signInWithPhone`) — never exposes emails to the client.
 - Role routing: `_authenticated` gate loads profile; `/admin` layout = super_admin only, `/dashboard` = company_admin with active company.
+- Super admin CRUD uses the browser client under RLS; only auth-account operations (invite) go through `sendAccessInvite` server fn with an is_super_admin check — keeps service role server-side.
