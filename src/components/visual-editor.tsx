@@ -14,7 +14,16 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
 import { BlockView } from "@/components/block-render";
 import { BLOCKS, newBlock, type Block, type BlockType } from "@/lib/templates";
 import { FONTS, isKnownType, type EventCtx } from "@/lib/blocks";
-import { useIsMobile } from "@/hooks/use-mobile";
+function useIsCompact() {
+  const [compact, setCompact] = useState(false);
+  useEffect(() => {
+    const mql = window.matchMedia("(max-width: 1023px)");
+    const on = () => setCompact(mql.matches);
+    on(); mql.addEventListener("change", on);
+    return () => mql.removeEventListener("change", on);
+  }, []);
+  return compact;
+}
 import { cn } from "@/lib/utils";
 
 /* ---------------- History (local, session only) ---------------- */
@@ -103,7 +112,8 @@ const DEVICE_W: Record<Device, string> = { mobile: "max-w-[390px]", tablet: "max
 
 export function VisualEditor({ h, ctx, toolbarExtra }: { h: BlocksHistory; ctx?: EventCtx | undefined; toolbarExtra?: ReactNode }) {
   const { blocks, set } = h;
-  const isMobile = useIsMobile();
+  // Side panels only fit from 1024px up; below that Elements/Properties open as bottom drawers.
+  const isMobile = useIsCompact();
   const [selected, setSelected] = useState<string | null>(null);
   const [device, setDevice] = useState<Device>("mobile");
   const [previewOnly, setPreviewOnly] = useState(false);
@@ -267,7 +277,7 @@ const CanvasBlock = memo(function CanvasBlock({ block, ctx, selected, onSelect, 
       onClick={(e) => { e.stopPropagation(); onSelect(block.id); }}
       onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onSelect(block.id); } }}
       className={cn("group relative cursor-pointer rounded-lg border-2 p-2 outline-none transition-colors",
-        selected ? "border-primary" : "border-transparent hover:border-dashed hover:border-primary/40 focus-visible:border-primary/60",
+        selected ? "border-primary" : "border-dashed border-border/60 hover:border-primary/40 focus-visible:border-primary/60",
         block.hidden && "opacity-40")}
     >
       {selected && (
