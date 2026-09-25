@@ -448,9 +448,9 @@ function BackgroundPanel({ bg, onBg, assets }: { bg: Background; onBg: (b: Backg
       </div>
       {img && (
         <div className="grid grid-cols-2 gap-2">
-          <BgSelect label="Tamanho" value={bg.size ?? "cover"} options={[["cover", "Cover"], ["contain", "Contain"]]} onChange={(v) => up({ size: v as Background["size"] })} />
-          <BgSelect label="Horizontal" value={bg.x ?? "center"} options={[["left", "Esquerda"], ["center", "Centro"], ["right", "Direita"]]} onChange={(v) => up({ x: v as Background["x"] })} />
-          <BgSelect label="Vertical" value={bg.y ?? "center"} options={[["top", "Topo"], ["center", "Centro"], ["bottom", "Baixo"]]} onChange={(v) => up({ y: v as Background["y"] })} />
+          <BgSelect label="Tamanho" value={bg.size ?? "cover"} options={[["cover", "Cover"], ["contain", "Contain"]]} onChange={(v) => up({ size: v as "cover" })} />
+          <BgSelect label="Horizontal" value={bg.x ?? "center"} options={[["left", "Esquerda"], ["center", "Centro"], ["right", "Direita"]]} onChange={(v) => up({ x: v as "center" })} />
+          <BgSelect label="Vertical" value={bg.y ?? "center"} options={[["top", "Topo"], ["center", "Centro"], ["bottom", "Baixo"]]} onChange={(v) => up({ y: v as "center" })} />
         </div>
       )}
       <BgSelect label="Sobreposição" value={overlay > 0 ? "dark" : "none"} options={[["none", "Nenhuma"], ["dark", "Escura"]]} onChange={(v) => up({ overlay: v === "dark" ? 20 : 0 })} />
