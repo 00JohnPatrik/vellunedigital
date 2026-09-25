@@ -85,6 +85,32 @@ export type Database = {
           },
         ]
       }
+      invitation_views: {
+        Row: {
+          created_at: string
+          id: string
+          invitation_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          invitation_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          invitation_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invitation_views_invitation_id_fkey"
+            columns: ["invitation_id"]
+            isOneToOne: false
+            referencedRelation: "invitations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       invitations: {
         Row: {
           address: string | null
@@ -363,7 +389,25 @@ export type Database = {
       current_company_id: { Args: never; Returns: string }
       get_public_invitation: { Args: { _slug: string }; Returns: Json }
       invitation_company: { Args: { _invitation_id: string }; Returns: string }
+      invitation_report: {
+        Args: { _company_id?: string }
+        Returns: {
+          company_id: string
+          confirmed: number
+          customer_name: string
+          declined: number
+          event_date: string
+          event_time: string
+          id: string
+          name: string
+          people: number
+          status: Database["public"]["Enums"]["invitation_status"]
+          updated_at: string
+          views: number
+        }[]
+      }
       is_super_admin: { Args: never; Returns: boolean }
+      record_invitation_view: { Args: { _slug: string }; Returns: boolean }
       rsvp_public_state: {
         Args: { _inv: Database["public"]["Tables"]["invitations"]["Row"] }
         Returns: Json
