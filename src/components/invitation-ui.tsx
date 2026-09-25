@@ -38,8 +38,8 @@ export function EventFields({ v, setV, errors }: { v: EventValues; setV: (v: Eve
 }
 
 /** Read-only rendering of the invitation content (same JSON and renderer as the editor). */
-export function InvitationRender({ blocks, ctx }: { blocks: Block[]; ctx?: EventCtx | undefined }) {
-  return <InvitationCanvas blocks={blocks} ctx={ctx} />;
+export function InvitationRender({ blocks, ctx, background }: { blocks: Block[]; ctx?: EventCtx | undefined; background?: Background | undefined }) {
+  return <InvitationCanvas blocks={blocks} ctx={ctx} background={background} />;
 }
 
 export const invitationCtx = (i: { event_date: string; event_time: string; venue_name: string | null; address: string | null; city: string | null; state: string | null; slug: string }, v?: Partial<EventValues>): EventCtx => ({

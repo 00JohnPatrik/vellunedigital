@@ -30,7 +30,7 @@ function PreviewPage() {
               <Button asChild><Link to="/invitations/$id/editor" params={{ id: inv.id }}><Pencil className="h-4 w-4" />Editar</Link></Button></div>} />
           <p className="mb-4 text-center text-xs text-muted-foreground">{inv.status === "draft" ? "Pré-visualização interna — ainda não publicada." : "Pré-visualização interna — a página pública usa este mesmo conteúdo."}</p>
           <ShareDialog slug={inv.slug} open={share} onOpenChange={setShare} />
-          <InvitationRender blocks={inv.content?.blocks ?? []} ctx={invitationCtx(inv)} />
+          <InvitationRender background={inv.content?.settings?.background} blocks={inv.content?.blocks ?? []} ctx={invitationCtx(inv)} />
         </>
       )}
     </div>

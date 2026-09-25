@@ -3,7 +3,7 @@ import { AlertTriangle, CalendarDays, Clock, MapPin, MessageCircle, Navigation }
 import { QRCodeSVG } from "qrcode.react";
 import { PreviewImage } from "@/components/template-ui";
 import { RsvpForm } from "@/components/rsvp-form";
-import { BLOCKS, type Block } from "@/lib/templates";
+import { BLOCKS, type Background, type Block } from "@/lib/templates";
 import { fontCss, formatDate, formatTime, isKnownType, pick, type EventCtx } from "@/lib/blocks";
 import { cn } from "@/lib/utils";
 import { useAssetUrl } from "@/lib/assets";

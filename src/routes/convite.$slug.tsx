@@ -48,7 +48,7 @@ function PublicInvitationPage() {
   };
   return (
     <main className="min-h-screen bg-gradient-to-b from-muted/60 via-background to-muted/40 px-4 py-8 sm:py-14">
-      <InvitationCanvas blocks={i.content?.blocks ?? []} ctx={ctx} className="max-w-lg gap-6 border-border/60 p-6 shadow-xl sm:p-10" />
+      <InvitationCanvas background={i.content?.settings?.background} blocks={i.content?.blocks ?? []} ctx={ctx} className="max-w-lg gap-6 border-border/60 p-6 shadow-xl sm:p-10" />
       <p className="mt-8 text-center text-[11px] tracking-wide text-muted-foreground">Convite digital · Convitely</p>
     </main>
   );
