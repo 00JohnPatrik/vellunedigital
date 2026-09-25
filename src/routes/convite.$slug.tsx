@@ -1,7 +1,8 @@
+import { useEffect } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { MailX } from "lucide-react";
 import { InvitationCanvas } from "@/components/block-render";
-import { getPublicInvitation } from "@/lib/public-invitation.functions";
+import { getPublicInvitation, recordInvitationView } from "@/lib/public-invitation.functions";
 
 export const Route = createFileRoute("/convite/$slug")({
   loader: ({ params }) => getPublicInvitation({ data: { slug: params.slug } }),
@@ -25,9 +26,18 @@ export const Route = createFileRoute("/convite/$slug")({
   notFoundComponent: () => <Message title="Convite não encontrado." text="Confira se o link está correto." />,
 });
 
+// Slugs already counted in this page load — guards against re-renders / StrictMode double effects.
+const viewed = new Set<string>();
+
 function PublicInvitationPage() {
   const res = Route.useLoaderData();
   const { slug } = Route.useParams();
+  const ok = res.state === "ok";
+  useEffect(() => {
+    if (!ok || viewed.has(slug)) return;
+    viewed.add(slug);
+    recordInvitationView({ data: { slug } }).catch(() => {});
+  }, [ok, slug]);
   if (res.state === "not_found") return <Message title="Convite não encontrado." text="Confira se o link está correto." />;
   if (res.state !== "ok") return <Message title="Este convite ainda não está disponível." text="Volte mais tarde ou fale com quem enviou o convite." />;
   const i = res.invitation;
