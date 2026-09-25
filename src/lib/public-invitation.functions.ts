@@ -26,6 +26,16 @@ export const getPublicInvitation = createServerFn({ method: "GET" })
     return res as unknown as PublicInvitationResult;
   });
 
+/** Counts one public view. The DB function only inserts for published/closed invitations; no visitor data stored. */
+export const recordInvitationView = createServerFn({ method: "POST" })
+  .inputValidator((d) => z.object({ slug: z.string().min(1).max(120) }).parse(d))
+  .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error } = await supabaseAdmin.rpc("record_invitation_view" as never, { _slug: data.slug } as never);
+    if (error) console.error("record_invitation_view", error.message);
+    return { ok: !error };
+  });
+
 export type SubmitRsvpResult =
   | { state: "ok"; status: "confirmed" | "declined"; name: string; people: number; updated: boolean }
   | { state: "duplicate" | "closed" | "unavailable" }

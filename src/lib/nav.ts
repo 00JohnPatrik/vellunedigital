@@ -9,7 +9,7 @@ export const adminNav: NavItem[] = [
   { slug: "users", label: "Usuários", icon: Users },
   { slug: "customers", label: "Clientes", icon: Contact, to: "/customers" },
   { slug: "templates", label: "Modelos Oficiais", icon: LayoutTemplate },
-  { slug: "relatorios", label: "Relatórios", icon: BarChart3 },
+  { slug: "reports", label: "Relatórios", icon: BarChart3 },
   { slug: "configuracoes", label: "Configurações", icon: Settings },
 ];
 
@@ -18,6 +18,6 @@ export const companyNav: NavItem[] = [
   { slug: "convites", label: "Convites", icon: Mail, to: "/invitations" },
   { slug: "customers", label: "Clientes", icon: Users, to: "/customers" },
   { slug: "templates", label: "Modelos", icon: FileText, to: "/templates" },
-  { slug: "relatorios", label: "Relatórios", icon: BarChart3 },
+  { slug: "reports", label: "Relatórios", icon: BarChart3, to: "/reports" },
   { slug: "configuracoes", label: "Configurações", icon: Settings },
 ];
