@@ -32,7 +32,11 @@ export const BLOCKS: Record<BlockType, { label: string; defaults: Record<string,
 };
 
 export type Block = { id: string; type: BlockType; props: Record<string, string>; hidden?: boolean };
-export type TemplateContent = { version: 1; blocks: Block[] };
+export type Background = { color?: string; image?: string; size?: "cover" | "contain"; x?: "left" | "center" | "right"; y?: "top" | "center" | "bottom"; overlay?: number };
+export type TemplateContent = { version: 1; blocks: Block[]; settings?: { background?: Background } };
+/** Builds content keeping `version`/`blocks` and adding `settings.background` only when set. */
+export const buildContent = (blocks: Block[], bg: Background | undefined): TemplateContent =>
+  bg && Object.values(bg).some((x) => x !== undefined && x !== "" && x !== 0) ? { version: 1, blocks, settings: { background: bg } } : { version: 1, blocks };
 export type Template = {
   id: string; company_id: string | null; name: string; category: Category; type: "official" | "company";
   preview_image: string | null; content: TemplateContent; status: Status; created_at: string; updated_at: string;
@@ -62,13 +66,13 @@ export const STARTERS: Record<string, { label: string; build: () => TemplateCont
 /** Deep copy with fresh block ids — the copy never shares objects with the source. */
 export function cloneContent(c: TemplateContent): TemplateContent {
   const copy = structuredClone(c ?? { version: 1, blocks: [] });
-  return { version: 1, blocks: (copy.blocks ?? []).map((b) => ({ ...b, id: crypto.randomUUID() })) };
+  return buildContent((copy.blocks ?? []).map((b) => ({ ...b, id: crypto.randomUUID() })), copy.settings?.background);
 }
 
 export const templatesKey = ["templates"] as const;
 
 export async function listTemplates(): Promise<Template[]> {
-  const { data, error } = await supabase.from("templates").select("*").order("created_at", { ascending: false });
+  const { data, error } = await supabase.from("templates").select("*").is("deleted_at", null).order("created_at", { ascending: false });
   if (error) throw error;
   return data as unknown as Template[];
 }

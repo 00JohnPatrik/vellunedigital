@@ -14,7 +14,7 @@ export const customersKey = ["customers"] as const;
 const cols = "id, company_id, name, phone, email, observation, status, created_at, updated_at, company:companies(id, name)";
 
 export async function listCustomers(): Promise<Customer[]> {
-  const { data, error } = await supabase.from("customers").select(cols).order("name");
+  const { data, error } = await supabase.from("customers").select(cols).is("deleted_at", null).order("name");
   if (error) throw error;
   return data as unknown as Customer[];
 }
