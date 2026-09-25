@@ -59,6 +59,14 @@ export async function updateInvitation(id: string, customerId: string, v: EventV
   if (error) throw error;
 }
 
+/** Publishes (status=published). published_at and minimum-data checks are enforced by the DB trigger; slug never changes. */
+export async function publishInvitation(id: string) {
+  const { error } = await supabase.from("invitations").update({ status: "published" }).eq("id", id);
+  if (error) throw error;
+}
+
+export const whatsappShareUrl = (slug: string) => `https://wa.me/?text=${encodeURIComponent(`Confira meu convite: ${publicUrl(slug)}`)}`;
+
 /** Logical delete. */
 export async function deleteInvitation(id: string) {
   const { error } = await supabase.from("invitations").update({ status: "deleted" }).eq("id", id);
@@ -82,6 +90,7 @@ export function invitationError(e: unknown) {
   const err = e as { code?: string; message?: string };
   if (/Cliente/.test(err?.message ?? "")) return "Cliente inválido para esta empresa.";
   if (/Modelo/.test(err?.message ?? "")) return "Modelo indisponível para esta empresa.";
+  if (/Publicação incompleta/.test(err?.message ?? "")) return "Preencha nome, data, hora e adicione ao menos um bloco antes de publicar.";
   if (err?.code === "23514") return "Dados inválidos. Verifique os campos.";
   return "Não foi possível salvar. Tente novamente.";
 }

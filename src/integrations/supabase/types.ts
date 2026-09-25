@@ -273,6 +273,7 @@ export type Database = {
     }
     Functions: {
       current_company_id: { Args: never; Returns: string }
+      get_public_invitation: { Args: { _slug: string }; Returns: Json }
       is_super_admin: { Args: never; Returns: boolean }
       use_official_template: { Args: { _template_id: string }; Returns: string }
     }

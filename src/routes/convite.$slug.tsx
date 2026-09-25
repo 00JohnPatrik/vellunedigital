@@ -1,0 +1,56 @@
+import { createFileRoute } from "@tanstack/react-router";
+import { MailX } from "lucide-react";
+import { InvitationCanvas } from "@/components/block-render";
+import { getPublicInvitation } from "@/lib/public-invitation.functions";
+
+export const Route = createFileRoute("/convite/$slug")({
+  loader: ({ params }) => getPublicInvitation({ data: { slug: params.slug } }),
+  head: ({ loaderData }) => {
+    if (!loaderData || loaderData.state !== "ok") {
+      return { meta: [{ title: "Convite indisponível — Convitely" }, { name: "robots", content: "noindex" }] };
+    }
+    const i = loaderData.invitation;
+    const desc = i.message?.slice(0, 150) || `Você está convidado! ${new Date(`${i.event_date}T00:00:00`).toLocaleDateString("pt-BR")}${i.venue_name ? ` · ${i.venue_name}` : ""}`;
+    return {
+      meta: [
+        { title: i.name }, { name: "description", content: desc },
+        { property: "og:title", content: i.name }, { property: "og:description", content: desc },
+        { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" },
+        { name: "robots", content: "noindex" },
+      ],
+    };
+  },
+  component: PublicInvitationPage,
+  errorComponent: () => <Message title="Não foi possível abrir o convite." text="Tente novamente em alguns instantes." />,
+  notFoundComponent: () => <Message title="Convite não encontrado." text="Confira se o link está correto." />,
+});
+
+function PublicInvitationPage() {
+  const res = Route.useLoaderData();
+  const { slug } = Route.useParams();
+  if (res.state === "not_found") return <Message title="Convite não encontrado." text="Confira se o link está correto." />;
+  if (res.state !== "ok") return <Message title="Este convite ainda não está disponível." text="Volte mais tarde ou fale com quem enviou o convite." />;
+  const i = res.invitation;
+  const ctx = {
+    event_date: i.event_date, event_time: i.event_time, venue_name: i.venue_name, address: i.address, city: i.city, state: i.state,
+    publicUrl: typeof window !== "undefined" ? `${window.location.origin}/convite/${slug}` : `/convite/${slug}`,
+  };
+  return (
+    <main className="min-h-screen bg-gradient-to-b from-muted/60 via-background to-muted/40 px-4 py-8 sm:py-14">
+      <InvitationCanvas blocks={i.content?.blocks ?? []} ctx={ctx} className="max-w-lg gap-6 border-border/60 p-6 shadow-xl sm:p-10" />
+      <p className="mt-8 text-center text-[11px] tracking-wide text-muted-foreground">Convite digital · Convitely</p>
+    </main>
+  );
+}
+
+function Message({ title, text }: { title: string; text: string }) {
+  return (
+    <main className="flex min-h-screen items-center justify-center bg-muted/40 px-4">
+      <div className="max-w-sm rounded-2xl border bg-card p-8 text-center shadow-sm">
+        <MailX className="mx-auto mb-3 h-8 w-8 text-muted-foreground" />
+        <h1 className="font-display text-xl font-semibold">{title}</h1>
+        <p className="mt-2 text-sm text-muted-foreground">{text}</p>
+      </div>
+    </main>
+  );
+}

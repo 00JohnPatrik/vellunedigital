@@ -1,7 +1,9 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { AlertCircle, ArrowLeft, Check, Eye, Loader2, Settings2 } from "lucide-react";
+import { AlertCircle, ArrowLeft, Check, Eye, Loader2, Send, Settings2, Share2 } from "lucide-react";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { ShareDialog } from "@/components/share-dialog";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -11,7 +13,7 @@ import { EmptyState, LoadingState } from "@/components/admin-ui";
 import { EventFields, InvitationStatusBadge, invitationCtx } from "@/components/invitation-ui";
 import { useBlocksHistory, VisualEditor } from "@/components/visual-editor";
 import { customersKey, listCustomers } from "@/lib/customers-data";
-import { getInvitation, invitationError, invitationsKey, toEventValues, updateInvitation, validateEvent, type EventValues, type Invitation } from "@/lib/invitations";
+import { getInvitation, invitationError, invitationsKey, publishInvitation, toEventValues, updateInvitation, validateEvent, type EventValues, type Invitation } from "@/lib/invitations";
 import { normalizeBlocks, validateContent } from "@/lib/blocks";
 
 export const Route = createFileRoute("/_authenticated/invitations/$id/editor")({
@@ -43,6 +45,11 @@ function EditorForm({ inv }: { inv: Invitation }) {
   const [eventOpen, setEventOpen] = useState(false);
   const [state, setState] = useState<SaveState>("saved");
   const [errMsg, setErrMsg] = useState("");
+  const [status, setStatus] = useState(inv.status);
+  const [warnOpen, setWarnOpen] = useState(inv.status === "published");
+  const [shareOpen, setShareOpen] = useState(false);
+  const [publishing, setPublishing] = useState(false);
+  const navigate = useNavigate();
 
   // Latest snapshot + version counter so an in-flight save never overwrites newer edits.
   const snap = useRef({ v, customerId, blocks: h.blocks });
@@ -103,6 +110,21 @@ function EditorForm({ inv }: { inv: Invitation }) {
     return () => { window.removeEventListener("beforeunload", on); if (timer.current) clearTimeout(timer.current); };
   }, [state]);
 
+  const publish = async () => {
+    const e = validateEvent(snap.current.v);
+    if (Object.keys(e).length) { setErrors(e); toast.error("Preencha nome, data e hora do evento antes de publicar."); setEventOpen(true); return; }
+    if (!snap.current.blocks.some((b) => !b.hidden)) { toast.error("Adicione ao menos um bloco visível antes de publicar."); return; }
+    setPublishing(true);
+    try {
+      if (!(await save(true))) return;
+      await publishInvitation(inv.id);
+      setStatus("published"); setShareOpen(true);
+      toast.success("Convite publicado!");
+      void qc.invalidateQueries({ queryKey: invitationsKey });
+    } catch (err) { toast.error(invitationError(err)); } finally { setPublishing(false); }
+  };
+  const isPublic = status === "published" || status === "closed";
+
   const ctx = useMemo(() => invitationCtx(inv, v), [inv, v]);
   const options = (customers.data ?? []).filter((c) => c.company_id === inv.company_id && (c.status === "active" || c.id === inv.customer_id));
 
@@ -111,8 +133,8 @@ function EditorForm({ inv }: { inv: Invitation }) {
       <div className="flex flex-wrap items-center gap-2">
         <Button variant="ghost" size="sm" asChild><Link to="/invitations"><ArrowLeft className="h-4 w-4" />Voltar</Link></Button>
         <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-2"><h1 className="truncate font-display text-lg font-semibold">{v.name || inv.name}</h1><InvitationStatusBadge status={inv.status} /></div>
-          <p className="truncate text-xs text-muted-foreground">Link reservado: /convite/{inv.slug}</p>
+          <div className="flex items-center gap-2"><h1 className="truncate font-display text-lg font-semibold">{v.name || inv.name}</h1><InvitationStatusBadge status={status} /></div>
+          <p className="truncate text-xs text-muted-foreground">{isPublic ? "Link público" : "Link reservado"}: /convite/{inv.slug}</p>
         </div>
         <SaveIndicator state={state} msg={errMsg} onRetry={() => void save(true)} />
       </div>
@@ -121,7 +143,24 @@ function EditorForm({ inv }: { inv: Invitation }) {
         <Button type="button" size="sm" variant="outline" onClick={() => setEventOpen(true)}><Settings2 className="h-4 w-4" /><span className="hidden sm:inline">Dados do evento</span></Button>
         <Button type="button" size="sm" variant="outline" asChild><Link to="/invitations/$id/preview" params={{ id: inv.id }}><Eye className="h-4 w-4" /><span className="hidden sm:inline">Visualizar</span></Link></Button>
         <Button type="button" size="sm" onClick={() => void save(true)} disabled={state === "saving"}>{state === "saving" && <Loader2 className="h-4 w-4 animate-spin" />}Salvar</Button>
+        {isPublic
+          ? <Button type="button" size="sm" variant="secondary" onClick={() => setShareOpen(true)}><Share2 className="h-4 w-4" />Compartilhar</Button>
+          : <Button type="button" size="sm" variant="secondary" onClick={() => void publish()} disabled={publishing}>{publishing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}Publicar convite</Button>}
       </>} />
+
+      <ShareDialog slug={inv.slug} open={shareOpen} onOpenChange={setShareOpen} />
+      <AlertDialog open={warnOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Convite publicado</AlertDialogTitle>
+            <AlertDialogDescription>Este convite já está publicado. A alteração será refletida imediatamente para os convidados.</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => void navigate({ to: "/invitations" })}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={() => setWarnOpen(false)}>Continuar</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <Sheet open={eventOpen} onOpenChange={setEventOpen}>
         <SheetContent className="w-full overflow-y-auto sm:max-w-lg">
