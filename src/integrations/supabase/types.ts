@@ -85,6 +85,91 @@ export type Database = {
           },
         ]
       }
+      invitations: {
+        Row: {
+          address: string | null
+          city: string | null
+          company_id: string
+          content: Json
+          created_at: string
+          customer_id: string
+          event_date: string
+          event_time: string
+          id: string
+          message: string | null
+          name: string
+          published_at: string | null
+          slug: string
+          state: string | null
+          status: Database["public"]["Enums"]["invitation_status"]
+          template_id: string | null
+          updated_at: string
+          venue_name: string | null
+        }
+        Insert: {
+          address?: string | null
+          city?: string | null
+          company_id: string
+          content?: Json
+          created_at?: string
+          customer_id: string
+          event_date: string
+          event_time: string
+          id?: string
+          message?: string | null
+          name: string
+          published_at?: string | null
+          slug: string
+          state?: string | null
+          status?: Database["public"]["Enums"]["invitation_status"]
+          template_id?: string | null
+          updated_at?: string
+          venue_name?: string | null
+        }
+        Update: {
+          address?: string | null
+          city?: string | null
+          company_id?: string
+          content?: Json
+          created_at?: string
+          customer_id?: string
+          event_date?: string
+          event_time?: string
+          id?: string
+          message?: string | null
+          name?: string
+          published_at?: string | null
+          slug?: string
+          state?: string | null
+          status?: Database["public"]["Enums"]["invitation_status"]
+          template_id?: string | null
+          updated_at?: string
+          venue_name?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invitations_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invitations_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invitations_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       templates: {
         Row: {
           category: Database["public"]["Enums"]["template_category"]
@@ -193,6 +278,7 @@ export type Database = {
     }
     Enums: {
       app_role: "super_admin" | "company_admin"
+      invitation_status: "draft" | "published" | "closed" | "deleted"
       record_status: "active" | "inactive"
       template_category:
         | "casamento"
@@ -333,6 +419,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["super_admin", "company_admin"],
+      invitation_status: ["draft", "published", "closed", "deleted"],
       record_status: ["active", "inactive"],
       template_category: [
         "casamento",
