@@ -84,3 +84,25 @@ export const requestFirstAccess = createServerFn({ method: "POST" })
     if (error) console.error("first-access reset email", error.message);
     return done;
   });
+
+/** Password recovery: only for already-activated, provisioned accounts. Never creates users. */
+export const requestPasswordReset = createServerFn({ method: "POST" })
+  .inputValidator((d) =>
+    z.object({ email: z.string().trim().toLowerCase().email().max(255), origin: z.string().url() }).parse(d),
+  )
+  .handler(async ({ data }) => {
+    const done = { ok: true as const };
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: row } = await supabaseAdmin
+      .from("users")
+      .select("auth_user_id, status")
+      .eq("email", data.email)
+      .maybeSingle();
+    if (!row || row.status !== "active" || !row.auth_user_id) return done;
+    const client = await publicAuthClient();
+    const { error } = await client.auth.resetPasswordForEmail(data.email, {
+      redirectTo: `${new URL(data.origin).origin}/reset-password`,
+    });
+    if (error) console.error("password reset email", error.message);
+    return done;
+  });
