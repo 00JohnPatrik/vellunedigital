@@ -17,3 +17,5 @@
 - Role routing: `_authenticated` gate loads profile; `/admin` layout = super_admin only, `/dashboard` = company_admin with active company.
 - Super admin CRUD uses the browser client under RLS; only auth-account operations (invite) go through `sendAccessInvite` server fn with an is_super_admin check — keeps service role server-side.
 - Customers (`/customers`) is a shared module outside `/admin`/`/dashboard`; `customers_guard` trigger forces `company_id` for company admins and freezes it on update — tenant scoping never trusts the client.
+- Templates: `templates` table (official = company_id NULL, company = own company); `templates_guard` trigger forces type/company_id for company admins and freezes id/type/company_id on update; content is JSON `{version:1, blocks:[{id,type,props}]}` with the block catalogue in `src/lib/templates.ts` — ready for the future editor.
+- "Usar modelo" goes through the `use_official_template` DB function (deep copy into caller's company, no link to source) — copy can't be forged by the client.
