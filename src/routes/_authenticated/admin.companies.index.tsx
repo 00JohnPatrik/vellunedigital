@@ -2,23 +2,15 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { Plus, Search } from "lucide-react";
-import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { EmptyState, fmtDate, LoadingState, PageHeader, StatusBadge, StatusTabs, StatusToggle, type Status, type StatusFilter } from "@/components/admin-ui";
-import { companiesKey, listCompanies, type CompanyRow } from "@/lib/admin-data";
+import { companiesKey, listCompanies, setCompanyStatus, type CompanyRow } from "@/lib/admin-data";
 
 export const Route = createFileRoute("/_authenticated/admin/companies/")({
   head: () => ({ meta: [{ title: "Empresas — Convitely" }] }),
   component: CompaniesPage,
 });
-
-export async function setCompanyStatus(id: string, status: Status) {
-  const { error } = await supabase.from("companies").update({ status }).eq("id", id);
-  if (error) { toast.error("Não foi possível alterar o status."); throw error; }
-  toast.success(status === "active" ? "Empresa ativada." : "Empresa inativada.");
-}
 
 const adminsOf = (c: CompanyRow) => c.users.filter((u) => u.role === "company_admin").map((u) => u.name).join(", ") || "—";
 

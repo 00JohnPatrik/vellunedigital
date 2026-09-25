@@ -46,3 +46,12 @@ export async function getCompanyAdmin(id: string): Promise<CompanyAdmin | null> 
 }
 
 export const isUuid = (s: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(s);
+
+async function setStatus(table: "companies" | "users", id: string, status: Status, label: string) {
+  const { toast } = await import("sonner");
+  const { error } = await supabase.from(table).update({ status }).eq("id", id);
+  if (error) { toast.error("Não foi possível alterar o status."); throw error; }
+  toast.success(`${label} ${status === "active" ? "ativado(a)" : "inativado(a)"}.`);
+}
+export const setCompanyStatus = (id: string, s: Status) => setStatus("companies", id, s, "Empresa");
+export const setUserStatus = (id: string, s: Status) => setStatus("users", id, s, "Usuário");

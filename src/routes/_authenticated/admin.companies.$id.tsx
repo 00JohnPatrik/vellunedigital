@@ -7,8 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { dbErrorMessage, EmptyState, fmtDate, LoadingState, PageHeader, StatusBadge, StatusToggle } from "@/components/admin-ui";
 import { CompanyForm } from "@/components/admin-forms";
-import { getCompany, isUuid, listCompanyAdmins } from "@/lib/admin-data";
-import { setCompanyStatus } from "./admin.companies.index";
+import { getCompany, isUuid, listCompanyAdmins, setCompanyStatus } from "@/lib/admin-data";
 
 export const Route = createFileRoute("/_authenticated/admin/companies/$id")({
   validateSearch: z.object({ edit: z.boolean().optional() }),
