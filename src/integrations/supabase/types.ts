@@ -170,6 +170,94 @@ export type Database = {
           },
         ]
       }
+      rsvp_configs: {
+        Row: {
+          allow_email: boolean
+          allow_phone: boolean
+          created_at: string
+          deadline: string | null
+          enabled: boolean
+          id: string
+          invitation_id: string
+          max_people: number | null
+          updated_at: string
+        }
+        Insert: {
+          allow_email?: boolean
+          allow_phone?: boolean
+          created_at?: string
+          deadline?: string | null
+          enabled?: boolean
+          id?: string
+          invitation_id: string
+          max_people?: number | null
+          updated_at?: string
+        }
+        Update: {
+          allow_email?: boolean
+          allow_phone?: boolean
+          created_at?: string
+          deadline?: string | null
+          enabled?: boolean
+          id?: string
+          invitation_id?: string
+          max_people?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rsvp_configs_invitation_id_fkey"
+            columns: ["invitation_id"]
+            isOneToOne: true
+            referencedRelation: "invitations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      rsvp_responses: {
+        Row: {
+          created_at: string
+          email: string | null
+          id: string
+          invitation_id: string
+          name: string
+          people_count: number
+          phone: string | null
+          status: Database["public"]["Enums"]["rsvp_status"]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          id?: string
+          invitation_id: string
+          name: string
+          people_count?: number
+          phone?: string | null
+          status: Database["public"]["Enums"]["rsvp_status"]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          id?: string
+          invitation_id?: string
+          name?: string
+          people_count?: number
+          phone?: string | null
+          status?: Database["public"]["Enums"]["rsvp_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rsvp_responses_invitation_id_fkey"
+            columns: ["invitation_id"]
+            isOneToOne: false
+            referencedRelation: "invitations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       templates: {
         Row: {
           category: Database["public"]["Enums"]["template_category"]
@@ -274,13 +362,31 @@ export type Database = {
     Functions: {
       current_company_id: { Args: never; Returns: string }
       get_public_invitation: { Args: { _slug: string }; Returns: Json }
+      invitation_company: { Args: { _invitation_id: string }; Returns: string }
       is_super_admin: { Args: never; Returns: boolean }
+      rsvp_public_state: {
+        Args: { _inv: Database["public"]["Tables"]["invitations"]["Row"] }
+        Returns: Json
+      }
+      submit_rsvp: {
+        Args: {
+          _email: string
+          _name: string
+          _people: number
+          _phone: string
+          _slug: string
+          _status: string
+          _update: boolean
+        }
+        Returns: Json
+      }
       use_official_template: { Args: { _template_id: string }; Returns: string }
     }
     Enums: {
       app_role: "super_admin" | "company_admin"
       invitation_status: "draft" | "published" | "closed" | "deleted"
       record_status: "active" | "inactive"
+      rsvp_status: "confirmed" | "declined"
       template_category:
         | "casamento"
         | "aniversario"
@@ -422,6 +528,7 @@ export const Constants = {
       app_role: ["super_admin", "company_admin"],
       invitation_status: ["draft", "published", "closed", "deleted"],
       record_status: ["active", "inactive"],
+      rsvp_status: ["confirmed", "declined"],
       template_category: [
         "casamento",
         "aniversario",
