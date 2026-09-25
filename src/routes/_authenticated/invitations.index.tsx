@@ -15,7 +15,7 @@ import { deleteInvitation, fmtEventDate, invitationsKey, listInvitations, public
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/invitations/")({
-  head: () => ({ meta: [{ title: "Convites — Convitely" }] }),
+  head: () => ({ meta: [{ title: "Convites — Vellune Digital" }] }),
   component: InvitationsPage,
 });
 

@@ -3,7 +3,7 @@ import { TemplateDetail } from "@/components/template-detail";
 
 export const Route = createFileRoute("/_authenticated/admin/templates/$id")({
   validateSearch: (s: Record<string, unknown>): { edit?: boolean } => (s["edit"] === true || s["edit"] === "true" ? { edit: true } : {}),
-  head: () => ({ meta: [{ title: "Modelo oficial — Convitely" }] }),
+  head: () => ({ meta: [{ title: "Modelo oficial — Vellune Digital" }] }),
   component: AdminTemplatePage,
 });
 

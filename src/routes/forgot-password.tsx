@@ -1,7 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 import { z } from "zod";
-import { supabase } from "@/integrations/supabase/client";
+import { requestPasswordReset } from "@/lib/auth.functions";
 import { AuthCard } from "@/components/auth-card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,9 +11,9 @@ import { Label } from "@/components/ui/label";
 export const Route = createFileRoute("/forgot-password")({
   head: () => ({
     meta: [
-      { title: "Recuperar senha — Convitely" },
+      { title: "Recuperar senha — Vellune Digital" },
       { name: "description", content: "Receba um link para redefinir sua senha." },
-      { property: "og:title", content: "Recuperar senha — Convitely" },
+      { property: "og:title", content: "Recuperar senha — Vellune Digital" },
       { property: "og:description", content: "Receba um link para redefinir sua senha." },
     ],
   }),
@@ -20,6 +21,7 @@ export const Route = createFileRoute("/forgot-password")({
 });
 
 function ForgotPage() {
+  const reset = useServerFn(requestPasswordReset);
   const [email, setEmail] = useState("");
   const [sent, setSent] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -31,9 +33,7 @@ function ForgotPage() {
     if (!parsed.success) return setError("Informe um e-mail válido.");
     setLoading(true);
     setError(null);
-    await supabase.auth.resetPasswordForEmail(parsed.data, {
-      redirectTo: `${window.location.origin}/reset-password`,
-    });
+    await reset({ data: { email: parsed.data, origin: window.location.origin } }).catch(() => null);
     setLoading(false);
     setSent(true);
   }

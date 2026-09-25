@@ -7,7 +7,7 @@ export const Route = createFileRoute("/_authenticated/admin")({
   beforeLoad: ({ context }) => {
     if (context.appUser.role !== "super_admin") throw redirect({ to: "/dashboard" });
   },
-  head: () => ({ meta: [{ title: "Administração — Convitely" }, { name: "robots", content: "noindex" }] }),
+  head: () => ({ meta: [{ title: "Administração — Vellune Digital" }, { name: "robots", content: "noindex" }] }),
   component: AdminLayout,
 });
 

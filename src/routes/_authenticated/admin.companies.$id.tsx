@@ -11,7 +11,7 @@ import { getCompany, isUuid, listCompanyAdmins, setCompanyStatus } from "@/lib/a
 
 export const Route = createFileRoute("/_authenticated/admin/companies/$id")({
   validateSearch: z.object({ edit: z.boolean().optional() }),
-  head: () => ({ meta: [{ title: "Empresa — Convitely" }] }),
+  head: () => ({ meta: [{ title: "Empresa — Vellune Digital" }] }),
   component: CompanyDetail,
 });
 

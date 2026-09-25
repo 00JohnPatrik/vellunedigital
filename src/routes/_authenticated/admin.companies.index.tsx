@@ -8,7 +8,7 @@ import { EmptyState, fmtDate, LoadingState, PageHeader, StatusBadge, StatusTabs,
 import { companiesKey, listCompanies, setCompanyStatus, type CompanyRow } from "@/lib/admin-data";
 
 export const Route = createFileRoute("/_authenticated/admin/companies/")({
-  head: () => ({ meta: [{ title: "Empresas — Convitely" }] }),
+  head: () => ({ meta: [{ title: "Empresas — Vellune Digital" }] }),
   component: CompaniesPage,
 });
 

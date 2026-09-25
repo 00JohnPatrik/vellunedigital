@@ -11,9 +11,9 @@ export const Route = createFileRoute("/reset-password")({
   ssr: false,
   head: () => ({
     meta: [
-      { title: "Definir nova senha — Convitely" },
+      { title: "Definir nova senha — Vellune Digital" },
       { name: "description", content: "Crie uma nova senha para sua conta." },
-      { property: "og:title", content: "Definir nova senha — Convitely" },
+      { property: "og:title", content: "Definir nova senha — Vellune Digital" },
       { property: "og:description", content: "Crie uma nova senha para sua conta." },
     ],
   }),

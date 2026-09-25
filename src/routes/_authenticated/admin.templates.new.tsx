@@ -6,7 +6,7 @@ import { emptyTemplate, TemplateForm, templateError } from "@/components/templat
 import { createTemplate, templatesKey } from "@/lib/templates";
 
 export const Route = createFileRoute("/_authenticated/admin/templates/new")({
-  head: () => ({ meta: [{ title: "Novo modelo oficial — Convitely" }] }),
+  head: () => ({ meta: [{ title: "Novo modelo oficial — Vellune Digital" }] }),
   component: NewOfficial,
 });
 

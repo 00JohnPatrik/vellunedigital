@@ -11,7 +11,7 @@ import { sendAccessInvite } from "@/lib/admin.functions";
 
 export const Route = createFileRoute("/_authenticated/admin/users/new")({
   validateSearch: z.object({ company: z.string().optional() }),
-  head: () => ({ meta: [{ title: "Novo administrador — Convitely" }] }),
+  head: () => ({ meta: [{ title: "Novo administrador — Vellune Digital" }] }),
   component: NewUser,
 });
 

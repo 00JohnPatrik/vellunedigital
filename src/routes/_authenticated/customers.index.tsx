@@ -12,7 +12,7 @@ import { customersKey, findDuplicate, listCustomers, toRow, type Customer } from
 import { setCustomerStatus } from "@/lib/customer-actions";
 
 export const Route = createFileRoute("/_authenticated/customers/")({
-  head: () => ({ meta: [{ title: "Clientes — Convitely" }] }),
+  head: () => ({ meta: [{ title: "Clientes — Vellune Digital" }] }),
   component: CustomersPage,
 });
 

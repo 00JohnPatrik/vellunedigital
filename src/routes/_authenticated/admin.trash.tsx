@@ -12,7 +12,7 @@ import { listTrash, restore, TRASH_LABEL, trashKey, type TrashItem, type TrashKi
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/admin/trash")({
-  head: () => ({ meta: [{ title: "Lixeira — Convitely" }] }),
+  head: () => ({ meta: [{ title: "Lixeira — Vellune Digital" }] }),
   component: TrashPage,
 });
 

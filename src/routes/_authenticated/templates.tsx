@@ -9,7 +9,7 @@ export const Route = createFileRoute("/_authenticated/templates")({
     if (u.role === "super_admin") throw redirect({ to: "/admin/templates" });
     if (!u.company) throw redirect({ to: "/login", search: { error: "inactive" } });
   },
-  head: () => ({ meta: [{ title: "Modelos — Convitely" }, { name: "robots", content: "noindex" }] }),
+  head: () => ({ meta: [{ title: "Modelos — Vellune Digital" }, { name: "robots", content: "noindex" }] }),
   component: () => {
     const { appUser } = Route.useRouteContext();
     return <AppShell base="/dashboard" nav={companyNav} appUser={appUser}><Outlet /></AppShell>;

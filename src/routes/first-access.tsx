@@ -11,9 +11,9 @@ import { requestFirstAccess } from "@/lib/auth.functions";
 export const Route = createFileRoute("/first-access")({
   head: () => ({
     meta: [
-      { title: "Primeiro acesso — Convitely" },
+      { title: "Primeiro acesso — Vellune Digital" },
       { name: "description", content: "Ative sua conta e crie sua senha." },
-      { property: "og:title", content: "Primeiro acesso — Convitely" },
+      { property: "og:title", content: "Primeiro acesso — Vellune Digital" },
       { property: "og:description", content: "Ative sua conta e crie sua senha." },
     ],
   }),

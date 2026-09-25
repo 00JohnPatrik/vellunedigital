@@ -15,10 +15,10 @@ export const Route = createFileRoute("/login")({
   validateSearch: z.object({ error: z.enum(["inactive"]).optional() }),
   head: () => ({
     meta: [
-      { title: "Entrar — Convitely" },
-      { name: "description", content: "Acesse o painel do Convitely." },
-      { property: "og:title", content: "Entrar — Convitely" },
-      { property: "og:description", content: "Acesse o painel do Convitely." },
+      { title: "Entrar — Vellune Digital" },
+      { name: "description", content: "Acesse o painel do Vellune Digital." },
+      { property: "og:title", content: "Entrar — Vellune Digital" },
+      { property: "og:description", content: "Acesse o painel do Vellune Digital." },
     ],
   }),
   component: LoginPage,

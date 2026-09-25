@@ -8,7 +8,7 @@ export const Route = createFileRoute("/_authenticated/invitations")({
     const u = context.appUser;
     if (u.role === "company_admin" && !u.company) throw redirect({ to: "/login", search: { error: "inactive" } });
   },
-  head: () => ({ meta: [{ title: "Convites — Convitely" }, { name: "robots", content: "noindex" }] }),
+  head: () => ({ meta: [{ title: "Convites — Vellune Digital" }, { name: "robots", content: "noindex" }] }),
   component: InvitationsLayout,
 });
 
