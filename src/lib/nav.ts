@@ -4,8 +4,8 @@ export type NavItem = { slug: string; label: string; icon: LucideIcon };
 
 export const adminNav: NavItem[] = [
   { slug: "", label: "Dashboard", icon: LayoutDashboard },
-  { slug: "empresas", label: "Empresas", icon: Building2 },
-  { slug: "usuarios", label: "Usuários", icon: Users },
+  { slug: "companies", label: "Empresas", icon: Building2 },
+  { slug: "users", label: "Usuários", icon: Users },
   { slug: "modelos-oficiais", label: "Modelos Oficiais", icon: LayoutTemplate },
   { slug: "relatorios", label: "Relatórios", icon: BarChart3 },
   { slug: "configuracoes", label: "Configurações", icon: Settings },
