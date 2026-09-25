@@ -1,0 +1,1 @@
+REVOKE ALL ON FUNCTION public.templates_guard() FROM PUBLIC, anon, authenticated;
