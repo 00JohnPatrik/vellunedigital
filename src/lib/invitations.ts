@@ -67,7 +67,7 @@ export async function publishInvitation(id: string) {
 
 export const whatsappShareUrl = (slug: string) => `https://wa.me/?text=${encodeURIComponent(`Confira meu convite: ${publicUrl(slug)}`)}`;
 
-/** Logical delete.
+/** Logical delete. */
 export async function deleteInvitation(id: string) {
   const { error } = await supabase.from("invitations").update({ status: "deleted" }).eq("id", id);
   if (error) throw error;
