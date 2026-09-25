@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { EmptyState, fmtDate, LoadingState, PageHeader } from "@/components/admin-ui";
 import { InvitationStatusBadge } from "@/components/invitation-ui";
-import { deleteInvitation, fmtEventDate, invitationsKey, listInvitations, publicUrl, type Invitation } from "@/lib/invitations";
+import { deleteInvitation, fmtEventDate, invitationsKey, listInvitations, publicUrl, whatsappShareUrl, type Invitation } from "@/lib/invitations";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/invitations/")({
@@ -51,7 +51,7 @@ function InvitationsPage() {
         <Button variant={variant} size="sm" asChild><Link to="/invitations/$id/preview" params={{ id: i.id }}><Eye className="h-4 w-4" />Visualizar</Link></Button>
         {shareable && <>
           <Button variant={variant} size="sm" onClick={() => { navigator.clipboard.writeText(publicUrl(i.slug)); toast.success("Link copiado."); }}><Copy className="h-4 w-4" />Copiar link</Button>
-          <Button variant={variant} size="sm" asChild><a href={`https://wa.me/?text=${encodeURIComponent(publicUrl(i.slug))}`} target="_blank" rel="noreferrer"><MessageCircle className="h-4 w-4" />WhatsApp</a></Button>
+          <Button variant={variant} size="sm" asChild><a href={whatsappShareUrl(i.slug)} target="_blank" rel="noreferrer"><MessageCircle className="h-4 w-4" />WhatsApp</a></Button>
         </>}
         <Button variant={variant} size="sm" disabled title="Disponível em breve"><BarChart3 className="h-4 w-4" />Relatório</Button>
         <Button variant={variant} size="sm" className="text-destructive" onClick={() => setToDelete(i)}><Trash2 className="h-4 w-4" />Excluir</Button>
