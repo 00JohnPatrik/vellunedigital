@@ -78,9 +78,11 @@ function EditorForm({ inv }: { inv: Invitation }) {
     } finally { inFlight.current = false; }
   }, [inv.id, qc]);
 
-  // Debounced autosave on any change.
+  // Debounced autosave on any real change (StrictMode-safe: compares against the loaded snapshot).
+  const initial = useRef(JSON.stringify(snap.current));
   useEffect(() => {
-    if (first.current) { first.current = false; return; }
+    if (first.current && JSON.stringify(snap.current) === initial.current) return;
+    first.current = false;
     version.current += 1;
     setState("dirty");
     if (timer.current) clearTimeout(timer.current);
