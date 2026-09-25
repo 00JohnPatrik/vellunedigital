@@ -101,7 +101,7 @@ const blockLabel = (b: Block) => (isKnownType(b.type) ? BLOCKS[b.type].label : `
 type Device = "mobile" | "tablet" | "desktop";
 const DEVICE_W: Record<Device, string> = { mobile: "max-w-[390px]", tablet: "max-w-[768px]", desktop: "max-w-[1024px]" };
 
-export function VisualEditor({ h, ctx, toolbarExtra }: { h: BlocksHistory; ctx?: EventCtx; toolbarExtra?: ReactNode }) {
+export function VisualEditor({ h, ctx, toolbarExtra }: { h: BlocksHistory; ctx?: EventCtx | undefined; toolbarExtra?: ReactNode }) {
   const { blocks, set } = h;
   const isMobile = useIsMobile();
   const [selected, setSelected] = useState<string | null>(null);
@@ -259,7 +259,7 @@ function BlockActions({ b, first, last, actions, compact }: { b: Block; first: b
 }
 
 const CanvasBlock = memo(function CanvasBlock({ block, ctx, selected, onSelect, first, last, actions }: {
-  block: Block; ctx?: EventCtx; selected: boolean; onSelect: (id: string) => void; first: boolean; last: boolean; actions: Actions;
+  block: Block; ctx?: EventCtx | undefined; selected: boolean; onSelect: (id: string) => void; first: boolean; last: boolean; actions: Actions;
 }) {
   return (
     <div

@@ -2,8 +2,8 @@ import { BLOCKS, type Block, type BlockType, type TemplateContent } from "@/lib/
 
 /** Event data used by date/time/location/countdown blocks when their source is "event". */
 export type EventCtx = {
-  event_date?: string | null; event_time?: string | null; venue_name?: string | null;
-  address?: string | null; city?: string | null; state?: string | null; publicUrl?: string | null;
+  event_date?: string | null | undefined; event_time?: string | null | undefined; venue_name?: string | null | undefined;
+  address?: string | null | undefined; city?: string | null | undefined; state?: string | null | undefined; publicUrl?: string | null | undefined;
 };
 
 export const isKnownType = (t: unknown): t is BlockType => typeof t === "string" && t in BLOCKS;

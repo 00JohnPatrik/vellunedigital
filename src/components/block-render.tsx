@@ -21,7 +21,7 @@ function Row({ align = "center", children }: { align?: string | undefined; child
   return <div className={cn("flex w-full", ALIGN[align] ?? ALIGN["center"])}>{children}</div>;
 }
 
-function Btn({ p, fallback, href, interactive, icon }: { p: Record<string, string>; fallback: string; href?: string | null; interactive: boolean; icon?: ReactNode }) {
+function Btn({ p, fallback, href, interactive, icon }: { p: Record<string, string>; fallback: string; href?: string | null | undefined; interactive: boolean; icon?: ReactNode }) {
   const cls = cn("inline-flex items-center justify-center gap-2 rounded-md px-5 py-2.5 text-sm font-medium", BTN_STYLE[p["style"] ?? "solid"] ?? BTN_STYLE["solid"], WIDTH[p["width"] ?? "auto"]);
   const body = <>{icon}{p["label"] || fallback}</>;
   return (
@@ -37,7 +37,7 @@ function useNow(active: boolean) {
   return now;
 }
 
-function Countdown({ p, ctx }: { p: Record<string, string>; ctx?: EventCtx }) {
+function Countdown({ p, ctx }: { p: Record<string, string>; ctx?: EventCtx | undefined }) {
   const eventTarget = ctx?.event_date ? `${ctx.event_date}T${(ctx.event_time ?? "00:00").slice(0, 5)}` : null;
   const target = pick(p, p["target"], eventTarget);
   const t = target ? new Date(target).getTime() : NaN;
@@ -65,7 +65,7 @@ function Countdown({ p, ctx }: { p: Record<string, string>; ctx?: EventCtx }) {
 }
 
 /** Renders one block. The exact same JSON is used by the editor canvas and every preview. */
-export function BlockView({ block, ctx, interactive = false }: { block: Block; ctx?: EventCtx; interactive?: boolean }) {
+export function BlockView({ block, ctx, interactive = false }: { block: Block; ctx?: EventCtx | undefined; interactive?: boolean }) {
   const p = block.props ?? {};
   if (!isKnownType(block.type)) {
     return (
@@ -156,7 +156,7 @@ function Info({ align = "center", label, icon, children }: { align?: string | un
 }
 
 /** Read-only rendering of a whole invitation (hidden blocks are skipped). */
-export function InvitationCanvas({ blocks, ctx, className }: { blocks: Block[]; ctx?: EventCtx; className?: string }) {
+export function InvitationCanvas({ blocks, ctx, className }: { blocks: Block[]; ctx?: EventCtx | undefined; className?: string | undefined }) {
   const visible = blocks.filter((b) => !b.hidden);
   return (
     <div className={cn("mx-auto flex w-full max-w-md flex-col gap-5 rounded-2xl border bg-card p-6 shadow-sm", className)}>

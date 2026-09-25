@@ -38,7 +38,7 @@ export function EventFields({ v, setV, errors }: { v: EventValues; setV: (v: Eve
 }
 
 /** Read-only rendering of the invitation content (same JSON and renderer as the editor). */
-export function InvitationRender({ blocks, ctx }: { blocks: Block[]; ctx?: EventCtx }) {
+export function InvitationRender({ blocks, ctx }: { blocks: Block[]; ctx?: EventCtx | undefined }) {
   return <InvitationCanvas blocks={blocks} ctx={ctx} />;
 }
 
