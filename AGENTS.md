@@ -16,3 +16,4 @@
 - Phone login resolves the account server-side (`signInWithPhone`) — never exposes emails to the client.
 - Role routing: `_authenticated` gate loads profile; `/admin` layout = super_admin only, `/dashboard` = company_admin with active company.
 - Super admin CRUD uses the browser client under RLS; only auth-account operations (invite) go through `sendAccessInvite` server fn with an is_super_admin check — keeps service role server-side.
+- Customers (`/customers`) is a shared module outside `/admin`/`/dashboard`; `customers_guard` trigger forces `company_id` for company admins and freezes it on update — tenant scoping never trusts the client.
