@@ -85,6 +85,53 @@ export type Database = {
           },
         ]
       }
+      templates: {
+        Row: {
+          category: Database["public"]["Enums"]["template_category"]
+          company_id: string | null
+          content: Json
+          created_at: string
+          id: string
+          name: string
+          preview_image: string | null
+          status: Database["public"]["Enums"]["record_status"]
+          type: Database["public"]["Enums"]["template_type"]
+          updated_at: string
+        }
+        Insert: {
+          category: Database["public"]["Enums"]["template_category"]
+          company_id?: string | null
+          content?: Json
+          created_at?: string
+          id?: string
+          name: string
+          preview_image?: string | null
+          status?: Database["public"]["Enums"]["record_status"]
+          type: Database["public"]["Enums"]["template_type"]
+          updated_at?: string
+        }
+        Update: {
+          category?: Database["public"]["Enums"]["template_category"]
+          company_id?: string | null
+          content?: Json
+          created_at?: string
+          id?: string
+          name?: string
+          preview_image?: string | null
+          status?: Database["public"]["Enums"]["record_status"]
+          type?: Database["public"]["Enums"]["template_type"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "templates_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       users: {
         Row: {
           auth_user_id: string | null
@@ -142,10 +189,21 @@ export type Database = {
     Functions: {
       current_company_id: { Args: never; Returns: string }
       is_super_admin: { Args: never; Returns: boolean }
+      use_official_template: { Args: { _template_id: string }; Returns: string }
     }
     Enums: {
       app_role: "super_admin" | "company_admin"
       record_status: "active" | "inactive"
+      template_category:
+        | "casamento"
+        | "aniversario"
+        | "cha_de_bebe"
+        | "cha_revelacao"
+        | "15_anos"
+        | "formatura"
+        | "festa_infantil"
+        | "outros"
+      template_type: "official" | "company"
       ui_theme: "light" | "dark"
     }
     CompositeTypes: {
@@ -276,6 +334,17 @@ export const Constants = {
     Enums: {
       app_role: ["super_admin", "company_admin"],
       record_status: ["active", "inactive"],
+      template_category: [
+        "casamento",
+        "aniversario",
+        "cha_de_bebe",
+        "cha_revelacao",
+        "15_anos",
+        "formatura",
+        "festa_infantil",
+        "outros",
+      ],
+      template_type: ["official", "company"],
       ui_theme: ["light", "dark"],
     },
   },
