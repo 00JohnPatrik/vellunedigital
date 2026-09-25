@@ -85,18 +85,8 @@ export function BlockView({ block, ctx, interactive = false }: { block: Block; c
         </Row>
       );
     }
-    case "image": {
-      const w = p["width"] === "auto" ? "w-full sm:w-1/2" : WIDTH[p["width"] ?? "full"];
-      return (
-        <Row align={p["align"]}>
-          <div className={cn("overflow-hidden rounded-lg", w)}>
-            {p["height"] === "auto" && p["url"]
-              ? <img src={p["url"]} alt={p["alt"] ?? ""} className="h-auto w-full" loading="lazy" />
-              : <PreviewImage src={p["url"] || null} name={p["alt"] ?? ""} className={cn(IMG_HEIGHT[p["height"] ?? "wide"] || "aspect-video", IMG_POS[p["position"] ?? "center"])} />}
-          </div>
-        </Row>
-      );
-    }
+    case "image":
+      return <ImageBlock p={p} />;
     case "date": {
       const d = formatDate(pick(p, p["date"], ctx?.event_date), p["format"]);
       return <Info align={p["align"]} label={p["label"]} icon={<CalendarDays className="h-4 w-4" />}>{d ?? "Data a definir"}</Info>;
