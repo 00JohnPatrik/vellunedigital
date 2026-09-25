@@ -34,6 +34,7 @@ function PublicInvitationPage() {
   const ctx = {
     event_date: i.event_date, event_time: i.event_time, venue_name: i.venue_name, address: i.address, city: i.city, state: i.state,
     publicUrl: typeof window !== "undefined" ? `${window.location.origin}/convite/${slug}` : `/convite/${slug}`,
+    rsvp: i.rsvp ?? { enabled: false as const }, slug,
   };
   return (
     <main className="min-h-screen bg-gradient-to-b from-muted/60 via-background to-muted/40 px-4 py-8 sm:py-14">

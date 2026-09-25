@@ -2,6 +2,7 @@ import { useEffect, useState, type CSSProperties, type ReactNode } from "react";
 import { AlertTriangle, CalendarDays, Clock, MapPin, MessageCircle, Navigation } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import { PreviewImage } from "@/components/template-ui";
+import { RsvpForm } from "@/components/rsvp-form";
 import { BLOCKS, type Block } from "@/lib/templates";
 import { fontCss, formatDate, formatTime, isKnownType, pick, type EventCtx } from "@/lib/blocks";
 import { cn } from "@/lib/utils";
@@ -129,6 +130,10 @@ export function BlockView({ block, ctx, interactive = false }: { block: Block; c
     }
     case "countdown": return <Countdown p={p} ctx={ctx} />;
     case "rsvp":
+      if (ctx?.rsvp && ctx.slug) {
+        if (!ctx.rsvp.enabled) return null;
+        return <RsvpForm slug={ctx.slug} cfg={ctx.rsvp} title={p["title"]} label={p["label"]} />;
+      }
       return (
         <div className="space-y-2">
           {p["title"] && <p className={cn("text-sm text-muted-foreground", ALIGN[p["align"] ?? "center"])}>{p["title"]}</p>}

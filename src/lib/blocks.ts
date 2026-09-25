@@ -4,6 +4,8 @@ import { BLOCKS, type Block, type BlockType, type TemplateContent } from "@/lib/
 export type EventCtx = {
   event_date?: string | null | undefined; event_time?: string | null | undefined; venue_name?: string | null | undefined;
   address?: string | null | undefined; city?: string | null | undefined; state?: string | null | undefined; publicUrl?: string | null | undefined;
+  /** Only set on the public page: makes the RSVP block functional (or hides it when disabled). */
+  rsvp?: import("@/lib/public-invitation.functions").PublicRsvp | undefined; slug?: string | undefined;
 };
 
 export const isKnownType = (t: unknown): t is BlockType => typeof t === "string" && t in BLOCKS;
