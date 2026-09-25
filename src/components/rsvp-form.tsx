@@ -49,7 +49,7 @@ export function RsvpForm({ slug, cfg, title, label }: { slug: string; cfg: Cfg; 
       if (res.state === "ok") { setDone(res); setDup(false); }
       else if (res.state === "duplicate") setDup(true);
       else if (res.state === "closed" || res.state === "unavailable") setClosed(true);
-      else setErr({ [res.field]: FIELD_MSG[res.field] ?? "Verifique os dados." });
+      else if (res.state === "invalid") setErr({ [res.field]: FIELD_MSG[res.field] ?? "Verifique os dados." });
     } catch { setErr({ form: "Não foi possível enviar agora. Tente novamente." }); }
     finally { setBusy(false); }
   };
