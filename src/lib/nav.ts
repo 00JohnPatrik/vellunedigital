@@ -1,4 +1,4 @@
-import { BarChart3, Building2, Contact, FileText, LayoutDashboard, LayoutTemplate, Mail, Settings, Users, type LucideIcon } from "lucide-react";
+import { BarChart3, Building2, Contact, FileText, LayoutDashboard, LayoutTemplate, Mail, Settings, Trash2, Users, type LucideIcon } from "lucide-react";
 
 /** `to` overrides the default `${base}/${slug}` link for modules living outside the area prefix. */
 export type NavItem = { slug: string; label: string; icon: LucideIcon; to?: string };
@@ -10,6 +10,7 @@ export const adminNav: NavItem[] = [
   { slug: "customers", label: "Clientes", icon: Contact, to: "/customers" },
   { slug: "templates", label: "Modelos Oficiais", icon: LayoutTemplate },
   { slug: "reports", label: "Relatórios", icon: BarChart3 },
+  { slug: "trash", label: "Lixeira", icon: Trash2 },
   { slug: "configuracoes", label: "Configurações", icon: Settings },
 ];
 

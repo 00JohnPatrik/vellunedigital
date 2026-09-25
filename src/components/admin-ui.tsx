@@ -86,3 +86,29 @@ export function dbErrorMessage(err: { code?: string; message?: string } | null, 
   if (err.code === "23514") return "Dados inválidos. Verifique os campos obrigatórios.";
   return "Não foi possível salvar. Tente novamente.";
 }
+
+/** Logical delete with confirmation (super admin only — enforced in the database). */
+export function DeleteButton({ name, onConfirm }: { name: string; onConfirm: () => Promise<void> }) {
+  const [open, setOpen] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const run = async () => { setBusy(true); try { await onConfirm(); setOpen(false); } finally { setBusy(false); } };
+  return (
+    <>
+      <Button variant="outline" className="text-destructive" onClick={() => setOpen(true)}>Excluir</Button>
+      <AlertDialog open={open} onOpenChange={setOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Excluir {name}?</AlertDialogTitle>
+            <AlertDialogDescription>O item vai para a Lixeira e pode ser restaurado depois.</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={busy}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction disabled={busy} onClick={(e) => { e.preventDefault(); void run(); }}>
+              {busy && <Loader2 className="h-4 w-4 animate-spin" />}Excluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
+  );
+}

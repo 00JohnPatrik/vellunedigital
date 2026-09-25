@@ -25,6 +25,7 @@ import { Route as ConviteSlugRouteImport } from './routes/convite.$slug'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin.index'
 import { Route as AuthenticatedAdminSectionRouteImport } from './routes/_authenticated/admin.$section'
 import { Route as AuthenticatedAdminReportsRouteImport } from './routes/_authenticated/admin.reports'
+import { Route as AuthenticatedAdminTrashRouteImport } from './routes/_authenticated/admin.trash'
 import { Route as AuthenticatedCustomersIndexRouteImport } from './routes/_authenticated/customers.index'
 import { Route as AuthenticatedCustomersIdRouteImport } from './routes/_authenticated/customers.$id'
 import { Route as AuthenticatedDashboardIndexRouteImport } from './routes/_authenticated/dashboard.index'
@@ -129,6 +130,11 @@ const AuthenticatedAdminReportsRoute =
     path: '/reports',
     getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
+const AuthenticatedAdminTrashRoute = AuthenticatedAdminTrashRouteImport.update({
+  id: '/trash',
+  path: '/trash',
+  getParentRoute: () => AuthenticatedAdminRoute,
+} as any)
 const AuthenticatedCustomersIndexRoute =
   AuthenticatedCustomersIndexRouteImport.update({
     id: '/',
@@ -271,6 +277,7 @@ export interface FileRoutesByFullPath {
   '/convite/$slug': typeof ConviteSlugRoute
   '/admin/$section': typeof AuthenticatedAdminSectionRoute
   '/admin/reports': typeof AuthenticatedAdminReportsRoute
+  '/admin/trash': typeof AuthenticatedAdminTrashRoute
   '/customers/$id': typeof AuthenticatedCustomersIdRoute
   '/dashboard/$section': typeof AuthenticatedDashboardSectionRoute
   '/invitations/new': typeof AuthenticatedInvitationsNewRoute
@@ -303,6 +310,7 @@ export interface FileRoutesByTo {
   '/convite/$slug': typeof ConviteSlugRoute
   '/admin/$section': typeof AuthenticatedAdminSectionRoute
   '/admin/reports': typeof AuthenticatedAdminReportsRoute
+  '/admin/trash': typeof AuthenticatedAdminTrashRoute
   '/customers/$id': typeof AuthenticatedCustomersIdRoute
   '/dashboard/$section': typeof AuthenticatedDashboardSectionRoute
   '/invitations/new': typeof AuthenticatedInvitationsNewRoute
@@ -343,6 +351,7 @@ export interface FileRoutesById {
   '/convite/$slug': typeof ConviteSlugRoute
   '/_authenticated/admin/$section': typeof AuthenticatedAdminSectionRoute
   '/_authenticated/admin/reports': typeof AuthenticatedAdminReportsRoute
+  '/_authenticated/admin/trash': typeof AuthenticatedAdminTrashRoute
   '/_authenticated/customers/$id': typeof AuthenticatedCustomersIdRoute
   '/_authenticated/dashboard/$section': typeof AuthenticatedDashboardSectionRoute
   '/_authenticated/invitations/new': typeof AuthenticatedInvitationsNewRoute
@@ -383,6 +392,7 @@ export interface FileRouteTypes {
     | '/convite/$slug'
     | '/admin/$section'
     | '/admin/reports'
+    | '/admin/trash'
     | '/customers/$id'
     | '/dashboard/$section'
     | '/invitations/new'
@@ -415,6 +425,7 @@ export interface FileRouteTypes {
     | '/convite/$slug'
     | '/admin/$section'
     | '/admin/reports'
+    | '/admin/trash'
     | '/customers/$id'
     | '/dashboard/$section'
     | '/invitations/new'
@@ -454,6 +465,7 @@ export interface FileRouteTypes {
     | '/convite/$slug'
     | '/_authenticated/admin/$section'
     | '/_authenticated/admin/reports'
+    | '/_authenticated/admin/trash'
     | '/_authenticated/customers/$id'
     | '/_authenticated/dashboard/$section'
     | '/_authenticated/invitations/new'
@@ -600,6 +612,13 @@ declare module '@tanstack/react-router' {
       path: '/reports'
       fullPath: '/admin/reports'
       preLoaderRoute: typeof AuthenticatedAdminReportsRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/trash': {
+      id: '/_authenticated/admin/trash'
+      path: '/trash'
+      fullPath: '/admin/trash'
+      preLoaderRoute: typeof AuthenticatedAdminTrashRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
     '/_authenticated/customers/': {
@@ -755,6 +774,7 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedAdminRouteChildren {
   AuthenticatedAdminSectionRoute: typeof AuthenticatedAdminSectionRoute
   AuthenticatedAdminReportsRoute: typeof AuthenticatedAdminReportsRoute
+  AuthenticatedAdminTrashRoute: typeof AuthenticatedAdminTrashRoute
   AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
   AuthenticatedAdminCompaniesIdRoute: typeof AuthenticatedAdminCompaniesIdRoute
   AuthenticatedAdminCompaniesNewRoute: typeof AuthenticatedAdminCompaniesNewRoute
@@ -770,6 +790,7 @@ interface AuthenticatedAdminRouteChildren {
 const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
   AuthenticatedAdminSectionRoute: AuthenticatedAdminSectionRoute,
   AuthenticatedAdminReportsRoute: AuthenticatedAdminReportsRoute,
+  AuthenticatedAdminTrashRoute: AuthenticatedAdminTrashRoute,
   AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
   AuthenticatedAdminCompaniesIdRoute: AuthenticatedAdminCompaniesIdRoute,
   AuthenticatedAdminCompaniesNewRoute: AuthenticatedAdminCompaniesNewRoute,
