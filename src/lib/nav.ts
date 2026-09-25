@@ -15,7 +15,7 @@ export const adminNav: NavItem[] = [
 
 export const companyNav: NavItem[] = [
   { slug: "", label: "Dashboard", icon: LayoutDashboard },
-  { slug: "convites", label: "Convites", icon: Mail },
+  { slug: "convites", label: "Convites", icon: Mail, to: "/invitations" },
   { slug: "customers", label: "Clientes", icon: Users, to: "/customers" },
   { slug: "templates", label: "Modelos", icon: FileText, to: "/templates" },
   { slug: "relatorios", label: "Relatórios", icon: BarChart3 },
