@@ -1,0 +1,33 @@
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
+import { Pencil } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { EmptyState, LoadingState, PageHeader } from "@/components/admin-ui";
+import { InvitationRender, InvitationStatusBadge } from "@/components/invitation-ui";
+import { fmtEventDate, getInvitation, invitationsKey } from "@/lib/invitations";
+
+export const Route = createFileRoute("/_authenticated/invitations/$id/preview")({
+  head: () => ({ meta: [{ title: "Visualizar convite — Convitely" }] }),
+  component: PreviewPage,
+});
+
+function PreviewPage() {
+  const { id } = Route.useParams();
+  const q = useQuery({ queryKey: [...invitationsKey, id], queryFn: () => getInvitation(id) });
+  const inv = q.data;
+  return (
+    <div>
+      <Link to="/invitations" className="mb-3 inline-block text-sm text-muted-foreground hover:text-foreground">← Convites</Link>
+      {q.isLoading ? <LoadingState /> : !inv ? <EmptyState>Convite não encontrado.</EmptyState> : (
+        <>
+          <PageHeader title={inv.name}
+            description={`${inv.customer?.name ?? ""} · ${fmtEventDate(inv.event_date)} às ${inv.event_time.slice(0, 5)}${inv.venue_name ? ` · ${inv.venue_name}` : ""}`}
+            action={<div className="flex items-center gap-2"><InvitationStatusBadge status={inv.status} />
+              <Button asChild><Link to="/invitations/$id/editor" params={{ id: inv.id }}><Pencil className="h-4 w-4" />Editar</Link></Button></div>} />
+          <p className="mb-4 text-center text-xs text-muted-foreground">Pré-visualização interna — ainda não publicada.</p>
+          <InvitationRender blocks={inv.content?.blocks ?? []} />
+        </>
+      )}
+    </div>
+  );
+}

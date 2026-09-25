@@ -75,7 +75,6 @@ export function TemplateForm({ initial, isNew, submitLabel, onSubmit, onCancel }
   const [v, setV] = useState(initial);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState(false);
-  const [addType, setAddType] = useState<BlockType>("text");
   const blocks = v.content.blocks;
   const setBlocks = (b: Block[]) => setV({ ...v, content: { version: 1, blocks: b } });
 
@@ -92,7 +91,6 @@ export function TemplateForm({ initial, isNew, submitLabel, onSubmit, onCancel }
     try { await onSubmit(v); } finally { setBusy(false); }
   }
 
-  const move = (i: number, d: number) => { const b = [...blocks]; const j = i + d; if (j < 0 || j >= b.length) return; [b[i], b[j]] = [b[j]!, b[i]!]; setBlocks(b); };
 
   return (
     <form onSubmit={submit} className="grid gap-6 lg:grid-cols-[1fr_320px]">
@@ -135,6 +133,28 @@ export function TemplateForm({ initial, isNew, submitLabel, onSubmit, onCancel }
               </Select>
             )}
           </div>
+          <BlocksEditor blocks={blocks} setBlocks={setBlocks} />
+        </div>
+
+        <div className="flex gap-2">
+          <Button type="submit" disabled={busy}>{busy && <Loader2 className="h-4 w-4 animate-spin" />}{submitLabel}</Button>
+          {onCancel && <Button type="button" variant="outline" onClick={onCancel}>Cancelar</Button>}
+        </div>
+      </div>
+      <aside className="space-y-3 lg:sticky lg:top-20 lg:self-start">
+        <div className="overflow-hidden rounded-xl border"><PreviewImage src={v.preview_image.trim() || null} name={v.name} /></div>
+        <BlocksPreview blocks={blocks} />
+      </aside>
+    </form>
+  );
+}
+
+/** Simple block list editor (reorder, edit fields, add/remove) — shared by templates and invitations. */
+export function BlocksEditor({ blocks, setBlocks }: { blocks: Block[]; setBlocks: (b: Block[]) => void }) {
+  const [addType, setAddType] = useState<BlockType>("text");
+  const move = (i: number, d: number) => { const b = [...blocks]; const j = i + d; if (j < 0 || j >= b.length) return; [b[i], b[j]] = [b[j]!, b[i]!]; setBlocks(b); };
+  return (
+    <>
           {blocks.length === 0 && <p className="text-sm text-muted-foreground">Nenhum bloco. Adicione abaixo ou escolha uma estrutura inicial.</p>}
           {blocks.map((b, i) => (
             <div key={b.id} className="space-y-2 rounded-lg border p-3">
@@ -167,18 +187,7 @@ export function TemplateForm({ initial, isNew, submitLabel, onSubmit, onCancel }
             </Select>
             <Button type="button" variant="outline" onClick={() => setBlocks([...blocks, newBlock(addType)])}>Adicionar bloco</Button>
           </div>
-        </div>
-
-        <div className="flex gap-2">
-          <Button type="submit" disabled={busy}>{busy && <Loader2 className="h-4 w-4 animate-spin" />}{submitLabel}</Button>
-          {onCancel && <Button type="button" variant="outline" onClick={onCancel}>Cancelar</Button>}
-        </div>
-      </div>
-      <aside className="space-y-3 lg:sticky lg:top-20 lg:self-start">
-        <div className="overflow-hidden rounded-xl border"><PreviewImage src={v.preview_image.trim() || null} name={v.name} /></div>
-        <BlocksPreview blocks={blocks} />
-      </aside>
-    </form>
+    </>
   );
 }
 
