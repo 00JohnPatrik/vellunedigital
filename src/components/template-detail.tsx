@@ -7,13 +7,13 @@ import { BlocksPreview, PreviewImage, TemplateForm, templateError, toValues } fr
 import { categoryLabel, getTemplate, isTemplateId, setTemplateStatus, templatesKey, updateTemplate, type Template } from "@/lib/templates";
 
 /** Shared view/edit page. `canEdit` is UI only — RLS + triggers enforce it in the database. */
-export function TemplateDetail({ id, canEdit, back, extraActions }: {
-  id: string; canEdit: (t: Template) => boolean; back: ReactNode; extraActions?: (t: Template) => ReactNode;
+export function TemplateDetail({ id, canEdit, back, extraActions, startEditing = false }: {
+  id: string; canEdit: (t: Template) => boolean; back: ReactNode; extraActions?: (t: Template) => ReactNode; startEditing?: boolean;
 }) {
   const qc = useQueryClient();
   const key = [...templatesKey, id];
   const q = useQuery({ queryKey: key, queryFn: () => (isTemplateId(id) ? getTemplate(id) : Promise.resolve(null)) });
-  const [editing, setEditing] = useState(false);
+  const [editing, setEditing] = useState(startEditing);
   const refresh = () => qc.invalidateQueries({ queryKey: templatesKey });
 
   if (q.isLoading) return <LoadingState />;
