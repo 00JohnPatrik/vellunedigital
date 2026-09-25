@@ -2,13 +2,14 @@ import { useState, type ReactNode } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { EmptyState, fmtDate, LoadingState, PageHeader, StatusBadge, StatusToggle } from "@/components/admin-ui";
+import { DeleteButton, EmptyState, fmtDate, LoadingState, PageHeader, StatusBadge, StatusToggle } from "@/components/admin-ui";
 import { BlocksPreview, PreviewImage, TemplateForm, templateError, toValues } from "@/components/template-ui";
+import { softDelete } from "@/lib/trash";
 import { categoryLabel, getTemplate, isTemplateId, setTemplateStatus, templatesKey, updateTemplate, type Template } from "@/lib/templates";
 
 /** Shared view/edit page. `canEdit` is UI only — RLS + triggers enforce it in the database. */
-export function TemplateDetail({ id, canEdit, back, extraActions, startEditing = false }: {
-  id: string; canEdit: (t: Template) => boolean; back: ReactNode; extraActions?: (t: Template) => ReactNode; startEditing?: boolean;
+export function TemplateDetail({ id, canEdit, back, extraActions, startEditing = false, onDeleted }: {
+  onDeleted?: (() => void) | undefined; id: string; canEdit: (t: Template) => boolean; back: ReactNode; extraActions?: (t: Template) => ReactNode; startEditing?: boolean;
 }) {
   const qc = useQueryClient();
   const key = [...templatesKey, id];
@@ -48,11 +49,15 @@ export function TemplateDetail({ id, canEdit, back, extraActions, startEditing =
               try { await setTemplateStatus(t.id, t.status === "active" ? "inactive" : "active"); toast.success("Status atualizado."); await refresh(); }
               catch (e) { toast.error(templateError(e)); }
             }} />}
+            {onDeleted && <DeleteButton name={t.name} onConfirm={async () => {
+              try { await softDelete("template", t.id); toast.success("Modelo enviado para a Lixeira."); await refresh(); onDeleted(); }
+              catch { toast.error("Não foi possível excluir."); }
+            }} />}
           </div>
         } />
       <div className="grid gap-6 md:grid-cols-[280px_1fr]">
         <div className="overflow-hidden rounded-xl border"><PreviewImage src={t.preview_image} name={t.name} /></div>
-        <BlocksPreview blocks={t.content?.blocks ?? []} />
+        <BlocksPreview blocks={t.content?.blocks ?? []} background={t.content?.settings?.background} />
       </div>
     </div>
   );

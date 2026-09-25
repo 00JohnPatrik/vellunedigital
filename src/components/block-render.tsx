@@ -3,7 +3,7 @@ import { AlertTriangle, CalendarDays, Clock, MapPin, MessageCircle, Navigation }
 import { QRCodeSVG } from "qrcode.react";
 import { PreviewImage } from "@/components/template-ui";
 import { RsvpForm } from "@/components/rsvp-form";
-import { BLOCKS, type Block } from "@/lib/templates";
+import { BLOCKS, type Background, type Block } from "@/lib/templates";
 import { fontCss, formatDate, formatTime, isKnownType, pick, type EventCtx } from "@/lib/blocks";
 import { cn } from "@/lib/utils";
 import { useAssetUrl } from "@/lib/assets";
@@ -159,11 +159,26 @@ function Info({ align = "center", label, icon, children }: { align?: string | un
   );
 }
 
+export const bgColorStyle = (bg?: Background) => (bg?.color ? { backgroundColor: bg.color } : undefined);
+
+/** Background image + dark overlay, painted behind the content (parent needs `relative isolate`). */
+export function BackgroundLayers({ bg }: { bg?: Background | undefined }) {
+  const src = useAssetUrl(bg?.image);
+  const overlay = Math.min(40, Math.max(0, Number(bg?.overlay) || 0));
+  return (
+    <>
+      {src && <div aria-hidden className="pointer-events-none absolute inset-0 -z-10 bg-no-repeat" style={{ backgroundImage: `url("${src}")`, backgroundSize: bg?.size ?? "cover", backgroundPosition: `${bg?.x ?? "center"} ${bg?.y ?? "center"}` }} />}
+      {overlay > 0 && <div aria-hidden className="pointer-events-none absolute inset-0 -z-10 bg-foreground dark:bg-background" style={{ opacity: overlay / 100 }} />}
+    </>
+  );
+}
+
 /** Read-only rendering of a whole invitation (hidden blocks are skipped). */
-export function InvitationCanvas({ blocks, ctx, className }: { blocks: Block[]; ctx?: EventCtx | undefined; className?: string | undefined }) {
+export function InvitationCanvas({ blocks, ctx, className, background }: { blocks: Block[]; ctx?: EventCtx | undefined; className?: string | undefined; background?: Background | undefined }) {
   const visible = blocks.filter((b) => !b.hidden);
   return (
-    <div className={cn("mx-auto flex w-full max-w-md flex-col gap-5 rounded-2xl border bg-card p-6 shadow-sm", className)}>
+    <div className={cn("relative isolate mx-auto flex w-full max-w-md flex-col gap-5 overflow-hidden rounded-2xl border bg-card p-6 shadow-sm", className)} style={bgColorStyle(background)}>
+      <BackgroundLayers bg={background} />
       {visible.length ? visible.map((b) => <BlockView key={b.id} block={b} ctx={ctx} interactive />)
         : <p className="py-10 text-center text-sm text-muted-foreground">Este convite ainda não possui blocos.</p>}
     </div>

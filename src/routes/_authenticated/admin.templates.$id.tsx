@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { TemplateDetail } from "@/components/template-detail";
 
 export const Route = createFileRoute("/_authenticated/admin/templates/$id")({
@@ -10,6 +10,7 @@ export const Route = createFileRoute("/_authenticated/admin/templates/$id")({
 function AdminTemplatePage() {
   const { id } = Route.useParams();
   const { edit } = Route.useSearch();
-  return <TemplateDetail key={id} id={id} startEditing={!!edit} canEdit={() => true}
+  const navigate = useNavigate();
+  return <TemplateDetail key={id} id={id} startEditing={!!edit} canEdit={() => true} onDeleted={() => navigate({ to: "/admin/templates" })}
     back={<Link to="/admin/templates" className="mb-3 inline-block text-sm text-muted-foreground hover:text-foreground">← Modelos oficiais</Link>} />;
 }

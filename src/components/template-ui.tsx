@@ -9,7 +9,7 @@ import { StatusBadge, type Status } from "@/components/admin-ui";
 import { InvitationCanvas } from "@/components/block-render";
 import { useBlocksHistory, VisualEditor } from "@/components/visual-editor";
 import type { AssetScope } from "@/lib/assets";
-import { CATEGORIES, categoryLabel, STARTERS, type Block, type Template, type TemplateValues } from "@/lib/templates";
+import { buildContent, CATEGORIES, categoryLabel, STARTERS, type Background, type Block, type Template, type TemplateValues } from "@/lib/templates";
 import { normalizeBlocks, validateContent } from "@/lib/blocks";
 
 export function PreviewImage({ src, name, className = "aspect-[4/5]" }: { src: string | null; name: string; className?: string }) {
@@ -44,9 +44,9 @@ export function TemplateCard({ t, actions }: { t: Template; actions: ReactNode }
 }
 
 /** Read-only preview of blocks, using the same renderer as the editor. */
-export function BlocksPreview({ blocks }: { blocks: Block[] }) {
+export function BlocksPreview({ blocks, background }: { blocks: Block[]; background?: Background | undefined }) {
   if (!blocks.length) return <p className="text-sm text-muted-foreground">Nenhum bloco neste modelo.</p>;
-  return <InvitationCanvas blocks={blocks} className="max-w-sm" />;
+  return <InvitationCanvas blocks={blocks} background={background} className="max-w-sm" />;
 }
 
 export function TemplateForm({ initial, isNew, submitLabel, onSubmit, onCancel, assets }: {
@@ -55,6 +55,7 @@ export function TemplateForm({ initial, isNew, submitLabel, onSubmit, onCancel, 
 }) {
   const [v, setV] = useState(initial);
   const h = useBlocksHistory(normalizeBlocks(initial.content));
+  const [bg, setBg] = useState<Background>(() => structuredClone(initial.content?.settings?.background ?? {}));
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState(false);
 
@@ -67,7 +68,7 @@ export function TemplateForm({ initial, isNew, submitLabel, onSubmit, onCancel, 
     if (v.preview_image.trim() && !/^https?:\/\/\S+$/i.test(v.preview_image.trim())) errs["preview_image"] = "Use um endereço começando com http:// ou https://";
     setErrors(errs);
     if (Object.keys(errs).length) return;
-    const content = { version: 1 as const, blocks: h.blocks };
+    const content = buildContent(h.blocks, bg);
     const invalid = validateContent(content);
     if (invalid) { toast.error(invalid); return; }
     setBusy(true);
@@ -113,7 +114,7 @@ export function TemplateForm({ initial, isNew, submitLabel, onSubmit, onCancel, 
         )}
       </div>
 
-      <VisualEditor h={h} assets={assets} toolbarExtra={<>
+      <VisualEditor h={h} bg={bg} onBg={setBg} assets={assets} toolbarExtra={<>
         {onCancel && <Button type="button" size="sm" variant="outline" onClick={onCancel}>Cancelar</Button>}
         <Button type="submit" size="sm" disabled={busy}>{busy && <Loader2 className="h-4 w-4 animate-spin" />}{submitLabel}</Button>
       </>} />

@@ -27,6 +27,7 @@ function InvitationsPage() {
   const q = useQuery({ queryKey: invitationsKey, queryFn: listInvitations });
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<Filter>("all");
+  const isSuper = Route.useRouteContext().appUser.role === "super_admin";
   const [toDelete, setToDelete] = useState<Invitation | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -54,7 +55,7 @@ function InvitationsPage() {
           <Button variant={variant} size="sm" asChild><a href={whatsappShareUrl(i.slug)} target="_blank" rel="noreferrer"><MessageCircle className="h-4 w-4" />WhatsApp</a></Button>
         </>}
         <Button variant={variant} size="sm" disabled title="Disponível em breve"><BarChart3 className="h-4 w-4" />Relatório</Button>
-        <Button variant={variant} size="sm" className="text-destructive" onClick={() => setToDelete(i)}><Trash2 className="h-4 w-4" />Excluir</Button>
+        {isSuper && <Button variant={variant} size="sm" className="text-destructive" onClick={() => setToDelete(i)}><Trash2 className="h-4 w-4" />Excluir</Button>}
       </>
     );
   };

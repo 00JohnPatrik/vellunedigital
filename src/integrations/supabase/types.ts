@@ -45,6 +45,8 @@ export type Database = {
         Row: {
           company_id: string
           created_at: string
+          deleted_at: string | null
+          deleted_by: string | null
           email: string | null
           id: string
           name: string
@@ -56,6 +58,8 @@ export type Database = {
         Insert: {
           company_id: string
           created_at?: string
+          deleted_at?: string | null
+          deleted_by?: string | null
           email?: string | null
           id?: string
           name: string
@@ -67,6 +71,8 @@ export type Database = {
         Update: {
           company_id?: string
           created_at?: string
+          deleted_at?: string | null
+          deleted_by?: string | null
           email?: string | null
           id?: string
           name?: string
@@ -81,6 +87,13 @@ export type Database = {
             columns: ["company_id"]
             isOneToOne: false
             referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "customers_deleted_by_fkey"
+            columns: ["deleted_by"]
+            isOneToOne: false
+            referencedRelation: "users"
             referencedColumns: ["id"]
           },
         ]
@@ -177,6 +190,8 @@ export type Database = {
           content: Json
           created_at: string
           customer_id: string
+          deleted_at: string | null
+          deleted_by: string | null
           event_date: string
           event_time: string
           id: string
@@ -197,6 +212,8 @@ export type Database = {
           content?: Json
           created_at?: string
           customer_id: string
+          deleted_at?: string | null
+          deleted_by?: string | null
           event_date: string
           event_time: string
           id?: string
@@ -217,6 +234,8 @@ export type Database = {
           content?: Json
           created_at?: string
           customer_id?: string
+          deleted_at?: string | null
+          deleted_by?: string | null
           event_date?: string
           event_time?: string
           id?: string
@@ -243,6 +262,13 @@ export type Database = {
             columns: ["customer_id"]
             isOneToOne: false
             referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invitations_deleted_by_fkey"
+            columns: ["deleted_by"]
+            isOneToOne: false
+            referencedRelation: "users"
             referencedColumns: ["id"]
           },
           {
@@ -348,6 +374,8 @@ export type Database = {
           company_id: string | null
           content: Json
           created_at: string
+          deleted_at: string | null
+          deleted_by: string | null
           id: string
           name: string
           preview_image: string | null
@@ -360,6 +388,8 @@ export type Database = {
           company_id?: string | null
           content?: Json
           created_at?: string
+          deleted_at?: string | null
+          deleted_by?: string | null
           id?: string
           name: string
           preview_image?: string | null
@@ -372,6 +402,8 @@ export type Database = {
           company_id?: string | null
           content?: Json
           created_at?: string
+          deleted_at?: string | null
+          deleted_by?: string | null
           id?: string
           name?: string
           preview_image?: string | null
@@ -385,6 +417,13 @@ export type Database = {
             columns: ["company_id"]
             isOneToOne: false
             referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "templates_deleted_by_fkey"
+            columns: ["deleted_by"]
+            isOneToOne: false
+            referencedRelation: "users"
             referencedColumns: ["id"]
           },
         ]

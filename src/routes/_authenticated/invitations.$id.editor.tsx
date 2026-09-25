@@ -1,3 +1,4 @@
+import { buildContent, type Background } from "@/lib/templates";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -42,6 +43,7 @@ function EditorForm({ inv }: { inv: Invitation }) {
   const [v, setV] = useState<EventValues>(() => toEventValues(inv));
   const [customerId, setCustomerId] = useState(inv.customer_id);
   const h = useBlocksHistory(normalizeBlocks(inv.content));
+  const [bg, setBg] = useState<Background>(() => structuredClone(inv.content?.settings?.background ?? {}));
   const [errors, setErrors] = useState<Partial<Record<keyof EventValues, string>>>({});
   const [eventOpen, setEventOpen] = useState(false);
   const [state, setState] = useState<SaveState>("saved");
@@ -54,8 +56,8 @@ function EditorForm({ inv }: { inv: Invitation }) {
   const navigate = useNavigate();
 
   // Latest snapshot + version counter so an in-flight save never overwrites newer edits.
-  const snap = useRef({ v, customerId, blocks: h.blocks });
-  snap.current = { v, customerId, blocks: h.blocks };
+  const snap = useRef({ v, customerId, blocks: h.blocks, bg });
+  snap.current = { v, customerId, blocks: h.blocks, bg };
   const version = useRef(0);
   const savedVersion = useRef(0);
   const inFlight = useRef(false);
@@ -65,10 +67,10 @@ function EditorForm({ inv }: { inv: Invitation }) {
   const save = useCallback(async (manual = false): Promise<boolean> => {
     if (timer.current) { clearTimeout(timer.current); timer.current = null; }
     if (inFlight.current) { timer.current = setTimeout(() => void save(manual), 300); return false; }
-    const { v: ev, customerId: cid, blocks } = snap.current;
+    const { v: ev, customerId: cid, blocks, bg: background } = snap.current;
     const e = validateEvent(ev); setErrors(e);
     if (Object.keys(e).length) { setState("error"); setErrMsg("Dados do evento incompletos"); if (manual) { toast.error("Verifique os dados do evento."); setEventOpen(true); } return false; }
-    const content = { version: 1 as const, blocks };
+    const content = buildContent(blocks, background);
     const invalid = validateContent(content);
     if (invalid) { setState("error"); setErrMsg(invalid); if (manual) toast.error(invalid); return false; }
     const target = version.current;
@@ -96,7 +98,7 @@ function EditorForm({ inv }: { inv: Invitation }) {
     setState("dirty");
     if (timer.current) clearTimeout(timer.current);
     timer.current = setTimeout(() => void save(), AUTOSAVE_MS);
-  }, [v, customerId, h.blocks, save]);
+  }, [v, customerId, h.blocks, bg, save]);
 
   // Re-run a pending save once the in-flight one ends with newer edits.
   useEffect(() => {
@@ -141,7 +143,7 @@ function EditorForm({ inv }: { inv: Invitation }) {
         <SaveIndicator state={state} msg={errMsg} onRetry={() => void save(true)} />
       </div>
 
-      <VisualEditor h={h} ctx={ctx} assets={{ kind: "invitation", id: inv.id, companyId: inv.company_id }} toolbarExtra={<>
+      <VisualEditor h={h} bg={bg} onBg={setBg} ctx={ctx} assets={{ kind: "invitation", id: inv.id, companyId: inv.company_id }} toolbarExtra={<>
         <Button type="button" size="sm" variant="outline" onClick={() => setEventOpen(true)}><Settings2 className="h-4 w-4" /><span className="hidden sm:inline">Dados do evento</span></Button>
         <Button type="button" size="sm" variant="outline" onClick={() => setRsvpOpen(true)}><UserCheck className="h-4 w-4" />RSVP</Button>
         <Button type="button" size="sm" variant="outline" asChild><Link to="/invitations/$id/preview" params={{ id: inv.id }}><Eye className="h-4 w-4" /><span className="hidden sm:inline">Visualizar</span></Link></Button>

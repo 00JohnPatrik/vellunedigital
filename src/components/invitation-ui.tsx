@@ -3,7 +3,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { InvitationCanvas } from "@/components/block-render";
-import type { Block } from "@/lib/templates";
+import type { Background, Block } from "@/lib/templates";
 import type { EventCtx } from "@/lib/blocks";
 import { publicUrl, STATUS_LABEL, type EventValues, type InvitationStatus } from "@/lib/invitations";
 
@@ -38,8 +38,8 @@ export function EventFields({ v, setV, errors }: { v: EventValues; setV: (v: Eve
 }
 
 /** Read-only rendering of the invitation content (same JSON and renderer as the editor). */
-export function InvitationRender({ blocks, ctx }: { blocks: Block[]; ctx?: EventCtx | undefined }) {
-  return <InvitationCanvas blocks={blocks} ctx={ctx} />;
+export function InvitationRender({ blocks, ctx, background }: { blocks: Block[]; ctx?: EventCtx | undefined; background?: Background | undefined }) {
+  return <InvitationCanvas blocks={blocks} ctx={ctx} background={background} />;
 }
 
 export const invitationCtx = (i: { event_date: string; event_time: string; venue_name: string | null; address: string | null; city: string | null; state: string | null; slug: string }, v?: Partial<EventValues>): EventCtx => ({

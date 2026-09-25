@@ -11,10 +11,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { BlockView } from "@/components/block-render";
+import { BackgroundLayers, bgColorStyle, BlockView } from "@/components/block-render";
 import { ImageUpload } from "@/components/image-upload";
 import { STORAGE_PREFIX, type AssetScope } from "@/lib/assets";
-import { BLOCKS, newBlock, type Block, type BlockType } from "@/lib/templates";
+import { BLOCKS, newBlock, type Background, type Block, type BlockType } from "@/lib/templates";
 import { FONTS, isKnownType, type EventCtx } from "@/lib/blocks";
 function useIsCompact() {
   const [compact, setCompact] = useState(false);
@@ -112,7 +112,9 @@ const blockLabel = (b: Block) => (isKnownType(b.type) ? BLOCKS[b.type].label : `
 type Device = "mobile" | "tablet" | "desktop";
 const DEVICE_W: Record<Device, string> = { mobile: "max-w-[390px]", tablet: "max-w-[768px]", desktop: "max-w-[1024px]" };
 
-export function VisualEditor({ h, ctx, toolbarExtra, assets }: { h: BlocksHistory; ctx?: EventCtx | undefined; toolbarExtra?: ReactNode; assets?: AssetScope | undefined }) {
+const RSVP_DUP = "Este convite já possui confirmação de presença.";
+
+export function VisualEditor({ h, ctx, toolbarExtra, assets, bg, onBg }: { h: BlocksHistory; ctx?: EventCtx | undefined; toolbarExtra?: ReactNode; assets?: AssetScope | undefined; bg?: Background | undefined; onBg?: ((b: Background) => void) | undefined }) {
   const { blocks, set } = h;
   // Side panels only fit from 1024px up; below that Elements/Properties open as bottom drawers.
   const isMobile = useIsCompact();
@@ -135,6 +137,7 @@ export function VisualEditor({ h, ctx, toolbarExtra, assets }: { h: BlocksHistor
   }, [h]);
 
   const add = (type: BlockType) => {
+    if (type === "rsvp" && blocks.some((x) => x.type === "rsvp")) { toast.error(RSVP_DUP); return; }
     const b = newBlock(type);
     const idx = sel ? blocks.findIndex((x) => x.id === sel.id) + 1 : blocks.length;
     set([...blocks.slice(0, idx), b, ...blocks.slice(idx)]);
@@ -145,6 +148,7 @@ export function VisualEditor({ h, ctx, toolbarExtra, assets }: { h: BlocksHistor
   const reorder = (from: number, to: number) => set((bs) => { if (from === to) return bs; const c = [...bs]; const [x] = c.splice(from, 1); c.splice(to, 0, x!); return c; });
   const duplicate = (id: string) => {
     const i = blocks.findIndex((x) => x.id === id); if (i < 0) return;
+    if (blocks[i]!.type === "rsvp") { toast.error(RSVP_DUP); return; }
     const copy = { ...structuredClone(blocks[i]!), id: crypto.randomUUID() };
     set([...blocks.slice(0, i + 1), copy, ...blocks.slice(i + 1)]); setSelected(copy.id);
   };
@@ -162,7 +166,7 @@ export function VisualEditor({ h, ctx, toolbarExtra, assets }: { h: BlocksHistor
 
   const library = <Library onAdd={add} />;
   const layers = <Layers_ blocks={blocks} selected={selected} onSelect={select} reorder={reorder} actions={actions} />;
-  const props = <Properties assets={assets} block={sel} setProp={setProp} actions={actions} convertToText={convertToText} blocksLen={blocks.length} index={sel ? blocks.indexOf(sel) : -1} />;
+  const props = !sel && onBg ? <BackgroundPanel bg={bg ?? {}} onBg={onBg} assets={assets} /> : <Properties assets={assets} block={sel} setProp={setProp} actions={actions} convertToText={convertToText} blocksLen={blocks.length} index={sel ? blocks.indexOf(sel) : -1} />;
 
   return (
     <div className="flex flex-col gap-3">
@@ -184,7 +188,7 @@ export function VisualEditor({ h, ctx, toolbarExtra, assets }: { h: BlocksHistor
         {isMobile && !previewOnly && (
           <>
             <Button type="button" size="sm" variant="outline" onClick={() => setSheet("elements")}><Plus className="h-4 w-4" />Elementos</Button>
-            <Button type="button" size="sm" variant="outline" disabled={!sel} onClick={() => setSheet("props")}><Settings2 className="h-4 w-4" />Propriedades</Button>
+            <Button type="button" size="sm" variant="outline" disabled={!sel && !onBg} onClick={() => setSheet("props")}><Settings2 className="h-4 w-4" />{sel || !onBg ? "Propriedades" : "Fundo"}</Button>
           </>
         )}
         <div className="ml-auto flex items-center gap-2">{toolbarExtra}</div>
@@ -200,7 +204,8 @@ export function VisualEditor({ h, ctx, toolbarExtra, assets }: { h: BlocksHistor
 
         <div className="min-w-0 rounded-xl border bg-muted/40 p-3 sm:p-6" onClick={() => setSelected(null)}>
           <div className={cn("mx-auto w-full transition-[max-width]", DEVICE_W[device])}>
-            <div className="flex w-full flex-col gap-2 rounded-2xl border bg-card p-4 shadow-sm sm:p-6">
+            <div className="relative isolate flex w-full flex-col gap-2 overflow-hidden rounded-2xl border bg-card p-4 shadow-sm sm:p-6" style={bgColorStyle(bg)}>
+              <BackgroundLayers bg={bg} />
               {blocks.length === 0 && <p className="py-12 text-center text-sm text-muted-foreground">Adicione elementos para começar.</p>}
               {blocks.map((b, i) => previewOnly
                 ? (b.hidden ? null : <div key={b.id} className="py-1"><BlockView block={b} ctx={ctx} interactive /></div>)
@@ -219,7 +224,7 @@ export function VisualEditor({ h, ctx, toolbarExtra, assets }: { h: BlocksHistor
       {isMobile && (
         <Sheet open={sheet !== null} onOpenChange={(o) => !o && setSheet(null)}>
           <SheetContent side="bottom" className="max-h-[80vh] overflow-y-auto">
-            <SheetHeader><SheetTitle>{sheet === "elements" ? "Elementos" : "Propriedades"}</SheetTitle></SheetHeader>
+            <SheetHeader><SheetTitle>{sheet === "elements" ? "Elementos" : sel || !onBg ? "Propriedades" : "Fundo do convite"}</SheetTitle></SheetHeader>
             <div className="mt-4 space-y-5">
               {sheet === "elements" ? <>{library}<div><h3 className="mb-2 text-sm font-medium">Ordem dos blocos</h3>{layers}</div></> : props}
             </div>
@@ -403,6 +408,59 @@ function Properties({ block, setProp, actions, convertToText, index, blocksLen, 
       })}
       {block.type === "rsvp" && <p className="text-xs text-muted-foreground">O formulário aparece na página pública somente quando o RSVP está ativado (botão "RSVP" no editor do convite).</p>}
       {block.type === "whatsapp" && <p className="text-xs text-muted-foreground">O envio pelo WhatsApp funcionará na página pública.</p>}
+    </div>
+  );
+}
+
+/* ---------------- Background (shown when no block is selected) ---------------- */
+
+function BgSelect({ label, value, options, onChange }: { label: string; value: string; options: [string, string][]; onChange: (v: string) => void }) {
+  return (
+    <div className="space-y-1.5">
+      <Label className="text-xs">{label}</Label>
+      <Select value={value} onValueChange={onChange}>
+        <SelectTrigger className="h-8"><SelectValue /></SelectTrigger>
+        <SelectContent>{options.map(([v, l]) => <SelectItem key={v} value={v}>{l}</SelectItem>)}</SelectContent>
+      </Select>
+    </div>
+  );
+}
+
+function BackgroundPanel({ bg, onBg, assets }: { bg: Background; onBg: (b: Background) => void; assets?: AssetScope | undefined }) {
+  const up = (patch: Partial<Background>) => onBg({ ...bg, ...patch });
+  const img = bg.image ?? "";
+  const overlay = Number(bg.overlay) || 0;
+  return (
+    <div className="space-y-4 text-sm">
+      <h3 className="font-medium">Fundo do convite</h3>
+      <div className="space-y-1.5">
+        <Label className="text-xs">Cor de fundo</Label>
+        <div className="flex items-center gap-2">
+          <Input type="color" className="h-8 w-14 p-1" value={bg.color || "#ffffff"} onChange={(e) => up({ color: e.target.value })} />
+          {bg.color && <Button type="button" size="sm" variant="ghost" onClick={() => up({ color: "" })}>Padrão</Button>}
+        </div>
+      </div>
+      <div className="space-y-1.5">
+        <Label className="text-xs">Imagem de fundo</Label>
+        <ImageUpload scope={assets} value={img} onChange={(v) => up({ image: v })} />
+        <Input type="url" placeholder="Ou cole uma URL https://..." className="h-8" value={img.startsWith(STORAGE_PREFIX) ? "" : img} onChange={(e) => up({ image: e.target.value.trim() })} />
+        {img && <Button type="button" size="sm" variant="outline" className="w-full" onClick={() => up({ image: "" })}>Remover imagem</Button>}
+      </div>
+      {img && (
+        <div className="grid grid-cols-2 gap-2">
+          <BgSelect label="Tamanho" value={bg.size ?? "cover"} options={[["cover", "Cover"], ["contain", "Contain"]]} onChange={(v) => up({ size: v as "cover" })} />
+          <BgSelect label="Horizontal" value={bg.x ?? "center"} options={[["left", "Esquerda"], ["center", "Centro"], ["right", "Direita"]]} onChange={(v) => up({ x: v as "center" })} />
+          <BgSelect label="Vertical" value={bg.y ?? "center"} options={[["top", "Topo"], ["center", "Centro"], ["bottom", "Baixo"]]} onChange={(v) => up({ y: v as "center" })} />
+        </div>
+      )}
+      <BgSelect label="Sobreposição" value={overlay > 0 ? "dark" : "none"} options={[["none", "Nenhuma"], ["dark", "Escura"]]} onChange={(v) => up({ overlay: v === "dark" ? 20 : 0 })} />
+      {overlay > 0 && (
+        <div className="space-y-1.5">
+          <Label className="text-xs">Intensidade: {overlay}%</Label>
+          <input type="range" min={1} max={40} value={overlay} onChange={(e) => up({ overlay: Number(e.target.value) })} className="w-full accent-primary" />
+        </div>
+      )}
+      <p className="text-xs text-muted-foreground">Selecione um elemento no convite para editar suas propriedades.</p>
     </div>
   );
 }
