@@ -15,24 +15,23 @@ export type Category = (typeof CATEGORIES)[number]["value"];
 export const categoryLabel = (c: string) => CATEGORIES.find((x) => x.value === c)?.label ?? c;
 
 export type BlockType = "text" | "image" | "date" | "time" | "location" | "countdown" | "rsvp" | "whatsapp" | "button" | "qr_code" | "divider";
-type Field = { key: string; label: string; input: "text" | "textarea" | "url" | "date" | "time" | "datetime-local" | "tel" };
 
-/** Block catalogue: single source of truth for labels, fields and defaults (consumed by the future editor). */
-export const BLOCKS: Record<BlockType, { label: string; fields: Field[]; defaults: Record<string, string> }> = {
-  text: { label: "Texto", fields: [{ key: "text", label: "Texto", input: "textarea" }], defaults: { text: "Seu texto aqui" } },
-  image: { label: "Imagem", fields: [{ key: "url", label: "URL da imagem", input: "url" }, { key: "alt", label: "Descrição", input: "text" }], defaults: { url: "", alt: "" } },
-  date: { label: "Data", fields: [{ key: "date", label: "Data", input: "date" }], defaults: { date: "" } },
-  time: { label: "Horário", fields: [{ key: "time", label: "Horário", input: "time" }], defaults: { time: "" } },
-  location: { label: "Local", fields: [{ key: "name", label: "Nome do local", input: "text" }, { key: "address", label: "Endereço", input: "text" }], defaults: { name: "", address: "" } },
-  countdown: { label: "Contagem regressiva", fields: [{ key: "target", label: "Data e hora", input: "datetime-local" }], defaults: { target: "" } },
-  rsvp: { label: "Confirmação de presença", fields: [{ key: "label", label: "Texto do botão", input: "text" }], defaults: { label: "Confirmar presença" } },
-  whatsapp: { label: "WhatsApp", fields: [{ key: "phone", label: "Telefone", input: "tel" }, { key: "message", label: "Mensagem", input: "text" }], defaults: { phone: "", message: "" } },
-  button: { label: "Botão", fields: [{ key: "label", label: "Texto", input: "text" }, { key: "url", label: "Link", input: "url" }], defaults: { label: "Saiba mais", url: "" } },
-  qr_code: { label: "QR Code", fields: [{ key: "value", label: "Conteúdo", input: "text" }], defaults: { value: "" } },
-  divider: { label: "Divisor", fields: [], defaults: {} },
+/** Block catalogue: single source of truth for labels and defaults (property controls live in the visual editor). */
+export const BLOCKS: Record<BlockType, { label: string; defaults: Record<string, string> }> = {
+  text: { label: "Texto", defaults: { text: "Seu texto aqui", size: "lg", font: "display", bold: "", align: "center", color: "", width: "full" } },
+  image: { label: "Imagem", defaults: { url: "", alt: "", width: "full", height: "wide", align: "center", position: "center" } },
+  date: { label: "Data", defaults: { source: "event", date: "", format: "long", label: "", align: "center" } },
+  time: { label: "Horário", defaults: { source: "event", time: "", format: "24h", label: "", align: "center" } },
+  location: { label: "Local", defaults: { source: "event", name: "", address: "", show_name: "1", show_address: "1", show_city: "1", show_directions: "1", align: "center" } },
+  countdown: { label: "Contagem regressiva", defaults: { source: "event", target: "", title: "Faltam", align: "center" } },
+  rsvp: { label: "Confirmação de presença", defaults: { title: "", label: "Confirmar presença", style: "solid", width: "auto", align: "center" } },
+  whatsapp: { label: "WhatsApp", defaults: { label: "Fale pelo WhatsApp", phone: "", message: "", style: "outline", width: "auto", align: "center" } },
+  button: { label: "Botão", defaults: { label: "Saiba mais", url: "", style: "solid", width: "auto", align: "center" } },
+  qr_code: { label: "QR Code", defaults: { value: "", size: "md", align: "center" } },
+  divider: { label: "Divisor", defaults: { thickness: "1", width: "full", align: "center", style: "solid" } },
 };
 
-export type Block = { id: string; type: BlockType; props: Record<string, string> };
+export type Block = { id: string; type: BlockType; props: Record<string, string>; hidden?: boolean };
 export type TemplateContent = { version: 1; blocks: Block[] };
 export type Template = {
   id: string; company_id: string | null; name: string; category: Category; type: "official" | "company";
