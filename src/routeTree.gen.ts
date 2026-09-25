@@ -20,6 +20,7 @@ import { Route as AuthenticatedCustomersRouteImport } from './routes/_authentica
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedInvitationsRouteImport } from './routes/_authenticated/invitations'
 import { Route as AuthenticatedTemplatesRouteImport } from './routes/_authenticated/templates'
+import { Route as ConviteSlugRouteImport } from './routes/convite.$slug'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin.index'
 import { Route as AuthenticatedAdminSectionRouteImport } from './routes/_authenticated/admin.$section'
 import { Route as AuthenticatedCustomersIndexRouteImport } from './routes/_authenticated/customers.index'
@@ -97,6 +98,11 @@ const AuthenticatedTemplatesRoute = AuthenticatedTemplatesRouteImport.update({
   id: '/templates',
   path: '/templates',
   getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const ConviteSlugRoute = ConviteSlugRouteImport.update({
+  id: '/convite/$slug',
+  path: '/convite/$slug',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexRouteImport.update({
   id: '/',
@@ -241,6 +247,7 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof AuthenticatedDashboardRouteWithChildren
   '/invitations': typeof AuthenticatedInvitationsRouteWithChildren
   '/templates': typeof AuthenticatedTemplatesRouteWithChildren
+  '/convite/$slug': typeof ConviteSlugRoute
   '/admin/$section': typeof AuthenticatedAdminSectionRoute
   '/customers/$id': typeof AuthenticatedCustomersIdRoute
   '/dashboard/$section': typeof AuthenticatedDashboardSectionRoute
@@ -270,6 +277,7 @@ export interface FileRoutesByTo {
   '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/convite/$slug': typeof ConviteSlugRoute
   '/admin/$section': typeof AuthenticatedAdminSectionRoute
   '/customers/$id': typeof AuthenticatedCustomersIdRoute
   '/dashboard/$section': typeof AuthenticatedDashboardSectionRoute
@@ -306,6 +314,7 @@ export interface FileRoutesById {
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRouteWithChildren
   '/_authenticated/invitations': typeof AuthenticatedInvitationsRouteWithChildren
   '/_authenticated/templates': typeof AuthenticatedTemplatesRouteWithChildren
+  '/convite/$slug': typeof ConviteSlugRoute
   '/_authenticated/admin/$section': typeof AuthenticatedAdminSectionRoute
   '/_authenticated/customers/$id': typeof AuthenticatedCustomersIdRoute
   '/_authenticated/dashboard/$section': typeof AuthenticatedDashboardSectionRoute
@@ -342,6 +351,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/invitations'
     | '/templates'
+    | '/convite/$slug'
     | '/admin/$section'
     | '/customers/$id'
     | '/dashboard/$section'
@@ -371,6 +381,7 @@ export interface FileRouteTypes {
     | '/forgot-password'
     | '/login'
     | '/reset-password'
+    | '/convite/$slug'
     | '/admin/$section'
     | '/customers/$id'
     | '/dashboard/$section'
@@ -406,6 +417,7 @@ export interface FileRouteTypes {
     | '/_authenticated/dashboard'
     | '/_authenticated/invitations'
     | '/_authenticated/templates'
+    | '/convite/$slug'
     | '/_authenticated/admin/$section'
     | '/_authenticated/customers/$id'
     | '/_authenticated/dashboard/$section'
@@ -437,6 +449,7 @@ export interface RootRouteChildren {
   ForgotPasswordRoute: typeof ForgotPasswordRoute
   LoginRoute: typeof LoginRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
+  ConviteSlugRoute: typeof ConviteSlugRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -517,6 +530,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/templates'
       preLoaderRoute: typeof AuthenticatedTemplatesRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/convite/$slug': {
+      id: '/convite/$slug'
+      path: '/convite/$slug'
+      fullPath: '/convite/$slug'
+      preLoaderRoute: typeof ConviteSlugRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/_authenticated/admin/': {
       id: '/_authenticated/admin/'
@@ -804,6 +824,7 @@ const rootRouteChildren: RootRouteChildren = {
   ForgotPasswordRoute: ForgotPasswordRoute,
   LoginRoute: LoginRoute,
   ResetPasswordRoute: ResetPasswordRoute,
+  ConviteSlugRoute: ConviteSlugRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

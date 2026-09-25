@@ -50,7 +50,7 @@ function Countdown({ p, ctx }: { p: Record<string, string>; ctx?: EventCtx | und
   return (
     <div className={cn("space-y-2", ALIGN[p["align"] ?? "center"])}>
       {p["title"] && <p className="text-sm text-muted-foreground">{p["title"]}</p>}
-      <Row align={p["align"]}>
+      {diff !== 0 && <Row align={p["align"]}>
         <div className="flex gap-2">
           {(parts ?? [["–", "dias"], ["–", "horas"], ["–", "min"], ["–", "seg"]]).map(([n, l]) => (
             <div key={l} className="min-w-14 rounded-md border px-2 py-1.5 text-center">
@@ -58,8 +58,9 @@ function Countdown({ p, ctx }: { p: Record<string, string>; ctx?: EventCtx | und
             </div>
           ))}
         </div>
-      </Row>
+      </Row>}
       {!parts && <p className="text-xs text-muted-foreground">Defina a data do evento.</p>}
+      {diff === 0 && <p className="font-display text-lg">O grande dia chegou!</p>}
     </div>
   );
 }
@@ -114,7 +115,14 @@ export function BlockView({ block, ctx, interactive = false }: { block: Block; c
           {p["show_address"] !== "0" && address && <p className="text-sm text-muted-foreground">{address}</p>}
           {p["show_city"] !== "0" && city && <p className="text-sm text-muted-foreground">{city}</p>}
           {p["show_directions"] !== "0" && (
-            <Row align={p["align"]}><span className="mt-1 inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-xs"><Navigation className="h-3.5 w-3.5" />Como chegar</span></Row>
+            <Row align={p["align"]}>{(() => {
+              const cls = "mt-1 inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-xs";
+              const q = [name, address, city].filter(Boolean).join(", ");
+              const body = <><Navigation className="h-3.5 w-3.5" />Como chegar</>;
+              return interactive && (address || city)
+                ? <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(q)}`} target="_blank" rel="noopener noreferrer" className={cn(cls, "hover:bg-accent")}>{body}</a>
+                : <span className={cls}>{body}</span>;
+            })()}</Row>
           )}
         </div>
       );
