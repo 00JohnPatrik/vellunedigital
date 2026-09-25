@@ -116,3 +116,5 @@ export async function useOfficialTemplate(id: string) {
   if (error) throw error;
   return data as string;
 }
+
+export const isTemplateId = (s: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(s);
