@@ -9,7 +9,7 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
     if (!context.appUser.company) throw redirect({ to: "/login", search: { error: "inactive" } });
     return { companyId: context.appUser.company.id };
   },
-  head: () => ({ meta: [{ title: "Painel — Convitely" }, { name: "robots", content: "noindex" }] }),
+  head: () => ({ meta: [{ title: "Painel — Vellune Digital" }, { name: "robots", content: "noindex" }] }),
   component: DashboardLayout,
 });
 

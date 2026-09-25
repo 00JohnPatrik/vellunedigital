@@ -16,7 +16,7 @@ import { categoryLabel, listTemplates, templatesKey } from "@/lib/templates";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/invitations/new")({
-  head: () => ({ meta: [{ title: "Novo convite — Convitely" }] }),
+  head: () => ({ meta: [{ title: "Novo convite — Vellune Digital" }] }),
   component: NewInvitationPage,
 });
 

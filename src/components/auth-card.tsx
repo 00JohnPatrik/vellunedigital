@@ -9,7 +9,7 @@ export function AuthCard({ title, subtitle, children }: { title: string; subtitl
           <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-primary-foreground">
             <Mail className="h-5 w-5" />
           </span>
-          <span className="font-display text-xl font-semibold tracking-tight">Convitely</span>
+          <span className="font-display text-xl font-semibold tracking-tight">Vellune Digital</span>
         </div>
         <div className="rounded-xl border bg-card p-6 shadow-elevated sm:p-8">
           <h1 className="font-display text-2xl font-semibold tracking-tight">{title}</h1>

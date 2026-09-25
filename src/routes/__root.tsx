@@ -79,11 +79,11 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Convitely — Plataforma de Convites Digitais" },
+      { title: "Vellune Digital — Plataforma de Convites Digitais" },
       { name: "description", content: "Plataforma para criar, publicar e compartilhar convites digitais com confirmação de presença." },
-      { property: "og:title", content: "Convitely — Plataforma de Convites Digitais" },
+      { property: "og:title", content: "Vellune Digital — Plataforma de Convites Digitais" },
       { property: "og:description", content: "Plataforma para criar, publicar e compartilhar convites digitais com confirmação de presença." },
-      { property: "og:site_name", content: "Convitely" },
+      { property: "og:site_name", content: "Vellune Digital" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -106,7 +106,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootShell({ children }: { children: ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="pt-BR">
       <head>
         <HeadContent />
       </head>

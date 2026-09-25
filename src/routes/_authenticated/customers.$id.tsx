@@ -16,7 +16,7 @@ import { fmtEventDate, type InvitationStatus } from "@/lib/invitations";
 
 export const Route = createFileRoute("/_authenticated/customers/$id")({
   validateSearch: z.object({ edit: z.boolean().optional() }),
-  head: () => ({ meta: [{ title: "Cliente — Convitely" }] }),
+  head: () => ({ meta: [{ title: "Cliente — Vellune Digital" }] }),
   component: CustomerDetail,
 });
 

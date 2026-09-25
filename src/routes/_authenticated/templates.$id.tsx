@@ -8,7 +8,7 @@ import { duplicateTemplate, templatesKey, useOfficialTemplate } from "@/lib/temp
 
 export const Route = createFileRoute("/_authenticated/templates/$id")({
   validateSearch: (s: Record<string, unknown>): { edit?: boolean } => (s["edit"] === true || s["edit"] === "true" ? { edit: true } : {}),
-  head: () => ({ meta: [{ title: "Modelo — Convitely" }] }),
+  head: () => ({ meta: [{ title: "Modelo — Vellune Digital" }] }),
   component: CompanyTemplatePage,
 });
 

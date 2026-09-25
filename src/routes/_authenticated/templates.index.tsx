@@ -9,7 +9,7 @@ import { TemplateCard, TemplateFilters, templateError } from "@/components/templ
 import { duplicateTemplate, listTemplates, setTemplateStatus, templatesKey, useOfficialTemplate, type Template } from "@/lib/templates";
 
 export const Route = createFileRoute("/_authenticated/templates/")({
-  head: () => ({ meta: [{ title: "Modelos — Convitely" }] }),
+  head: () => ({ meta: [{ title: "Modelos — Vellune Digital" }] }),
   component: CompanyTemplates,
 });
 

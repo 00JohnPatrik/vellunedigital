@@ -6,9 +6,9 @@ export const Route = createFileRoute("/")({
   ssr: false,
   head: () => ({
     meta: [
-      { title: "Convitely — Convites digitais" },
+      { title: "Vellune Digital — Convites digitais" },
       { name: "description", content: "Plataforma para criar e gerenciar convites digitais." },
-      { property: "og:title", content: "Convitely — Convites digitais" },
+      { property: "og:title", content: "Vellune Digital — Convites digitais" },
       { property: "og:description", content: "Plataforma para criar e gerenciar convites digitais." },
     ],
   }),

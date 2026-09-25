@@ -10,9 +10,9 @@ import { Label } from "@/components/ui/label";
 export const Route = createFileRoute("/forgot-password")({
   head: () => ({
     meta: [
-      { title: "Recuperar senha — Convitely" },
+      { title: "Recuperar senha — Vellune Digital" },
       { name: "description", content: "Receba um link para redefinir sua senha." },
-      { property: "og:title", content: "Recuperar senha — Convitely" },
+      { property: "og:title", content: "Recuperar senha — Vellune Digital" },
       { property: "og:description", content: "Receba um link para redefinir sua senha." },
     ],
   }),

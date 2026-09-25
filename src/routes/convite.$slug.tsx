@@ -8,7 +8,7 @@ export const Route = createFileRoute("/convite/$slug")({
   loader: ({ params }) => getPublicInvitation({ data: { slug: params.slug } }),
   head: ({ loaderData }) => {
     if (!loaderData || loaderData.state !== "ok") {
-      return { meta: [{ title: "Convite indisponível — Convitely" }, { name: "robots", content: "noindex" }] };
+      return { meta: [{ title: "Convite indisponível — Vellune Digital" }, { name: "robots", content: "noindex" }] };
     }
     const i = loaderData.invitation;
     const desc = i.message?.slice(0, 150) || `Você está convidado! ${new Date(`${i.event_date}T00:00:00`).toLocaleDateString("pt-BR")}${i.venue_name ? ` · ${i.venue_name}` : ""}`;
@@ -49,7 +49,7 @@ function PublicInvitationPage() {
   return (
     <main className="min-h-screen bg-gradient-to-b from-muted/60 via-background to-muted/40 px-4 py-8 sm:py-14">
       <InvitationCanvas background={i.content?.settings?.background} blocks={i.content?.blocks ?? []} ctx={ctx} className="max-w-lg gap-6 border-border/60 p-6 shadow-xl sm:p-10" />
-      <p className="mt-8 text-center text-[11px] tracking-wide text-muted-foreground">Convite digital · Convitely</p>
+      <p className="mt-8 text-center text-[11px] tracking-wide text-muted-foreground">Convite digital · Vellune Digital</p>
     </main>
   );
 }

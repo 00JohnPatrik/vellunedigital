@@ -7,7 +7,7 @@ import { dbErrorMessage, PageHeader } from "@/components/admin-ui";
 import { CompanyForm } from "@/components/admin-forms";
 
 export const Route = createFileRoute("/_authenticated/admin/companies/new")({
-  head: () => ({ meta: [{ title: "Nova empresa — Convitely" }] }),
+  head: () => ({ meta: [{ title: "Nova empresa — Vellune Digital" }] }),
   component: NewCompany,
 });
 

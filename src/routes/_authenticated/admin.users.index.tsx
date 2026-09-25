@@ -8,7 +8,7 @@ import { EmptyState, fmtDate, LoadingState, PageHeader, StatusBadge, StatusTabs,
 import { listCompanyAdmins, setUserStatus, usersKey, type CompanyAdmin } from "@/lib/admin-data";
 
 export const Route = createFileRoute("/_authenticated/admin/users/")({
-  head: () => ({ meta: [{ title: "Usuários — Convitely" }] }),
+  head: () => ({ meta: [{ title: "Usuários — Vellune Digital" }] }),
   component: UsersPage,
 });
 

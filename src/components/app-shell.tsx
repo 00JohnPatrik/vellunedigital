@@ -56,7 +56,7 @@ export function AppShell({ base, nav, appUser, children }: Props) {
       <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-primary text-primary-foreground">
         <Mail className="h-4 w-4" />
       </span>
-      {!compact && <span className="font-display font-semibold">Convitely</span>}
+      {!compact && <span className="font-display font-semibold">Vellune Digital</span>}
     </div>
   );
 

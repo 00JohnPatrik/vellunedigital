@@ -9,7 +9,7 @@ export const Route = createFileRoute("/_authenticated/reports")({
     if (u.role === "super_admin") throw redirect({ to: "/admin/reports" });
     if (!u.company) throw redirect({ to: "/login", search: { error: "inactive" } });
   },
-  head: () => ({ meta: [{ title: "Relatórios — Convitely" }, { name: "robots", content: "noindex" }] }),
+  head: () => ({ meta: [{ title: "Relatórios — Vellune Digital" }, { name: "robots", content: "noindex" }] }),
   component: ReportsLayout,
 });
 

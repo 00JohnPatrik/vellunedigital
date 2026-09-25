@@ -19,7 +19,7 @@ import { getInvitation, invitationError, invitationsKey, publishInvitation, toEv
 import { normalizeBlocks, validateContent } from "@/lib/blocks";
 
 export const Route = createFileRoute("/_authenticated/invitations/$id/editor")({
-  head: () => ({ meta: [{ title: "Editor do convite — Convitely" }] }),
+  head: () => ({ meta: [{ title: "Editor do convite — Vellune Digital" }] }),
   component: EditorPage,
 });
 

@@ -9,7 +9,7 @@ import { InvitationRender, InvitationStatusBadge, invitationCtx } from "@/compon
 import { fmtEventDate, getInvitation, invitationsKey } from "@/lib/invitations";
 
 export const Route = createFileRoute("/_authenticated/invitations/$id/preview")({
-  head: () => ({ meta: [{ title: "Visualizar convite — Convitely" }] }),
+  head: () => ({ meta: [{ title: "Visualizar convite — Vellune Digital" }] }),
   component: PreviewPage,
 });
 
