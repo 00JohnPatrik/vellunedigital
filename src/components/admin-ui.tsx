@@ -11,7 +11,7 @@ import { cn } from "@/lib/utils";
 export type Status = "active" | "inactive";
 export type StatusFilter = "all" | Status;
 
-export function PageHeader({ title, description, action }: { title: string; description?: string; action?: ReactNode }) {
+export function PageHeader({ title, description, action }: { title: string; description?: string | undefined; action?: ReactNode }) {
   return (
     <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
       <div>

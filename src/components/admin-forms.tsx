@@ -11,7 +11,7 @@ import { companiesKey, listCompanies } from "@/lib/admin-data";
 export type CompanyValues = { name: string; type: string; status: Status };
 export type UserValues = { name: string; email: string; phone: string; company_id: string; status: Status };
 
-function Field({ id, label, error, children }: { id: string; label: string; error?: string; children: React.ReactNode }) {
+function Field({ id, label, error, children }: { id: string; label: string; error?: string | undefined; children: React.ReactNode }) {
   return (
     <div className="space-y-1.5">
       <Label htmlFor={id}>{label}</Label>
