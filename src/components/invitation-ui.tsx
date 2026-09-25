@@ -3,7 +3,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { InvitationCanvas } from "@/components/block-render";
-import type { Block } from "@/lib/templates";
+import type { Background, Block } from "@/lib/templates";
 import type { EventCtx } from "@/lib/blocks";
 import { publicUrl, STATUS_LABEL, type EventValues, type InvitationStatus } from "@/lib/invitations";
 

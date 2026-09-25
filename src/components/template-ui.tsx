@@ -9,7 +9,7 @@ import { StatusBadge, type Status } from "@/components/admin-ui";
 import { InvitationCanvas } from "@/components/block-render";
 import { useBlocksHistory, VisualEditor } from "@/components/visual-editor";
 import type { AssetScope } from "@/lib/assets";
-import { CATEGORIES, categoryLabel, STARTERS, type Block, type Template, type TemplateValues } from "@/lib/templates";
+import { buildContent, CATEGORIES, categoryLabel, STARTERS, type Background, type Block, type Template, type TemplateValues } from "@/lib/templates";
 import { normalizeBlocks, validateContent } from "@/lib/blocks";
 
 export function PreviewImage({ src, name, className = "aspect-[4/5]" }: { src: string | null; name: string; className?: string }) {
