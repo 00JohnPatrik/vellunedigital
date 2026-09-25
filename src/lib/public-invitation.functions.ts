@@ -2,10 +2,14 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import type { TemplateContent } from "@/lib/templates";
 
+export type PublicRsvp =
+  | { enabled: false }
+  | { enabled: true; open: boolean; deadline: string | null; max_people: number | null; allow_phone: boolean; allow_email: boolean };
+
 export type PublicInvitation = {
   slug: string; name: string; status: "published" | "closed"; event_date: string; event_time: string;
   venue_name: string | null; address: string | null; city: string | null; state: string | null; message: string | null;
-  content: TemplateContent;
+  content: TemplateContent; rsvp?: PublicRsvp;
 };
 export type PublicInvitationResult = { state: "ok"; invitation: PublicInvitation } | { state: "not_found" | "unavailable" };
 
@@ -20,4 +24,32 @@ export const getPublicInvitation = createServerFn({ method: "GET" })
     const { data: res, error } = await supabaseAdmin.rpc("get_public_invitation" as never, { _slug: data.slug } as never);
     if (error) { console.error("get_public_invitation", error.message); throw new Error("Falha ao carregar o convite."); }
     return res as unknown as PublicInvitationResult;
+  });
+
+export type SubmitRsvpResult =
+  | { state: "ok"; status: "confirmed" | "declined"; name: string; people: number; updated: boolean }
+  | { state: "duplicate" | "closed" | "unavailable" }
+  | { state: "invalid"; field: "name" | "people" | "phone" | "email" | "status" };
+
+/**
+ * Public RSVP submission. All rules (published, enabled, deadline, closed, max_people, duplicates)
+ * are enforced inside the DB function `submit_rsvp`, executable only by the server. Never returns other guests.
+ */
+export const submitRsvp = createServerFn({ method: "POST" })
+  .inputValidator((d) => z.object({
+    slug: z.string().min(1).max(120),
+    status: z.enum(["confirmed", "declined"]),
+    name: z.string().max(120),
+    people: z.number().int().min(0).max(1000).nullable(),
+    phone: z.string().max(30).optional().default(""),
+    email: z.string().max(200).optional().default(""),
+    update: z.boolean().optional().default(false),
+  }).parse(d))
+  .handler(async ({ data }): Promise<SubmitRsvpResult> => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: res, error } = await supabaseAdmin.rpc("submit_rsvp" as never, {
+      _slug: data.slug, _status: data.status, _name: data.name, _people: data.people, _phone: data.phone, _email: data.email, _update: data.update,
+    } as never);
+    if (error) { console.error("submit_rsvp", error.message); throw new Error("Não foi possível enviar sua resposta."); }
+    return res as unknown as SubmitRsvpResult;
   });

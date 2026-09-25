@@ -1,9 +1,10 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { AlertCircle, ArrowLeft, Check, Eye, Loader2, Send, Settings2, Share2 } from "lucide-react";
+import { AlertCircle, ArrowLeft, Check, Eye, Loader2, Send, Settings2, Share2, UserCheck } from "lucide-react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { ShareDialog } from "@/components/share-dialog";
+import { RsvpPanel } from "@/components/rsvp-panel";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -48,6 +49,7 @@ function EditorForm({ inv }: { inv: Invitation }) {
   const [status, setStatus] = useState(inv.status);
   const [warnOpen, setWarnOpen] = useState(inv.status === "published");
   const [shareOpen, setShareOpen] = useState(false);
+  const [rsvpOpen, setRsvpOpen] = useState(false);
   const [publishing, setPublishing] = useState(false);
   const navigate = useNavigate();
 
@@ -141,6 +143,7 @@ function EditorForm({ inv }: { inv: Invitation }) {
 
       <VisualEditor h={h} ctx={ctx} toolbarExtra={<>
         <Button type="button" size="sm" variant="outline" onClick={() => setEventOpen(true)}><Settings2 className="h-4 w-4" /><span className="hidden sm:inline">Dados do evento</span></Button>
+        <Button type="button" size="sm" variant="outline" onClick={() => setRsvpOpen(true)}><UserCheck className="h-4 w-4" />RSVP</Button>
         <Button type="button" size="sm" variant="outline" asChild><Link to="/invitations/$id/preview" params={{ id: inv.id }}><Eye className="h-4 w-4" /><span className="hidden sm:inline">Visualizar</span></Link></Button>
         <Button type="button" size="sm" onClick={() => void save(true)} disabled={state === "saving"}>{state === "saving" && <Loader2 className="h-4 w-4 animate-spin" />}Salvar</Button>
         {isPublic
@@ -149,6 +152,7 @@ function EditorForm({ inv }: { inv: Invitation }) {
       </>} />
 
       <ShareDialog slug={inv.slug} open={shareOpen} onOpenChange={setShareOpen} />
+      <RsvpPanel invitationId={inv.id} open={rsvpOpen} onOpenChange={setRsvpOpen} />
       <AlertDialog open={warnOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>

@@ -388,7 +388,7 @@ function Properties({ block, setProp, actions, convertToText, index, blocksLen }
           </div>
         );
       })}
-      {block.type === "rsvp" && <p className="text-xs text-muted-foreground">A confirmação de presença funcional chegará em uma próxima fase.</p>}
+      {block.type === "rsvp" && <p className="text-xs text-muted-foreground">O formulário aparece na página pública somente quando o RSVP está ativado (botão "RSVP" no editor do convite).</p>}
       {block.type === "whatsapp" && <p className="text-xs text-muted-foreground">O envio pelo WhatsApp funcionará na página pública.</p>}
     </div>
   );
