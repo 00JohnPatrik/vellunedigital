@@ -141,7 +141,7 @@ function EditorForm({ inv }: { inv: Invitation }) {
         <SaveIndicator state={state} msg={errMsg} onRetry={() => void save(true)} />
       </div>
 
-      <VisualEditor h={h} ctx={ctx} toolbarExtra={<>
+      <VisualEditor h={h} ctx={ctx} assets={{ kind: "invitation", id: inv.id, companyId: inv.company_id }} toolbarExtra={<>
         <Button type="button" size="sm" variant="outline" onClick={() => setEventOpen(true)}><Settings2 className="h-4 w-4" /><span className="hidden sm:inline">Dados do evento</span></Button>
         <Button type="button" size="sm" variant="outline" onClick={() => setRsvpOpen(true)}><UserCheck className="h-4 w-4" />RSVP</Button>
         <Button type="button" size="sm" variant="outline" asChild><Link to="/invitations/$id/preview" params={{ id: inv.id }}><Eye className="h-4 w-4" /><span className="hidden sm:inline">Visualizar</span></Link></Button>

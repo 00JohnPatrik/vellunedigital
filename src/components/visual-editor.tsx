@@ -12,6 +12,8 @@ import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { BlockView } from "@/components/block-render";
+import { ImageUpload } from "@/components/image-upload";
+import { STORAGE_PREFIX, type AssetScope } from "@/lib/assets";
 import { BLOCKS, newBlock, type Block, type BlockType } from "@/lib/templates";
 import { FONTS, isKnownType, type EventCtx } from "@/lib/blocks";
 function useIsCompact() {
@@ -110,7 +112,7 @@ const blockLabel = (b: Block) => (isKnownType(b.type) ? BLOCKS[b.type].label : `
 type Device = "mobile" | "tablet" | "desktop";
 const DEVICE_W: Record<Device, string> = { mobile: "max-w-[390px]", tablet: "max-w-[768px]", desktop: "max-w-[1024px]" };
 
-export function VisualEditor({ h, ctx, toolbarExtra }: { h: BlocksHistory; ctx?: EventCtx | undefined; toolbarExtra?: ReactNode }) {
+export function VisualEditor({ h, ctx, toolbarExtra, assets }: { h: BlocksHistory; ctx?: EventCtx | undefined; toolbarExtra?: ReactNode; assets?: AssetScope | undefined }) {
   const { blocks, set } = h;
   // Side panels only fit from 1024px up; below that Elements/Properties open as bottom drawers.
   const isMobile = useIsCompact();
@@ -160,7 +162,7 @@ export function VisualEditor({ h, ctx, toolbarExtra }: { h: BlocksHistory; ctx?:
 
   const library = <Library onAdd={add} />;
   const layers = <Layers_ blocks={blocks} selected={selected} onSelect={select} reorder={reorder} actions={actions} />;
-  const props = <Properties block={sel} setProp={setProp} actions={actions} convertToText={convertToText} blocksLen={blocks.length} index={sel ? blocks.indexOf(sel) : -1} />;
+  const props = <Properties assets={assets} block={sel} setProp={setProp} actions={actions} convertToText={convertToText} blocksLen={blocks.length} index={sel ? blocks.indexOf(sel) : -1} />;
 
   return (
     <div className="flex flex-col gap-3">
@@ -327,8 +329,8 @@ function Layers_({ blocks, selected, onSelect, reorder, actions }: {
   );
 }
 
-function Properties({ block, setProp, actions, convertToText, index, blocksLen }: {
-  block: Block | null; setProp: (id: string, k: string, v: string) => void; actions: Actions; convertToText: (id: string) => void; index: number; blocksLen: number;
+function Properties({ block, setProp, actions, convertToText, index, blocksLen, assets }: {
+  assets?: AssetScope | undefined; block: Block | null; setProp: (id: string, k: string, v: string) => void; actions: Actions; convertToText: (id: string) => void; index: number; blocksLen: number;
 }) {
   if (!block) return <p className="py-6 text-center text-sm text-muted-foreground">Selecione um elemento para editar.</p>;
   if (!isKnownType(block.type)) {
@@ -364,6 +366,17 @@ function Properties({ block, setProp, actions, convertToText, index, blocksLen }
             <div key={c.k} className="flex items-center justify-between gap-2">
               <Label htmlFor={id} className="text-sm font-normal">{c.label}</Label>
               <Switch id={id} checked={on} onCheckedChange={(x) => set(x ? "1" : "0")} />
+            </div>
+          );
+        }
+        if (block.type === "image" && c.k === "url") {
+          const stored = val.startsWith(STORAGE_PREFIX);
+          return (
+            <div key={c.k} className="space-y-2">
+              <Label className="text-xs text-muted-foreground">Imagem</Label>
+              <ImageUpload scope={assets} value={val} onChange={set} />
+              <Input id={id} type="url" maxLength={500} placeholder={stored ? "Imagem enviada (ou cole uma URL)" : "https://..."}
+                value={stored ? "" : val} onChange={(e) => set(e.target.value)} className="h-9" aria-label="URL da imagem" />
             </div>
           );
         }

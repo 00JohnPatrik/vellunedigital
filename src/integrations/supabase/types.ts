@@ -85,6 +85,64 @@ export type Database = {
           },
         ]
       }
+      files: {
+        Row: {
+          company_id: string | null
+          created_at: string
+          file_name: string
+          id: string
+          invitation_id: string | null
+          mime_type: string
+          size: number
+          storage_path: string
+          template_id: string | null
+        }
+        Insert: {
+          company_id?: string | null
+          created_at?: string
+          file_name: string
+          id?: string
+          invitation_id?: string | null
+          mime_type: string
+          size: number
+          storage_path: string
+          template_id?: string | null
+        }
+        Update: {
+          company_id?: string | null
+          created_at?: string
+          file_name?: string
+          id?: string
+          invitation_id?: string | null
+          mime_type?: string
+          size?: number
+          storage_path?: string
+          template_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "files_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "files_invitation_id_fkey"
+            columns: ["invitation_id"]
+            isOneToOne: false
+            referencedRelation: "invitations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "files_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       invitation_views: {
         Row: {
           created_at: string

@@ -6,6 +6,7 @@ import { RsvpForm } from "@/components/rsvp-form";
 import { BLOCKS, type Block } from "@/lib/templates";
 import { fontCss, formatDate, formatTime, isKnownType, pick, type EventCtx } from "@/lib/blocks";
 import { cn } from "@/lib/utils";
+import { useAssetUrl } from "@/lib/assets";
 
 const ALIGN: Record<string, string> = { left: "justify-start text-left", center: "justify-center text-center", right: "justify-end text-right" };
 const WIDTH: Record<string, string> = { auto: "w-auto max-w-full", partial: "w-full sm:w-2/3", full: "w-full" };
@@ -85,18 +86,8 @@ export function BlockView({ block, ctx, interactive = false }: { block: Block; c
         </Row>
       );
     }
-    case "image": {
-      const w = p["width"] === "auto" ? "w-full sm:w-1/2" : WIDTH[p["width"] ?? "full"];
-      return (
-        <Row align={p["align"]}>
-          <div className={cn("overflow-hidden rounded-lg", w)}>
-            {p["height"] === "auto" && p["url"]
-              ? <img src={p["url"]} alt={p["alt"] ?? ""} className="h-auto w-full" loading="lazy" />
-              : <PreviewImage src={p["url"] || null} name={p["alt"] ?? ""} className={cn(IMG_HEIGHT[p["height"] ?? "wide"] || "aspect-video", IMG_POS[p["position"] ?? "center"])} />}
-          </div>
-        </Row>
-      );
-    }
+    case "image":
+      return <ImageBlock p={p} />;
     case "date": {
       const d = formatDate(pick(p, p["date"], ctx?.event_date), p["format"]);
       return <Info align={p["align"]} label={p["label"]} icon={<CalendarDays className="h-4 w-4" />}>{d ?? "Data a definir"}</Info>;
@@ -176,5 +167,19 @@ export function InvitationCanvas({ blocks, ctx, className }: { blocks: Block[]; 
       {visible.length ? visible.map((b) => <BlockView key={b.id} block={b} ctx={ctx} interactive />)
         : <p className="py-10 text-center text-sm text-muted-foreground">Este convite ainda não possui blocos.</p>}
     </div>
+  );
+}
+
+function ImageBlock({ p }: { p: Record<string, string> }) {
+  const src = useAssetUrl(p["url"]);
+  const w = p["width"] === "auto" ? "w-full sm:w-1/2" : WIDTH[p["width"] ?? "full"];
+  return (
+    <Row align={p["align"]}>
+      <div className={cn("overflow-hidden rounded-lg", w)}>
+        {p["height"] === "auto" && src
+          ? <img src={src} alt={p["alt"] ?? ""} className="h-auto w-full" loading="lazy" />
+          : <PreviewImage src={src} name={p["alt"] ?? ""} className={cn(IMG_HEIGHT[p["height"] ?? "wide"] || "aspect-video", IMG_POS[p["position"] ?? "center"])} />}
+      </div>
+    </Row>
   );
 }

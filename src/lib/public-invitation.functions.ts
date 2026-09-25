@@ -23,7 +23,19 @@ export const getPublicInvitation = createServerFn({ method: "GET" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: res, error } = await supabaseAdmin.rpc("get_public_invitation" as never, { _slug: data.slug } as never);
     if (error) { console.error("get_public_invitation", error.message); throw new Error("Falha ao carregar o convite."); }
-    return res as unknown as PublicInvitationResult;
+    const out = res as unknown as PublicInvitationResult;
+    // Sign only the storage images referenced by this published invitation's content (private bucket).
+    if (out.state === "ok") {
+      const blocks = out.invitation.content?.blocks ?? [];
+      const refs = blocks.filter((b) => b.type === "image" && typeof b.props?.["url"] === "string" && b.props["url"].startsWith("storage:"));
+      const paths = [...new Set(refs.map((b) => b.props!["url"]!.slice(8)))].filter((p) => /^(companies|official)\/[\w\-/.]+$/.test(p) && !p.includes(".."));
+      if (paths.length) {
+        const { data: signed } = await supabaseAdmin.storage.from("invitation-assets").createSignedUrls(paths, 60 * 60 * 24);
+        const map = new Map((signed ?? []).filter((s) => s.signedUrl).map((s) => [s.path, s.signedUrl]));
+        for (const b of refs) b.props!["url"] = map.get(b.props!["url"]!.slice(8)) ?? "";
+      }
+    }
+    return out;
   });
 
 /** Counts one public view. The DB function only inserts for published/closed invitations; no visitor data stored. */
