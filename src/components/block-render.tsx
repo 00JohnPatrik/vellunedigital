@@ -17,7 +17,7 @@ const BTN_STYLE: Record<string, string> = {
   soft: "bg-secondary text-secondary-foreground",
 };
 
-function Row({ align = "center", children }: { align?: string; children: ReactNode }) {
+function Row({ align = "center", children }: { align?: string | undefined; children: ReactNode }) {
   return <div className={cn("flex w-full", ALIGN[align] ?? ALIGN["center"])}>{children}</div>;
 }
 
@@ -146,7 +146,7 @@ export function BlockView({ block, ctx, interactive = false }: { block: Block; c
   }
 }
 
-function Info({ align = "center", label, icon, children }: { align?: string; label?: string; icon: ReactNode; children: ReactNode }) {
+function Info({ align = "center", label, icon, children }: { align?: string | undefined; label?: string | undefined; icon: ReactNode; children: ReactNode }) {
   return (
     <div className={cn("space-y-0.5", ALIGN[align])}>
       {label && <p className="text-xs uppercase tracking-wide text-muted-foreground">{label}</p>}
