@@ -171,7 +171,7 @@ export function VisualEditor({ h, ctx, toolbarExtra, assets, bg, onBg }: { h: Bl
   return (
     <div className="flex flex-col gap-3">
       {/* Toolbar */}
-      <div className="flex flex-wrap items-center gap-2 rounded-xl border bg-card p-2">
+      <div className="flex flex-wrap items-center gap-2 rounded-xl border bg-card p-2 shadow-sm">
         <Button type="button" variant="ghost" size="icon" aria-label="Desfazer" title="Desfazer (Ctrl+Z)" disabled={!h.canUndo} onClick={h.undo}><Undo2 className="h-4 w-4" /></Button>
         <Button type="button" variant="ghost" size="icon" aria-label="Refazer" title="Refazer (Ctrl+Shift+Z)" disabled={!h.canRedo} onClick={h.redo}><Redo2 className="h-4 w-4" /></Button>
         <div className="mx-1 h-6 w-px bg-border" />
@@ -194,7 +194,7 @@ export function VisualEditor({ h, ctx, toolbarExtra, assets, bg, onBg }: { h: Bl
         <div className="ml-auto flex items-center gap-2">{toolbarExtra}</div>
       </div>
 
-      <div className={cn("grid gap-3", !previewOnly && "lg:grid-cols-[220px_minmax(0,1fr)_300px]")}>
+      <div className={cn("grid gap-4", !previewOnly && "lg:grid-cols-[220px_minmax(0,1fr)_300px]")}>
         {!previewOnly && !isMobile && (
           <aside className="space-y-3 lg:sticky lg:top-20 lg:max-h-[calc(100vh-6rem)] lg:self-start lg:overflow-y-auto">
             <Panel title="Elementos">{library}</Panel>
@@ -202,7 +202,7 @@ export function VisualEditor({ h, ctx, toolbarExtra, assets, bg, onBg }: { h: Bl
           </aside>
         )}
 
-        <div className="min-w-0 rounded-xl border bg-muted/40 p-3 sm:p-6" onClick={() => setSelected(null)}>
+        <div className="min-w-0 rounded-xl border bg-muted/40 p-3 shadow-inner sm:p-6" onClick={() => setSelected(null)}>
           <div className={cn("mx-auto w-full transition-[max-width]", DEVICE_W[device])}>
             <div className="relative isolate flex w-full flex-col gap-2 overflow-hidden rounded-2xl border bg-card p-4 shadow-sm sm:p-6" style={bgColorStyle(bg)}>
               <BackgroundLayers bg={bg} />
@@ -237,8 +237,8 @@ export function VisualEditor({ h, ctx, toolbarExtra, assets, bg, onBg }: { h: Bl
 
 function Panel({ title, icon, children }: { title: string; icon?: ReactNode; children: ReactNode }) {
   return (
-    <section className="rounded-xl border bg-card p-3">
-      <h2 className="mb-2 flex items-center gap-1.5 text-sm font-medium">{icon}{title}</h2>
+    <section className="rounded-xl border bg-card p-3 shadow-sm">
+      <h2 className="mb-3 flex items-center gap-1.5 border-b pb-2 text-sm font-semibold">{icon}{title}</h2>
       {children}
     </section>
   );
@@ -250,8 +250,8 @@ function Library({ onAdd }: { onAdd: (t: BlockType) => void }) {
       {(Object.keys(BLOCKS) as BlockType[]).map((t) => {
         const Icon = BLOCK_ICONS[t];
         return (
-          <button key={t} type="button" onClick={() => onAdd(t)} className="flex flex-col items-center gap-1 rounded-md border p-2 text-center text-xs transition-colors hover:border-primary hover:bg-accent">
-            <Icon className="h-4 w-4" />{BLOCKS[t].label}
+          <button key={t} type="button" onClick={() => onAdd(t)} aria-label={`Adicionar ${BLOCKS[t].label}`} className="flex min-h-16 flex-col items-center justify-center gap-1 rounded-md border bg-background p-2 text-center text-xs transition-colors hover:border-primary hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+            <Icon className="h-4 w-4 text-muted-foreground" />{BLOCKS[t].label}
           </button>
         );
       })}
@@ -317,8 +317,9 @@ function Layers_({ blocks, selected, onSelect, reorder, actions }: {
             onDrop={(e) => { e.preventDefault(); if (drag !== null) reorder(drag, i); setDrag(null); setOver(null); }}
             onDragEnd={() => { setDrag(null); setOver(null); }}
             onClick={() => onSelect(b.id)}
-            className={cn("flex cursor-pointer items-center gap-1 rounded-md border px-1.5 py-1 text-xs",
-              selected === b.id ? "border-primary bg-accent" : "hover:bg-accent/60",
+            aria-current={selected === b.id ? "true" : undefined}
+            className={cn("flex cursor-pointer items-center gap-1 rounded-md border px-1.5 py-1.5 text-xs transition-colors",
+              selected === b.id ? "border-primary bg-primary/10 text-foreground shadow-sm" : "hover:bg-accent/60",
               over === i && drag !== null && drag !== i && "border-dashed border-primary", drag === i && "opacity-50", b.hidden && "text-muted-foreground")}
           >
             <GripVertical className="h-3.5 w-3.5 shrink-0 cursor-grab text-muted-foreground" aria-hidden />
@@ -337,7 +338,13 @@ function Layers_({ blocks, selected, onSelect, reorder, actions }: {
 function Properties({ block, setProp, actions, convertToText, index, blocksLen, assets }: {
   assets?: AssetScope | undefined; block: Block | null; setProp: (id: string, k: string, v: string) => void; actions: Actions; convertToText: (id: string) => void; index: number; blocksLen: number;
 }) {
-  if (!block) return <p className="py-6 text-center text-sm text-muted-foreground">Selecione um elemento para editar.</p>;
+  if (!block) return (
+    <div className="rounded-lg border border-dashed bg-muted/20 px-4 py-8 text-center">
+      <Settings2 className="mx-auto mb-2 h-5 w-5 text-muted-foreground" />
+      <p className="text-sm font-medium">Nenhum elemento selecionado</p>
+      <p className="mt-1 text-xs text-muted-foreground">Selecione um bloco no convite ou na ordem dos blocos para editar suas propriedades.</p>
+    </div>
+  );
   if (!isKnownType(block.type)) {
     return (
       <div className="space-y-3 text-sm">
