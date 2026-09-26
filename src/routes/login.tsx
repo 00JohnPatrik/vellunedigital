@@ -39,7 +39,7 @@ function LoginPage() {
     e.preventDefault();
     setError(null);
     const id = identifier.trim();
-    if (!id || !password) return setError("Preencha e-mail/telefone e senha.");
+    if (!id || !password) return setError("Preencha e-mail ou telefone e senha.");
     setLoading(true);
     try {
       if (id.includes("@")) {
@@ -67,28 +67,35 @@ function LoginPage() {
   }
 
   return (
-    <AuthCard title="Entrar" subtitle="Use seu e-mail ou telefone cadastrado para acessar seu painel.">
+    <AuthCard title="Bem-vindo de volta" subtitle="Acesse sua conta para continuar criando experiências memoráveis.">
       <form onSubmit={onSubmit} className="space-y-5" noValidate>
         <div className="space-y-2">
           <Label htmlFor="identifier">E-mail ou telefone</Label>
-          <Input id="identifier" autoFocus autoComplete="username" value={identifier} maxLength={255}
-            onChange={(e) => setIdentifier(e.target.value)} placeholder="voce@empresa.com" aria-invalid={!!error} />
-          <p className="text-xs text-muted-foreground">Use os dados vinculados à sua conta.</p>
+          <Input
+            id="identifier"
+            autoFocus
+            autoComplete="username"
+            value={identifier}
+            maxLength={255}
+            onChange={(e) => setIdentifier(e.target.value)}
+            placeholder="voce@empresa.com"
+            aria-invalid={!!error}
+            aria-describedby="identifier-help"
+            className="h-11 bg-background/70 transition-shadow focus-visible:ring-2"
+          />
+          <p id="identifier-help" className="text-xs text-muted-foreground">Use os dados vinculados à sua conta.</p>
         </div>
         <div className="space-y-2">
           <div className="flex items-center justify-between gap-3">
             <Label htmlFor="password">Senha</Label>
-            <Link to="/forgot-password" className="text-xs font-medium text-primary transition-colors hover:text-primary/80 hover:underline">Esqueci minha senha</Link>
+            <Link to="/forgot-password" className="text-xs font-semibold text-primary transition-colors hover:text-primary/80 hover:underline">Esqueci minha senha</Link>
           </div>
-          <PasswordInput id="password" autoComplete="current-password" value={password} maxLength={200}
-            onChange={(e) => setPassword(e.target.value)} aria-invalid={!!error} />
+          <PasswordInput id="password" autoComplete="current-password" value={password} maxLength={200} onChange={(e) => setPassword(e.target.value)} aria-invalid={!!error} />
         </div>
-        {error && <div role="alert" className="rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2.5 text-sm leading-relaxed text-destructive">{error}</div>}
-        <Button type="submit" className="h-11 w-full shadow-sm" disabled={loading}>{loading ? "Entrando..." : "Entrar"}</Button>
-        <div className="relative py-1"><div className="absolute inset-0 flex items-center"><span className="w-full border-t" /></div><div className="relative flex justify-center"><span className="bg-card px-3 text-[11px] uppercase tracking-wide text-muted-foreground">ou</span></div></div>
-        <p className="text-center text-sm text-muted-foreground">
-          Primeira vez aqui? <Link to="/first-access" className="font-medium text-primary transition-colors hover:text-primary/80 hover:underline">Primeiro acesso</Link>
-        </p>
+        {error && <div role="alert" className="rounded-xl border border-destructive/30 bg-destructive/10 px-3.5 py-3 text-sm leading-relaxed text-destructive">{error}</div>}
+        <Button type="submit" className="h-11 w-full rounded-xl shadow-sm transition-transform hover:-translate-y-0.5" disabled={loading}>{loading ? "Entrando..." : "Entrar na conta"}</Button>
+        <div className="relative py-1"><div className="absolute inset-0 flex items-center"><span className="w-full border-t" /></div><div className="relative flex justify-center"><span className="bg-card px-3 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">ou</span></div></div>
+        <p className="text-center text-sm text-muted-foreground">Primeira vez aqui? <Link to="/first-access" className="font-semibold text-primary transition-colors hover:text-primary/80 hover:underline">Faça seu primeiro acesso</Link></p>
       </form>
     </AuthCard>
   );
