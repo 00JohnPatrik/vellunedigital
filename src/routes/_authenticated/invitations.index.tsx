@@ -98,13 +98,26 @@ function InvitationsPage() {
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input className="pl-9" placeholder="Buscar por nome do convite" value={search} onChange={(e) => setSearch(e.target.value)} aria-label="Buscar convites" />
         </div>
-        <div className="flex flex-wrap gap-1 rounded-lg bg-muted/60 p-1" role="group" aria-label="Filtrar convites">
-          {FILTERS.map(([k, l]) => (
-            <button key={k} type="button" onClick={() => setFilter(k)} aria-pressed={filter === k}
-              className={cn("rounded-md px-3 py-1.5 text-sm transition-colors", filter === k ? "bg-background font-medium text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground")}>{l}</button>
-          ))}
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap gap-1 rounded-lg bg-muted/60 p-1" role="group" aria-label="Filtrar convites">
+            {FILTERS.map(([k, l]) => (
+              <button key={k} type="button" onClick={() => setFilter(k)} aria-pressed={filter === k}
+                className={cn("rounded-md px-3 py-1.5 text-sm transition-colors", filter === k ? "bg-background font-medium text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground")}>{l}</button>
+            ))}
+          </div>
+          {(search || filter !== "all") && (
+            <Button type="button" variant="ghost" size="sm" onClick={() => { setSearch(""); setFilter("all"); }}>
+              Limpar filtros
+            </Button>
+          )}
         </div>
       </div>
+      {!q.isLoading && !q.isError && (
+        <p className="mb-4 text-sm text-muted-foreground" aria-live="polite">
+          {rows.length} {rows.length === 1 ? "convite encontrado" : "convites encontrados"}
+          {search || filter !== "all" ? " com os filtros atuais" : ""}.
+        </p>
+      )}
 
       {q.isLoading ? <LoadingState /> : q.isError ? (
         <div className="rounded-xl border border-destructive/30 bg-destructive/5 p-8 text-center">

@@ -1,5 +1,5 @@
 import { useState, type ReactNode } from "react";
-import { LayoutTemplate, Loader2 } from "lucide-react";
+import { LayoutTemplate, Loader2, Search, X } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -123,17 +123,26 @@ export function TemplateForm({ initial, isNew, submitLabel, onSubmit, onCancel, 
 }
 
 export function TemplateFilters({ search, setSearch, category, setCategory }: { search: string; setSearch: (s: string) => void; category: string; setCategory: (c: string) => void }) {
+  const hasFilters = Boolean(search.trim()) || category !== "all";
   return (
-    <>
-      <Input aria-label="Buscar modelos por nome" placeholder="Buscar por nome" value={search} onChange={(e) => setSearch(e.target.value)} className="sm:max-w-xs" />
+    <div className="flex w-full flex-col gap-2 sm:flex-row sm:items-center">
+      <div className="relative flex-1 sm:max-w-xs">
+        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
+        <Input aria-label="Buscar modelos por nome" placeholder="Buscar por nome" value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
+      </div>
       <Select value={category} onValueChange={setCategory}>
-        <SelectTrigger className="sm:w-48"><SelectValue /></SelectTrigger>
+        <SelectTrigger className="sm:w-48" aria-label="Filtrar por categoria"><SelectValue /></SelectTrigger>
         <SelectContent>
           <SelectItem value="all">Todas as categorias</SelectItem>
           {CATEGORIES.map((c) => <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>)}
         </SelectContent>
       </Select>
-    </>
+      {hasFilters && (
+        <Button type="button" variant="ghost" size="sm" onClick={() => { setSearch(""); setCategory("all"); }}>
+          <X className="h-4 w-4" />Limpar
+        </Button>
+      )}
+    </div>
   );
 }
 
