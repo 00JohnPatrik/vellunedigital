@@ -26,13 +26,26 @@ export const Route = createFileRoute("/_authenticated/invitations/$id/editor")({
 function EditorPage() {
   const { id } = Route.useParams();
   const q = useQuery({ queryKey: [...invitationsKey, id], queryFn: () => getInvitation(id), refetchOnWindowFocus: false });
-  if (q.isLoading) return <LoadingState />;
-  if (!q.data) return <div><BackLink /><EmptyState>Convite não encontrado.</EmptyState></div>;
+  if (q.isLoading) {
+    return (
+      <div className="flex min-h-[50vh] items-center justify-center rounded-2xl border bg-card/50 p-8">
+        <LoadingState />
+      </div>
+    );
+  }
+  if (!q.data) {
+    return (
+      <div className="mx-auto flex min-h-[50vh] max-w-lg flex-col items-center justify-center rounded-2xl border border-dashed bg-card/60 px-6 py-12 text-center">
+        <BackLink />
+        <EmptyState>Convite não encontrado.</EmptyState>
+      </div>
+    );
+  }
   // Keyed by id only: background refetches never reset the editor state/history.
   return <EditorForm key={q.data.id} inv={q.data} />;
 }
 
-const BackLink = () => <Link to="/invitations" className="mb-3 inline-block text-sm text-muted-foreground hover:text-foreground">← Convites</Link>;
+const BackLink = () => <Link to="/invitations" className="mb-4 inline-flex items-center rounded-md px-2 py-1 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground">← Convites</Link>;
 
 type SaveState = "saved" | "dirty" | "saving" | "error";
 const AUTOSAVE_MS = 1500;
@@ -133,14 +146,23 @@ function EditorForm({ inv }: { inv: Invitation }) {
   const options = (customers.data ?? []).filter((c) => c.company_id === inv.company_id && (c.status === "active" || c.id === inv.customer_id));
 
   return (
-    <div className="space-y-3">
-      <div className="flex flex-wrap items-center gap-2">
-        <Button variant="ghost" size="sm" asChild><Link to="/invitations"><ArrowLeft className="h-4 w-4" />Voltar</Link></Button>
-        <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-2"><h1 className="truncate font-display text-lg font-semibold">{v.name || inv.name}</h1><InvitationStatusBadge status={status} /></div>
-          <p className="truncate text-xs text-muted-foreground">{isPublic ? "Link público" : "Link reservado"}: /convite/{inv.slug}</p>
+    <div className="space-y-5">
+      <div className="rounded-2xl border bg-card/80 p-3 shadow-sm sm:p-4">
+        <div className="flex flex-wrap items-center gap-3">
+          <Button variant="ghost" size="sm" className="shrink-0" asChild><Link to="/invitations"><ArrowLeft className="h-4 w-4" />Voltar</Link></Button>
+          <div className="hidden h-8 w-px bg-border sm:block" />
+          <div className="min-w-0 flex-1">
+            <div className="flex flex-wrap items-center gap-2">
+              <h1 className="min-w-0 truncate font-display text-lg font-semibold tracking-tight sm:text-xl">{v.name || inv.name}</h1>
+              <InvitationStatusBadge status={status} />
+            </div>
+            <p className="mt-1 flex items-center gap-1.5 truncate text-xs text-muted-foreground">
+              <span className="inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
+              {isPublic ? "Link público" : "Link reservado"}: /convite/{inv.slug}
+            </p>
+          </div>
+          <div className="rounded-lg bg-muted/50 px-2.5 py-1.5"><SaveIndicator state={state} msg={errMsg} onRetry={() => void save(true)} /></div>
         </div>
-        <SaveIndicator state={state} msg={errMsg} onRetry={() => void save(true)} />
       </div>
 
       <VisualEditor h={h} bg={bg} onBg={setBg} ctx={ctx} assets={{ kind: "invitation", id: inv.id, companyId: inv.company_id }} toolbarExtra={<>

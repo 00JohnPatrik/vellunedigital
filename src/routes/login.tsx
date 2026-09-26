@@ -67,25 +67,27 @@ function LoginPage() {
   }
 
   return (
-    <AuthCard title="Entrar" subtitle="Use seu e-mail ou telefone cadastrado.">
-      <form onSubmit={onSubmit} className="space-y-4" noValidate>
+    <AuthCard title="Entrar" subtitle="Use seu e-mail ou telefone cadastrado para acessar seu painel.">
+      <form onSubmit={onSubmit} className="space-y-5" noValidate>
         <div className="space-y-2">
           <Label htmlFor="identifier">E-mail ou telefone</Label>
-          <Input id="identifier" autoComplete="username" value={identifier} maxLength={255}
-            onChange={(e) => setIdentifier(e.target.value)} placeholder="voce@empresa.com" />
+          <Input id="identifier" autoFocus autoComplete="username" value={identifier} maxLength={255}
+            onChange={(e) => setIdentifier(e.target.value)} placeholder="voce@empresa.com" aria-invalid={!!error} />
+          <p className="text-xs text-muted-foreground">Use os dados vinculados à sua conta.</p>
         </div>
         <div className="space-y-2">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between gap-3">
             <Label htmlFor="password">Senha</Label>
-            <Link to="/forgot-password" className="text-xs text-primary hover:underline">Esqueci minha senha</Link>
+            <Link to="/forgot-password" className="text-xs font-medium text-primary transition-colors hover:text-primary/80 hover:underline">Esqueci minha senha</Link>
           </div>
           <PasswordInput id="password" autoComplete="current-password" value={password} maxLength={200}
-            onChange={(e) => setPassword(e.target.value)} />
+            onChange={(e) => setPassword(e.target.value)} aria-invalid={!!error} />
         </div>
-        {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
-        <Button type="submit" className="w-full" disabled={loading}>{loading ? "Entrando..." : "Entrar"}</Button>
-        <p className="text-center text-xs text-muted-foreground">
-          Primeira vez aqui? <Link to="/first-access" className="text-primary hover:underline">Primeiro acesso</Link>
+        {error && <div role="alert" className="rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2.5 text-sm leading-relaxed text-destructive">{error}</div>}
+        <Button type="submit" className="h-11 w-full shadow-sm" disabled={loading}>{loading ? "Entrando..." : "Entrar"}</Button>
+        <div className="relative py-1"><div className="absolute inset-0 flex items-center"><span className="w-full border-t" /></div><div className="relative flex justify-center"><span className="bg-card px-3 text-[11px] uppercase tracking-wide text-muted-foreground">ou</span></div></div>
+        <p className="text-center text-sm text-muted-foreground">
+          Primeira vez aqui? <Link to="/first-access" className="font-medium text-primary transition-colors hover:text-primary/80 hover:underline">Primeiro acesso</Link>
         </p>
       </form>
     </AuthCard>

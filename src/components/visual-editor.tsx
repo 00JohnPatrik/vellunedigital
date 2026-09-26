@@ -169,20 +169,22 @@ export function VisualEditor({ h, ctx, toolbarExtra, assets, bg, onBg }: { h: Bl
   const props = !sel && onBg ? <BackgroundPanel bg={bg ?? {}} onBg={onBg} assets={assets} /> : <Properties assets={assets} block={sel} setProp={setProp} actions={actions} convertToText={convertToText} blocksLen={blocks.length} index={sel ? blocks.indexOf(sel) : -1} />;
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-4">
       {/* Toolbar */}
-      <div className="flex flex-wrap items-center gap-2 rounded-xl border bg-card p-2 shadow-sm">
-        <Button type="button" variant="ghost" size="icon" aria-label="Desfazer" title="Desfazer (Ctrl+Z)" disabled={!h.canUndo} onClick={h.undo}><Undo2 className="h-4 w-4" /></Button>
-        <Button type="button" variant="ghost" size="icon" aria-label="Refazer" title="Refazer (Ctrl+Shift+Z)" disabled={!h.canRedo} onClick={h.redo}><Redo2 className="h-4 w-4" /></Button>
-        <div className="mx-1 h-6 w-px bg-border" />
-        <div className="flex rounded-md border p-0.5" role="group" aria-label="Visualização">
+      <div className="flex flex-wrap items-center gap-2 rounded-2xl border bg-card p-2.5 shadow-sm sm:p-3">
+        <div className="flex items-center gap-1 rounded-lg bg-muted/60 p-0.5" aria-label="Histórico">
+          <Button type="button" variant="ghost" size="icon" className="h-8 w-8" aria-label="Desfazer" title="Desfazer (Ctrl+Z)" disabled={!h.canUndo} onClick={h.undo}><Undo2 className="h-4 w-4" /></Button>
+          <Button type="button" variant="ghost" size="icon" className="h-8 w-8" aria-label="Refazer" title="Refazer (Ctrl+Shift+Z)" disabled={!h.canRedo} onClick={h.redo}><Redo2 className="h-4 w-4" /></Button>
+        </div>
+        <div className="mx-1 hidden h-6 w-px bg-border sm:block" />
+        <div className="flex rounded-lg border bg-background p-0.5" role="group" aria-label="Visualização">
           {([["mobile", Smartphone, "Celular"], ["tablet", Tablet, "Tablet"], ["desktop", Monitor, "Desktop"]] as const).map(([d, Icon, label]) => (
             <Button key={d} type="button" size="sm" variant={device === d ? "secondary" : "ghost"} className="h-8 px-2" aria-label={label} aria-pressed={device === d} onClick={() => setDevice(d)}>
               <Icon className="h-4 w-4" /><span className="hidden sm:inline">{label}</span>
             </Button>
           ))}
         </div>
-        <Button type="button" size="sm" variant={previewOnly ? "secondary" : "ghost"} onClick={() => { setPreviewOnly(!previewOnly); setSelected(null); }}>
+        <Button type="button" size="sm" variant={previewOnly ? "secondary" : "ghost"} className="border border-transparent" onClick={() => { setPreviewOnly(!previewOnly); setSelected(null); }}>
           <Eye className="h-4 w-4" />{previewOnly ? "Voltar a editar" : "Preview"}
         </Button>
         {isMobile && !previewOnly && (
@@ -196,13 +198,13 @@ export function VisualEditor({ h, ctx, toolbarExtra, assets, bg, onBg }: { h: Bl
 
       <div className={cn("grid gap-4", !previewOnly && "lg:grid-cols-[220px_minmax(0,1fr)_300px]")}>
         {!previewOnly && !isMobile && (
-          <aside className="space-y-3 lg:sticky lg:top-20 lg:max-h-[calc(100vh-6rem)] lg:self-start lg:overflow-y-auto">
-            <Panel title="Elementos">{library}</Panel>
-            <Panel title="Ordem dos blocos" icon={<Layers className="h-4 w-4" />}>{layers}</Panel>
+          <aside className="space-y-3 lg:sticky lg:top-20 lg:max-h-[calc(100vh-6rem)] lg:self-start lg:overflow-y-auto" aria-label="Ferramentas do editor">
+            <Panel title="Elementos" description="Adicione blocos ao convite">{library}</Panel>
+            <Panel title="Ordem dos blocos" icon={<Layers className="h-4 w-4" />} description="Arraste para reorganizar">{layers}</Panel>
           </aside>
         )}
 
-        <div className="min-w-0 rounded-xl border bg-muted/40 p-3 shadow-inner sm:p-6" onClick={() => setSelected(null)}>
+        <div className="min-w-0 rounded-2xl border bg-muted/40 p-3 shadow-inner sm:p-6" onClick={() => setSelected(null)}>
           <div className={cn("mx-auto w-full transition-[max-width]", DEVICE_W[device])}>
             <div className="relative isolate flex w-full flex-col gap-2 overflow-hidden rounded-2xl border bg-card p-4 shadow-sm sm:p-6" style={bgColorStyle(bg)}>
               <BackgroundLayers bg={bg} />
@@ -215,8 +217,8 @@ export function VisualEditor({ h, ctx, toolbarExtra, assets, bg, onBg }: { h: Bl
         </div>
 
         {!previewOnly && !isMobile && (
-          <aside className="lg:sticky lg:top-20 lg:max-h-[calc(100vh-6rem)] lg:self-start lg:overflow-y-auto">
-            <Panel title="Propriedades">{props}</Panel>
+          <aside className="lg:sticky lg:top-20 lg:max-h-[calc(100vh-6rem)] lg:self-start lg:overflow-y-auto" aria-label="Propriedades do elemento">
+            <Panel title="Propriedades" description={sel ? "Ajuste o bloco selecionado" : "Selecione um bloco ou o fundo"}>{props}</Panel>
           </aside>
         )}
       </div>
@@ -235,10 +237,13 @@ export function VisualEditor({ h, ctx, toolbarExtra, assets, bg, onBg }: { h: Bl
   );
 }
 
-function Panel({ title, icon, children }: { title: string; icon?: ReactNode; children: ReactNode }) {
+function Panel({ title, icon, description, children }: { title: string; icon?: ReactNode; description?: string; children: ReactNode }) {
   return (
-    <section className="rounded-xl border bg-card p-3 shadow-sm">
-      <h2 className="mb-3 flex items-center gap-1.5 border-b pb-2 text-sm font-semibold">{icon}{title}</h2>
+    <section className="rounded-2xl border bg-card p-3 shadow-sm">
+      <div className="mb-3 border-b pb-3">
+        <h2 className="flex items-center gap-1.5 text-sm font-semibold">{icon}{title}</h2>
+        {description && <p className="mt-1 text-[11px] leading-relaxed text-muted-foreground">{description}</p>}
+      </div>
       {children}
     </section>
   );
