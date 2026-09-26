@@ -42,8 +42,8 @@ export async function recentResponses(limit = 5): Promise<RecentResponse[]> {
 
 export async function globalCounts() {
   const [c, u] = await Promise.all([
-    supabase.from("companies").select("id", { count: "exact", head: true }).eq("status", "active"),
-    supabase.from("users").select("id", { count: "exact", head: true }).eq("status", "active"),
+    supabase.from("companies").select("id", { count: "exact", head: true }).eq("status", "active").is("deleted_at", null),
+    supabase.from("users").select("id", { count: "exact", head: true }).eq("status", "active").is("deleted_at", null),
   ]);
   if (c.error) throw c.error;
   if (u.error) throw u.error;

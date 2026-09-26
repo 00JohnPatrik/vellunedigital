@@ -58,10 +58,10 @@ export const requestFirstAccess = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: row } = await supabaseAdmin
       .from("users")
-      .select("id, auth_user_id, status")
+      .select("id, auth_user_id, status, deleted_at")
       .eq("email", data.email)
       .maybeSingle();
-    if (!row || row.status !== "active") return done;
+    if (!row || row.status !== "active" || row.deleted_at) return done;
 
     if (!row.auth_user_id) {
       const tmp = crypto.randomUUID() + crypto.randomUUID();
@@ -95,10 +95,10 @@ export const requestPasswordReset = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: row } = await supabaseAdmin
       .from("users")
-      .select("auth_user_id, status")
+      .select("auth_user_id, status, deleted_at")
       .eq("email", data.email)
       .maybeSingle();
-    if (!row || row.status !== "active" || !row.auth_user_id) return done;
+    if (!row || row.status !== "active" || row.deleted_at || !row.auth_user_id) return done;
     const client = await publicAuthClient();
     const { error } = await client.auth.resetPasswordForEmail(data.email, {
       redirectTo: `${new URL(data.origin).origin}/reset-password`,
