@@ -127,6 +127,17 @@ type Device = "mobile" | "tablet" | "desktop";
 const DEVICE_W: Record<Device, string> = { mobile: "max-w-[390px]", tablet: "max-w-[768px]", desktop: "max-w-[1024px]" };
 
 const RSVP_DUP = "Este convite já possui confirmação de presença.";
+const GRID_UNIT = 16;
+
+/** Mantém as coordenadas do editor em uma grade estável, independente do zoom visual. */
+export const snapToEditorGrid = (value: number, enabled: boolean, unit = GRID_UNIT) =>
+  enabled ? Math.round(value / unit) * unit : value;
+
+/** Converte coordenadas do ponteiro na viewport em coordenadas lógicas do canvas. */
+export const editorCanvasPoint = (event: { clientX: number; clientY: number }, rect: DOMRect, zoom: number) => ({
+  x: (event.clientX - rect.left) / (zoom / 100),
+  y: (event.clientY - rect.top) / (zoom / 100),
+});
 
 export function VisualEditor({ h, ctx, toolbarExtra, assets, bg, onBg }: { h: BlocksHistory; ctx?: EventCtx | undefined; toolbarExtra?: ReactNode; assets?: AssetScope | undefined; bg?: Background | undefined; onBg?: ((b: Background) => void) | undefined }) {
   const { blocks, set } = h;
@@ -356,9 +367,39 @@ export function VisualEditor({ h, ctx, toolbarExtra, assets, bg, onBg }: { h: Bl
           </aside>
         )}
 
-        <div className="min-w-0 rounded-2xl border bg-muted/40 p-3 shadow-inner sm:p-6" onClick={() => setSelected(null)}>
-          <div className={cn("mx-auto w-full transition-[max-width]", DEVICE_W[device])}>
-            <div className="relative isolate flex w-full flex-col gap-2 overflow-hidden rounded-2xl border bg-card p-4 shadow-sm sm:p-6" style={bgColorStyle(bg)}>
+        <div className="min-w-0 overflow-auto rounded-2xl border bg-muted/40 p-3 shadow-inner sm:p-6" onClick={() => setSelected(null)} aria-label="Área de edição do convite">
+          <div className={cn("mx-auto w-full transition-[max-width]", DEVICE_W[device])} data-editor-zoom={zoom}>
+            <div
+              className="relative isolate flex w-full flex-col gap-2 overflow-hidden rounded-2xl border bg-card p-4 shadow-sm sm:p-6"
+              style={{
+                ...bgColorStyle(bg),
+                backgroundImage: showGrid
+                  ? "linear-gradient(to right, color-mix(in oklch, var(--primary) 14%, transparent) 1px, transparent 1px), linear-gradient(to bottom, color-mix(in oklch, var(--primary) 14%, transparent) 1px, transparent 1px)"
+                  : undefined,
+                backgroundSize: showGrid ? `${GRID_UNIT * zoom / 100}px ${GRID_UNIT * zoom / 100}px` : undefined,
+                backgroundPosition: "0 0",
+              }}
+            >
+              {showRulers && !previewOnly && (
+                <>
+                  <div
+                    aria-hidden="true"
+                    className="pointer-events-none absolute inset-x-0 top-0 z-20 h-5 border-b bg-background/80"
+                    style={{
+                      backgroundImage: "repeating-linear-gradient(to right, transparent 0, transparent 15px, color-mix(in oklch, var(--foreground) 30%, transparent) 15px, color-mix(in oklch, var(--foreground) 30%, transparent) 16px)",
+                      backgroundSize: `${GRID_UNIT * zoom / 100}px 100%`,
+                    }}
+                  />
+                  <div
+                    aria-hidden="true"
+                    className="pointer-events-none absolute inset-y-0 left-0 z-20 w-5 border-r bg-background/80"
+                    style={{
+                      backgroundImage: "repeating-linear-gradient(to bottom, transparent 0, transparent 15px, color-mix(in oklch, var(--foreground) 30%, transparent) 15px, color-mix(in oklch, var(--foreground) 30%, transparent) 16px)",
+                      backgroundSize: `100% ${GRID_UNIT * zoom / 100}px`,
+                    }}
+                  />
+                </>
+              )}
               <BackgroundLayers bg={bg} />
               {blocks.length === 0 && <p className="py-12 text-center text-sm text-muted-foreground">Adicione elementos para começar.</p>}
               {showGuides && !previewOnly && <>
