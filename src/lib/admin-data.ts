@@ -18,7 +18,7 @@ export async function listCompanies(): Promise<CompanyRow[]> {
   const { data, error } = await supabase
     .from("companies")
     .select("id, name, type, status, created_at, updated_at, users(id, name, role, status)")
-    .order("name");
+    .is("deleted_at", null).order("name");
   if (error) throw error;
   return data as unknown as CompanyRow[];
 }
@@ -32,7 +32,7 @@ export async function getCompany(id: string): Promise<Company | null> {
 const userCols = "id, name, email, phone, role, status, company_id, auth_user_id, created_at, updated_at, company:companies(id, name, status)";
 
 export async function listCompanyAdmins(companyId?: string): Promise<CompanyAdmin[]> {
-  let q = supabase.from("users").select(userCols).eq("role", "company_admin").order("name");
+  let q = supabase.from("users").select(userCols).eq("role", "company_admin").is("deleted_at", null).order("name");
   if (companyId) q = q.eq("company_id", companyId);
   const { data, error } = await q;
   if (error) throw error;
@@ -40,7 +40,7 @@ export async function listCompanyAdmins(companyId?: string): Promise<CompanyAdmi
 }
 
 export async function getCompanyAdmin(id: string): Promise<CompanyAdmin | null> {
-  const { data, error } = await supabase.from("users").select(userCols).eq("id", id).eq("role", "company_admin").maybeSingle();
+  const { data, error } = await supabase.from("users").select(userCols).eq("id", id).eq("role", "company_admin").is("deleted_at", null).maybeSingle();
   if (error) throw error;
   return data as unknown as CompanyAdmin | null;
 }
@@ -55,3 +55,9 @@ async function setStatus(table: "companies" | "users", id: string, status: Statu
 }
 export const setCompanyStatus = (id: string, s: Status) => setStatus("companies", id, s, "Empresa");
 export const setUserStatus = (id: string, s: Status) => setStatus("users", id, s, "Usuário");
+
+/** Soft delete / restore of companies and company admins (super admin only — enforced by DB triggers). */
+export async function setDeleted(table: "companies" | "users", id: string, deleted: boolean) {
+  const { error } = await supabase.from(table).update({ deleted_at: deleted ? new Date().toISOString() : null }).eq("id", id);
+  if (error) throw error;
+}

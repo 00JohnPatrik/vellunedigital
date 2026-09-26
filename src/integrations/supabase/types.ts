@@ -17,6 +17,8 @@ export type Database = {
       companies: {
         Row: {
           created_at: string
+          deleted_at: string | null
+          deleted_by: string | null
           id: string
           name: string
           status: Database["public"]["Enums"]["record_status"]
@@ -25,6 +27,8 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          deleted_at?: string | null
+          deleted_by?: string | null
           id?: string
           name: string
           status?: Database["public"]["Enums"]["record_status"]
@@ -33,13 +37,23 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          deleted_at?: string | null
+          deleted_by?: string | null
           id?: string
           name?: string
           status?: Database["public"]["Enums"]["record_status"]
           type?: string | null
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "companies_deleted_by_fkey"
+            columns: ["deleted_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       customers: {
         Row: {
@@ -433,6 +447,8 @@ export type Database = {
           auth_user_id: string | null
           company_id: string | null
           created_at: string
+          deleted_at: string | null
+          deleted_by: string | null
           email: string
           id: string
           name: string
@@ -446,6 +462,8 @@ export type Database = {
           auth_user_id?: string | null
           company_id?: string | null
           created_at?: string
+          deleted_at?: string | null
+          deleted_by?: string | null
           email: string
           id?: string
           name: string
@@ -459,6 +477,8 @@ export type Database = {
           auth_user_id?: string | null
           company_id?: string | null
           created_at?: string
+          deleted_at?: string | null
+          deleted_by?: string | null
           email?: string
           id?: string
           name?: string
@@ -474,6 +494,13 @@ export type Database = {
             columns: ["company_id"]
             isOneToOne: false
             referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "users_deleted_by_fkey"
+            columns: ["deleted_by"]
+            isOneToOne: false
+            referencedRelation: "users"
             referencedColumns: ["id"]
           },
         ]

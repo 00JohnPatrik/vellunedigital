@@ -7,9 +7,9 @@ import { toast } from "sonner";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { dbErrorMessage, EmptyState, fmtDate, LoadingState, PageHeader, StatusBadge, StatusToggle } from "@/components/admin-ui";
+import { dbErrorMessage, EmptyState, fmtDate, LoadingState, PageHeader, StatusBadge, StatusToggle, DeleteButton } from "@/components/admin-ui";
 import { UserForm } from "@/components/admin-forms";
-import { getCompanyAdmin, isUuid, setUserStatus } from "@/lib/admin-data";
+import { getCompanyAdmin, isUuid, setUserStatus, setDeleted } from "@/lib/admin-data";
 import { sendAccessInvite } from "@/lib/admin.functions";
 
 export const Route = createFileRoute("/_authenticated/admin/users/$id")({
@@ -61,6 +61,8 @@ function UserDetail() {
             </Button>
             <StatusToggle size="default" status={u.status} name={u.name}
               onConfirm={async () => { await setUserStatus(u.id, u.status === "active" ? "inactive" : "active"); refresh(); }} />
+            <DeleteButton name={u.name} description="O administrador vai para a Lixeira e perde o acesso imediatamente. A empresa e o histórico são preservados e ele pode ser restaurado."
+              onConfirm={async () => { try { await setDeleted("users", u.id, true); toast.success("Administrador enviado para a Lixeira."); await qc.invalidateQueries(); await navigate({ to: "/admin/users" }); } catch { toast.error("Não foi possível excluir."); } }} />
           </div>
         )} />
 

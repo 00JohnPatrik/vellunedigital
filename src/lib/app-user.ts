@@ -15,11 +15,13 @@ export type AppUser = {
 export async function loadAppUser(authUserId: string): Promise<AppUser | null> {
   const { data, error } = await supabase
     .from("users")
-    .select("id, name, email, role, status, theme, company:companies(id, name, status)")
+    .select("id, name, email, role, status, deleted_at, theme, company:companies(id, name, status, deleted_at)")
     .eq("auth_user_id", authUserId)
     .maybeSingle();
   if (error || !data) return null;
-  return data as unknown as AppUser;
+  const d = data as unknown as AppUser & { deleted_at: string | null; company: (AppUser["company"] & { deleted_at: string | null }) | null };
+  // Items in the trash lose access immediately (treated as inactive).
+  return { ...d, status: d.deleted_at ? "inactive" : d.status, company: d.company ? { ...d.company, status: d.company.deleted_at ? "inactive" : d.company.status } : null };
 }
 
 /** Account can use the admin area (active user; company admins need an active company). */

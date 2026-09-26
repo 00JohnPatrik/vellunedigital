@@ -16,7 +16,7 @@ export const Route = createFileRoute("/_authenticated/admin/trash")({
   component: TrashPage,
 });
 
-type Tab = TrashKind | "company" | "admin";
+type Tab = TrashKind;
 const TABS: [Tab, string, string][] = [
   ["invitation", "Convites", "Nenhum convite na lixeira."],
   ["company", "Empresas", "Nenhuma empresa na lixeira."],
@@ -29,6 +29,7 @@ const fmt = (s: string) => new Date(s).toLocaleString("pt-BR", { dateStyle: "sho
 function details(r: TrashItem) {
   const parts: string[] = [];
   if (r.kind === "invitation") parts.push(`Empresa: ${r.company ?? "—"}`, `Cliente: ${r.customer ?? "—"}`);
+  if (r.kind === "admin") parts.push(`E-mail: ${r.email ?? "—"}`, `Empresa: ${r.company ?? "—"}`);
   if (r.kind === "customer") parts.push(`Empresa: ${r.company ?? "—"}`);
   if (r.kind === "template") parts.push(`Empresa: ${r.company ?? "Oficial"}`, `Categoria: ${r.category ? categoryLabel(r.category) : "—"}`);
   parts.push(`Excluído em ${fmt(r.deleted_at)}`, `Por ${r.deleted_by ?? "—"}`);

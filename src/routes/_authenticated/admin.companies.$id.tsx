@@ -5,9 +5,9 @@ import { toast } from "sonner";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { dbErrorMessage, EmptyState, fmtDate, LoadingState, PageHeader, StatusBadge, StatusToggle } from "@/components/admin-ui";
+import { dbErrorMessage, EmptyState, fmtDate, LoadingState, PageHeader, StatusBadge, StatusToggle, DeleteButton } from "@/components/admin-ui";
 import { CompanyForm } from "@/components/admin-forms";
-import { getCompany, isUuid, listCompanyAdmins, setCompanyStatus } from "@/lib/admin-data";
+import { getCompany, isUuid, listCompanyAdmins, setCompanyStatus, setDeleted } from "@/lib/admin-data";
 
 export const Route = createFileRoute("/_authenticated/admin/companies/$id")({
   validateSearch: z.object({ edit: z.boolean().optional() }),
@@ -33,7 +33,7 @@ function CompanyDetail() {
   );
   if (valid && company.isLoading) return <div>{back}<LoadingState /></div>;
   const c = company.data;
-  if (!valid || !c) return <div>{back}<EmptyState>Empresa não encontrada.</EmptyState></div>;
+  if (!valid || !c || (c as { deleted_at?: string | null }).deleted_at) return <div>{back}<EmptyState>Empresa não encontrada.</EmptyState></div>;
 
   return (
     <div>
@@ -44,6 +44,8 @@ function CompanyDetail() {
             <Button variant="outline" onClick={() => setEdit(true)}><Pencil className="h-4 w-4" />Editar</Button>
             <StatusToggle size="default" status={c.status} name={c.name}
               onConfirm={async () => { await setCompanyStatus(c.id, c.status === "active" ? "inactive" : "active"); refresh(); }} />
+            <DeleteButton name={c.name} description="A empresa vai para a Lixeira. Clientes, modelos, convites, respostas, visualizações e arquivos são preservados e tudo pode ser restaurado."
+              onConfirm={async () => { try { await setDeleted("companies", c.id, true); toast.success("Empresa enviada para a Lixeira."); await qc.invalidateQueries(); await navigate({ to: "/admin/companies" }); } catch { toast.error("Não foi possível excluir."); } }} />
           </div>
         )} />
 
