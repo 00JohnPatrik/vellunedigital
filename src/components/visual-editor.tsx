@@ -1,7 +1,7 @@
 import { memo, useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import {
-  ArrowDown, ArrowUp, CalendarDays, Clock, Copy, Eye, EyeOff, GripVertical, ImageIcon, Images, Layers, Lock, MapPin, MessageCircle, Minus,
-  Monitor, MousePointerClick, Plus, QrCode, Redo2, RotateCcw, Settings2, Smartphone, Tablet, Timer, Trash2, Type, Undo2, Unlock, UserCheck,
+  AlignCenter, AlignLeft, AlignRight, ArrowDown, ArrowUp, CalendarDays, Clock, Copy, Eye, EyeOff, GripVertical, ImageIcon, Images, Layers, Lock, MapPin, MessageCircle, Minus,
+  Monitor, MousePointerClick, Plus, QrCode, Redo2, RotateCcw, Settings2, Smartphone, Tablet, Timer, Trash2, Type, Undo2, Unlock, UserCheck, Maximize2,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -11,6 +11,14 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuSeparator,
+  ContextMenuShortcut,
+  ContextMenuTrigger,
+} from "@/components/ui/context-menu";
 import { BackgroundLayers, bgColorStyle, BlockView } from "@/components/block-render";
 import { ImageUpload } from "@/components/image-upload";
 import { STORAGE_PREFIX, type AssetScope, useAssetUrl } from "@/lib/assets";
@@ -128,6 +136,8 @@ export function VisualEditor({ h, ctx, toolbarExtra, assets, bg, onBg }: { h: Bl
   const [device, setDevice] = useState<Device>("mobile");
   const [zoom, setZoom] = useState(100);
   const [previewOnly, setPreviewOnly] = useState(false);
+  const [focusMode, setFocusMode] = useState(false);
+  const [showGuides, setShowGuides] = useState(true);
   const [sheet, setSheet] = useState<"elements" | "props" | null>(null);
   const clipboard = useRef<Block | null>(null);
   const sel = blocks.find((b) => b.id === selected) ?? null;
@@ -140,6 +150,8 @@ export function VisualEditor({ h, ctx, toolbarExtra, assets, bg, onBg }: { h: Bl
       const command = e.ctrlKey || e.metaKey;
       if (command && e.key.toLowerCase() === "z") { e.preventDefault(); if (e.shiftKey) h.redo(); else h.undo(); return; }
       if (command && e.key.toLowerCase() === "y") { e.preventDefault(); h.redo(); return; }
+      if (command && e.key.toLowerCase() === "s") { e.preventDefault(); toast("As alterações são salvas automaticamente."); return; }
+      if (e.key === "Escape" && focusMode) { e.preventDefault(); setFocusMode(false); return; }
       if (command && e.key.toLowerCase() === "c" && sel) { e.preventDefault(); clipboard.current = structuredClone(sel); return; }
       if (command && e.key.toLowerCase() === "v" && clipboard.current) {
         e.preventDefault();
@@ -186,6 +198,7 @@ export function VisualEditor({ h, ctx, toolbarExtra, assets, bg, onBg }: { h: Bl
     toast("Bloco excluído.", { action: { label: "Desfazer", onClick: h.undo } });
   };
   const setProp = (id: string, k: string, v: string) => set((bs) => bs.map((b) => (b.id === id && !b.locked ? { ...b, props: { ...b.props, [k]: v } } : b)), `${id}:${k}`);
+  const alignSelected = (align: "left" | "center" | "right") => { if (sel && !sel.locked) setProp(sel.id, "align", align); };
   const convertToText = (id: string) => set((bs) => bs.map((b) => (b.id === id ? { ...newBlock("text"), id, props: { ...BLOCKS.text.defaults, text: Object.values(b.props ?? {}).filter((x) => typeof x === "string").join(" ") || "Texto" } } : b)));
 
   const actions = { move, duplicate, toggleHidden, toggleLocked, remove };
@@ -220,7 +233,22 @@ export function VisualEditor({ h, ctx, toolbarExtra, assets, bg, onBg }: { h: Bl
         <Button type="button" size="sm" variant={previewOnly ? "secondary" : "ghost"} className="border border-transparent" onClick={() => { setPreviewOnly(!previewOnly); setSelected(null); }}>
           <Eye className="h-4 w-4" />{previewOnly ? "Voltar a editar" : "Preview"}
         </Button>
-        {isMobile && !previewOnly && (
+        {!previewOnly && (
+          <>
+            <div className="hidden items-center gap-0.5 rounded-lg border bg-background p-0.5 sm:flex" role="group" aria-label="Alinhamento do bloco selecionado">
+              <Button type="button" variant="ghost" size="icon" className="h-8 w-8" aria-label="Alinhar à esquerda" disabled={!sel || sel.locked} onClick={() => alignSelected("left")}><AlignLeft className="h-4 w-4" /></Button>
+              <Button type="button" variant="ghost" size="icon" className="h-8 w-8" aria-label="Centralizar" disabled={!sel || sel.locked} onClick={() => alignSelected("center")}><AlignCenter className="h-4 w-4" /></Button>
+              <Button type="button" variant="ghost" size="icon" className="h-8 w-8" aria-label="Alinhar à direita" disabled={!sel || sel.locked} onClick={() => alignSelected("right")}><AlignRight className="h-4 w-4" /></Button>
+            </div>
+            <Button type="button" size="sm" variant={showGuides ? "secondary" : "ghost"} aria-pressed={showGuides} onClick={() => setShowGuides((value) => !value)}>
+              Guias
+            </Button>
+            <Button type="button" size="sm" variant={focusMode ? "secondary" : "ghost"} aria-pressed={focusMode} onClick={() => { setFocusMode((value) => !value); setSelected(null); }} title="Alternar modo foco (Esc)">
+              <Maximize2 className="h-4 w-4" />{focusMode ? "Sair do foco" : "Modo foco"}
+            </Button>
+          </>
+        )}
+        {isMobile && !previewOnly && !focusMode && (
           <>
             <Button type="button" size="sm" variant="outline" onClick={() => setSheet("elements")}><Plus className="h-4 w-4" />Elementos</Button>
             <Button type="button" size="sm" variant="outline" disabled={!sel && !onBg} onClick={() => setSheet("props")}><Settings2 className="h-4 w-4" />{sel || !onBg ? "Propriedades" : "Fundo"}</Button>
@@ -229,8 +257,8 @@ export function VisualEditor({ h, ctx, toolbarExtra, assets, bg, onBg }: { h: Bl
         <div className="ml-auto flex items-center gap-2">{toolbarExtra}</div>
       </div>
 
-      <div className={cn("grid gap-4", !previewOnly && "lg:grid-cols-[220px_minmax(0,1fr)_300px]")}>
-        {!previewOnly && !isMobile && (
+      <div className={cn("grid gap-4", !previewOnly && !focusMode && "lg:grid-cols-[220px_minmax(0,1fr)_300px]")}>
+        {!previewOnly && !isMobile && !focusMode && (
           <aside className="space-y-3 lg:sticky lg:top-20 lg:max-h-[calc(100vh-6rem)] lg:self-start lg:overflow-y-auto" aria-label="Ferramentas do editor">
             <Panel title="Elementos" description="Adicione blocos ao convite">{library}</Panel>
             <Panel title="Ordem dos blocos" icon={<Layers className="h-4 w-4" />} description="Arraste para reorganizar">{layers}</Panel>
@@ -242,6 +270,10 @@ export function VisualEditor({ h, ctx, toolbarExtra, assets, bg, onBg }: { h: Bl
             <div className="relative isolate flex w-full flex-col gap-2 overflow-hidden rounded-2xl border bg-card p-4 shadow-sm sm:p-6" style={bgColorStyle(bg)}>
               <BackgroundLayers bg={bg} />
               {blocks.length === 0 && <p className="py-12 text-center text-sm text-muted-foreground">Adicione elementos para começar.</p>}
+              {showGuides && !previewOnly && <>
+                <div aria-hidden className="pointer-events-none absolute inset-x-0 top-1/2 border-t border-dashed border-primary/20" />
+                <div aria-hidden className="pointer-events-none absolute inset-y-0 left-1/2 border-l border-dashed border-primary/20" />
+              </>}
               {blocks.map((b, i) => previewOnly
                 ? (b.hidden ? null : <div key={b.id} className="py-1"><BlockView block={b} ctx={ctx} interactive /></div>)
                 : <CanvasBlock key={b.id} block={b} ctx={ctx} selected={b.id === selected} onSelect={select} first={i === 0} last={i === blocks.length - 1} actions={actions} />)}
@@ -249,14 +281,14 @@ export function VisualEditor({ h, ctx, toolbarExtra, assets, bg, onBg }: { h: Bl
           </div>
         </div>
 
-        {!previewOnly && !isMobile && (
+        {!previewOnly && !isMobile && !focusMode && (
           <aside className="lg:sticky lg:top-20 lg:max-h-[calc(100vh-6rem)] lg:self-start lg:overflow-y-auto" aria-label="Propriedades do elemento">
             <Panel title="Propriedades" description={sel ? "Ajuste o bloco selecionado" : "Selecione um bloco ou o fundo"}>{props}</Panel>
           </aside>
         )}
       </div>
 
-      {isMobile && (
+      {isMobile && !focusMode && (
         <Sheet open={sheet !== null} onOpenChange={(o) => !o && setSheet(null)}>
           <SheetContent side="bottom" className="max-h-[80vh] overflow-y-auto">
             <SheetHeader><SheetTitle>{sheet === "elements" ? "Elementos" : sel || !onBg ? "Propriedades" : "Fundo do convite"}</SheetTitle></SheetHeader>
@@ -317,26 +349,42 @@ function BlockActions({ b, first, last, actions, compact }: { b: Block; first: b
 const CanvasBlock = memo(function CanvasBlock({ block, ctx, selected, onSelect, first, last, actions }: {
   block: Block; ctx?: EventCtx | undefined; selected: boolean; onSelect: (id: string) => void; first: boolean; last: boolean; actions: Actions;
 }) {
+  const select = () => { if (!block.locked) onSelect(block.id); };
   return (
-    <div
-      role="button" tabIndex={0} aria-label={`Selecionar ${blockLabel(block)}`}
-      onClick={(e) => { e.stopPropagation(); if (!block.locked) onSelect(block.id); }}
-      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); if (!block.locked) onSelect(block.id); } }}
-      className={cn("group relative rounded-lg border-2 p-2 outline-none transition-colors",
-        block.locked ? "cursor-not-allowed border-border/50" : "cursor-pointer",
-        selected ? "border-primary" : "border-dashed border-border/60 hover:border-primary/40 focus-visible:border-primary/60",
-        block.hidden && "opacity-40")}
-    >
-      {selected && (
-        <div className="absolute -top-4 right-2 z-10 flex items-center gap-1 rounded-md border bg-popover px-1 shadow-sm">
-          <span className="px-1 text-[11px] font-medium">{blockLabel(block)}</span>
-          <BlockActions b={block} first={first} last={last} actions={actions} compact />
+    <ContextMenu>
+      <ContextMenuTrigger asChild>
+        <div
+          role="button" tabIndex={0} aria-label={`Selecionar ${blockLabel(block)}`}
+          onClick={(e) => { e.stopPropagation(); select(); }}
+          onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); select(); } }}
+          className={cn("group relative rounded-lg border-2 p-2 outline-none transition-colors",
+            block.locked ? "cursor-not-allowed border-border/50" : "cursor-pointer",
+            selected ? "border-primary" : "border-dashed border-border/60 hover:border-primary/40 focus-visible:border-primary/60",
+            block.hidden && "opacity-40")}
+        >
+          {selected && (
+            <div className="absolute -top-4 right-2 z-10 flex items-center gap-1 rounded-md border bg-popover px-1 shadow-sm">
+              <span className="px-1 text-[11px] font-medium">{blockLabel(block)}</span>
+              <BlockActions b={block} first={first} last={last} actions={actions} compact />
+            </div>
+          )}
+          {block.hidden && <span className="absolute left-2 top-1 text-[10px] uppercase text-muted-foreground">Oculto</span>}
+          {block.locked && <span className="absolute bottom-1 left-2 inline-flex items-center gap-1 text-[10px] uppercase text-muted-foreground"><Lock className="h-3 w-3" />Bloqueado</span>}
+          <div className="pointer-events-none"><BlockView block={block} ctx={ctx} /></div>
         </div>
-      )}
-      {block.hidden && <span className="absolute left-2 top-1 text-[10px] uppercase text-muted-foreground">Oculto</span>}
-      {block.locked && <span className="absolute bottom-1 left-2 inline-flex items-center gap-1 text-[10px] uppercase text-muted-foreground"><Lock className="h-3 w-3" />Bloqueado</span>}
-      <div className="pointer-events-none"><BlockView block={block} ctx={ctx} /></div>
-    </div>
+      </ContextMenuTrigger>
+      <ContextMenuContent className="w-56">
+        <ContextMenuItem onSelect={select}>Selecionar <ContextMenuShortcut>Enter</ContextMenuShortcut></ContextMenuItem>
+        <ContextMenuItem disabled={first} onSelect={() => actions.move(block.id, -1)}>Mover para cima</ContextMenuItem>
+        <ContextMenuItem disabled={last} onSelect={() => actions.move(block.id, 1)}>Mover para baixo</ContextMenuItem>
+        <ContextMenuSeparator />
+        <ContextMenuItem onSelect={() => actions.duplicate(block.id)}>Duplicar <ContextMenuShortcut>Ctrl+D</ContextMenuShortcut></ContextMenuItem>
+        <ContextMenuItem onSelect={() => actions.toggleHidden(block.id)}>{block.hidden ? "Mostrar bloco" : "Ocultar bloco"}</ContextMenuItem>
+        <ContextMenuItem onSelect={() => actions.toggleLocked(block.id)}>{block.locked ? "Desbloquear bloco" : "Bloquear bloco"}</ContextMenuItem>
+        <ContextMenuSeparator />
+        <ContextMenuItem className="text-destructive focus:text-destructive" onSelect={() => actions.remove(block.id)}>Excluir bloco <ContextMenuShortcut>Del</ContextMenuShortcut></ContextMenuItem>
+      </ContextMenuContent>
+    </ContextMenu>
   );
 });
 
