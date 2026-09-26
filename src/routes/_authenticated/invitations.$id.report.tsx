@@ -49,7 +49,7 @@ function InvitationReport() {
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <Metric icon={<Users className="h-5 w-5" />} label="Convidados" value={guests.length} detail={`${peopleInvited} pessoas convidadas`} />
         <Metric icon={<UserRoundCheck className="h-5 w-5" />} label="Confirmados" value={confirmed.length} detail={`${peopleConfirmed} pessoas confirmadas`} />
-        <Metric icon={<CheckCircle2 className="h-5 w-5" />} label="Check-ins" value={activeCheckins.length} detail={`${checkinRate}% dos convidados`} />
+        <Metric icon={<CheckCircle2 className="h-5 w-5" />} label="Check-ins" value={checkedGuestIds.size} detail={`${checkinRate}% dos convidados`} />
         <Metric icon={<ClipboardCheck className="h-5 w-5" />} label="Respostas" value={responseTotal} detail={`${responseRate}% de retorno`} />
       </div>
 

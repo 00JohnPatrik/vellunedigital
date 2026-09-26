@@ -203,6 +203,30 @@ function ImageBlock({ p }: { p: Record<string, string> }) {
 
 type GalleryImage = { url: string; alt?: string; caption?: string };
 
+function GalleryImageButton({ item, index, height, captions, onOpen }: { item: GalleryImage; index: number; height: string; captions: boolean; onOpen: (index: number) => void }) {
+  const src = useAssetUrl(item.url);
+  return (
+    <button type="button" className={cn("group relative block w-full overflow-hidden rounded-lg bg-muted text-left", height)} onClick={() => onOpen(index)} aria-label={`Abrir imagem ${index + 1}${item.alt ? `: ${item.alt}` : ""}`}>
+      {src ? <img src={src} alt={item.alt ?? ""} loading="lazy" className="h-full w-full object-cover transition-transform group-hover:scale-105" /> : <span className="flex h-full min-h-24 items-center justify-center text-xs text-muted-foreground">Imagem indisponível</span>}
+      {captions && item.caption && <span className="absolute inset-x-0 bottom-0 bg-background/75 px-2 py-1 text-xs text-foreground">{item.caption}</span>}
+      <span className="absolute right-2 top-2 rounded-md bg-background/75 p-1.5 opacity-0 transition-opacity group-hover:opacity-100"><Maximize2 className="h-4 w-4" aria-hidden="true" /></span>
+    </button>
+  );
+}
+
+function GalleryFullscreen({ images, active, onClose, onMove }: { images: GalleryImage[]; active: number; onClose: () => void; onMove: (direction: number) => void }) {
+  const current = images[active];
+  const src = useAssetUrl(current?.url);
+  if (!current) return null;
+  return (
+    <div role="dialog" aria-modal="true" aria-label="Imagem ampliada" className="fixed inset-0 z-50 flex items-center justify-center bg-background/95 p-4" onClick={onClose}>
+      <button type="button" aria-label="Fechar tela cheia" className="absolute right-4 top-4 rounded-full bg-muted p-2" onClick={onClose}><X className="h-5 w-5" /></button>
+      <img src={src ?? undefined} alt={current.alt ?? ""} className="max-h-[90vh] max-w-full object-contain" onClick={(event) => event.stopPropagation()} />
+      {images.length > 1 && <><button type="button" aria-label="Imagem anterior" className="absolute left-4 rounded-full bg-muted p-2" onClick={(event) => { event.stopPropagation(); onMove(-1); }}><ChevronLeft className="h-6 w-6" /></button><button type="button" aria-label="Próxima imagem" className="absolute right-4 rounded-full bg-muted p-2" onClick={(event) => { event.stopPropagation(); onMove(1); }}><ChevronRight className="h-6 w-6" /></button></>}
+    </div>
+  );
+}
+
 function GalleryBlock({ p }: { p: Record<string, string> }) {
   const [active, setActive] = useState(0);
   const [fullscreen, setFullscreen] = useState(false);
@@ -218,38 +242,24 @@ function GalleryBlock({ p }: { p: Record<string, string> }) {
   const height = IMG_HEIGHT[p["height"] ?? "square"] || "aspect-square";
   const current = images[active] ?? images[0];
   const move = (direction: number) => setActive((index) => (index + direction + images.length) % images.length);
+  const openImage = (index: number) => { setActive(index); setFullscreen(true); };
 
   if (!images.length) return <div className="rounded-lg border border-dashed p-6 text-center text-sm text-muted-foreground">Adicione imagens à galeria.</div>;
-
-  const image = (item: GalleryImage, index: number, large = false) => {
-    const src = useAssetUrl(item.url);
-    return (
-      <button type="button" className={cn("group relative block w-full overflow-hidden rounded-lg bg-muted text-left", large ? "" : height)} onClick={() => { setActive(index); setFullscreen(true); }} aria-label={`Abrir imagem ${index + 1}${item.alt ? `: ${item.alt}` : ""}`}>
-        {src ? <img src={src} alt={item.alt ?? ""} loading="lazy" className="h-full w-full object-cover transition-transform group-hover:scale-105" /> : <span className="flex h-full min-h-24 items-center justify-center text-xs text-muted-foreground">Imagem indisponível</span>}
-        {p["captions"] !== "0" && item.caption && <span className="absolute inset-x-0 bottom-0 bg-background/75 px-2 py-1 text-xs text-foreground">{item.caption}</span>}
-        <span className="absolute right-2 top-2 rounded-md bg-background/75 p-1.5 opacity-0 transition-opacity group-hover:opacity-100"><Maximize2 className="h-4 w-4" aria-hidden="true" /></span>
-      </button>
-    );
-  };
 
   return (
     <Row align={p["align"]}>
       <div className="w-full space-y-2">
         {mode === "carousel" ? (
           <div className="relative">
-            {image(current!, active, true)}
+            <GalleryImageButton item={current!} index={active} height={height} captions={p["captions"] !== "0"} onOpen={openImage} />
             {images.length > 1 && <>
               <button type="button" onClick={() => move(-1)} aria-label="Imagem anterior" className="absolute left-2 top-1/2 -translate-y-1/2 rounded-full bg-background/80 p-2 text-foreground shadow-sm"><ChevronLeft className="h-5 w-5" /></button>
               <button type="button" onClick={() => move(1)} aria-label="Próxima imagem" className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-background/80 p-2 text-foreground shadow-sm"><ChevronRight className="h-5 w-5" /></button>
               <div className="absolute bottom-2 left-1/2 -translate-x-1/2 rounded-full bg-background/80 px-2 py-1 text-[11px] text-foreground">{active + 1} / {images.length}</div>
             </>}
           </div>
-        ) : <div className={cn("grid gap-2", columns)}>{images.map((item, index) => <div key={`${item.url}-${index}`}>{image(item, index)}</div>)}</div>}
-        {fullscreen && current && <div role="dialog" aria-modal="true" aria-label="Imagem ampliada" className="fixed inset-0 z-50 flex items-center justify-center bg-background/95 p-4" onClick={() => setFullscreen(false)}>
-          <button type="button" aria-label="Fechar tela cheia" className="absolute right-4 top-4 rounded-full bg-muted p-2" onClick={() => setFullscreen(false)}><X className="h-5 w-5" /></button>
-          <img src={useAssetUrl(current.url) ?? undefined} alt={current.alt ?? ""} className="max-h-[90vh] max-w-full object-contain" onClick={(event) => event.stopPropagation()} />
-          {images.length > 1 && <><button type="button" aria-label="Imagem anterior" className="absolute left-4 rounded-full bg-muted p-2" onClick={(event) => { event.stopPropagation(); move(-1); }}><ChevronLeft className="h-6 w-6" /></button><button type="button" aria-label="Próxima imagem" className="absolute right-4 rounded-full bg-muted p-2" onClick={(event) => { event.stopPropagation(); move(1); }}><ChevronRight className="h-6 w-6" /></button></>}
-        </div>}
+        ) : <div className={cn("grid gap-2", columns)}>{images.map((item, index) => <div key={`${item.url}-${index}`}><GalleryImageButton item={item} index={index} height={height} captions={p["captions"] !== "0"} onOpen={openImage} /></div>)}</div>}
+        {fullscreen && <GalleryFullscreen images={images} active={active} onClose={() => setFullscreen(false)} onMove={move} />}
       </div>
     </Row>
   );
