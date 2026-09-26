@@ -1,7 +1,7 @@
 import { memo, useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import {
   AlignCenter, AlignLeft, AlignRight, ArrowDown, ArrowUp, CalendarDays, Clock, Copy, Eye, EyeOff, GripVertical, ImageIcon, Images, Layers, Lock, MapPin, MessageCircle, Minus,
-  Monitor, MousePointerClick, Plus, QrCode, Redo2, RotateCcw, Settings2, Smartphone, Tablet, Timer, Trash2, Type, Undo2, Unlock, UserCheck, Maximize2,
+  Monitor, MousePointerClick, Plus, QrCode, Redo2, RotateCcw, Settings2, Smartphone, Tablet, Timer, Trash2, Type, Undo2, Unlock, UserCheck, Maximize2, Grid3X3, Ruler, Crosshair,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -139,6 +139,9 @@ export function VisualEditor({ h, ctx, toolbarExtra, assets, bg, onBg }: { h: Bl
   const [previewOnly, setPreviewOnly] = useState(false);
   const [focusMode, setFocusMode] = useState(false);
   const [showGuides, setShowGuides] = useState(true);
+  const [showRulers, setShowRulers] = useState(true);
+  const [showGrid, setShowGrid] = useState(false);
+  const [snapToGrid, setSnapToGrid] = useState(true);
   const [sheet, setSheet] = useState<"elements" | "props" | null>(null);
   const clipboard = useRef<Block | null>(null);
   const sel = blocks.find((b) => b.id === selected) ?? null;
@@ -320,7 +323,16 @@ export function VisualEditor({ h, ctx, toolbarExtra, assets, bg, onBg }: { h: Bl
               <Button type="button" size="sm" variant="ghost" className="text-destructive" onClick={removeMultiple}><Trash2 className="h-4 w-4" />Excluir</Button>
             </div>}
             <Button type="button" size="sm" variant={showGuides ? "secondary" : "ghost"} aria-pressed={showGuides} onClick={() => setShowGuides((value) => !value)}>
-              Guias
+              <Crosshair className="h-4 w-4" />Guias
+            </Button>
+            <Button type="button" size="sm" variant={showRulers ? "secondary" : "ghost"} aria-pressed={showRulers} onClick={() => setShowRulers((value) => !value)} title="Mostrar ou ocultar réguas">
+              <Ruler className="h-4 w-4" />Réguas
+            </Button>
+            <Button type="button" size="sm" variant={showGrid ? "secondary" : "ghost"} aria-pressed={showGrid} onClick={() => setShowGrid((value) => !value)} title="Mostrar ou ocultar a grade local">
+              <Grid3X3 className="h-4 w-4" />Grade
+            </Button>
+            <Button type="button" size="sm" variant={snapToGrid ? "secondary" : "ghost"} aria-pressed={snapToGrid} onClick={() => setSnapToGrid((value) => !value)} title="Ativar ou desativar snap na grade">
+              Snap
             </Button>
             <Button type="button" size="sm" variant={focusMode ? "secondary" : "ghost"} aria-pressed={focusMode} onClick={() => { setFocusMode((value) => !value); setSelected(null); }} title="Alternar modo foco (Esc)">
               <Maximize2 className="h-4 w-4" />{focusMode ? "Sair do foco" : "Modo foco"}
