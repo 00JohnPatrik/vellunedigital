@@ -198,6 +198,7 @@ export type Database = {
       }
       invitations: {
         Row: {
+          access_token: string | null
           address: string | null
           city: string | null
           company_id: string
@@ -220,6 +221,7 @@ export type Database = {
           venue_name: string | null
         }
         Insert: {
+          access_token?: string | null
           address?: string | null
           city?: string | null
           company_id: string
@@ -242,6 +244,7 @@ export type Database = {
           venue_name?: string | null
         }
         Update: {
+          access_token?: string | null
           address?: string | null
           city?: string | null
           company_id?: string
