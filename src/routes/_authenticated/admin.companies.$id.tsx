@@ -45,7 +45,7 @@ function CompanyDetail() {
             <StatusToggle size="default" status={c.status} name={c.name}
               onConfirm={async () => { await setCompanyStatus(c.id, c.status === "active" ? "inactive" : "active"); refresh(); }} />
             <DeleteButton name={c.name} description="A empresa vai para a Lixeira. Clientes, modelos, convites, respostas, visualizações e arquivos são preservados e tudo pode ser restaurado."
-              onConfirm={async () => { try { await setDeleted("companies", c.id, true); toast.success("Empresa enviada para a Lixeira."); await qcAll.invalidateQueries(); await navigate({ to: "/admin/companies" }); } catch { toast.error("Não foi possível excluir."); } }} />
+              onConfirm={async () => { try { await setDeleted("companies", c.id, true); toast.success("Empresa enviada para a Lixeira."); await qc.invalidateQueries(); await navigate({ to: "/admin/companies" }); } catch { toast.error("Não foi possível excluir."); } }} />
           </div>
         )} />
 

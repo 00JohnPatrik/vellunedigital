@@ -40,7 +40,7 @@ export async function listCompanyAdmins(companyId?: string): Promise<CompanyAdmi
 }
 
 export async function getCompanyAdmin(id: string): Promise<CompanyAdmin | null> {
-  const { data, error } = await supabase.from("users").select(userCols).eq("id", id).eq("role", "company_admin").maybeSingle();
+  const { data, error } = await supabase.from("users").select(userCols).eq("id", id).eq("role", "company_admin").is("deleted_at", null).maybeSingle();
   if (error) throw error;
   return data as unknown as CompanyAdmin | null;
 }

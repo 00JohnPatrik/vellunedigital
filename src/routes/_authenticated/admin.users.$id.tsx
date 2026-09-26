@@ -62,7 +62,7 @@ function UserDetail() {
             <StatusToggle size="default" status={u.status} name={u.name}
               onConfirm={async () => { await setUserStatus(u.id, u.status === "active" ? "inactive" : "active"); refresh(); }} />
             <DeleteButton name={u.name} description="O administrador vai para a Lixeira e perde o acesso imediatamente. A empresa e o histórico são preservados e ele pode ser restaurado."
-              onConfirm={async () => { try { await setDeleted("users", u.id, true); toast.success("Administrador enviado para a Lixeira."); await qcAll.invalidateQueries(); await navigate({ to: "/admin/users" }); } catch { toast.error("Não foi possível excluir."); } }} />
+              onConfirm={async () => { try { await setDeleted("users", u.id, true); toast.success("Administrador enviado para a Lixeira."); await qc.invalidateQueries(); await navigate({ to: "/admin/users" }); } catch { toast.error("Não foi possível excluir."); } }} />
           </div>
         )} />
 
