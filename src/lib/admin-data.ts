@@ -55,3 +55,9 @@ async function setStatus(table: "companies" | "users", id: string, status: Statu
 }
 export const setCompanyStatus = (id: string, s: Status) => setStatus("companies", id, s, "Empresa");
 export const setUserStatus = (id: string, s: Status) => setStatus("users", id, s, "Usuário");
+
+/** Soft delete / restore of companies and company admins (super admin only — enforced by DB triggers). */
+export async function setDeleted(table: "companies" | "users", id: string, deleted: boolean) {
+  const { error } = await supabase.from(table).update({ deleted_at: deleted ? new Date().toISOString() : null }).eq("id", id);
+  if (error) throw error;
+}

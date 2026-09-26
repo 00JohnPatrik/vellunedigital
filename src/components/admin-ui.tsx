@@ -88,7 +88,7 @@ export function dbErrorMessage(err: { code?: string; message?: string } | null, 
 }
 
 /** Logical delete with confirmation (super admin only — enforced in the database). */
-export function DeleteButton({ name, onConfirm }: { name: string; onConfirm: () => Promise<void> }) {
+export function DeleteButton({ name, onConfirm, description }: { name: string; onConfirm: () => Promise<void>; description?: string }) {
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const run = async () => { setBusy(true); try { await onConfirm(); setOpen(false); } finally { setBusy(false); } };
@@ -99,7 +99,7 @@ export function DeleteButton({ name, onConfirm }: { name: string; onConfirm: () 
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Excluir {name}?</AlertDialogTitle>
-            <AlertDialogDescription>O item vai para a Lixeira e pode ser restaurado depois.</AlertDialogDescription>
+            <AlertDialogDescription>{description ?? "O item vai para a Lixeira e pode ser restaurado depois."}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel disabled={busy}>Cancelar</AlertDialogCancel>
