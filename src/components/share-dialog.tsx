@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { publicUrl, whatsappShareUrl } from "@/lib/invitations";
 
 /** Share area for a published/closed invitation: copy link, WhatsApp, QR Code pointing to /convite/:slug. */
-export function ShareDialog({ slug, open, onOpenChange }: { slug: string; open: boolean; onOpenChange: (o: boolean) => void }) {
+export function ShareDialog({ slug, open, onOpenChange, whatsappNumber }: { slug: string; open: boolean; onOpenChange: (o: boolean) => void; whatsappNumber?: string | null }) {
   const url = publicUrl(slug);
   const copy = async () => {
     try { await navigator.clipboard.writeText(url); toast.success("Link copiado."); }
@@ -23,7 +23,7 @@ export function ShareDialog({ slug, open, onOpenChange }: { slug: string; open: 
         <div className="space-y-4">
           <div className="flex gap-2"><Input readOnly value={url} onFocus={(e) => e.currentTarget.select()} /><Button type="button" onClick={copy}><Copy className="h-4 w-4" />Copiar</Button></div>
           <div className="flex flex-wrap gap-2">
-            <Button asChild variant="outline"><a href={whatsappShareUrl(slug)} target="_blank" rel="noopener noreferrer"><MessageCircle className="h-4 w-4" />WhatsApp</a></Button>
+            <Button asChild variant="outline"><a href={whatsappNumber?.replace(/\D/g, "") ? `https://wa.me/${whatsappNumber.replace(/\D/g, "")}?text=${encodeURIComponent(`Confira este convite: ${url}`)}` : whatsappShareUrl(slug)} target="_blank" rel="noopener noreferrer"><MessageCircle className="h-4 w-4" />WhatsApp</a></Button>
             <Button asChild variant="outline"><a href={url} target="_blank" rel="noopener noreferrer"><ExternalLink className="h-4 w-4" />Abrir página</a></Button>
           </div>
           <div className="flex flex-col items-center gap-2 rounded-lg border bg-card p-4 text-foreground">

@@ -149,9 +149,12 @@ export function AppShell({ base, nav, appUser, children }: Props) {
 
   const brand = (compact: boolean) => (
     <div className="flex h-14 items-center gap-2 border-b border-sidebar-border px-4">
-      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-primary text-primary-foreground">
-        <Mail className="h-4 w-4" />
-      </span>
+      <div className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-md bg-sidebar-accent">
+        <picture>
+          <source media="(prefers-color-scheme: dark)" srcSet="/uploads/logoEscura.jpg" />
+          <img src="/uploads/LogoClara.png" alt="Vellune Digital" className="h-full w-full object-cover" />
+        </picture>
+      </div>
       {!compact && <span className="font-display font-semibold">Vellune Digital</span>}
     </div>
   );

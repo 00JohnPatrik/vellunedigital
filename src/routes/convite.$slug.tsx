@@ -74,7 +74,11 @@ function PublicInvitationPage() {
   const i = res.invitation;
   const branding = i.branding;
   const publicUrl = typeof window !== "undefined" ? `${window.location.origin}/convite/${slug}` : `/convite/${slug}`;
-  const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(`${i.name} — ${publicUrl}`)}`;
+  const whatsappNumber = branding?.whatsapp_number?.replace(/\D/g, "");
+  const whatsappMessage = `${i.name} — ${publicUrl}`;
+  const whatsappUrl = whatsappNumber
+    ? `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(whatsappMessage)}`
+    : `https://wa.me/?text=${encodeURIComponent(whatsappMessage)}`;
   const ctx = {
     event_date: i.event_date,
     event_time: i.event_time,
@@ -128,6 +132,12 @@ function PublicInvitationPage() {
             <a href={publicUrl} target="_blank" rel="noopener noreferrer" aria-label="Abrir convite em uma nova aba"><ExternalLink className="h-4 w-4" /></a>
           </Button>
         </div>
+        {(branding?.logo_url || branding?.brand_name) && (
+          <div className="mb-5 flex flex-col items-center gap-2 text-center">
+            {branding.logo_url && <img src={branding.logo_url} alt={branding.brand_name ?? "Logo da empresa"} className="max-h-16 max-w-48 object-contain" />}
+            {branding.brand_name && <span className="text-sm font-medium text-foreground">{branding.brand_name}</span>}
+          </div>
+        )}
         <InvitationCanvas background={i.content?.settings?.background} blocks={i.content?.blocks ?? []} ctx={ctx} className="mx-auto max-w-lg gap-6 border-border/60 p-5 shadow-xl sm:p-10" />
         <footer className="mt-8 flex flex-col items-center gap-2 text-center text-[11px] tracking-wide text-muted-foreground">
           {branding?.whatsapp_number && <a className="text-primary hover:underline" href={`https://wa.me/${branding.whatsapp_number.replace(/\\D/g, "")}`} target="_blank" rel="noopener noreferrer">Fale conosco pelo WhatsApp</a>}
