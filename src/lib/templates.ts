@@ -14,12 +14,13 @@ export const CATEGORIES = [
 export type Category = (typeof CATEGORIES)[number]["value"];
 export const categoryLabel = (c: string) => CATEGORIES.find((x) => x.value === c)?.label ?? c;
 
-export type BlockType = "text" | "image" | "date" | "time" | "location" | "countdown" | "rsvp" | "whatsapp" | "button" | "qr_code" | "divider";
+export type BlockType = "text" | "image" | "gallery" | "date" | "time" | "location" | "countdown" | "rsvp" | "whatsapp" | "button" | "qr_code" | "divider";
 
 /** Block catalogue: single source of truth for labels and defaults (property controls live in the visual editor). */
 export const BLOCKS: Record<BlockType, { label: string; defaults: Record<string, string> }> = {
   text: { label: "Texto", defaults: { text: "Seu texto aqui", size: "lg", font: "display", bold: "", align: "center", color: "", width: "full" } },
   image: { label: "Imagem", defaults: { url: "", alt: "", width: "full", height: "wide", align: "center", position: "center" } },
+  gallery: { label: "Galeria", defaults: { images: "[]", mode: "grid", columns: "2", height: "square", align: "center", autoplay: "0", captions: "1" } },
   date: { label: "Data", defaults: { source: "event", date: "", format: "long", label: "", align: "center" } },
   time: { label: "Horário", defaults: { source: "event", time: "", format: "24h", label: "", align: "center" } },
   location: { label: "Local", defaults: { source: "event", name: "", address: "", show_name: "1", show_address: "1", show_city: "1", show_directions: "1", align: "center" } },

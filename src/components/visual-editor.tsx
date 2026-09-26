@@ -1,6 +1,6 @@
 import { memo, useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import {
-  ArrowDown, ArrowUp, CalendarDays, Clock, Copy, Eye, EyeOff, GripVertical, ImageIcon, Layers, Lock, MapPin, MessageCircle, Minus,
+  ArrowDown, ArrowUp, CalendarDays, Clock, Copy, Eye, EyeOff, GripVertical, ImageIcon, Images, Layers, Lock, MapPin, MessageCircle, Minus,
   Monitor, MousePointerClick, Plus, QrCode, Redo2, RotateCcw, Settings2, Smartphone, Tablet, Timer, Trash2, Type, Undo2, Unlock, UserCheck,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -79,6 +79,12 @@ const CONTROLS: Record<BlockType, Ctl[]> = {
     { k: "height", label: "Altura", t: "select", options: [["auto", "Automática"], ["square", "Quadrada"], ["wide", "Paisagem"], ["portrait", "Retrato"]] },
     ALIGN, { k: "position", label: "Posição no bloco", t: "select", options: [["center", "Centro"], ["top", "Topo"], ["bottom", "Base"]] },
   ],
+  gallery: [
+    { k: "mode", label: "Modo", t: "select", options: [["grid", "Grade"], ["carousel", "Carrossel"]] },
+    { k: "columns", label: "Colunas", t: "select", options: [["2", "2 colunas"], ["3", "3 colunas"], ["4", "4 colunas"]] },
+    { k: "height", label: "Formato", t: "select", options: [["square", "Quadrado"], ["wide", "Paisagem"], ["portrait", "Retrato"]] },
+    { k: "captions", label: "Mostrar legendas", t: "switch" }, ALIGN,
+  ],
   date: [SOURCE, { k: "date", label: "Data personalizada", t: "date" }, { k: "format", label: "Formato", t: "select", options: [["long", "15 de outubro de 2026"], ["weekday", "Com dia da semana"], ["short", "15/10/2026"]] }, { k: "label", label: "Título (opcional)", t: "text" }, ALIGN],
   time: [SOURCE, { k: "time", label: "Horário personalizado", t: "time" }, { k: "format", label: "Formato", t: "select", options: [["24h", "19:30"], ["text", "às 19h30"]] }, { k: "label", label: "Título (opcional)", t: "text" }, ALIGN],
   location: [
@@ -101,7 +107,7 @@ const CONTROLS: Record<BlockType, Ctl[]> = {
 const SWITCH_DEFAULT_ON = new Set(["show_name", "show_address", "show_city", "show_directions"]);
 
 export const BLOCK_ICONS: Record<BlockType, typeof Type> = {
-  text: Type, image: ImageIcon, date: CalendarDays, time: Clock, location: MapPin, countdown: Timer,
+  text: Type, image: ImageIcon, gallery: Images, date: CalendarDays, time: Clock, location: MapPin, countdown: Timer,
   rsvp: UserCheck, whatsapp: MessageCircle, button: MousePointerClick, qr_code: QrCode, divider: Minus,
 };
 
@@ -394,6 +400,7 @@ function Properties({ block, setProp, actions, convertToText, index, blocksLen, 
   }
   const p = block.props ?? {};
   const custom = p["source"] === "custom";
+  if (block.type === "gallery") return <GalleryProperties block={block} setProp={setProp} assets={assets} actions={actions} index={index} blocksLen={blocksLen} />;
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between gap-2 border-b pb-2">
@@ -452,6 +459,19 @@ function Properties({ block, setProp, actions, convertToText, index, blocksLen, 
       {block.type === "whatsapp" && <p className="text-xs text-muted-foreground">O envio pelo WhatsApp funcionará na página pública.</p>}
     </div>
   );
+}
+
+function GalleryProperties({ block, setProp, assets, actions, index, blocksLen }: { block: Block; setProp: (id: string, key: string, value: string) => void; assets?: AssetScope; actions: Actions; index: number; blocksLen: number }) {
+  let images: { url: string; alt?: string; caption?: string }[] = [];
+  try { const parsed = JSON.parse(block.props.images || "[]"); if (Array.isArray(parsed)) images = parsed; } catch { images = []; }
+  const update = (next: { url: string; alt?: string; caption?: string }[]) => setProp(block.id, "images", JSON.stringify(next));
+  const add = (url: string) => { if (!url || images.some((image) => image.url === url)) return; update([...images, { url, alt: "" }]); };
+  return <div className="space-y-4">
+    <div className="flex items-center justify-between gap-2 border-b pb-2"><span className="text-sm font-medium">Galeria</span><BlockActions b={block} first={index === 0} last={index === blocksLen - 1} actions={actions} compact /></div>
+    <ImageUpload scope={assets} value="" onChange={add} />
+    {images.length === 0 ? <p className="rounded-lg border border-dashed p-4 text-center text-xs text-muted-foreground">Escolha imagens na biblioteca acima para montar a galeria.</p> : <div className="space-y-2">{images.map((image, imageIndex) => <div key={`${image.url}-${imageIndex}`} className="flex items-center gap-2 rounded-lg border bg-muted/20 p-2"><img src={image.url.startsWith(STORAGE_PREFIX) ? undefined : image.url} alt={image.alt || ""} className="h-12 w-12 rounded object-cover" /><div className="min-w-0 flex-1"><p className="truncate text-xs">{image.url}</p><Input value={image.alt || ""} placeholder="Descrição acessível" className="mt-1 h-7 text-xs" onChange={(event) => update(images.map((item, current) => current === imageIndex ? { ...item, alt: event.target.value } : item))} /></div><div className="flex flex-col gap-1"><Button type="button" size="icon" variant="ghost" className="h-7 w-7" disabled={imageIndex === 0} aria-label="Mover imagem para cima" onClick={() => { const next = [...images]; [next[imageIndex - 1], next[imageIndex]] = [next[imageIndex]!, next[imageIndex - 1]!]; update(next); }}><ArrowUp className="h-3 w-3" /></Button><Button type="button" size="icon" variant="ghost" className="h-7 w-7" disabled={imageIndex === images.length - 1} aria-label="Mover imagem para baixo" onClick={() => { const next = [...images]; [next[imageIndex], next[imageIndex + 1]] = [next[imageIndex + 1]!, next[imageIndex]!]; update(next); }}><ArrowDown className="h-3 w-3" /></Button><Button type="button" size="icon" variant="ghost" className="h-7 w-7 text-destructive" aria-label="Remover imagem" onClick={() => update(images.filter((_, current) => current !== imageIndex))}><Trash2 className="h-3 w-3" /></Button></div></div>)}</div>}
+    {CONTROLS.gallery.map((control) => { const value = block.props[control.k] || (control.t === "select" ? control.options[0]![0] : ""); if (control.t === "switch") return <div key={control.k} className="flex items-center justify-between"><Label>{control.label}</Label><Switch checked={value !== "0"} onCheckedChange={(checked) => setProp(block.id, control.k, checked ? "1" : "0")} /></div>; return <div key={control.k} className="space-y-1"><Label className="text-xs text-muted-foreground">{control.label}</Label><Select value={value} onValueChange={(next) => setProp(block.id, control.k, next)}><SelectTrigger className="h-9"><SelectValue /></SelectTrigger><SelectContent>{control.options!.map(([option, label]) => <SelectItem key={option} value={option}>{label}</SelectItem>)}</SelectContent></Select></div>; })}
+  </div>;
 }
 
 /* ---------------- Background (shown when no block is selected) ---------------- */

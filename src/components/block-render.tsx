@@ -1,5 +1,5 @@
 import { useEffect, useState, type CSSProperties, type ReactNode } from "react";
-import { AlertTriangle, CalendarDays, Clock, MapPin, MessageCircle, Navigation } from "lucide-react";
+import { AlertTriangle, CalendarDays, ChevronLeft, ChevronRight, Clock, Maximize2, MapPin, MessageCircle, Navigation, X } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import { PreviewImage } from "@/components/template-ui";
 import { RsvpForm } from "@/components/rsvp-form";
@@ -88,6 +88,8 @@ export function BlockView({ block, ctx, interactive = false }: { block: Block; c
     }
     case "image":
       return <ImageBlock p={p} />;
+    case "gallery":
+      return <GalleryBlock p={p} />;
     case "date": {
       const d = formatDate(pick(p, p["date"], ctx?.event_date), p["format"]);
       return <Info align={p["align"]} label={p["label"]} icon={<CalendarDays className="h-4 w-4" />}>{d ?? "Data a definir"}</Info>;
@@ -194,6 +196,60 @@ function ImageBlock({ p }: { p: Record<string, string> }) {
         {p["height"] === "auto" && src
           ? <img src={src} alt={p["alt"] ?? ""} className="h-auto w-full" loading="lazy" />
           : <PreviewImage src={src} name={p["alt"] ?? ""} className={cn(IMG_HEIGHT[p["height"] ?? "wide"] || "aspect-video", IMG_POS[p["position"] ?? "center"])} />}
+      </div>
+    </Row>
+  );
+}
+
+type GalleryImage = { url: string; alt?: string; caption?: string };
+
+function GalleryBlock({ p }: { p: Record<string, string> }) {
+  const [active, setActive] = useState(0);
+  const [fullscreen, setFullscreen] = useState(false);
+  let images: GalleryImage[] = [];
+  try {
+    const parsed = JSON.parse(p["images"] || "[]");
+    if (Array.isArray(parsed)) images = parsed.filter((item): item is GalleryImage => !!item && typeof item.url === "string" && item.url.length > 0);
+  } catch {
+    images = [];
+  }
+  const mode = p["mode"] === "carousel" ? "carousel" : "grid";
+  const columns = p["columns"] === "4" ? "grid-cols-4" : p["columns"] === "3" ? "grid-cols-3" : "grid-cols-2";
+  const height = IMG_HEIGHT[p["height"] ?? "square"] || "aspect-square";
+  const current = images[active] ?? images[0];
+  const move = (direction: number) => setActive((index) => (index + direction + images.length) % images.length);
+
+  if (!images.length) return <div className="rounded-lg border border-dashed p-6 text-center text-sm text-muted-foreground">Adicione imagens à galeria.</div>;
+
+  const image = (item: GalleryImage, index: number, large = false) => {
+    const src = useAssetUrl(item.url);
+    return (
+      <button type="button" className={cn("group relative block w-full overflow-hidden rounded-lg bg-muted text-left", large ? "" : height)} onClick={() => { setActive(index); setFullscreen(true); }} aria-label={`Abrir imagem ${index + 1}${item.alt ? `: ${item.alt}` : ""}`}>
+        {src ? <img src={src} alt={item.alt ?? ""} loading="lazy" className="h-full w-full object-cover transition-transform group-hover:scale-105" /> : <span className="flex h-full min-h-24 items-center justify-center text-xs text-muted-foreground">Imagem indisponível</span>}
+        {p["captions"] !== "0" && item.caption && <span className="absolute inset-x-0 bottom-0 bg-background/75 px-2 py-1 text-xs text-foreground">{item.caption}</span>}
+        <span className="absolute right-2 top-2 rounded-md bg-background/75 p-1.5 opacity-0 transition-opacity group-hover:opacity-100"><Maximize2 className="h-4 w-4" aria-hidden="true" /></span>
+      </button>
+    );
+  };
+
+  return (
+    <Row align={p["align"]}>
+      <div className="w-full space-y-2">
+        {mode === "carousel" ? (
+          <div className="relative">
+            {image(current!, active, true)}
+            {images.length > 1 && <>
+              <button type="button" onClick={() => move(-1)} aria-label="Imagem anterior" className="absolute left-2 top-1/2 -translate-y-1/2 rounded-full bg-background/80 p-2 text-foreground shadow-sm"><ChevronLeft className="h-5 w-5" /></button>
+              <button type="button" onClick={() => move(1)} aria-label="Próxima imagem" className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-background/80 p-2 text-foreground shadow-sm"><ChevronRight className="h-5 w-5" /></button>
+              <div className="absolute bottom-2 left-1/2 -translate-x-1/2 rounded-full bg-background/80 px-2 py-1 text-[11px] text-foreground">{active + 1} / {images.length}</div>
+            </>}
+          </div>
+        ) : <div className={cn("grid gap-2", columns)}>{images.map((item, index) => <div key={`${item.url}-${index}`}>{image(item, index)}</div>)}</div>}
+        {fullscreen && current && <div role="dialog" aria-modal="true" aria-label="Imagem ampliada" className="fixed inset-0 z-50 flex items-center justify-center bg-background/95 p-4" onClick={() => setFullscreen(false)}>
+          <button type="button" aria-label="Fechar tela cheia" className="absolute right-4 top-4 rounded-full bg-muted p-2" onClick={() => setFullscreen(false)}><X className="h-5 w-5" /></button>
+          <img src={useAssetUrl(current.url) ?? undefined} alt={current.alt ?? ""} className="max-h-[90vh] max-w-full object-contain" onClick={(event) => event.stopPropagation()} />
+          {images.length > 1 && <><button type="button" aria-label="Imagem anterior" className="absolute left-4 rounded-full bg-muted p-2" onClick={(event) => { event.stopPropagation(); move(-1); }}><ChevronLeft className="h-6 w-6" /></button><button type="button" aria-label="Próxima imagem" className="absolute right-4 rounded-full bg-muted p-2" onClick={(event) => { event.stopPropagation(); move(1); }}><ChevronRight className="h-6 w-6" /></button></>}
+        </div>}
       </div>
     </Row>
   );
