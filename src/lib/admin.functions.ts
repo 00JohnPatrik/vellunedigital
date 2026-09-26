@@ -10,7 +10,7 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
  */
 export const sendAccessInvite = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d) => z.object({ userId: z.string().uuid(), origin: z.string().url() }).parse(d))
+  .validator((d) => z.object({ userId: z.string().uuid(), origin: z.string().url() }).parse(d))
   .handler(async ({ data, context }) => {
     const { data: isAdmin } = await context.supabase.rpc("is_super_admin");
     if (!isAdmin) throw new Response("Forbidden", { status: 403 });

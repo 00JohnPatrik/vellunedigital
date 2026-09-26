@@ -18,7 +18,7 @@ export type PublicInvitationResult = { state: "ok"; invitation: PublicInvitation
  * and returns safe fields only when status is published/closed — no company/customer/internal ids.
  */
 export const getPublicInvitation = createServerFn({ method: "GET" })
-  .inputValidator((d) => z.object({ slug: z.string().min(1).max(120) }).parse(d))
+  .validator((d) => z.object({ slug: z.string().min(1).max(120) }).parse(d))
   .handler(async ({ data }): Promise<PublicInvitationResult> => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: res, error } = await supabaseAdmin.rpc("get_public_invitation" as never, { _slug: data.slug } as never);
@@ -43,7 +43,7 @@ export const getPublicInvitation = createServerFn({ method: "GET" })
 
 /** Counts one public view. The DB function only inserts for published/closed invitations; no visitor data stored. */
 export const recordInvitationView = createServerFn({ method: "POST" })
-  .inputValidator((d) => z.object({ slug: z.string().min(1).max(120) }).parse(d))
+  .validator((d) => z.object({ slug: z.string().min(1).max(120) }).parse(d))
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { error } = await supabaseAdmin.rpc("record_invitation_view" as never, { _slug: data.slug } as never);
@@ -61,7 +61,7 @@ export type SubmitRsvpResult =
  * are enforced inside the DB function `submit_rsvp`, executable only by the server. Never returns other guests.
  */
 export const submitRsvp = createServerFn({ method: "POST" })
-  .inputValidator((d) => z.object({
+  .validator((d) => z.object({
     slug: z.string().min(1).max(120),
     status: z.enum(["confirmed", "declined"]),
     name: z.string().max(120),

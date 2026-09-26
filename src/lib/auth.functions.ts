@@ -23,7 +23,7 @@ export const normalizePhone = (v: string) => v.replace(/\D/g, "");
 
 /** Phone + password sign-in: resolves the account server-side (email never returned). */
 export const signInWithPhone = createServerFn({ method: "POST" })
-  .inputValidator((d) =>
+  .validator((d) =>
     z.object({ phone: z.string().min(8).max(20), password: z.string().min(1).max(200) }).parse(d),
   )
   .handler(async ({ data }) => {
@@ -50,7 +50,7 @@ export const signInWithPhone = createServerFn({ method: "POST" })
 
 /** First access: activates a pre-registered user and emails a link to set the password. */
 export const requestFirstAccess = createServerFn({ method: "POST" })
-  .inputValidator((d) =>
+  .validator((d) =>
     z.object({ email: z.string().trim().toLowerCase().email().max(255), origin: z.string().url() }).parse(d),
   )
   .handler(async ({ data }) => {
@@ -87,7 +87,7 @@ export const requestFirstAccess = createServerFn({ method: "POST" })
 
 /** Password recovery: only for already-activated, provisioned accounts. Never creates users. */
 export const requestPasswordReset = createServerFn({ method: "POST" })
-  .inputValidator((d) =>
+  .validator((d) =>
     z.object({ email: z.string().trim().toLowerCase().email().max(255), origin: z.string().url() }).parse(d),
   )
   .handler(async ({ data }) => {

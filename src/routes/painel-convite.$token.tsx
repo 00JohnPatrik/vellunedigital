@@ -16,7 +16,6 @@ function HostDashboardPage() {
   const result = Route.useLoaderData();
 
   if (result.state === "not_found") return <StateMessage title="Painel não encontrado" text="Confira se o link do anfitrião está correto." />;
-  if (result.state === "unavailable") return <StateMessage title="Painel indisponível" text="Este convite não está disponível para acompanhamento no momento." />;
 
   return <DashboardContent dashboard={result.dashboard} />;
 }

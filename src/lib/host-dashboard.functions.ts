@@ -38,14 +38,14 @@ export type HostDashboard = {
 
 export type HostDashboardResult =
   | { state: "ok"; dashboard: HostDashboard }
-  | { state: "not_found" | "unavailable" };
+  | { state: "not_found" };
 
 /**
  * Public host dashboard lookup. The access token is the only public identifier.
  * The server reads the token but only returns safe invitation and RSVP fields.
  */
 export const getHostDashboard = createServerFn({ method: "GET" })
-  .inputValidator((d) =>
+  .validator((d) =>
     z
       .object({ token: z.string().trim().regex(/^[a-f0-9]{48}$/i) })
       .parse(d),
