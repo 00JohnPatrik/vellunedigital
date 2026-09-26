@@ -1,0 +1,11 @@
+{
+  "name": "Vellune Digital — Convites Digitais",
+  "short_name": "Vellune Digital",
+  "description": "Crie, publique e compartilhe convites digitais.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f8fafc",
+  "theme_color": "#0f172a",
+  "lang": "pt-BR",
+  "scope": "/"
+}
