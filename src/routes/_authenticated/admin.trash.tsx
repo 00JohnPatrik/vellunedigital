@@ -16,16 +16,35 @@ export const Route = createFileRoute("/_authenticated/admin/trash")({
   component: TrashPage,
 });
 
-const FILTERS: [TrashKind | "all", string][] = [["all", "Todos"], ["customer", "Clientes"], ["template", "Modelos"], ["invitation", "Convites"]];
+type Tab = TrashKind | "company" | "admin";
+const TABS: [Tab, string, string][] = [
+  ["invitation", "Convites", "Nenhum convite na lixeira."],
+  ["company", "Empresas", "Nenhuma empresa na lixeira."],
+  ["customer", "Clientes", "Nenhum cliente na lixeira."],
+  ["admin", "Administradores", "Nenhum administrador na lixeira."],
+  ["template", "Modelos", "Nenhum modelo na lixeira."],
+];
 const fmt = (s: string) => new Date(s).toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" });
+
+function details(r: TrashItem) {
+  const parts: string[] = [];
+  if (r.kind === "invitation") parts.push(`Empresa: ${r.company ?? "—"}`, `Cliente: ${r.customer ?? "—"}`);
+  if (r.kind === "customer") parts.push(`Empresa: ${r.company ?? "—"}`);
+  if (r.kind === "template") parts.push(`Empresa: ${r.company ?? "Oficial"}`, `Categoria: ${r.category ? categoryLabel(r.category) : "—"}`);
+  parts.push(`Excluído em ${fmt(r.deleted_at)}`, `Por ${r.deleted_by ?? "—"}`);
+  return parts.join(" · ");
+}
 
 function TrashPage() {
   const qc = useQueryClient();
   const q = useQuery({ queryKey: trashKey, queryFn: listTrash });
-  const [filter, setFilter] = useState<TrashKind | "all">("all");
+  const [tab, setTab] = useState<Tab>("invitation");
   const [target, setTarget] = useState<TrashItem | null>(null);
   const [busy, setBusy] = useState(false);
-  const rows = (q.data ?? []).filter((r) => filter === "all" || r.kind === filter);
+  const all = q.data ?? [];
+  const count = (t: Tab) => all.filter((r) => r.kind === t).length;
+  const rows = all.filter((r) => r.kind === tab);
+  const empty = TABS.find((t) => t[0] === tab)![2];
 
   async function confirm() {
     if (!target) return;
@@ -41,23 +60,21 @@ function TrashPage() {
 
   return (
     <div>
-      <PageHeader title="Lixeira" description="Clientes, modelos e convites excluídos. Nada é apagado definitivamente." />
+      <PageHeader title="Lixeira" description="Itens excluídos, separados por tipo. Nada é apagado definitivamente." />
       <div className="mb-4 inline-flex flex-wrap rounded-md border p-0.5">
-        {FILTERS.map(([v, l]) => (
-          <button key={v} type="button" onClick={() => setFilter(v)}
-            className={cn("rounded px-3 py-1.5 text-sm", filter === v ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground")}>{l}</button>
+        {TABS.map(([v, l]) => (
+          <button key={v} type="button" onClick={() => setTab(v)}
+            className={cn("rounded px-3 py-1.5 text-sm", tab === v ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground")}>{l} ({count(v)})</button>
         ))}
       </div>
       {q.isLoading ? <LoadingState /> : q.error ? <p className="text-sm text-destructive">Não foi possível carregar a lixeira.</p>
-        : !rows.length ? <EmptyState>A lixeira está vazia.</EmptyState> : (
+        : !rows.length ? <EmptyState>{empty}</EmptyState> : (
           <div className="divide-y rounded-xl border">
             {rows.map((r) => (
               <div key={`${r.kind}-${r.id}`} className="flex flex-col gap-2 p-4 sm:flex-row sm:items-center sm:justify-between">
                 <div className="min-w-0">
-                  <div className="flex items-center gap-2"><Badge variant="secondary">{TRASH_LABEL[r.kind]}</Badge><span className="truncate font-medium">{r.name}</span></div>
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    {r.company ?? "Oficial"} · excluído em {fmt(r.deleted_at)} · por {r.deleted_by ?? "—"}
-                  </p>
+                  <span className="truncate font-medium">{r.name}</span>
+                  <p className="mt-1 text-xs text-muted-foreground">{details(r)}</p>
                 </div>
                 <Button size="sm" variant="outline" onClick={() => setTarget(r)}>Restaurar</Button>
               </div>
