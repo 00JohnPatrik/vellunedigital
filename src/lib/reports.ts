@@ -49,3 +49,27 @@ export async function globalCounts() {
   if (u.error) throw u.error;
   return { companies: c.count ?? 0, users: u.count ?? 0 };
 }
+
+function csvValue(value: string | number | null) {
+  const text = value === null ? "" : String(value);
+  return `"${text.replace(/"/g, '""')}"`;
+}
+
+export function reportToCsv(rows: ReportRow[]) {
+  const header = ["id", "company_id", "name", "customer_name", "event_date", "event_time", "status", "updated_at", "views", "confirmed", "declined", "people"];
+  const lines = rows.map((row) => [
+    row.id,
+    row.company_id,
+    row.name,
+    row.customer_name,
+    row.event_date,
+    row.event_time,
+    row.status,
+    row.updated_at,
+    row.views,
+    row.confirmed,
+    row.declined,
+    row.people,
+  ].map(csvValue).join(","));
+  return [header.map(csvValue).join(","), ...lines].join("\n");
+}
