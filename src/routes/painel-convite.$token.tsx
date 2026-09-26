@@ -100,7 +100,7 @@ function Metric({ icon: Icon, label, value }: { icon: typeof Eye; label: string;
   return <div className="rounded-xl border bg-card p-4 shadow-sm"><Icon className="h-4 w-4 text-primary" /><div className="mt-2 text-2xl font-semibold tabular-nums">{value}</div><div className="text-xs text-muted-foreground">{label}</div></div>;
 }
 
-function ResponseRow({ response }: { response: HostDashboardResponse["responses"][number] }) {
+function ResponseRow({ response }: { response: HostDashboardResponse }) {
   return <div className="flex flex-col gap-2 p-4 sm:flex-row sm:items-center sm:justify-between sm:px-6"><div><p className="font-medium">{response.name}</p><div className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted-foreground">{response.status === "confirmed" && <span>{response.people_count} {response.people_count === 1 ? "pessoa" : "pessoas"}</span>}{response.phone && <span>{response.phone}</span>}{response.email && <span>{response.email}</span>}<span>{formatDateTime(response.updated_at)}</span></div></div><Badge variant={response.status === "confirmed" ? "default" : "secondary"}>{response.status === "confirmed" ? "Confirmado" : "Recusado"}</Badge></div>;
 }
 
