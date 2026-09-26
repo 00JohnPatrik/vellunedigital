@@ -41,7 +41,7 @@ function CheckinPage() {
   const toggleCheckin = async (active: boolean) => {
     if (!guest) return;
     setBusy(true);
-    try { const result = await setGuestCheckin(id, guest.guest_id, active); setCheckin(result); await qc.invalidateQueries({ queryKey: ["invitation-report", id] }); toast.success(active ? "Check-in registrado." : "Check-in desfeito."); }
+    try { const result = await setGuestCheckin(id, guest.company_id, guest.guest_id, active); setCheckin(result); await qc.invalidateQueries({ queryKey: ["invitation-report", id] }); toast.success(active ? "Check-in registrado." : "Check-in desfeito."); }
     catch { toast.error("Não foi possível atualizar o check-in."); }
     finally { setBusy(false); }
   };

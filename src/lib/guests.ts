@@ -168,12 +168,15 @@ export async function getGuestCheckin(invitationId: string, guestId: string) {
     .select(checkinColumns)
     .eq("invitation_id", invitationId)
     .eq("guest_id", guestId)
+    .eq("status", "active")
+    .order("created_at", { ascending: false })
+    .limit(1)
     .maybeSingle();
   if (error) throw error;
   return data as Checkin | null;
 }
 
-export async function setGuestCheckin(invitationId: string, guestId: string, checkedIn: boolean) {
+export async function setGuestCheckin(invitationId: string, companyId: string, guestId: string, checkedIn: boolean) {
   const current = await getGuestCheckin(invitationId, guestId);
   const now = new Date().toISOString();
   const values = checkedIn
@@ -187,7 +190,7 @@ export async function setGuestCheckin(invitationId: string, guestId: string, che
   }
 
   if (!checkedIn) return null;
-  const { data, error } = await supabase.from("guest_checkins").insert({ invitation_id: invitationId, guest_id: guestId, status: "active" }).select(checkinColumns).single();
+  const { data, error } = await supabase.from("guest_checkins").insert({ company_id: companyId, invitation_id: invitationId, guest_id: guestId, status: "active" }).select(checkinColumns).single();
   if (error) throw error;
   return data as Checkin;
 }

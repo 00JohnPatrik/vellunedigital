@@ -39,7 +39,9 @@ function InvitationReport() {
 
   const { invitation, guests, rsvps, checkins } = report.data;
   const confirmed = rsvps.filter((response) => response.status === "confirmed");
-  const checkedGuestIds = new Set(checkins.map((checkin) => checkin.guest_id));
+  const activeGuestIds = new Set(guests.map((guest) => guest.guest_id));
+  const activeCheckins = checkins.filter((checkin) => activeGuestIds.has(checkin.guest_id));
+  const checkedGuestIds = new Set(activeCheckins.map((checkin) => checkin.guest_id));
   const peopleInvited = guests.reduce((total, guest) => total + guest.people_count, 0);
 
   return (
@@ -48,7 +50,7 @@ function InvitationReport() {
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <Metric icon={<Users className="h-5 w-5" />} label="Convidados" value={guests.length} detail={`${peopleInvited} pessoas`} />
         <Metric icon={<ClipboardCheck className="h-5 w-5" />} label="RSVPs confirmados" value={confirmed.length} detail={`${rsvps.length} respostas`} />
-        <Metric icon={<CheckCircle2 className="h-5 w-5" />} label="Check-ins" value={checkins.length} detail="entradas registradas" />
+        <Metric icon={<CheckCircle2 className="h-5 w-5" />} label="Check-ins" value={activeCheckins.length} detail="entradas registradas" />
         <Metric icon={<Users className="h-5 w-5" />} label="Pendentes" value={Math.max(0, guests.length - checkedGuestIds.size)} detail="convidados sem entrada" />
       </div>
       <Card>
