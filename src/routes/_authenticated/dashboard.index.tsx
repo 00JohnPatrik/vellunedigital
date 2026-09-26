@@ -12,7 +12,14 @@ function CompanyDashboard() {
   const report = useQuery({ queryKey: ["reports", "company"], queryFn: () => fetchReport() });
   const recent = useQuery({ queryKey: ["reports", "recent"], queryFn: () => recentResponses(5) });
   if (report.isLoading) return <LoadingState />;
-  if (report.error) return <p className="text-sm text-destructive">Não foi possível carregar o dashboard.</p>;
+  if (report.error) {
+    return (
+      <div role="alert" className="rounded-xl border border-destructive/30 bg-destructive/5 p-6 text-center">
+        <p className="text-sm font-medium text-destructive">Não foi possível carregar o dashboard.</p>
+        <p className="mt-1 text-sm text-muted-foreground">Atualize a página e tente novamente.</p>
+      </div>
+    );
+  }
   const rows = report.data ?? [];
   const t = totals(rows);
   return (
@@ -27,7 +34,11 @@ function CompanyDashboard() {
       {rows.length === 0 && <p className="mt-4 text-sm text-muted-foreground">Você ainda não possui convites.</p>}
       <Section title="Próximos eventos"><UpcomingList rows={upcoming(rows)} /></Section>
       <Section title="Confirmações recentes">
-        {recent.isLoading ? <LoadingState /> : <RecentResponses rows={recent.data ?? []} />}
+        {recent.isLoading ? <LoadingState /> : recent.error ? (
+          <div role="alert" className="rounded-xl border border-destructive/30 bg-destructive/5 p-5 text-sm text-destructive">
+            Não foi possível carregar as confirmações recentes.
+          </div>
+        ) : <RecentResponses rows={recent.data ?? []} />}
       </Section>
     </div>
   );

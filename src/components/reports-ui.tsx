@@ -10,9 +10,9 @@ import { cn } from "@/lib/utils";
 
 export function StatCard({ label, value }: { label: string; value: number }) {
   return (
-    <div className="rounded-xl border bg-card p-5">
+    <div className="rounded-xl border bg-card p-4 shadow-sm sm:p-5" aria-label={`${label}: ${value.toLocaleString("pt-BR")}`}>
       <div className="text-sm text-muted-foreground">{label}</div>
-      <div className="mt-1 font-display text-3xl font-semibold tabular-nums">{value.toLocaleString("pt-BR")}</div>
+      <div className="mt-1 font-display text-2xl font-semibold tabular-nums text-foreground sm:text-3xl">{value.toLocaleString("pt-BR")}</div>
     </div>
   );
 }
@@ -96,10 +96,10 @@ export function ReportTable({ rows }: { rows: ReportRow[] }) {
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Buscar convite ou cliente" className="pl-9" />
         </div>
-        <div className="inline-flex flex-wrap rounded-md border p-0.5">
+        <div className="inline-flex flex-wrap rounded-md border bg-card p-0.5" role="group" aria-label="Filtrar relatórios">
           {FILTERS.map(([v, l]) => (
-            <button key={v} type="button" onClick={() => setF(v)}
-              className={cn("rounded px-3 py-1.5 text-sm", f === v ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground")}>{l}</button>
+            <button key={v} type="button" onClick={() => setF(v)} aria-pressed={f === v}
+              className={cn("rounded px-3 py-1.5 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", f === v ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted hover:text-foreground")}>{l}</button>
           ))}
         </div>
       </div>
@@ -107,7 +107,8 @@ export function ReportTable({ rows }: { rows: ReportRow[] }) {
         <>
           <div className="hidden overflow-x-auto rounded-xl border bg-card md:block">
             <table className="w-full text-sm">
-              <thead className="border-b text-left text-muted-foreground">
+              <caption className="sr-only">Relatório de convites, visualizações e respostas</caption>
+              <thead className="border-b bg-muted/30 text-left text-muted-foreground">
                 <tr>{["Convite", "Cliente", "Evento", "Status", "Visualizações", "Confirmações", "Recusas", "Pessoas"].map((h) => <th key={h} className="px-4 py-3 font-medium">{h}</th>)}</tr>
               </thead>
               <tbody className="divide-y">

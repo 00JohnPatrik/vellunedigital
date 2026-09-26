@@ -62,7 +62,7 @@ export function AppShell({ base, nav, appUser, children }: Props) {
 
   return (
     <div className="min-h-screen bg-background">
-      <aside className={cn("fixed inset-y-0 left-0 z-30 hidden flex-col border-r border-sidebar-border bg-sidebar transition-[width] md:flex",
+      <aside aria-label="Navegação principal" className={cn("fixed inset-y-0 left-0 z-30 hidden flex-col border-r border-sidebar-border bg-sidebar transition-[width] md:flex",
         collapsed ? "w-16" : "w-16 lg:w-60")}>
         <div className="hidden lg:block">{brand(collapsed)}</div>
         <div className="lg:hidden">{brand(true)}</div>
@@ -71,8 +71,8 @@ export function AppShell({ base, nav, appUser, children }: Props) {
       </aside>
 
       <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
-        <SheetContent side="left" className="flex w-64 flex-col bg-sidebar p-0">
-          <SheetTitle className="sr-only">Menu</SheetTitle>
+        <SheetContent id="mobile-navigation" side="left" className="flex w-64 flex-col bg-sidebar p-0">
+          <SheetTitle className="sr-only">Menu de navegação</SheetTitle>
           {brand(false)}
           {links(false)}
         </SheetContent>
@@ -80,7 +80,7 @@ export function AppShell({ base, nav, appUser, children }: Props) {
 
       <div className={cn("flex min-h-screen flex-col transition-[padding]", collapsed ? "md:pl-16" : "md:pl-16 lg:pl-60")}>
         <header className="sticky top-0 z-20 flex h-14 items-center gap-3 border-b bg-background/85 px-4 backdrop-blur">
-          <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setMobileOpen(true)} aria-label="Abrir menu">
+          <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setMobileOpen(true)} aria-label="Abrir menu" aria-expanded={mobileOpen} aria-controls="mobile-navigation">
             <Menu className="h-5 w-5" />
           </Button>
           <Button variant="ghost" size="icon" className="hidden lg:inline-flex" onClick={() => setCollapsed((c) => !c)} aria-label="Recolher menu">
