@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { dbErrorMessage, EmptyState, fmtDate, LoadingState, PageHeader, StatusBadge, StatusToggle, DeleteButton } from "@/components/admin-ui";
 import { CompanyForm } from "@/components/admin-forms";
 import { getCompany, isUuid, listCompanyAdmins, setCompanyStatus, setDeleted } from "@/lib/admin-data";
+import { SubscriptionOverviewCard } from "@/components/subscription-ui";
 
 export const Route = createFileRoute("/_authenticated/admin/companies/$id")({
   validateSearch: z.object({ edit: z.boolean().optional() }),
@@ -92,6 +93,7 @@ function CompanyDetail() {
           </div>
         </div>
       )}
+      {!edit && <section className="mt-6"><SubscriptionOverviewCard companyId={c.id} /></section>}
     </div>
   );
 }
