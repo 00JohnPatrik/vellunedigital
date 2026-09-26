@@ -15,7 +15,7 @@ export type AppUser = {
 export async function loadAppUser(authUserId: string): Promise<AppUser | null> {
   const { data, error } = await supabase
     .from("users")
-    .select("id, name, email, role, status, deleted_at, theme, company:companies(id, name, status, deleted_at)")
+    .select("id, name, email, role, status, deleted_at, theme, company:companies!users_company_id_fkey(id, name, status, deleted_at)")
     .eq("auth_user_id", authUserId)
     .maybeSingle();
   if (error || !data) return null;
