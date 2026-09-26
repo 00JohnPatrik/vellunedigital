@@ -17,7 +17,7 @@ export const usersKey = ["admin", "users"] as const;
 export async function listCompanies(): Promise<CompanyRow[]> {
   const { data, error } = await supabase
     .from("companies")
-    .select("id, name, type, status, created_at, updated_at, users(id, name, role, status)")
+    .select("id, name, type, status, created_at, updated_at, users!users_company_id_fkey(id, name, role, status)")
     .is("deleted_at", null).order("name");
   if (error) throw error;
   return data as unknown as CompanyRow[];
@@ -29,7 +29,7 @@ export async function getCompany(id: string): Promise<Company | null> {
   return data as Company | null;
 }
 
-const userCols = "id, name, email, phone, role, status, company_id, auth_user_id, created_at, updated_at, company:companies(id, name, status)";
+const userCols = "id, name, email, phone, role, status, company_id, auth_user_id, created_at, updated_at, company:companies!users_company_id_fkey(id, name, status)";
 
 export async function listCompanyAdmins(companyId?: string): Promise<CompanyAdmin[]> {
   let q = supabase.from("users").select(userCols).eq("role", "company_admin").is("deleted_at", null).order("name");
