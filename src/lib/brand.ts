@@ -127,7 +127,12 @@ export async function saveCompanyDomain(companyId: string, values: { domain: str
 }
 
 export async function setCompanyDomainStatus(id: string, companyId: string, status: "pending" | "active" | "disabled") {
-  const { error } = await supabase.from("company_domains" as never).update({ status, ...(status === "active" ? { verified_at: new Date().toISOString() } : {}) } as never).eq("id", id).eq("company_id", companyId);
+  if (status === "active") {
+    const { data, error: readError } = await supabase.from("company_domains" as never).select("verified_at").eq("id", id).eq("company_id", companyId).maybeSingle();
+    if (readError) throw readError;
+    if (!(data as { verified_at?: string | null } | null)?.verified_at) throw new Error("O domínio só pode ser ativado depois da verificação de DNS.");
+  }
+  const { error } = await supabase.from("company_domains" as never).update({ status } as never).eq("id", id).eq("company_id", companyId);
   if (error) throw error;
 }
 
