@@ -1,4 +1,4 @@
-import { BarChart3, Building2, Contact, CreditCard, FileText, LayoutDashboard, LayoutTemplate, Mail, Settings, Trash2, Users, type LucideIcon } from "lucide-react";
+import { BarChart3, Building2, Contact, CreditCard, FileText, LayoutDashboard, LayoutTemplate, Mail, Palette, Settings, Trash2, Users, type LucideIcon } from "lucide-react";
 
 export type NavItem = { slug: string; label: string; icon: LucideIcon; to?: string };
 
@@ -22,6 +22,7 @@ export const companyNav: NavItem[] = [
   { slug: "templates", label: "Modelos", icon: FileText, to: "/templates" },
   { slug: "reports", label: "Relatórios", icon: BarChart3, to: "/reports" },
   { slug: "assinatura", label: "Assinatura", icon: CreditCard },
+  { slug: "marca", label: "Marca e identidade", icon: Palette, to: "/settings/brand" },
   { slug: "configuracoes", label: "Configurações", icon: Settings },
 ];
 

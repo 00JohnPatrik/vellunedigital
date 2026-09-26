@@ -1,0 +1,47 @@
+import { createFileRoute } from "@tanstack/react-router";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { Image, Lock, Palette, Save, Upload } from "lucide-react";
+import { useRef, useState } from "react";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
+import { Switch } from "@/components/ui/switch";
+import { PageHeader } from "@/components/admin-ui";
+import { getBrandIdentity, brandKey, hasCustomBranding, isHexColor, saveBrandIdentity, uploadBrandAsset, type BrandIdentityInput } from "@/lib/brand";
+
+export const Route = createFileRoute("/_authenticated/settings/brand")({ component: BrandPage });
+
+function BrandPage() {
+  const { appUser } = Route.useRouteContext();
+  const companyId = appUser.company?.id;
+  const qc = useQueryClient();
+  const brand = useQuery({ queryKey: companyId ? brandKey(companyId) : ["brand-identity", "none"], queryFn: () => getBrandIdentity(companyId!), enabled: !!companyId });
+  const customBranding = useQuery({ queryKey: ["custom-branding", companyId], queryFn: () => hasCustomBranding(companyId!), enabled: !!companyId });
+  const [form, setForm] = useState<BrandIdentityInput | null>(null);
+  const [saving, setSaving] = useState(false);
+  const logoInput = useRef<HTMLInputElement>(null);
+  const faviconInput = useRef<HTMLInputElement>(null);
+
+  if (!companyId) return <div className="mx-auto max-w-3xl"><PageHeader title="Marca e identidade" description="Identidade visual da empresa." /><Card className="mt-6"><CardContent className="p-6 text-sm text-muted-foreground">Esta seção está disponível apenas para contas vinculadas a uma empresa.</CardContent></Card></div>;
+  if (brand.isLoading) return <div className="mx-auto max-w-3xl"><PageHeader title="Marca e identidade" description="Carregando identidade da marca..." /></div>;
+  if (!brand.data) return <div className="mx-auto max-w-3xl"><PageHeader title="Marca e identidade" description="Não foi possível carregar a identidade da marca." /></div>;
+
+  const values = form ?? { ...brand.data, show_vellune_branding: customBranding.data === false ? true : brand.data.show_vellune_branding };
+  const update = (patch: Partial<BrandIdentityInput>) => setForm((current) => ({ ...(current ?? values), ...patch }));
+  const upload = async (file: File | undefined, kind: "logo" | "favicon") => {
+    if (!file) return;
+    try { const url = await uploadBrandAsset(companyId, file, kind); update(kind === "logo" ? { logo_url: url } : { favicon_url: url }); toast.success("Imagem enviada."); } catch (error) { toast.error((error as Error).message); }
+  };
+  const save = async () => {
+    if (![values.primary_color, values.secondary_color, values.accent_color].every((color) => !color || isHexColor(color))) { toast.error("Use cores hexadecimais no formato #RRGGBB."); return; }
+    setSaving(true);
+    try { await saveBrandIdentity(companyId, { ...values, show_vellune_branding: customBranding.data ? values.show_vellune_branding : true }); await qc.invalidateQueries({ queryKey: brandKey(companyId) }); setForm(null); toast.success("Identidade da marca atualizada."); } catch (error) { toast.error((error as Error).message); } finally { setSaving(false); }
+  };
+
+  return <div className="mx-auto max-w-3xl space-y-6"><PageHeader title="Marca e identidade" description="Personalize a presença da empresa nos convites e comunicações." action={<Button onClick={() => void save()} disabled={saving}><Save className="h-4 w-4" />{saving ? "Salvando..." : "Salvar alterações"}</Button>} /><Card><CardHeader><CardTitle className="flex items-center gap-2"><Palette className="h-5 w-5" />Identidade visual</CardTitle><CardDescription>Defina o nome, as cores e os elementos visuais da sua marca.</CardDescription></CardHeader><CardContent className="space-y-5"><div className="grid gap-4 sm:grid-cols-2"><div className="space-y-2 sm:col-span-2"><Label htmlFor="brand_name">Nome da marca</Label><Input id="brand_name" value={values.brand_name ?? ""} onChange={(e) => update({ brand_name: e.target.value })} /></div>{(["primary_color", "secondary_color", "accent_color"] as const).map((field) => <div className="space-y-2" key={field}><Label htmlFor={field}>{field === "primary_color" ? "Cor primária" : field === "secondary_color" ? "Cor secundária" : "Cor de destaque"}</Label><div className="flex gap-2"><Input id={field} value={values[field] ?? ""} placeholder="#RRGGBB" onChange={(e) => update({ [field]: e.target.value } as Partial<BrandIdentityInput>)} /><input type="color" value={isHexColor(values[field] ?? "") ? values[field]! : "#000000"} onChange={(e) => update({ [field]: e.target.value } as Partial<BrandIdentityInput>)} className="h-10 w-12 rounded-md border bg-background p-1" aria-label="Selecionar cor" /></div></div>)}</div><Separator /><div className="grid gap-4 sm:grid-cols-2"><div className="space-y-2"><Label htmlFor="whatsapp_number">WhatsApp</Label><Input id="whatsapp_number" value={values.whatsapp_number ?? ""} onChange={(e) => update({ whatsapp_number: e.target.value })} placeholder="5511999999999" /></div><div className="space-y-2"><Label htmlFor="contact_email">E-mail de contato</Label><Input id="contact_email" type="email" value={values.contact_email ?? ""} onChange={(e) => update({ contact_email: e.target.value })} /></div><div className="space-y-2 sm:col-span-2"><Label htmlFor="website_url">Website</Label><Input id="website_url" type="url" value={values.website_url ?? ""} onChange={(e) => update({ website_url: e.target.value })} placeholder="https://suaempresa.com.br" /></div></div></CardContent></Card><Card><CardHeader><CardTitle className="flex items-center gap-2"><Image className="h-5 w-5" />Imagens da marca</CardTitle><CardDescription>Envie o logo e o favicon usando o armazenamento seguro da empresa.</CardDescription></CardHeader><CardContent className="grid gap-5 sm:grid-cols-2"><AssetPicker label="Logo" value={values.logo_url} input={logoInput} onChange={(file) => void upload(file, "logo")} /><AssetPicker label="Favicon" value={values.favicon_url} input={faviconInput} onChange={(file) => void upload(file, "favicon")} /></CardContent></Card><Card><CardHeader><CardTitle className="flex items-center gap-2"><Lock className="h-5 w-5" />White-label</CardTitle><CardDescription>{customBranding.data ? "Seu plano permite remover a marca Vellune dos convites." : "O plano atual não inclui personalização white-label."}</CardDescription></CardHeader><CardContent><div className="flex items-center justify-between gap-4 rounded-lg border p-4"><div><p className="font-medium">Exibir marca Vellune</p><p className="text-sm text-muted-foreground">Mantenha a identificação da plataforma nos convites públicos.</p></div><Switch checked={values.show_vellune_branding} disabled={!customBranding.data} onCheckedChange={(checked) => update({ show_vellune_branding: checked })} /></div>{!customBranding.data && <p className="mt-3 text-xs text-muted-foreground">O branding da Vellune permanece ativo enquanto o plano não liberar custom_branding.</p>}</CardContent></Card></div>;
+}
+
+function AssetPicker({ label, value, input, onChange }: { label: string; value: string | null; input: React.RefObject<HTMLInputElement | null>; onChange: (file: File | undefined) => void }) { return <div className="space-y-3"><Label>{label}</Label><div className="flex min-h-28 items-center justify-center overflow-hidden rounded-lg border border-dashed bg-muted/30 p-3">{value ? <img src={value} alt={`${label} atual`} className="max-h-24 max-w-full object-contain" /> : <Image className="h-8 w-8 text-muted-foreground" />}</div><input ref={input} type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" className="hidden" onChange={(e) => onChange(e.target.files?.[0])} /><Button type="button" variant="outline" className="w-full" onClick={() => input.current?.click()}><Upload className="h-4 w-4" />Enviar {label.toLowerCase()}</Button></div>; }
