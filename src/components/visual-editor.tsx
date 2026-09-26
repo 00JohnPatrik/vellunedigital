@@ -132,7 +132,8 @@ export function VisualEditor({ h, ctx, toolbarExtra, assets, bg, onBg }: { h: Bl
   const { blocks, set } = h;
   // Side panels only fit from 1024px up; below that Elements/Properties open as bottom drawers.
   const isMobile = useIsCompact();
-  const [selected, setSelected] = useState<string | null>(null);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [selected, setSelectedValue] = useState<string | null>(null);
   const [device, setDevice] = useState<Device>("mobile");
   const [zoom, setZoom] = useState(100);
   const [previewOnly, setPreviewOnly] = useState(false);
@@ -141,6 +142,18 @@ export function VisualEditor({ h, ctx, toolbarExtra, assets, bg, onBg }: { h: Bl
   const [sheet, setSheet] = useState<"elements" | "props" | null>(null);
   const clipboard = useRef<Block | null>(null);
   const sel = blocks.find((b) => b.id === selected) ?? null;
+  const selectedBlocks = blocks.filter((b) => selectedIds.includes(b.id));
+  const setSelected = (id: string | null) => {
+    setSelectedValue(id);
+    setSelectedIds(id ? [id] : []);
+  };
+  const toggleSelected = (id: string) => {
+    setSelectedIds((current) => {
+      const next = current.includes(id) ? current.filter((item) => item !== id) : [...current, id];
+      setSelectedValue(next[0] ?? null);
+      return next;
+    });
+  };
 
   // Atalhos de edição, ignorando campos de formulário para não interferir na digitação.
   useEffect(() => {
@@ -199,6 +212,63 @@ export function VisualEditor({ h, ctx, toolbarExtra, assets, bg, onBg }: { h: Bl
   };
   const setProp = (id: string, k: string, v: string) => set((bs) => bs.map((b) => (b.id === id && !b.locked ? { ...b, props: { ...b.props, [k]: v } } : b)), `${id}:${k}`);
   const alignSelected = (align: "left" | "center" | "right") => { if (sel && !sel.locked) setProp(sel.id, "align", align); };
+  const alignMultiple = (align: "left" | "center" | "right") => {
+    if (selectedIds.length < 2) return alignSelected(align);
+    set((bs) => bs.map((b) => selectedIds.includes(b.id) && !b.locked ? { ...b, props: { ...b.props, align } } : b), "selection:align");
+  };
+  const distributeMultiple = () => {
+    if (selectedIds.length < 3) return;
+    const ordered = blocks.filter((b) => selectedIds.includes(b.id));
+    set((bs) => bs.map((b) => {
+      const index = ordered.findIndex((item) => item.id === b.id);
+      if (index < 0 || b.locked) return b;
+      return { ...b, props: { ...b.props, position: String(index), distribution: "even" } };
+    }), "selection:distribute");
+  };
+  const groupSelected = () => {
+    if (selectedIds.length < 2) return;
+    const groupId = crypto.randomUUID();
+    set((bs) => bs.map((b) => selectedIds.includes(b.id) && !b.locked ? { ...b, props: { ...b.props, __group: groupId } } : b), "selection:group");
+    toast.success("Elementos agrupados.");
+  };
+  const ungroupSelected = () => {
+    const groups = new Set(selectedBlocks.map((b) => b.props.__group).filter(Boolean));
+    if (!groups.size) return;
+    set((bs) => bs.map((b) => {
+      if (!selectedIds.includes(b.id) || b.locked || !b.props.__group) return b;
+      const { __group: _group, ...props } = b.props;
+      return { ...b, props };
+    }), "selection:ungroup");
+    toast.success("Agrupamento removido.");
+  };
+  const duplicateMultiple = () => {
+    const source = blocks.filter((b) => selectedIds.includes(b.id));
+    if (!source.length) return;
+    if (source.some((b) => b.type === "rsvp")) { toast.error(RSVP_DUP); return; }
+    const copies = source.map((b) => ({ ...structuredClone(b), id: crypto.randomUUID() }));
+    set((bs) => [...bs, ...copies]);
+    setSelectedIds(copies.map((b) => b.id));
+    setSelectedValue(copies[0]?.id ?? null);
+  };
+  const removeMultiple = () => {
+    const removable = new Set(selectedBlocks.filter((b) => !b.locked).map((b) => b.id));
+    if (!removable.size) return;
+    set((bs) => bs.filter((b) => !removable.has(b.id)));
+    setSelected(null);
+  };
+  const moveMultiple = (direction: -1 | 1) => {
+    if (selectedIds.length < 2) return;
+    set((bs) => {
+      const result = [...bs];
+      const indexes = selectedIds.map((id) => result.findIndex((b) => b.id === id)).filter((index) => index >= 0).sort((a, b) => direction > 0 ? b - a : a - b);
+      indexes.forEach((index) => {
+        const next = index + direction;
+        if (next < 0 || next >= result.length || selectedIds.includes(result[next]!.id)) return;
+        [result[index], result[next]] = [result[next]!, result[index]!];
+      });
+      return result;
+    }, "selection:move");
+  };
   const convertToText = (id: string) => set((bs) => bs.map((b) => (b.id === id ? { ...newBlock("text"), id, props: { ...BLOCKS.text.defaults, text: Object.values(b.props ?? {}).filter((x) => typeof x === "string").join(" ") || "Texto" } } : b)));
 
   const actions = { move, duplicate, toggleHidden, toggleLocked, remove };
@@ -235,11 +305,20 @@ export function VisualEditor({ h, ctx, toolbarExtra, assets, bg, onBg }: { h: Bl
         </Button>
         {!previewOnly && (
           <>
-            <div className="hidden items-center gap-0.5 rounded-lg border bg-background p-0.5 sm:flex" role="group" aria-label="Alinhamento do bloco selecionado">
-              <Button type="button" variant="ghost" size="icon" className="h-8 w-8" aria-label="Alinhar à esquerda" disabled={!sel || sel.locked} onClick={() => alignSelected("left")}><AlignLeft className="h-4 w-4" /></Button>
-              <Button type="button" variant="ghost" size="icon" className="h-8 w-8" aria-label="Centralizar" disabled={!sel || sel.locked} onClick={() => alignSelected("center")}><AlignCenter className="h-4 w-4" /></Button>
-              <Button type="button" variant="ghost" size="icon" className="h-8 w-8" aria-label="Alinhar à direita" disabled={!sel || sel.locked} onClick={() => alignSelected("right")}><AlignRight className="h-4 w-4" /></Button>
+            <div className="hidden items-center gap-0.5 rounded-lg border bg-background p-0.5 sm:flex" role="group" aria-label="Alinhamento dos blocos selecionados">
+              <Button type="button" variant="ghost" size="icon" className="h-8 w-8" aria-label="Alinhar à esquerda" disabled={!selectedIds.length} onClick={() => alignMultiple("left")}><AlignLeft className="h-4 w-4" /></Button>
+              <Button type="button" variant="ghost" size="icon" className="h-8 w-8" aria-label="Centralizar" disabled={!selectedIds.length} onClick={() => alignMultiple("center")}><AlignCenter className="h-4 w-4" /></Button>
+              <Button type="button" variant="ghost" size="icon" className="h-8 w-8" aria-label="Alinhar à direita" disabled={!selectedIds.length} onClick={() => alignMultiple("right")}><AlignRight className="h-4 w-4" /></Button>
             </div>
+            {selectedIds.length > 1 && <div className="flex flex-wrap items-center gap-1 rounded-lg border bg-background p-0.5" role="group" aria-label="Ações coletivas">
+              <Button type="button" size="sm" variant="ghost" onClick={() => moveMultiple(-1)} title="Mover seleção para cima"><ArrowUp className="h-4 w-4" /></Button>
+              <Button type="button" size="sm" variant="ghost" onClick={() => moveMultiple(1)} title="Mover seleção para baixo"><ArrowDown className="h-4 w-4" /></Button>
+              <Button type="button" size="sm" variant="ghost" onClick={duplicateMultiple}><Copy className="h-4 w-4" />Duplicar</Button>
+              <Button type="button" size="sm" variant="ghost" onClick={groupSelected}>Agrupar</Button>
+              <Button type="button" size="sm" variant="ghost" onClick={ungroupSelected}>Desagrupar</Button>
+              <Button type="button" size="sm" variant="ghost" onClick={distributeMultiple}>Distribuir</Button>
+              <Button type="button" size="sm" variant="ghost" className="text-destructive" onClick={removeMultiple}><Trash2 className="h-4 w-4" />Excluir</Button>
+            </div>}
             <Button type="button" size="sm" variant={showGuides ? "secondary" : "ghost"} aria-pressed={showGuides} onClick={() => setShowGuides((value) => !value)}>
               Guias
             </Button>
@@ -276,7 +355,9 @@ export function VisualEditor({ h, ctx, toolbarExtra, assets, bg, onBg }: { h: Bl
               </>}
               {blocks.map((b, i) => previewOnly
                 ? (b.hidden ? null : <div key={b.id} className="py-1"><BlockView block={b} ctx={ctx} interactive /></div>)
-                : <FreeCanvasBlock key={b.id} block={b} ctx={ctx} selected={b.id === selected} onSelect={select} first={i === 0} last={i === blocks.length - 1} actions={actions} setProp={setProp} />)}
+                : <div key={b.id} data-editor-block-id={b.id} className={cn("relative rounded-lg transition-shadow", selectedIds.includes(b.id) && "ring-2 ring-primary ring-offset-2 ring-offset-card")} onClick={(event) => { event.stopPropagation(); if (event.shiftKey || event.ctrlKey || event.metaKey) toggleSelected(b.id); else setSelected(b.id); }}>
+                    <FreeCanvasBlock block={b} ctx={ctx} selected={selectedIds.includes(b.id)} onSelect={select} first={i === 0} last={i === blocks.length - 1} actions={actions} setProp={setProp} />
+                  </div>)}
             </div>
           </div>
         </div>
