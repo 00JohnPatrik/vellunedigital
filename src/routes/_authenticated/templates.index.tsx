@@ -43,10 +43,19 @@ function CompanyTemplates() {
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
         <TemplateFilters search={search} setSearch={setSearch} category={category} setCategory={setCategory} />
       </div>
-      {q.isLoading ? <LoadingState /> : q.isError ? <EmptyState>Não foi possível carregar os modelos.</EmptyState> : (
+      {q.isLoading ? <LoadingState /> : q.isError ? (
+        <div className="rounded-xl border border-destructive/30 bg-destructive/5 p-8 text-center">
+          <p className="text-sm font-medium text-destructive">Não foi possível carregar os modelos.</p>
+          <p className="mt-1 text-sm text-muted-foreground">Tente novamente para atualizar a biblioteca.</p>
+          <Button type="button" variant="outline" size="sm" className="mt-4" onClick={() => void q.refetch()}>Tentar novamente</Button>
+        </div>
+      ) : (
         <>
-          <section>
-            <h2 className="mb-3 font-display text-lg font-semibold">Modelos oficiais</h2>
+          <section aria-labelledby="official-templates-title">
+            <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2">
+              <h2 id="official-templates-title" className="font-display text-lg font-semibold">Modelos oficiais</h2>
+              <span className="text-xs text-muted-foreground">{official.length} {official.length === 1 ? "modelo" : "modelos"}</span>
+            </div>
             {official.length === 0 ? <EmptyState>Nenhum modelo oficial encontrado.</EmptyState> : (
               <div className={grid}>{official.map((t) => (
                 <TemplateCard key={t.id} t={t} actions={<>
@@ -56,8 +65,11 @@ function CompanyTemplates() {
               ))}</div>
             )}
           </section>
-          <section>
-            <h2 className="mb-3 font-display text-lg font-semibold">Meus modelos</h2>
+          <section aria-labelledby="company-templates-title">
+            <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2">
+              <h2 id="company-templates-title" className="font-display text-lg font-semibold">Meus modelos</h2>
+              <span className="text-xs text-muted-foreground">{mine.length} {mine.length === 1 ? "modelo" : "modelos"}</span>
+            </div>
             {mine.length === 0 ? <EmptyState>Você ainda não tem modelos. Crie um ou use um modelo oficial.</EmptyState> : (
               <div className={grid}>{mine.map((t) => (
                 <TemplateCard key={t.id} t={t} actions={<>

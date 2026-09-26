@@ -125,7 +125,7 @@ export function TemplateForm({ initial, isNew, submitLabel, onSubmit, onCancel, 
 export function TemplateFilters({ search, setSearch, category, setCategory }: { search: string; setSearch: (s: string) => void; category: string; setCategory: (c: string) => void }) {
   return (
     <>
-      <Input placeholder="Buscar por nome" value={search} onChange={(e) => setSearch(e.target.value)} className="sm:max-w-xs" />
+      <Input aria-label="Buscar modelos por nome" placeholder="Buscar por nome" value={search} onChange={(e) => setSearch(e.target.value)} className="sm:max-w-xs" />
       <Select value={category} onValueChange={setCategory}>
         <SelectTrigger className="sm:w-48"><SelectValue /></SelectTrigger>
         <SelectContent>

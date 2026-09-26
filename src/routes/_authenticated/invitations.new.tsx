@@ -51,10 +51,10 @@ function NewInvitationPage() {
     <div className="mx-auto max-w-3xl">
       <Link to="/invitations" className="mb-3 inline-block text-sm text-muted-foreground hover:text-foreground">← Convites</Link>
       <PageHeader title="Novo convite" />
-      <ol className="mb-6 grid grid-cols-4 gap-2">
+      <ol className="mb-6 grid grid-cols-4 gap-2" aria-label="Etapas para criar convite">
         {STEPS.map((s, i) => (
-          <li key={s} className={cn("rounded-md border px-2 py-2 text-center text-xs sm:text-sm", i === step ? "border-primary bg-primary/10 font-medium" : i < step ? "text-foreground" : "text-muted-foreground")}>
-            {i < step ? <Check className="mr-1 inline h-3.5 w-3.5" /> : `${i + 1}. `}{s}
+          <li key={s} aria-current={i === step ? "step" : undefined} className={cn("rounded-md border px-2 py-2 text-center text-xs sm:text-sm", i === step ? "border-primary bg-primary/10 font-medium text-foreground" : i < step ? "text-foreground" : "text-muted-foreground")}>
+            {i < step ? <Check className="mr-1 inline h-3.5 w-3.5" aria-hidden="true" /> : `${i + 1}. `}{s}
           </li>
         ))}
       </ol>
@@ -107,8 +107,8 @@ function CustomerStep({ companyId, selected, onSelect }: { companyId: string | u
       {q.isLoading ? <LoadingState /> : rows.length === 0 ? <EmptyState>{q.data?.some((c) => c.status === "active") ? "Nenhum cliente encontrado." : "Nenhum cliente ativo. Cadastre um cliente para continuar."}</EmptyState> : (
         <div className="max-h-80 divide-y overflow-y-auto rounded-lg border">
           {rows.map((c) => (
-            <button key={c.id} type="button" onClick={() => onSelect(c)}
-              className={cn("flex w-full items-center justify-between gap-2 px-3 py-2.5 text-left text-sm hover:bg-muted/50", selected?.id === c.id && "bg-primary/10")}>
+            <button key={c.id} type="button" onClick={() => onSelect(c)} aria-pressed={selected?.id === c.id}
+              className={cn("flex w-full items-center justify-between gap-2 px-3 py-2.5 text-left text-sm transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary", selected?.id === c.id && "bg-primary/10")}>
               <span className="min-w-0"><span className="block truncate font-medium">{c.name}</span>
                 <span className="block truncate text-xs text-muted-foreground">{[c.phone, c.email, c.company?.name].filter(Boolean).join(" · ") || "—"}</span></span>
               {selected?.id === c.id && <Check className="h-4 w-4 shrink-0 text-primary" />}
@@ -146,6 +146,13 @@ function TemplateStep({ companyId, selected, onSelect }: { companyId: string; se
     </button>
   );
   if (q.isLoading) return <LoadingState />;
+  if (q.isError) return (
+    <div className="rounded-xl border border-destructive/30 bg-destructive/5 p-6 text-center">
+      <p className="text-sm font-medium text-destructive">Não foi possível carregar os modelos.</p>
+      <p className="mt-1 text-sm text-muted-foreground">Tente novamente para continuar escolhendo um modelo.</p>
+      <Button type="button" variant="outline" size="sm" className="mt-4" onClick={() => void q.refetch()}>Tentar novamente</Button>
+    </div>
+  );
   const official = list.filter((t) => t.type === "official");
   const mine = list.filter((t) => t.type === "company");
   return (
