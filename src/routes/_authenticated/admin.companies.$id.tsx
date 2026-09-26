@@ -9,6 +9,10 @@ import { dbErrorMessage, EmptyState, fmtDate, LoadingState, PageHeader, StatusBa
 import { CompanyForm } from "@/components/admin-forms";
 import { getCompany, isUuid, listCompanyAdmins, setCompanyStatus, setDeleted } from "@/lib/admin-data";
 import { SubscriptionOverviewCard } from "@/components/subscription-ui";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { listCompanyDomains, saveCompanyDomain, setCompanyDomainStatus, getBrandIdentity, saveBrandIdentity, brandKey, domainsKey, isHexColor, type BrandIdentityInput, type CompanyDomain } from "@/lib/brand";
 
 export const Route = createFileRoute("/_authenticated/admin/companies/$id")({
   validateSearch: z.object({ edit: z.boolean().optional() }),
@@ -93,7 +97,11 @@ function CompanyDetail() {
           </div>
         </div>
       )}
-      {!edit && <section className="mt-6"><SubscriptionOverviewCard companyId={c.id} /></section>}
+      {!edit && <>
+        <section className="mt-6"><SubscriptionOverviewCard companyId={c.id} /></section>
+        <CompanyBrandingPanel companyId={c.id} />
+        <CompanyDomainsPanel companyId={c.id} />
+      </>}
     </div>
   );
 }
