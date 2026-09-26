@@ -276,7 +276,7 @@ export function VisualEditor({ h, ctx, toolbarExtra, assets, bg, onBg }: { h: Bl
               </>}
               {blocks.map((b, i) => previewOnly
                 ? (b.hidden ? null : <div key={b.id} className="py-1"><BlockView block={b} ctx={ctx} interactive /></div>)
-                : <CanvasBlock key={b.id} block={b} ctx={ctx} selected={b.id === selected} onSelect={select} first={i === 0} last={i === blocks.length - 1} actions={actions} />)}
+                : <FreeCanvasBlock key={b.id} block={b} ctx={ctx} selected={b.id === selected} onSelect={select} first={i === 0} last={i === blocks.length - 1} actions={actions} setProp={setProp} />)}
             </div>
           </div>
         </div>
