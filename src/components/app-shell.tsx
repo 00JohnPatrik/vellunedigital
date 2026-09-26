@@ -14,6 +14,8 @@ import {
   Settings,
   User,
   Users,
+  Wifi,
+  WifiOff,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -54,10 +56,22 @@ export function AppShell({ base, nav, appUser, children }: Props) {
     return window.localStorage.getItem("vellune-density") === "compact" ? "compact" : "comfortable";
   });
   const [onlineCount, setOnlineCount] = useState(1);
+  const [isOnline, setIsOnline] = useState(() => typeof navigator === "undefined" || navigator.onLine);
   const navigate = useNavigate();
   const qc = useQueryClient();
 
   useEffect(() => applyTheme(theme), [theme]);
+
+  useEffect(() => {
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
+    return () => {
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
+    };
+  }, []);
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
@@ -150,10 +164,8 @@ export function AppShell({ base, nav, appUser, children }: Props) {
   const brand = (compact: boolean) => (
     <div className="flex h-14 items-center gap-2 border-b border-sidebar-border px-4">
       <div className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-md bg-sidebar-accent">
-        <picture>
-          <source media="(prefers-color-scheme: dark)" srcSet="/uploads/logoEscura.jpg" />
-          <img src="/uploads/LogoClara.png" alt="Vellune Digital" className="h-full w-full object-cover" />
-        </picture>
+        <img src="/uploads/LogoClara.png" alt="Vellune Digital" className="h-full w-full object-cover dark:hidden" />
+        <img src="/uploads/logoEscura.jpg" alt="Vellune Digital" className="hidden h-full w-full object-cover dark:block" />
       </div>
       {!compact && <span className="font-display font-semibold">Vellune Digital</span>}
     </div>
@@ -230,11 +242,24 @@ export function AppShell({ base, nav, appUser, children }: Props) {
             <kbd className="ml-auto hidden rounded border bg-muted px-1.5 py-0.5 text-[10px] font-medium lg:inline-flex">Ctrl K</kbd>
           </button>
           <div className="min-w-0 flex-1 truncate text-sm text-muted-foreground sm:hidden">{appUser.company?.name ?? "Administração global"}</div>
-          <div className="hidden items-center gap-2 text-xs text-muted-foreground lg:flex" title={`${onlineCount} usuário(s) online`}>
-            <span className="h-2 w-2 rounded-full bg-emerald-500" />
-            <Users className="h-3.5 w-3.5" />
-            <span>{onlineCount} online</span>
+          <div
+            className={cn("hidden items-center gap-2 text-xs lg:flex", isOnline ? "text-muted-foreground" : "text-destructive")}
+            title={isOnline ? `${onlineCount} usuário(s) online` : "Sem conexão com a internet"}
+            role="status"
+            aria-live="polite"
+          >
+            {isOnline ? <Wifi className="h-3.5 w-3.5" aria-hidden="true" /> : <WifiOff className="h-3.5 w-3.5" aria-hidden="true" />}
+            {isOnline ? (
+              <>
+                <span className="h-2 w-2 rounded-full bg-emerald-500" />
+                <Users className="h-3.5 w-3.5" aria-hidden="true" />
+                <span>{onlineCount} online</span>
+              </>
+            ) : (
+              <span>Offline</span>
+            )}
           </div>
+          {!isOnline && <span className="sr-only" role="alert">Você está sem conexão. Algumas ações podem aguardar a reconexão.</span>}
           <NotificationCenter appUser={appUser} />
           <DropdownMenu>
             <DropdownMenuTrigger asChild>

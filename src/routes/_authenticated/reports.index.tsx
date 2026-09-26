@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { Download, Search } from "lucide-react";
+import { Download, RefreshCw, Search } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -41,7 +41,11 @@ function CompanyReports() {
     return (
       <div role="alert" className="rounded-xl border border-destructive/30 bg-destructive/5 p-6 text-center">
         <p className="text-sm font-medium text-destructive">Não foi possível carregar o relatório.</p>
-        <p className="mt-1 text-sm text-muted-foreground">Atualize a página e tente novamente.</p>
+        <p className="mt-1 text-sm text-muted-foreground">Verifique sua conexão e tente novamente.</p>
+        <Button type="button" variant="outline" className="mt-4" onClick={() => void report.refetch()} disabled={report.isFetching}>
+          <RefreshCw className={report.isFetching ? "h-4 w-4 animate-spin" : "h-4 w-4"} />
+          Tentar novamente
+        </Button>
       </div>
     );
   }

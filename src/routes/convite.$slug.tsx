@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type CSSProperties } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { Check, Copy, ExternalLink, Loader2, MailX, MessageCircle, Share2 } from "lucide-react";
 import { InvitationCanvas } from "@/components/block-render";
@@ -115,7 +115,7 @@ function PublicInvitationPage() {
   };
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-muted/60 via-background to-muted/40 px-4 py-8 sm:py-14" style={{ "--brand-primary": branding?.primary_color ?? undefined, "--brand-accent": branding?.accent_color ?? undefined } as React.CSSProperties} aria-label="Convite digital">
+    <main className="min-h-screen bg-gradient-to-b from-muted/60 via-background to-muted/40 px-4 py-8 sm:py-14" style={{ "--brand-primary": branding?.primary_color ?? undefined, "--brand-accent": branding?.accent_color ?? undefined } as CSSProperties} aria-label="Convite digital">
       <div className="mx-auto w-full max-w-2xl">
         <div className="mb-5 flex flex-wrap items-center justify-center gap-2" aria-label="Compartilhar convite">
           <Button type="button" variant="outline" size="sm" onClick={copyLink}>
@@ -140,7 +140,7 @@ function PublicInvitationPage() {
         )}
         <InvitationCanvas background={i.content?.settings?.background} blocks={i.content?.blocks ?? []} ctx={ctx} className="mx-auto max-w-lg gap-6 border-border/60 p-5 shadow-xl sm:p-10" />
         <footer className="mt-8 flex flex-col items-center gap-2 text-center text-[11px] tracking-wide text-muted-foreground">
-          {branding?.whatsapp_number && <a className="text-primary hover:underline" href={`https://wa.me/${branding.whatsapp_number.replace(/\\D/g, "")}`} target="_blank" rel="noopener noreferrer">Fale conosco pelo WhatsApp</a>}
+          {branding?.whatsapp_number && <a className="text-primary hover:underline" href={`https://wa.me/${branding.whatsapp_number.replace(/\D/g, "")}`} target="_blank" rel="noopener noreferrer">Fale conosco pelo WhatsApp</a>}
           {branding?.contact_email && <a className="hover:underline" href={`mailto:${branding.contact_email}`}>{branding.contact_email}</a>}
           {(branding?.show_vellune_branding ?? true) && <span>Convite digital · Vellune Digital</span>}
           {!branding?.show_vellune_branding && branding?.brand_name && <span>{branding.brand_name}</span>}
