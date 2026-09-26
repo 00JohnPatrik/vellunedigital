@@ -1,7 +1,7 @@
 import { memo, useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import {
-  ArrowDown, ArrowUp, CalendarDays, Clock, Copy, Eye, EyeOff, GripVertical, ImageIcon, Layers, MapPin, MessageCircle, Minus,
-  Monitor, MousePointerClick, Plus, QrCode, Redo2, Settings2, Smartphone, Tablet, Timer, Trash2, Type, Undo2, UserCheck,
+  ArrowDown, ArrowUp, CalendarDays, Clock, Copy, Eye, EyeOff, GripVertical, ImageIcon, Layers, Lock, MapPin, MessageCircle, Minus,
+  Monitor, MousePointerClick, Plus, QrCode, Redo2, RotateCcw, Settings2, Smartphone, Tablet, Timer, Trash2, Type, Undo2, Unlock, UserCheck,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -120,21 +120,39 @@ export function VisualEditor({ h, ctx, toolbarExtra, assets, bg, onBg }: { h: Bl
   const isMobile = useIsCompact();
   const [selected, setSelected] = useState<string | null>(null);
   const [device, setDevice] = useState<Device>("mobile");
+  const [zoom, setZoom] = useState(100);
   const [previewOnly, setPreviewOnly] = useState(false);
   const [sheet, setSheet] = useState<"elements" | "props" | null>(null);
+  const clipboard = useRef<Block | null>(null);
   const sel = blocks.find((b) => b.id === selected) ?? null;
 
-  // Keyboard shortcuts (ignored while typing in a field).
+  // Atalhos de edição, ignorando campos de formulário para não interferir na digitação.
   useEffect(() => {
     const on = (e: KeyboardEvent) => {
       const el = e.target as HTMLElement;
       if (el.closest("input, textarea, [contenteditable=true], [role=combobox]")) return;
-      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "z") { e.preventDefault(); if (e.shiftKey) h.redo(); else h.undo(); }
-      else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "y") { e.preventDefault(); h.redo(); }
+      const command = e.ctrlKey || e.metaKey;
+      if (command && e.key.toLowerCase() === "z") { e.preventDefault(); if (e.shiftKey) h.redo(); else h.undo(); return; }
+      if (command && e.key.toLowerCase() === "y") { e.preventDefault(); h.redo(); return; }
+      if (command && e.key.toLowerCase() === "c" && sel) { e.preventDefault(); clipboard.current = structuredClone(sel); return; }
+      if (command && e.key.toLowerCase() === "v" && clipboard.current) {
+        e.preventDefault();
+        if (clipboard.current.type === "rsvp" && blocks.some((x) => x.type === "rsvp")) { toast.error(RSVP_DUP); return; }
+        const pasted = { ...structuredClone(clipboard.current), id: crypto.randomUUID() };
+        const index = sel ? blocks.findIndex((x) => x.id === sel.id) + 1 : blocks.length;
+        set([...blocks.slice(0, index), pasted, ...blocks.slice(index)]);
+        setSelected(pasted.id);
+        return;
+      }
+      if ((e.key === "Delete" || e.key === "Backspace") && sel && !sel.locked) {
+        e.preventDefault();
+        set((bs) => bs.filter((b) => b.id !== sel.id));
+        setSelected(null);
+      }
     };
     window.addEventListener("keydown", on);
     return () => window.removeEventListener("keydown", on);
-  }, [h]);
+  }, [blocks, h, sel, set]);
 
   const add = (type: BlockType) => {
     if (type === "rsvp" && blocks.some((x) => x.type === "rsvp")) { toast.error(RSVP_DUP); return; }
@@ -153,15 +171,18 @@ export function VisualEditor({ h, ctx, toolbarExtra, assets, bg, onBg }: { h: Bl
     set([...blocks.slice(0, i + 1), copy, ...blocks.slice(i + 1)]); setSelected(copy.id);
   };
   const toggleHidden = (id: string) => set((bs) => bs.map((b) => (b.id === id ? { ...b, hidden: !b.hidden } : b)));
+  const toggleLocked = (id: string) => set((bs) => bs.map((b) => (b.id === id ? { ...b, locked: !b.locked } : b)));
   const remove = (id: string) => {
+    const target = blocks.find((b) => b.id === id);
+    if (target?.locked) { toast.error("Desbloqueie o bloco antes de excluí-lo."); return; }
     set((bs) => bs.filter((b) => b.id !== id));
     if (selected === id) setSelected(null);
     toast("Bloco excluído.", { action: { label: "Desfazer", onClick: h.undo } });
   };
-  const setProp = (id: string, k: string, v: string) => set((bs) => bs.map((b) => (b.id === id ? { ...b, props: { ...b.props, [k]: v } } : b)), `${id}:${k}`);
+  const setProp = (id: string, k: string, v: string) => set((bs) => bs.map((b) => (b.id === id && !b.locked ? { ...b, props: { ...b.props, [k]: v } } : b)), `${id}:${k}`);
   const convertToText = (id: string) => set((bs) => bs.map((b) => (b.id === id ? { ...newBlock("text"), id, props: { ...BLOCKS.text.defaults, text: Object.values(b.props ?? {}).filter((x) => typeof x === "string").join(" ") || "Texto" } } : b)));
 
-  const actions = { move, duplicate, toggleHidden, remove };
+  const actions = { move, duplicate, toggleHidden, toggleLocked, remove };
   const select = (id: string) => { setSelected(id); if (isMobile) setSheet("props"); };
 
   const library = <Library onAdd={add} />;
@@ -184,6 +205,12 @@ export function VisualEditor({ h, ctx, toolbarExtra, assets, bg, onBg }: { h: Bl
             </Button>
           ))}
         </div>
+        {!previewOnly && <div className="flex items-center rounded-lg border bg-background p-0.5" role="group" aria-label="Zoom do canvas">
+          <Button type="button" variant="ghost" size="icon" className="h-8 w-8" aria-label="Reduzir zoom" disabled={zoom <= 60} onClick={() => setZoom((value) => Math.max(60, value - 10))}><Minus className="h-4 w-4" /></Button>
+          <span className="min-w-12 text-center text-xs tabular-nums text-muted-foreground">{zoom}%</span>
+          <Button type="button" variant="ghost" size="icon" className="h-8 w-8" aria-label="Aumentar zoom" disabled={zoom >= 140} onClick={() => setZoom((value) => Math.min(140, value + 10))}><Plus className="h-4 w-4" /></Button>
+          <Button type="button" variant="ghost" size="icon" className="h-8 w-8" aria-label="Redefinir zoom" onClick={() => setZoom(100)}><RotateCcw className="h-3.5 w-3.5" /></Button>
+        </div>}
         <Button type="button" size="sm" variant={previewOnly ? "secondary" : "ghost"} className="border border-transparent" onClick={() => { setPreviewOnly(!previewOnly); setSelected(null); }}>
           <Eye className="h-4 w-4" />{previewOnly ? "Voltar a editar" : "Preview"}
         </Button>
@@ -264,7 +291,7 @@ function Library({ onAdd }: { onAdd: (t: BlockType) => void }) {
   );
 }
 
-type Actions = { move: (id: string, d: number) => void; duplicate: (id: string) => void; toggleHidden: (id: string) => void; remove: (id: string) => void };
+type Actions = { move: (id: string, d: number) => void; duplicate: (id: string) => void; toggleHidden: (id: string) => void; toggleLocked: (id: string) => void; remove: (id: string) => void };
 
 function BlockActions({ b, first, last, actions, compact }: { b: Block; first: boolean; last: boolean; actions: Actions; compact?: boolean }) {
   const btn = "h-7 w-7";
@@ -275,6 +302,7 @@ function BlockActions({ b, first, last, actions, compact }: { b: Block; first: b
       <Button type="button" variant="ghost" size="icon" className={btn} aria-label="Mover para baixo" disabled={last} onClick={stop(() => actions.move(b.id, 1))}><ArrowDown className="h-3.5 w-3.5" /></Button>
       <Button type="button" variant="ghost" size="icon" className={btn} aria-label="Duplicar" onClick={stop(() => actions.duplicate(b.id))}><Copy className="h-3.5 w-3.5" /></Button>
       <Button type="button" variant="ghost" size="icon" className={btn} aria-label={b.hidden ? "Mostrar" : "Ocultar"} onClick={stop(() => actions.toggleHidden(b.id))}>{b.hidden ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}</Button>
+      <Button type="button" variant="ghost" size="icon" className={btn} aria-label={b.locked ? "Desbloquear" : "Bloquear"} title={b.locked ? "Desbloquear bloco" : "Bloquear bloco"} onClick={stop(() => actions.toggleLocked(b.id))}>{b.locked ? <Unlock className="h-3.5 w-3.5" /> : <Lock className="h-3.5 w-3.5" />}</Button>
       <Button type="button" variant="ghost" size="icon" className={cn(btn, "text-destructive")} aria-label="Excluir" onClick={stop(() => actions.remove(b.id))}><Trash2 className="h-3.5 w-3.5" /></Button>
     </div>
   );
@@ -286,9 +314,10 @@ const CanvasBlock = memo(function CanvasBlock({ block, ctx, selected, onSelect, 
   return (
     <div
       role="button" tabIndex={0} aria-label={`Selecionar ${blockLabel(block)}`}
-      onClick={(e) => { e.stopPropagation(); onSelect(block.id); }}
-      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onSelect(block.id); } }}
-      className={cn("group relative cursor-pointer rounded-lg border-2 p-2 outline-none transition-colors",
+      onClick={(e) => { e.stopPropagation(); if (!block.locked) onSelect(block.id); }}
+      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); if (!block.locked) onSelect(block.id); } }}
+      className={cn("group relative rounded-lg border-2 p-2 outline-none transition-colors",
+        block.locked ? "cursor-not-allowed border-border/50" : "cursor-pointer",
         selected ? "border-primary" : "border-dashed border-border/60 hover:border-primary/40 focus-visible:border-primary/60",
         block.hidden && "opacity-40")}
     >
@@ -299,6 +328,7 @@ const CanvasBlock = memo(function CanvasBlock({ block, ctx, selected, onSelect, 
         </div>
       )}
       {block.hidden && <span className="absolute left-2 top-1 text-[10px] uppercase text-muted-foreground">Oculto</span>}
+      {block.locked && <span className="absolute bottom-1 left-2 inline-flex items-center gap-1 text-[10px] uppercase text-muted-foreground"><Lock className="h-3 w-3" />Bloqueado</span>}
       <div className="pointer-events-none"><BlockView block={block} ctx={ctx} /></div>
     </div>
   );
