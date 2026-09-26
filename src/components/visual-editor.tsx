@@ -45,20 +45,33 @@ export type BlocksHistory = ReturnType<typeof useBlocksHistory>;
 
 /** Undo/redo over the blocks array. Rapid edits with the same `group` (e.g. typing in one field) merge into one step. */
 export function useBlocksHistory(initial: Block[]) {
-  const [h, setH] = useState<Hist>({ past: [], present: initial, future: [] });
+  const [h, setH] = useState<Hist>(() => ({ past: [], present: structuredClone(initial), future: [] }));
   const last = useRef<{ group: string; at: number } | null>(null);
   const set = useCallback((next: Block[] | ((b: Block[]) => Block[]), group?: string) => {
     setH((s) => {
       const value = typeof next === "function" ? next(s.present) : next;
       if (value === s.present) return s;
+      const snapshot = structuredClone(value);
       const now = Date.now();
       const merge = group && last.current?.group === group && now - last.current.at < 1000;
       last.current = group ? { group, at: now } : null;
-      return merge ? { ...s, present: value, future: [] } : { past: [...s.past, s.present].slice(-LIMIT), present: value, future: [] };
+      return merge
+        ? { ...s, present: snapshot, future: [] }
+        : { past: [...s.past, structuredClone(s.present)].slice(-LIMIT), present: snapshot, future: [] };
     });
   }, []);
-  const undo = useCallback(() => { last.current = null; setH((s) => s.past.length ? { past: s.past.slice(0, -1), present: s.past[s.past.length - 1]!, future: [s.present, ...s.future] } : s); }, []);
-  const redo = useCallback(() => { last.current = null; setH((s) => s.future.length ? { past: [...s.past, s.present], present: s.future[0]!, future: s.future.slice(1) } : s); }, []);
+  const undo = useCallback(() => {
+    last.current = null;
+    setH((s) => s.past.length
+      ? { past: s.past.slice(0, -1), present: structuredClone(s.past[s.past.length - 1]!), future: [structuredClone(s.present), ...s.future] }
+      : s);
+  }, []);
+  const redo = useCallback(() => {
+    last.current = null;
+    setH((s) => s.future.length
+      ? { past: [...s.past, structuredClone(s.present)], present: structuredClone(s.future[0]!), future: s.future.slice(1) }
+      : s);
+  }, []);
   return { blocks: h.present, set, undo, redo, canUndo: h.past.length > 0, canRedo: h.future.length > 0 };
 }
 
