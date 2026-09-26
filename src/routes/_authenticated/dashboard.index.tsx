@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { LoadingState, PageHeader } from "@/components/admin-ui";
 import { RecentResponses, Section, StatCard, StatGrid, UpcomingList } from "@/components/reports-ui";
 import { fetchReport, recentResponses, totals, upcoming } from "@/lib/reports";
+import { CompanyDashboardEnhancements } from "@/components/phase7-ui";
 
 export const Route = createFileRoute("/_authenticated/dashboard/")({
   component: CompanyDashboard,
@@ -40,6 +41,7 @@ function CompanyDashboard() {
           </div>
         ) : <RecentResponses rows={recent.data ?? []} />}
       </Section>
+      <CompanyDashboardEnhancements companyId={Route.useRouteContext().appUser.company!.id} />
     </div>
   );
 }

@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { LoadingState, PageHeader } from "@/components/admin-ui";
 import { StatCard } from "@/components/reports-ui";
 import { fetchReport, globalCounts, totals } from "@/lib/reports";
+import { ActivitySummary } from "@/components/phase7-ui";
 
 export const Route = createFileRoute("/_authenticated/admin/")({
   component: AdminDashboard,
@@ -25,6 +26,7 @@ function AdminDashboard() {
         <StatCard label="Confirmações" value={t.confirmed} />
         <StatCard label="Pessoas confirmadas" value={t.people} />
       </div>
+      <ActivitySummary />
     </div>
   );
 }

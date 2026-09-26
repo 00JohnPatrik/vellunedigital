@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { EmptyState, fmtDate, LoadingState, PageHeader, StatusBadge, StatusTabs, StatusToggle, type StatusFilter } from "@/components/admin-ui";
 import { listCompanyAdmins, setUserStatus, usersKey, type CompanyAdmin } from "@/lib/admin-data";
+import { AdminPresence } from "@/components/phase7-ui";
 
 export const Route = createFileRoute("/_authenticated/admin/users/")({
   head: () => ({ meta: [{ title: "Usuários — Vellune Digital" }] }),
@@ -41,6 +42,7 @@ function UsersPage() {
     <div>
       <PageHeader title="Usuários" description="Administradores das empresas."
         action={<Button asChild><Link to="/admin/users/new"><Plus className="h-4 w-4" />Novo administrador</Link></Button>} />
+      <div className="mb-4"><AdminPresence /></div>
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center">
         <div className="relative flex-1 sm:max-w-sm">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />

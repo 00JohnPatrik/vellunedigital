@@ -35,6 +35,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ThemeDialog } from "@/components/theme-dialog";
+import { NotificationCenter } from "@/components/phase7-ui";
 import { applyTheme, type AppUser } from "@/lib/app-user";
 import type { NavItem } from "@/lib/nav";
 import { cn } from "@/lib/utils";
@@ -231,9 +232,7 @@ export function AppShell({ base, nav, appUser, children }: Props) {
             <Users className="h-3.5 w-3.5" />
             <span>{onlineCount} online</span>
           </div>
-          <Button variant="ghost" size="icon" aria-label="Notificações" title="Notificações">
-            <Bell className="h-4 w-4" />
-          </Button>
+          <NotificationCenter appUser={appUser} />
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="h-9 gap-2 px-2" aria-label="Abrir menu do usuário">
