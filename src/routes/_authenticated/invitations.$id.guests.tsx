@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Download, Edit3, FileUp, Loader2, Plus, Printer, QrCode, Search, Trash2, Users, X } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { EmptyState, LoadingState, PageHeader } from "@/components/admin-ui";
-import { createGuest, deleteGuest, emptyGuest, getGuest, getInvitationForGuests, guestsKey, guestsToCsv, guestToValues, listInvitationGuests, parseGuestsCsv, updateGuest, type GuestValues, type InvitationGuest } from "@/lib/guests";
+import { createGuest, deleteGuest, emptyGuest, getInvitationForGuests, guestsKey, guestsToCsv, guestToValues, listAllInvitationGuests, listInvitationGuests, parseGuestsCsv, updateGuest, type GuestValues, type InvitationGuest } from "@/lib/guests";
 
 export const Route = createFileRoute("/_authenticated/invitations/$id/guests")({
   head: () => ({ meta: [{ title: "Convidados — Vellune Digital" }] }),
@@ -35,7 +35,7 @@ function GuestsPage() {
 
   const downloadCsv = async () => {
     try {
-      const result = await listInvitationGuests(id, search, 1, 10000);
+      const result = { rows: await listAllInvitationGuests(id) };
       const url = URL.createObjectURL(new Blob([guestsToCsv(result.rows)], { type: "text/csv;charset=utf-8" }));
       const a = document.createElement("a"); a.href = url; a.download = "convidados.csv"; a.click(); URL.revokeObjectURL(url);
     } catch { toast.error("Não foi possível exportar os convidados."); }
@@ -79,7 +79,7 @@ function GuestsPage() {
 function GuestDialog({ invitationId, guest, onClose, onSaved }: { invitationId: string; guest: InvitationGuest | null | undefined; onClose: () => void; onSaved: () => void }) {
   const [values, setValues] = useState<GuestValues>(emptyGuest);
   const [busy, setBusy] = useState(false);
-  useMemo(() => { if (guest !== undefined) setValues(guest ? guestToValues(guest) : emptyGuest); }, [guest]);
+  useEffect(() => { if (guest !== undefined) setValues(guest ? guestToValues(guest) : emptyGuest); }, [guest]);
   const open = guest !== undefined;
   const save = async () => { setBusy(true); try { if (guest) await updateGuest(invitationId, guest.id, values); else await createGuest(invitationId, values); toast.success(guest ? "Convidado atualizado." : "Convidado adicionado."); onSaved(); } catch (error) { toast.error(error instanceof Error ? error.message : "Não foi possível salvar o convidado."); } finally { setBusy(false); } };
   return <Dialog open={open} onOpenChange={(value) => !value && onClose()}><DialogContent><DialogHeader><DialogTitle>{guest ? "Editar convidado" : "Adicionar convidado"}</DialogTitle></DialogHeader><div className="space-y-4"><Field label="Nome *" value={values.name} onChange={(name) => setValues({ ...values, name })} /><Field label="Telefone" value={values.phone} onChange={(phone) => setValues({ ...values, phone })} /><Field label="E-mail" value={values.email} onChange={(email) => setValues({ ...values, email })} type="email" /><Field label="Número de pessoas *" value={values.people_count} onChange={(people_count) => setValues({ ...values, people_count })} type="number" /></div><DialogFooter><Button variant="outline" onClick={onClose}>Cancelar</Button><Button onClick={() => void save()} disabled={busy}>{busy && <Loader2 className="h-4 w-4 animate-spin" />}Salvar</Button></DialogFooter></DialogContent></Dialog>;

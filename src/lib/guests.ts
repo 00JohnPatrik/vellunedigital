@@ -57,18 +57,34 @@ export async function listInvitationGuests(invitationId: string, search = "", pa
 
   if (search.trim()) query = query.ilike("name", `%${search.trim()}%`);
 
-  const from = (page - 1) * pageSize;
+  const from = Math.max(0, page - 1) * pageSize;
   const { data, error, count } = await query.range(from, from + pageSize - 1);
   if (error) throw error;
   return { rows: (data ?? []) as unknown as InvitationGuest[], total: count ?? 0 };
 }
 
+export async function listAllInvitationGuests(invitationId: string) {
+  const rows: InvitationGuest[] = [];
+  const pageSize = 1000;
+  let page = 1;
+
+  while (true) {
+    const result = await listInvitationGuests(invitationId, "", page, pageSize);
+    rows.push(...result.rows);
+    if (result.rows.length < pageSize || rows.length >= result.total) return rows;
+    page += 1;
+  }
+}
+
 export async function getGuestByToken(invitationId: string, token: string) {
+  const normalizedToken = token.trim();
+  if (!normalizedToken) return null;
+
   const { data, error } = await supabase
     .from("invitation_guests")
     .select(guestColumns)
     .eq("invitation_id", invitationId)
-    .eq("qr_token", token.trim())
+    .eq("qr_token", normalizedToken)
     .neq("status", "deleted")
     .is("deleted_at", null)
     .maybeSingle();
@@ -115,6 +131,7 @@ export async function updateGuest(invitationId: string, id: string, values: Gues
     .eq("invitation_id", invitationId)
     .eq("id", id)
     .neq("status", "deleted")
+    .is("deleted_at", null)
     .select(guestColumns)
     .single();
   if (error) throw error;
@@ -128,7 +145,8 @@ export async function deleteGuest(invitationId: string, id: string) {
     .update({ status: "deleted", deleted_at: new Date().toISOString(), deleted_by: auth.user?.id ?? null })
     .eq("invitation_id", invitationId)
     .eq("id", id)
-    .neq("status", "deleted");
+    .neq("status", "deleted")
+    .is("deleted_at", null);
   if (error) throw error;
 }
 
@@ -142,10 +160,12 @@ export type Checkin = {
   updated_at: string;
 };
 
+const checkinColumns = "id, invitation_id, guest_id, status, checked_in_at, created_at, updated_at";
+
 export async function getGuestCheckin(invitationId: string, guestId: string) {
   const { data, error } = await supabase
     .from("guest_checkins")
-    .select("id, invitation_id, guest_id, status, checked_in_at, created_at, updated_at")
+    .select(checkinColumns)
     .eq("invitation_id", invitationId)
     .eq("guest_id", guestId)
     .maybeSingle();
@@ -155,18 +175,19 @@ export async function getGuestCheckin(invitationId: string, guestId: string) {
 
 export async function setGuestCheckin(invitationId: string, guestId: string, checkedIn: boolean) {
   const current = await getGuestCheckin(invitationId, guestId);
+  const now = new Date().toISOString();
   const values = checkedIn
-    ? { status: "active", checked_in_at: new Date().toISOString(), updated_at: new Date().toISOString() }
-    : { status: "deleted", updated_at: new Date().toISOString() };
+    ? { status: "active", checked_in_at: now, updated_at: now }
+    : { status: "deleted", updated_at: now };
 
   if (current) {
-    const { data, error } = await supabase.from("guest_checkins").update(values).eq("id", current.id).select("id, invitation_id, guest_id, status, checked_in_at, created_at, updated_at").single();
+    const { data, error } = await supabase.from("guest_checkins").update(values).eq("id", current.id).eq("invitation_id", invitationId).eq("guest_id", guestId).select(checkinColumns).single();
     if (error) throw error;
     return data as Checkin;
   }
 
   if (!checkedIn) return null;
-  const { data, error } = await supabase.from("guest_checkins").insert({ invitation_id: invitationId, guest_id: guestId, status: "active" }).select("id, invitation_id, guest_id, status, checked_in_at, created_at, updated_at").single();
+  const { data, error } = await supabase.from("guest_checkins").insert({ invitation_id: invitationId, guest_id: guestId, status: "active" }).select(checkinColumns).single();
   if (error) throw error;
   return data as Checkin;
 }
