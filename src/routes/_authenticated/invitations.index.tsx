@@ -65,7 +65,7 @@ function InvitationsPage() {
         {shareable && <>
           <Button variant={variant} size="sm" onClick={() => { navigator.clipboard.writeText(publicUrl(i.slug)); toast.success("Link copiado."); }}><Copy className="h-4 w-4" />Copiar link</Button>
           <Button variant={variant} size="sm" asChild><a href={whatsappShareUrl(i.slug)} target="_blank" rel="noreferrer"><MessageCircle className="h-4 w-4" />WhatsApp</a></Button>
-          {(i as Invitation & { access_token?: string }).access_token && <Button variant={variant} size="sm" onClick={() => { const token = (i as Invitation & { access_token?: string }).access_token; if (!token) return; navigator.clipboard.writeText(`${window.location.origin}/painel-convite/${token}`); toast.success("Link do anfitrião copiado."); }}><Link2 className="h-4 w-4" />Copiar link do anfitrião</Button>}
+          {i.access_token && <Button variant={variant} size="sm" onClick={() => { navigator.clipboard.writeText(`${window.location.origin}/painel-convite/${i.access_token}`); toast.success("Link do anfitrião copiado."); }}><Link2 className="h-4 w-4" />Copiar link do anfitrião</Button>}
         </>}
         <Button variant={variant} size="sm" onClick={() => setReportInvitationId(i.id)}><BarChart3 className="h-4 w-4" />Relatório</Button>
         {isSuper && <Button variant={variant} size="sm" className="text-destructive" onClick={() => setToDelete(i)}><Trash2 className="h-4 w-4" />Excluir</Button>}

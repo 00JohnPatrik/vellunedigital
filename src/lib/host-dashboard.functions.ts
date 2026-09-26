@@ -42,17 +42,22 @@ export type HostDashboardResult =
 
 /**
  * Public host dashboard lookup. The access token is the only public identifier.
- * All reads happen with the server-only service-role client and only safe fields
- * are returned to the browser.
+ * The server reads the token but only returns safe invitation and RSVP fields.
  */
 export const getHostDashboard = createServerFn({ method: "GET" })
-  .inputValidator((d) => z.object({ token: z.string().trim().min(32).max(200) }).parse(d))
+  .inputValidator((d) =>
+    z
+      .object({ token: z.string().trim().regex(/^[a-f0-9]{48}$/i) })
+      .parse(d),
+  )
   .handler(async ({ data }): Promise<HostDashboardResult> => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
     const { data: invitation, error: invitationError } = await supabaseAdmin
       .from("invitations")
-      .select("name, slug, status, event_date, event_time, venue_name, address, city, state, message, customer:customers(name)")
+      .select(
+        "id, name, slug, status, event_date, event_time, venue_name, address, city, state, message, customer:customers(name)",
+      )
       .eq("access_token", data.token)
       .is("deleted_at", null)
       .in("status", ["published", "closed"])
@@ -65,29 +70,15 @@ export const getHostDashboard = createServerFn({ method: "GET" })
 
     if (!invitation) return { state: "not_found" };
 
-    const invitationIdResult = await supabaseAdmin
-      .from("invitations")
-      .select("id")
-      .eq("access_token", data.token)
-      .is("deleted_at", null)
-      .in("status", ["published", "closed"])
-      .maybeSingle();
-
-    if (invitationIdResult.error || !invitationIdResult.data) {
-      if (invitationIdResult.error) console.error("getHostDashboard invitation id", invitationIdResult.error.message);
-      return { state: "unavailable" };
-    }
-
-    const invitationId = invitationIdResult.data.id;
     const [viewsResult, responsesResult] = await Promise.all([
       supabaseAdmin
         .from("invitation_views")
         .select("id", { count: "exact", head: true })
-        .eq("invitation_id", invitationId),
+        .eq("invitation_id", invitation.id),
       supabaseAdmin
         .from("rsvp_responses")
         .select("id, name, phone, email, people_count, status, created_at, updated_at")
-        .eq("invitation_id", invitationId)
+        .eq("invitation_id", invitation.id)
         .order("updated_at", { ascending: false }),
     ]);
 

@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { AlertCircle, CalendarDays, CheckCircle2, ClipboardList, Eye, Search, Users, XCircle } from "lucide-react";
+import { AlertCircle, CalendarDays, CheckCircle2, ClipboardList, Eye, ExternalLink, Search, Users, XCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -59,8 +59,11 @@ function DashboardContent({ dashboard }: { dashboard: NonNullable<Extract<Awaite
                 {dashboard.invitation.customer_name && <span>Cliente: {dashboard.invitation.customer_name}</span>}
               </div>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <Badge variant={dashboard.invitation.status === "published" ? "default" : "secondary"}>{dashboard.invitation.status === "published" ? "Publicado" : "Fechado"}</Badge>
+              <Button variant="outline" size="sm" asChild>
+                <a href={`/convite/${dashboard.invitation.slug}`} target="_blank" rel="noopener noreferrer"><ExternalLink className="h-4 w-4" />Abrir convite</a>
+              </Button>
               <Button variant="outline" size="sm" onClick={() => void copyPublicLink()}><ClipboardList className="h-4 w-4" />{copied ? "Link copiado" : "Copiar convite"}</Button>
             </div>
           </div>

@@ -9,6 +9,7 @@ export const STATUS_LABEL: Record<InvitationStatus, string> = { draft: "Rascunho
 
 export type Invitation = {
   id: string; company_id: string; customer_id: string; template_id: string | null; name: string; slug: string;
+  access_token: string | null;
   status: InvitationStatus; event_date: string; event_time: string; venue_name: string | null; address: string | null;
   city: string | null; state: string | null; message: string | null; content: TemplateContent; published_at: string | null;
   created_at: string; updated_at: string;
