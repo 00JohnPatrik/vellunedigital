@@ -38,8 +38,37 @@ export const getPublicInvitation = createServerFn({ method: "GET" })
     if (error) { console.error("get_public_invitation", error.message); throw new Error("Falha ao carregar o convite."); }
     const out = res as unknown as PublicInvitationResult;
     if (out.state === "ok" && out.invitation.company_id) {
-      const { data: branding } = await supabaseAdmin.from("company_branding").select("brand_name, logo_url, favicon_url, primary_color, secondary_color, accent_color, show_vellune_branding, whatsapp_number, contact_email, website_url").eq("company_id", out.invitation.company_id).maybeSingle();
-      out.invitation.branding = branding as PublicInvitation["branding"];
+      const { data: subscription } = await supabaseAdmin
+        .from("company_subscriptions")
+        .select("plan_id, status, expires_at")
+        .eq("company_id", out.invitation.company_id)
+        .eq("status", "active")
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      const subscriptionIsActive =
+        subscription &&
+        (!subscription.expires_at || new Date(subscription.expires_at).getTime() > Date.now());
+
+      if (subscriptionIsActive) {
+        const { data: plan } = await supabaseAdmin
+          .from("subscription_plans")
+          .select("features")
+          .eq("id", subscription.plan_id)
+          .eq("status", "active")
+          .maybeSingle();
+
+        const features = plan?.features as { custom_branding?: unknown } | null;
+        if (features?.custom_branding === true) {
+          const { data: branding } = await supabaseAdmin
+            .from("company_branding")
+            .select("brand_name, logo_url, favicon_url, primary_color, secondary_color, accent_color, show_vellune_branding, whatsapp_number, contact_email, website_url")
+            .eq("company_id", out.invitation.company_id)
+            .maybeSingle();
+          out.invitation.branding = branding as PublicInvitation["branding"];
+        }
+      }
     }
     // Sign only the storage images referenced by this published invitation's content (private bucket).
     if (out.state === "ok") {
