@@ -22,7 +22,7 @@ export async function listTrash(): Promise<TrashItem[]> {
     supabase.from("templates").select("id, name, category, deleted_at, updated_at, company:companies(name), deleter:users!templates_deleted_by_fkey(name)").not("deleted_at", "is", null),
     supabase.from("invitations").select("id, name, deleted_at, updated_at, company:companies(name), customer:customers(name), deleter:users!invitations_deleted_by_fkey(name)").eq("status", "deleted"),
     supabase.from("companies").select("id, name, deleted_at, updated_at, deleter:users!companies_deleted_by_fkey(name)").not("deleted_at", "is", null),
-    supabase.from("users").select("id, name, email, deleted_at, updated_at, company:companies!users_company_id_fkey(name), deleter:users!users_deleted_by_fkey(name)").eq("role", "company_admin").not("deleted_at", "is", null),
+    supabase.from("users").select("id, name, email, deleted_at, updated_at, company:companies!users_company_id_fkey(name), deleter:users!deleted_by(name)").eq("role", "company_admin").not("deleted_at", "is", null),
   ]);
   const err = c.error ?? t.error ?? i.error ?? co.error ?? ad.error;
   if (err) throw err;
