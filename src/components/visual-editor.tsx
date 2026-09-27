@@ -167,8 +167,10 @@ export function VisualEditor({ h, ctx, toolbarExtra, assets, bg }: { h: BlocksHi
     const canvas = canvasRef.current;
     if (!drag || !canvas) return;
     const rect = canvas.getBoundingClientRect();
-    const x = Math.max(0, Math.round(event.clientX - rect.left - drag.offsetX));
-    const y = Math.max(0, Math.round(event.clientY - rect.top - drag.offsetY));
+    const rawX = Math.max(0, event.clientX - rect.left - drag.offsetX);
+    const rawY = Math.max(0, event.clientY - rect.top - drag.offsetY);
+    const x = event.shiftKey ? Math.round(rawX / GRID_UNIT) * GRID_UNIT : Math.round(rawX);
+    const y = event.shiftKey ? Math.round(rawY / GRID_UNIT) * GRID_UNIT : Math.round(rawY);
     h.set((blocks) => blocks.map((block: any) => block.id === drag.id ? { ...block, x, y } : block), `drag:${drag.id}`);
   };
 
