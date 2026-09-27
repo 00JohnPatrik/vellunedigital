@@ -422,7 +422,7 @@ export function VisualEditor({ h, ctx, toolbarExtra, assets, bg, onBg }: { h: Bl
               {blocks.map((b, i) => previewOnly
                 ? (b.hidden ? null : <div key={b.id} className="py-1"><BlockView block={b} ctx={ctx} interactive /></div>)
                 : <div key={b.id} data-editor-block-id={b.id} className={cn("relative rounded-lg transition-shadow", selectedIds.includes(b.id) && "ring-2 ring-primary ring-offset-2 ring-offset-card")} onClick={(event) => { event.stopPropagation(); if (event.shiftKey || event.ctrlKey || event.metaKey) toggleSelected(b.id); else setSelected(b.id); }}>
-                    <FreeCanvasBlock block={b} ctx={ctx} selected={selectedIds.includes(b.id)} onSelect={select} first={i === 0} last={i === blocks.length - 1} actions={actions} setProp={setProp} />
+                    <CanvasBlock block={b} ctx={ctx} selected={selectedIds.includes(b.id)} onSelect={select} first={i === 0} last={i === blocks.length - 1} actions={actions} />
                   </div>)}
             </div>
           </div>

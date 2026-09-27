@@ -138,6 +138,6 @@ export function ActivitySummary() {
     if (usersError) throw usersError;
     if (invitationsError) throw invitationsError;
     return [...(companies ?? []).map((item) => ({ ...item, type: "Empresa" })), ...(users ?? []).map((item) => ({ ...item, type: "Usuário" })), ...(invitations ?? []).map((item) => ({ ...item, type: "Convite" }))].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).slice(0, 6);
-  }, staleTime: 30_000);
+  }, staleTime: 30_000 });
   return <Card className="mt-6"><CardHeader><CardTitle className="flex items-center gap-2 text-base"><History className="h-4 w-4" />Atividade recente</CardTitle></CardHeader><CardContent>{query.isLoading ? <p className="text-sm text-muted-foreground">Carregando atividade...</p> : query.isError ? <p className="text-sm text-destructive">Não foi possível carregar a atividade.</p> : query.data?.length ? <div className="space-y-3">{query.data.map((item) => <div key={`${item.type}-${item.id}`} className="flex items-center gap-3"><span className="flex h-8 w-8 items-center justify-center rounded-full bg-muted text-xs font-medium">{item.type.slice(0, 1)}</span><div className="min-w-0 flex-1"><p className="truncate text-sm font-medium">{item.name}</p><p className="text-xs text-muted-foreground">{item.type} · {new Date(item.created_at).toLocaleString("pt-BR")}</p></div></div>)}</div> : <p className="text-sm text-muted-foreground">Nenhuma atividade recente.</p>}</CardContent></Card>;
 }
