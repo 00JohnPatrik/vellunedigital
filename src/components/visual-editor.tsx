@@ -148,56 +148,6 @@ type EditorPointer = { clientX: number; clientY: number };
 
 export type EditorPoint = { x: number; y: number };
 
-/** Mantém as coordenadas do editor em uma grade estável, independente do zoom visual. */
-export const snapToEditorGrid = (value: number, enabled: boolean, unit = GRID_UNIT) => {
-  if (!Number.isFinite(value)) return 0;
-  if (!enabled || !Number.isFinite(unit) || unit <= 0) return value;
-  return Math.round(value / unit) * unit;
-};
-
-/** Converte coordenadas do ponteiro na viewport em coordenadas lógicas do canvas. */
-export const editorCanvasPoint = (event: EditorPointer, rect: DOMRect, zoom: number): EditorPoint => {
-  const scale = Number.isFinite(zoom) && zoom > 0 ? zoom / 100 : 1;
-  return {
-    x: (event.clientX - rect.left) / scale,
-    y: (event.clientY - rect.top) / scale,
-  };
-};
-
-/** Calcula a posição do ponteiro com snap aplicado, preservando a mesma unidade lógica do canvas. */
-export const editorSnappedPoint = (
-  event: EditorPointer,
-  rect: DOMRect,
-  zoom: number,
-  enabled: boolean,
-  unit = GRID_UNIT,
-): EditorPoint => {
-  const point = editorCanvasPoint(event, rect, zoom);
-  return {
-    x: snapToEditorGrid(point.x, enabled, unit),
-    y: snapToEditorGrid(point.y, enabled, unit),
-  };
-};
-
-/** Retorna o deslocamento lógico entre dois eventos de ponteiro, considerando o zoom atual. */
-export const editorPointerDelta = (start: EditorPointer, current: EditorPointer, zoom: number): EditorPoint => {
-  const scale = Number.isFinite(zoom) && zoom > 0 ? zoom / 100 : 1;
-  return {
-    x: (current.clientX - start.clientX) / scale,
-    y: (current.clientY - start.clientY) / scale,
-  };
-};
-
-/** Faz o snap de uma posição durante o drag sem alterar coordenadas inválidas. */
-export const editorSnappedPosition = (
-  position: EditorPoint,
-  enabled: boolean,
-  unit = GRID_UNIT,
-): EditorPoint => ({
-  x: snapToEditorGrid(position.x, enabled, unit),
-  y: snapToEditorGrid(position.y, enabled, unit),
-});
-
 export function VisualEditor({ h, ctx, toolbarExtra, assets, bg, onBg }: { h: BlocksHistory; ctx?: EventCtx | undefined; toolbarExtra?: ReactNode; assets?: AssetScope | undefined; bg?: Background | undefined; onBg?: ((b: Background) => void) | undefined }) {
   const { blocks, set } = h;
   const editorRoot = useRef<HTMLDivElement>(null);
