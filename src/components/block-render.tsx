@@ -191,18 +191,26 @@ export function BackgroundLayers({ bg }: { bg?: Background | undefined }) {
   const position = `${bg?.x ?? "center"} ${bg?.y ?? "center"}`;
   return (
     <>
-      {bg?.gradient && (
+      {(bg?.color || bg?.gradient) && (
         <div
           aria-hidden
           className="pointer-events-none absolute inset-0 z-0"
-          style={{ backgroundImage: bg.gradient }}
+          style={{
+            ...(bg?.color ? { backgroundColor: bg.color } : {}),
+            ...(bg?.gradient ? { backgroundImage: bg.gradient } : {}),
+          }}
         />
       )}
       {src && (
         <div
           aria-hidden
           className="pointer-events-none absolute inset-0 z-0 bg-no-repeat"
-          style={{ backgroundImage: `url("${src}")`, backgroundSize: imageSize, backgroundPosition: position, opacity: imageOpacity }}
+          style={{
+            backgroundImage: `url("${src}")`,
+            backgroundSize: imageSize,
+            backgroundPosition: position,
+            opacity: imageOpacity,
+          }}
         />
       )}
       {overlay > 0 && (
