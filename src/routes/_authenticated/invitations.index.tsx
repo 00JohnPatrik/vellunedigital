@@ -11,7 +11,6 @@ import {
 } from "@/components/ui/alert-dialog";
 import { EmptyState, fmtDate, LoadingState, PageHeader } from "@/components/admin-ui";
 import { InvitationStatusBadge } from "@/components/invitation-ui";
-import { RsvpPanel } from "@/components/rsvp-panel";
 import { deleteInvitation, fmtEventDate, invitationsKey, listInvitations, publicUrl, whatsappShareUrl, type Invitation } from "@/lib/invitations";
 import { cn } from "@/lib/utils";
 
@@ -30,7 +29,6 @@ function InvitationsPage() {
   const [filter, setFilter] = useState<Filter>("all");
   const isSuper = Route.useRouteContext().appUser.role === "super_admin";
   const [toDelete, setToDelete] = useState<Invitation | null>(null);
-  const [reportInvitationId, setReportInvitationId] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
   const rows = useMemo(() => {
@@ -67,7 +65,7 @@ function InvitationsPage() {
           <Button variant={variant} size="sm" asChild><a href={whatsappShareUrl(i.slug)} target="_blank" rel="noreferrer"><MessageCircle className="h-4 w-4" />WhatsApp</a></Button>
           {i.access_token && <Button variant={variant} size="sm" onClick={() => { navigator.clipboard.writeText(`${window.location.origin}/painel-convite/${i.access_token}`); toast.success("Link do anfitrião copiado."); }}><Link2 className="h-4 w-4" />Copiar link do anfitrião</Button>}
         </>}
-        <Button variant={variant} size="sm" onClick={() => setReportInvitationId(i.id)}><BarChart3 className="h-4 w-4" />Relatório</Button>
+        <Button variant={variant} size="sm" asChild><Link to="/invitations/$id/report" params={{ id: i.id }}><BarChart3 className="h-4 w-4" />Relatório</Link></Button>
         {isSuper && <Button variant={variant} size="sm" className="text-destructive" onClick={() => setToDelete(i)}><Trash2 className="h-4 w-4" />Excluir</Button>}
       </>
     );
@@ -178,8 +176,6 @@ function InvitationsPage() {
           </div>
         </>
       )}
-
-      {reportInvitationId && <RsvpPanel invitationId={reportInvitationId} open onOpenChange={(open) => { if (!open) setReportInvitationId(null); }} />}
 
       <AlertDialog open={!!toDelete} onOpenChange={(o) => !o && setToDelete(null)}>
         <AlertDialogContent>
