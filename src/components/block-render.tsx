@@ -177,15 +177,37 @@ export const bgColorStyle = (bg?: Background) => {
   };
 };
 
-/** Background image, gradient and dark overlay, painted behind the content (parent needs `relative isolate`). */
+/** Background layers are painted independently behind the content (parent needs `relative isolate`). */
 export function BackgroundLayers({ bg }: { bg?: Background | undefined }) {
   const src = useAssetUrl(bg?.image);
   const overlay = Math.min(40, Math.max(0, Number(bg?.overlay) || 0));
-  const backgroundImage = [bg?.gradient, src ? `url("${src}")` : ""].filter(Boolean).join(", ") || undefined;
+  const scale = Math.min(300, Math.max(10, Number(bg?.imageScale) || 100));
+  const imageOpacity = Math.min(1, Math.max(0, Number.isFinite(Number(bg?.imageOpacity)) ? Number(bg?.imageOpacity) : 1));
+  const imageSize = bg?.size === "contain" ? `${scale}% auto` : `${scale}% ${scale}%`;
+  const position = `${bg?.x ?? "center"} ${bg?.y ?? "center"}`;
   return (
     <>
-      {backgroundImage && <div aria-hidden className="pointer-events-none absolute inset-0 -z-10 bg-no-repeat" style={{ backgroundImage, backgroundSize: src ? bg?.size ?? "cover" : "cover", backgroundPosition: src ? `${bg?.x ?? "center"} ${bg?.y ?? "center"}` : "center" }} />}
-      {overlay > 0 && <div aria-hidden className="pointer-events-none absolute inset-0 -z-10 bg-foreground dark:bg-background" style={{ opacity: overlay / 100 }} />}
+      {bg?.gradient && (
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 -z-10"
+          style={{ backgroundImage: bg.gradient }}
+        />
+      )}
+      {src && (
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 -z-10 bg-no-repeat"
+          style={{ backgroundImage: `url("${src}")`, backgroundSize: imageSize, backgroundPosition: position, opacity: imageOpacity }}
+        />
+      )}
+      {overlay > 0 && (
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 -z-10 bg-foreground dark:bg-background"
+          style={{ opacity: overlay / 100 }}
+        />
+      )}
     </>
   );
 }
@@ -225,7 +247,7 @@ export function InvitationCanvas({ blocks, ctx, className, background }: { block
           transformOrigin: "center",
           boxSizing: "border-box",
         } : {};
-        return <div key={b.id} className={cn(free && "overflow-hidden")} style={frame}><BlockView block={b} ctx={ctx} interactive /></div>;
+        return <div key={b.id} className={cn("min-w-0", free && "overflow-visible")} style={frame}><BlockView block={b} ctx={ctx} interactive /></div>;
       }) : <p className="py-10 text-center text-sm text-muted-foreground">Este convite ainda não possui blocos.</p>}
     </div>
   );

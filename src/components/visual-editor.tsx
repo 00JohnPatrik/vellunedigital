@@ -847,11 +847,21 @@ function BackgroundPanel({ bg, onBg, assets }: { bg: Background; onBg: (b: Backg
         {img && <Button type="button" size="sm" variant="outline" className="w-full" onClick={() => up({ image: "" })}>Remover imagem</Button>}
       </div>
       {img && (
-        <div className="grid grid-cols-2 gap-2">
-          <BgSelect label="Tamanho" value={bg.size ?? "cover"} options={[["cover", "Cover"], ["contain", "Contain"]]} onChange={(v) => up({ size: v as "cover" })} />
-          <BgSelect label="Horizontal" value={bg.x ?? "center"} options={[["left", "Esquerda"], ["center", "Centro"], ["right", "Direita"]]} onChange={(v) => up({ x: v as "center" })} />
-          <BgSelect label="Vertical" value={bg.y ?? "center"} options={[["top", "Topo"], ["center", "Centro"], ["bottom", "Baixo"]]} onChange={(v) => up({ y: v as "center" })} />
-        </div>
+        <>
+          <div className="grid grid-cols-2 gap-2">
+            <BgSelect label="Ajuste" value={bg.size ?? "cover"} options={[["cover", "Cobrir"], ["contain", "Conter"]]} onChange={(v) => up({ size: v as "cover" | "contain" })} />
+            <BgSelect label="Horizontal" value={bg.x ?? "center"} options={[["left", "Esquerda"], ["center", "Centro"], ["right", "Direita"]]} onChange={(v) => up({ x: v as "left" | "center" | "right" })} />
+            <BgSelect label="Vertical" value={bg.y ?? "center"} options={[["top", "Topo"], ["center", "Centro"], ["bottom", "Baixo"]]} onChange={(v) => up({ y: v as "top" | "center" | "bottom" })} />
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs">Escala: {Math.round(bg.imageScale ?? 100)}%</Label>
+            <input type="range" min={25} max={200} step={5} value={bg.imageScale ?? 100} onChange={(e) => up({ imageScale: Number(e.target.value) })} className="w-full accent-primary" />
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs">Opacidade: {Math.round((bg.imageOpacity ?? 1) * 100)}%</Label>
+            <input type="range" min={0} max={1} step={0.05} value={bg.imageOpacity ?? 1} onChange={(e) => up({ imageOpacity: Number(e.target.value) })} className="w-full accent-primary" />
+          </div>
+        </>
       )}
       <BgSelect label="Sobreposição" value={overlay > 0 ? "dark" : "none"} options={[["none", "Nenhuma"], ["dark", "Escura"]]} onChange={(v) => up({ overlay: v === "dark" ? 20 : 0 })} />
       {overlay > 0 && (
