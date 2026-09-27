@@ -1,5 +1,5 @@
 // @ts-nocheck
-import type { ReactNode } from "react";
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 
 function useIsCompact() {
   const [compact, setCompact] = useState(false);
@@ -127,6 +127,7 @@ export function VisualEditor({ h, ctx, toolbarExtra, assets, bg }: { h: BlocksHi
       <p className="text-xs text-muted-foreground">Blocos recebidos: {Array.isArray(h?.blocks) ? h.blocks.length : 0} · contexto: {ctx ? "sim" : "não"} · arquivos: {assets ? "sim" : "não"} · fundo: {bg ? "sim" : "não"} · ações extras: {toolbarExtra ? "sim" : "não"}</p>
     </div>
   );
+  /*
   const editorRoot = useRef<HTMLDivElement>(null);
   // Side panels only fit from 1024px up; below that Elements/Properties open as bottom drawers.
   const isMobile = useIsCompact();
@@ -752,4 +753,6 @@ function BackgroundPanel({ bg, onBg, assets }: { bg: Background; onBg: (b: Backg
       <p className="text-xs text-muted-foreground">Selecione um elemento no convite para editar suas propriedades.</p>
     </div>
   );
+}
+*/
 }
