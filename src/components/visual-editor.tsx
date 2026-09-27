@@ -1,5 +1,6 @@
 // @ts-nocheck
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
+import { BackgroundLayers, BlockView } from "@/components/block-render";
 
 function useIsCompact() {
   const [compact, setCompact] = useState(false);
@@ -189,14 +190,14 @@ export function VisualEditor({ h, ctx, toolbarExtra, assets, bg }: { h: BlocksHi
       <div className="flex flex-wrap items-center gap-2 rounded-2xl border bg-card p-3 shadow-sm">
         <div className="min-w-0 flex-1">
           <p className="text-sm font-semibold text-foreground">Editor visual</p>
-          <p className="text-xs text-muted-foreground">Arraste os blocos com o mouse para posicioná-los livremente.</p>
+          <p className="text-xs text-muted-foreground">Arraste os elementos diretamente no convite para posicioná-los livremente.</p>
         </div>
         {toolbarExtra}
       </div>
       <div className="overflow-auto rounded-2xl border bg-muted/40 p-3 shadow-inner sm:p-6">
         <div
           ref={canvasRef}
-          className="relative mx-auto w-full max-w-[768px] overflow-hidden rounded-2xl border bg-card p-4 shadow-sm sm:p-6"
+          className="relative isolate mx-auto w-full max-w-[768px] overflow-hidden rounded-2xl border bg-card shadow-sm"
           style={{ minHeight: canvasHeight, backgroundColor: bg && (bg as any).color ? (bg as any).color : undefined }}
           onPointerMove={moveDrag}
           onPointerUp={stopDrag}
@@ -204,40 +205,31 @@ export function VisualEditor({ h, ctx, toolbarExtra, assets, bg }: { h: BlocksHi
           onClick={() => setSelectedId(null)}
           aria-label="Área de edição do convite"
         >
+          <BackgroundLayers bg={bg as any} />
           {blocks.length === 0 && (
-            <div className="absolute inset-0 flex items-center justify-center text-center text-sm text-muted-foreground">
+            <div className="absolute inset-0 z-10 flex items-center justify-center text-center text-sm text-muted-foreground">
               Nenhum bloco foi adicionado.
             </div>
           )}
           {blocks.map((block: any, index: number) => {
             const position = getPosition(block, index);
-            const props = block.props ?? {};
             const isSelected = selectedId === block.id;
-            const imageUrl = props.url || "";
             return (
               <div
                 key={block.id || index}
-                className={`absolute left-0 top-0 min-h-16 w-[calc(100%-2rem)] max-w-[680px] cursor-grab rounded-xl border bg-background/95 p-4 text-foreground shadow-sm transition-shadow active:cursor-grabbing ${isSelected ? "border-primary ring-2 ring-primary/30" : "border-border hover:shadow-md"} ${block.hidden ? "opacity-50" : ""}`}
+                className={`absolute left-0 top-0 min-h-16 w-[calc(100%-2rem)] max-w-[680px] cursor-grab rounded-xl border bg-background/80 p-4 text-foreground shadow-sm backdrop-blur-[1px] transition-shadow active:cursor-grabbing ${isSelected ? "border-primary ring-2 ring-primary/30" : "border-border/70 hover:shadow-md"} ${block.hidden ? "opacity-50" : ""}`}
                 style={{ transform: `translate(${position.x}px, ${position.y}px)`, zIndex: typeof block.zIndex === "number" ? block.zIndex : index + 1 }}
                 onPointerDown={(event) => startDrag(event, block, index)}
                 onClick={(event) => { event.stopPropagation(); setSelectedId(block.id); }}
                 title={block.locked ? "Bloco bloqueado" : "Arraste para mover"}
               >
-                {block.type === "image" && imageUrl ? (
-                  <img src={imageUrl} alt={props.alt || "Imagem do convite"} className="mx-auto max-h-40 w-full rounded-lg object-cover" draggable={false} />
-                ) : block.type === "divider" ? (
-                  <div className="h-px w-full bg-border" />
-                ) : (
-                  <p className={`whitespace-pre-wrap text-sm ${block.type === "text" ? "font-medium" : "text-muted-foreground"}`}>
-                    {getBlockLabel(block)}
-                  </p>
-                )}
+                <BlockView block={block} ctx={ctx as any} interactive={false} />
               </div>
             );
           })}
         </div>
       </div>
-      <p className="text-xs text-muted-foreground">Blocos: {blocks.length} · selecione e arraste um bloco para atualizar sua posição.</p>
+      <p className="text-xs text-muted-foreground">Blocos: {blocks.length} · selecione e arraste um elemento para atualizar sua posição.</p>
     </div>
   );
   /*
