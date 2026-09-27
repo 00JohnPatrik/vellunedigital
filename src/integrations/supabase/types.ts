@@ -825,6 +825,8 @@ export type Database = {
           deleted_by: string | null
           email: string
           id: string
+          last_login_at: string | null
+          last_seen_at: string | null
           name: string
           phone: string | null
           role: Database["public"]["Enums"]["app_role"]
@@ -840,6 +842,8 @@ export type Database = {
           deleted_by?: string | null
           email: string
           id?: string
+          last_login_at?: string | null
+          last_seen_at?: string | null
           name: string
           phone?: string | null
           role: Database["public"]["Enums"]["app_role"]
@@ -855,6 +859,8 @@ export type Database = {
           deleted_by?: string | null
           email?: string
           id?: string
+          last_login_at?: string | null
+          last_seen_at?: string | null
           name?: string
           phone?: string | null
           role?: Database["public"]["Enums"]["app_role"]
