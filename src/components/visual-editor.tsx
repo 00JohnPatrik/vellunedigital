@@ -394,7 +394,7 @@ export function VisualEditor({ h, ctx, toolbarExtra, assets, bg, onBg }: { h: Bl
         )}
 
         <div className="min-w-0 overflow-auto rounded-2xl border bg-muted/40 p-3 shadow-inner sm:p-6" onClick={() => setSelected(null)} aria-label="Área de edição do convite">
-          <div className={cn("mx-auto w-full transition-[max-width]", DEVICE_W[device])} data-editor-zoom={zoom}>
+          <div className={cn("mx-auto w-full transition-[max-width]", DEVICE_W[device])} data-editor-zoom={zoom} style={{ zoom: zoom / 100 }}>
             <div
               className="relative isolate flex w-full flex-col gap-2 overflow-hidden rounded-2xl border bg-card p-4 shadow-sm sm:p-6"
               style={{
@@ -402,7 +402,7 @@ export function VisualEditor({ h, ctx, toolbarExtra, assets, bg, onBg }: { h: Bl
                 backgroundImage: showGrid
                   ? "linear-gradient(to right, color-mix(in oklch, var(--primary) 14%, transparent) 1px, transparent 1px), linear-gradient(to bottom, color-mix(in oklch, var(--primary) 14%, transparent) 1px, transparent 1px)"
                   : undefined,
-                backgroundSize: showGrid ? `${GRID_UNIT * zoom / 100}px ${GRID_UNIT * zoom / 100}px` : undefined,
+                backgroundSize: showGrid ? `${GRID_UNIT}px ${GRID_UNIT}px` : undefined,
                 backgroundPosition: "0 0",
               }}
             >
@@ -413,7 +413,7 @@ export function VisualEditor({ h, ctx, toolbarExtra, assets, bg, onBg }: { h: Bl
                     className="pointer-events-none absolute inset-x-0 top-0 z-20 h-5 border-b bg-background/80"
                     style={{
                       backgroundImage: "repeating-linear-gradient(to right, transparent 0, transparent 15px, color-mix(in oklch, var(--foreground) 30%, transparent) 15px, color-mix(in oklch, var(--foreground) 30%, transparent) 16px)",
-                      backgroundSize: `${GRID_UNIT * zoom / 100}px 100%`,
+                      backgroundSize: `${GRID_UNIT}px 100%`,
                     }}
                   />
                   <div
@@ -421,7 +421,7 @@ export function VisualEditor({ h, ctx, toolbarExtra, assets, bg, onBg }: { h: Bl
                     className="pointer-events-none absolute inset-y-0 left-0 z-20 w-5 border-r bg-background/80"
                     style={{
                       backgroundImage: "repeating-linear-gradient(to bottom, transparent 0, transparent 15px, color-mix(in oklch, var(--foreground) 30%, transparent) 15px, color-mix(in oklch, var(--foreground) 30%, transparent) 16px)",
-                      backgroundSize: `100% ${GRID_UNIT * zoom / 100}px`,
+                      backgroundSize: `100% ${GRID_UNIT}px`,
                     }}
                   />
                 </>

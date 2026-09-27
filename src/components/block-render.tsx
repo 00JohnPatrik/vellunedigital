@@ -178,10 +178,12 @@ export function BackgroundLayers({ bg }: { bg?: Background | undefined }) {
 /** Read-only rendering of a whole invitation (hidden blocks are skipped). */
 export function InvitationCanvas({ blocks, ctx, className, background }: { blocks: Block[]; ctx?: EventCtx | undefined; className?: string | undefined; background?: Background | undefined }) {
   const visible = blocks.filter((b) => !b.hidden);
-  const hasFreeCanvasBlock = visible.some((b) => {
-    const geometry = getBlockGeometry(b);
-    return Object.keys(geometry).length > 0;
-  });
+  const geometries = visible.map((block) => getBlockGeometry(block));
+  const hasFreeCanvasBlock = geometries.some((geometry) => Object.keys(geometry).length > 0);
+  const canvasHeight = Math.max(
+    640,
+    ...geometries.map((geometry) => (geometry.y ?? 24) + (geometry.height ?? 0) + 24),
+  );
   return (
     <div
       className={cn(
@@ -189,11 +191,11 @@ export function InvitationCanvas({ blocks, ctx, className, background }: { block
         hasFreeCanvasBlock ? "min-h-[640px] p-0" : "flex flex-col gap-5 p-6",
         className,
       )}
-      style={bgColorStyle(background)}
+      style={{ ...bgColorStyle(background), ...(hasFreeCanvasBlock ? { minHeight: canvasHeight } : {}) }}
     >
       <BackgroundLayers bg={background} />
-      {visible.length ? visible.map((b) => {
-        const geometry = getBlockGeometry(b);
+      {visible.length ? visible.map((b, index) => {
+        const geometry = geometries[index] ?? {};
         const free = hasFreeCanvasBlock && Object.keys(geometry).length > 0;
         const frame: CSSProperties = free ? {
           position: "absolute",
@@ -205,6 +207,7 @@ export function InvitationCanvas({ blocks, ctx, className, background }: { block
           opacity: geometry.opacity ?? 1,
           transform: `rotate(${geometry.rotation ?? 0}deg) scale(${geometry.scale ?? 1})`,
           transformOrigin: "center",
+          boxSizing: "border-box",
         } : {};
         return <div key={b.id} className={cn(free && "overflow-hidden")} style={frame}><BlockView block={b} ctx={ctx} interactive /></div>;
       }) : <p className="py-10 text-center text-sm text-muted-foreground">Este convite ainda não possui blocos.</p>}
