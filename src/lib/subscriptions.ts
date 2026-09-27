@@ -138,9 +138,9 @@ export async function saveCompanySubscription(values: {
 
 export async function updateSubscriptionStatus(id: string, status: string) {
   const values: Record<string, string | null> = { status };
-  if (status === "active") values.activated_at = new Date().toISOString();
-  if (status === "suspended") values.suspended_at = new Date().toISOString();
-  if (status === "cancelled") values.cancelled_at = new Date().toISOString();
+  if (status === "active") values["activated_at"] = new Date().toISOString();
+  if (status === "suspended") values["suspended_at"] = new Date().toISOString();
+  if (status === "cancelled") values["cancelled_at"] = new Date().toISOString();
   const { error } = await supabase.from("company_subscriptions").update(values).eq("id", id);
   if (error) throw error;
 }
