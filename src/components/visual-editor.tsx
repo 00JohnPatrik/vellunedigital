@@ -134,10 +134,13 @@ export function VisualEditor({ h, ctx, toolbarExtra, assets, bg, onBg }: { h: Bl
   const selected = blocks.filter((block: any) => selectedIds.includes(block.id));
 
   const getPosition = (block: any, index: number) => ({
-    x: typeof block.x === "number" ? block.x : 24,
-    y: typeof block.y === "number" ? block.y : 24 + index * 96,
+    x: typeof block.x === "number" ? block.x : Number.isFinite(Number(block.props?.x)) ? Number(block.props.x) : 24,
+    y: typeof block.y === "number" ? block.y : Number.isFinite(Number(block.props?.y)) ? Number(block.props.y) : 24 + index * 96,
   });
-  const getSize = (block: any) => ({ width: typeof block.width === "number" ? block.width : 320, height: typeof block.height === "number" ? block.height : 92 });
+  const getSize = (block: any) => ({
+    width: typeof block.width === "number" ? block.width : Number.isFinite(Number(block.props?.width)) ? Number(block.props.width) : 320,
+    height: typeof block.height === "number" ? block.height : Number.isFinite(Number(block.props?.height)) ? Number(block.props.height) : 92,
+  });
   const getBlockLabel = (block: any) => {
     const props = block.props ?? {};
     if (block.type === "text") return props.text || "Texto";
@@ -175,9 +178,19 @@ export function VisualEditor({ h, ctx, toolbarExtra, assets, bg, onBg }: { h: Bl
     event.currentTarget.setPointerCapture(event.pointerId); event.stopPropagation(); event.preventDefault();
   };
   const startResize = (event: React.PointerEvent<HTMLButtonElement>, block: any, index: number) => {
+    if (block.locked || block.visibility === false || block.hidden) return;
     const point = canvasPoint(event); const position = getPosition(block, index); const size = getSize(block);
-    interaction.current = { mode: "resize", id: block.id, startX: point.x, startY: point.y, originX: position.x, originY: position.y, originWidth: size.width, originHeight: size.height };
-    event.currentTarget.setPointerCapture(event.pointerId); event.stopPropagation();
+    interaction.current = {
+      mode: "resize",
+      id: block.id,
+      startX: point.x,
+      startY: point.y,
+      originX: position.x,
+      originY: position.y,
+      originWidth: size.width,
+      originHeight: size.height,
+    };
+    event.currentTarget.setPointerCapture(event.pointerId); event.stopPropagation(); event.preventDefault();
   };
   const moveInteraction = (event: React.PointerEvent<HTMLDivElement>) => {
     const current = interaction.current; if (!current) return;
@@ -187,7 +200,19 @@ export function VisualEditor({ h, ctx, toolbarExtra, assets, bg, onBg }: { h: Bl
     }
     const dx = point.x - current.startX; const dy = point.y - current.startY;
     if (current.mode === "resize" && current.id) {
-      h.set((items) => items.map((item: any) => item.id === current.id ? { ...item, width: Math.max(120, Math.round((current.originWidth ?? 320) + dx)), height: Math.max(56, Math.round((current.originHeight ?? 92) + dy)) } : item), `resize:${current.id}`); return;
+      const originWidth = current.originWidth ?? 320;
+      const originHeight = current.originHeight ?? 92;
+      let width = Math.max(120, Math.round(originWidth + dx));
+      let height = Math.max(56, Math.round(originHeight + dy));
+      if (event.shiftKey) {
+        const ratio = originWidth / Math.max(1, originHeight);
+        if (Math.abs(dx) >= Math.abs(dy)) height = Math.max(56, Math.round(width / ratio));
+        else width = Math.max(120, Math.round(height * ratio));
+      }
+      h.set((items) => items.map((item: any) => item.id === current.id && !item.locked
+        ? { ...item, x: current.originX, y: current.originY, width, height }
+        : item), `resize:${current.id}`);
+      return;
     }
     if (current.mode === "drag" && current.id) {
       const snap = event.shiftKey ? GRID_UNIT : 1;
@@ -246,13 +271,13 @@ export function VisualEditor({ h, ctx, toolbarExtra, assets, bg, onBg }: { h: Bl
   return (
     <div className="space-y-3">
       <div className="flex flex-wrap items-center gap-2 rounded-2xl border bg-card p-3 shadow-sm">
-        <div className="min-w-0 flex-1"><p className="text-sm font-semibold text-foreground">Editor visual v1.7</p><p className="text-xs text-muted-foreground">Canvas WYSIWYG completo, biblioteca, arraste, seleção, camadas, propriedades e edição responsiva.</p></div>
+        <div className="min-w-0 flex-1"><p className="text-sm font-semibold text-foreground">Editor visual v1.14</p><p className="text-xs text-muted-foreground">Canvas WYSIWYG completo, interação direta sobre a arte real, seleção, transformação, camadas e propriedades.</p></div>
         <div className="flex flex-wrap items-center gap-1 rounded-lg border bg-muted/40 p-1">{(["text", "image", "gallery", "date", "time", "location", "button", "divider"] as BlockType[]).map((type) => <button key={type} type="button" className="rounded-md px-2 py-1 text-xs text-muted-foreground hover:bg-background hover:text-foreground" onClick={() => addElement(type)}>+ {BLOCKS[type].label}</button>)}</div>
         <button type="button" className="rounded-md border px-2 py-1 text-xs" onClick={() => setZoom((value) => Math.max(50, value - 10))}>−</button><span className="min-w-12 text-center text-xs">{zoom}%</span><button type="button" className="rounded-md border px-2 py-1 text-xs" onClick={() => setZoom((value) => Math.min(150, value + 10))}>+</button>
         <button type="button" className={`rounded-md border px-2 py-1 text-xs ${showGrid ? "bg-primary/10 text-primary" : "text-muted-foreground"}`} onClick={() => setShowGrid((value) => !value)}>Guias</button>
         {toolbarExtra}
       </div>
-      {selectedIds.length > 0 && <div className="flex flex-wrap items-center gap-2 rounded-xl border border-primary/30 bg-primary/5 p-2 text-xs"><span className="font-medium">{selectedIds.length} selecionado(s)</span><button type="button" className="rounded border px-2 py-1" onClick={duplicate}>Duplicar</button><button type="button" className="rounded border px-2 py-1" onClick={() => rotate(-15)}>↶ Girar</button><button type="button" className="rounded border px-2 py-1" onClick={() => rotate(15)}>↷ Girar</button><button type="button" className="rounded border px-2 py-1" onClick={() => h.set((items) => items.map((item: any) => selectedIds.includes(item.id) ? { ...item, locked: !item.locked } : item), "selection:lock")}>{selected.some((item: any) => item.locked) ? "Desbloquear" : "Bloquear"}</button><button type="button" className="rounded border px-2 py-1" onClick={() => h.set((items) => items.map((item: any) => selectedIds.includes(item.id) ? { ...item, hidden: !item.hidden } : item), "selection:visibility")}>{selected.some((item: any) => item.hidden) ? "Mostrar" : "Ocultar"}</button><button type="button" className="rounded border border-destructive/30 px-2 py-1 text-destructive" onClick={remove}>Excluir</button></div>}
+      {selectedIds.length > 0 && <div className="flex flex-wrap items-center gap-2 rounded-xl border border-primary/30 bg-primary/5 p-2 text-xs"><span className="font-medium">{selectedIds.length} selecionado(s)</span><button type="button" className="rounded border px-2 py-1" onClick={duplicate}>Duplicar</button><button type="button" className="rounded border px-2 py-1" onClick={() => rotate(-15)}>↶ Girar</button><button type="button" className="rounded border px-2 py-1" onClick={() => rotate(15)}>↷ Girar</button><button type="button" className="rounded border px-2 py-1" onClick={() => h.set((items) => items.map((item: any) => selectedIds.includes(item.id) ? { ...item, locked: !item.locked } : item), "selection:lock")}>{selected.some((item: any) => item.locked) ? "Desbloquear" : "Bloquear"}</button><button type="button" className="rounded border px-2 py-1" onClick={() => h.set((items) => items.map((item: any) => selectedIds.includes(item.id) ? { ...item, visibility: item.visibility === false, hidden: item.visibility !== false } : item), "selection:visibility")}>{selected.some((item: any) => item.hidden) ? "Mostrar" : "Ocultar"}</button><button type="button" className="rounded border border-destructive/30 px-2 py-1 text-destructive" onClick={remove}>Excluir</button></div>}
       <div className="grid gap-4 lg:grid-cols-[240px_minmax(0,1fr)]">
         <aside className="rounded-2xl border bg-card p-4 shadow-sm" aria-label="Configurações do convite">
           <div className="space-y-4">

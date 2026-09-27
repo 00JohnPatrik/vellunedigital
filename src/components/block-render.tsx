@@ -157,6 +157,7 @@ export function BlockView({ block, ctx, interactive = false }: { block: Block; c
     <div
       data-editor-block={block.id}
       data-editor-block-locked={block.locked ? "true" : "false"}
+      data-editor-block-visibility={block.visibility === false || block.hidden ? "hidden" : "visible"}
       className="relative min-h-0 min-w-0 h-full w-full"
     >
       <BlockContent block={block} ctx={ctx} interactive={interactive} />
@@ -226,7 +227,7 @@ export function BackgroundLayers({ bg }: { bg?: Background | undefined }) {
 
 /** Read-only rendering of a whole invitation (hidden blocks are skipped). */
 export function InvitationCanvas({ blocks, ctx, className, background }: { blocks: Block[]; ctx?: EventCtx | undefined; className?: string | undefined; background?: Background | undefined }) {
-  const visible = blocks.filter((b) => !b.hidden);
+  const visible = blocks.filter((b) => b.visibility !== false && !b.hidden);
   const geometries = visible.map((block) => getBlockGeometry(block));
   const hasFreeCanvasBlock = geometries.some((geometry) => Object.keys(geometry).length > 0);
   const canvasHeight = Math.max(

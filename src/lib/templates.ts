@@ -45,6 +45,7 @@ export type Block = {
   zIndex?: number;
   scale?: number;
   opacity?: number;
+  visibility?: boolean;
   hidden?: boolean;
   locked?: boolean;
   groupId?: string;
