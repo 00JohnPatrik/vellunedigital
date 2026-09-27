@@ -154,7 +154,11 @@ function BlockContent({ block, ctx, interactive = false }: { block: Block; ctx?:
 
 export function BlockView({ block, ctx, interactive = false }: { block: Block; ctx?: EventCtx | undefined; interactive?: boolean }) {
   return (
-    <div data-editor-block={block.id} data-editor-block-locked={block.locked ? "true" : "false"} className="min-h-0 min-w-0 h-full w-full">
+    <div
+      data-editor-block={block.id}
+      data-editor-block-locked={block.locked ? "true" : "false"}
+      className="relative min-h-0 min-w-0 h-full w-full"
+    >
       <BlockContent block={block} ctx={ctx} interactive={interactive} />
     </div>
   );
@@ -190,21 +194,21 @@ export function BackgroundLayers({ bg }: { bg?: Background | undefined }) {
       {bg?.gradient && (
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-0 -z-10"
+          className="pointer-events-none absolute inset-0 z-0"
           style={{ backgroundImage: bg.gradient }}
         />
       )}
       {src && (
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-0 -z-10 bg-no-repeat"
+          className="pointer-events-none absolute inset-0 z-0 bg-no-repeat"
           style={{ backgroundImage: `url("${src}")`, backgroundSize: imageSize, backgroundPosition: position, opacity: imageOpacity }}
         />
       )}
       {overlay > 0 && (
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-0 -z-10 bg-foreground dark:bg-background"
+          className="pointer-events-none absolute inset-0 z-0 bg-foreground dark:bg-background"
           style={{ opacity: overlay / 100 }}
         />
       )}
