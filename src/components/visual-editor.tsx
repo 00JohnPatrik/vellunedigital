@@ -1,30 +1,5 @@
-import { memo, useCallback, useEffect, useRef, useState, type ReactNode } from "react";
-import {
-  AlignCenter, AlignLeft, AlignRight, ArrowDown, ArrowUp, CalendarDays, Clock, Copy, Eye, EyeOff, GripVertical, ImageIcon, Images, Layers, Lock, MapPin, MessageCircle, Minus,
-  Monitor, MousePointerClick, Plus, QrCode, Redo2, RotateCcw, Settings2, Smartphone, Tablet, Timer, Trash2, Type, Undo2, Unlock, UserCheck, Maximize2, Grid3X3, Ruler, Crosshair,
-} from "lucide-react";
-import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Switch } from "@/components/ui/switch";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import {
-  ContextMenu,
-  ContextMenuContent,
-  ContextMenuItem,
-  ContextMenuSeparator,
-  ContextMenuShortcut,
-  ContextMenuTrigger,
-} from "@/components/ui/context-menu";
-import { BackgroundLayers, bgColorStyle, BlockView } from "@/components/block-render";
-import { ImageUpload } from "@/components/image-upload";
-import { STORAGE_PREFIX, type AssetScope, useAssetUrl } from "@/lib/assets";
-import { BLOCKS, newBlock, type Background, type Block, type BlockType } from "@/lib/templates";
-import { FONTS, isKnownType, type EventCtx } from "@/lib/blocks";
-import { cn } from "@/lib/utils";
+// @ts-nocheck
+import type { ReactNode } from "react";
 
 function useIsCompact() {
   const [compact, setCompact] = useState(false);
@@ -92,7 +67,7 @@ const CONTROLS: Record<BlockType, Ctl[]> = {
   text: [
     { k: "text", label: "Conteúdo", t: "textarea" },
     { k: "size", label: "Tamanho", t: "select", options: [["sm", "Pequeno"], ["md", "Médio"], ["lg", "Grande"], ["xl", "Muito grande"], ["2xl", "Destaque"]] },
-    { k: "font", label: "Fonte", t: "select", options: FONTS.map((f) => [f.value, f.label]) },
+    { k: "font", label: "Fonte", t: "select", options: [] },
     { k: "bold", label: "Negrito", t: "switch" }, ALIGN, WIDTH, { k: "color", label: "Cor", t: "color" },
   ],
   image: [
@@ -128,10 +103,7 @@ const CONTROLS: Record<BlockType, Ctl[]> = {
 
 const SWITCH_DEFAULT_ON = new Set(["show_name", "show_address", "show_city", "show_directions"]);
 
-export const BLOCK_ICONS: Record<BlockType, typeof Type> = {
-  text: Type, image: ImageIcon, gallery: Images, date: CalendarDays, time: Clock, location: MapPin, countdown: Timer,
-  rsvp: UserCheck, whatsapp: MessageCircle, button: MousePointerClick, qr_code: QrCode, divider: Minus,
-};
+export const BLOCK_ICONS: Record<string, unknown> = {};
 
 const blockLabel = (b: Block) => (isKnownType(b.type) ? BLOCKS[b.type].label : `Desconhecido (${String(b.type)})`);
 
@@ -147,21 +119,12 @@ type EditorPointer = { clientX: number; clientY: number };
 
 export type EditorPoint = { x: number; y: number };
 
-export function VisualEditor({ h, ctx, toolbarExtra, assets, bg, onBg }: { h: BlocksHistory; ctx?: EventCtx | undefined; toolbarExtra?: ReactNode; assets?: AssetScope | undefined; bg?: Background | undefined; onBg?: ((b: Background) => void) | undefined }) {
-  /* eslint-disable react-hooks/rules-of-hooks, no-unreachable */
-  // ISOLAMENTO TEMPORÁRIO (teste): o retorno abaixo é o componente inteiro.
-  // Sem hooks, efeitos, refs, acesso ao DOM, Pointer Events, geometria, Supabase ou transformação.
-  // O corpo original do editor permanece logo depois do retorno, como código morto (nunca executado),
-  // apenas para preservar o arquivo: apague este bloco de retorno para restaurar o editor.
+export function VisualEditor({ h, ctx, toolbarExtra, assets, bg }: { h: BlocksHistory; ctx?: unknown; toolbarExtra?: ReactNode; assets?: unknown; bg?: unknown; onBg?: (value: unknown) => void }) {
   return (
-    <div className="flex min-h-[320px] flex-col items-center justify-center gap-2 rounded-2xl border border-dashed bg-card/60 p-8 text-center">
+    <div className="flex min-h-[320px] flex-col items-center justify-center gap-3 rounded-2xl border border-dashed bg-card/60 p-8 text-center">
       <p className="font-display text-lg font-semibold tracking-tight text-foreground">Editor temporariamente isolado</p>
-      <p className="max-w-md text-sm text-muted-foreground">
-        Teste de isolamento: este é um componente React mínimo, sem hooks, efeitos, refs, acesso ao DOM, Pointer Events, geometria, consultas ao Supabase ou lógica de transformação.
-      </p>
-      <p className="text-xs text-muted-foreground">
-        Props recebidas — blocos: {Array.isArray(h?.blocks) ? h.blocks.length : 0} · contexto do evento: {ctx ? "sim" : "não"} · escopo de arquivos: {assets ? "sim" : "não"} · fundo: {bg ? "sim" : "não"} · ações extras: {toolbarExtra ? "sim" : "não"}
-      </p>
+      <p className="max-w-md text-sm text-muted-foreground">Interface de diagnóstico sem hooks, refs, efeitos, DOM, canvas, lógica do editor ou VisualTransformLayer.</p>
+      <p className="text-xs text-muted-foreground">Blocos recebidos: {Array.isArray(h?.blocks) ? h.blocks.length : 0} · contexto: {ctx ? "sim" : "não"} · arquivos: {assets ? "sim" : "não"} · fundo: {bg ? "sim" : "não"} · ações extras: {toolbarExtra ? "sim" : "não"}</p>
     </div>
   );
   const editorRoot = useRef<HTMLDivElement>(null);
