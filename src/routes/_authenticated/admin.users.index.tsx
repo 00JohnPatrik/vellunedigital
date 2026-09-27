@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
-import { Plus, Search } from "lucide-react";
+import { Plus, RefreshCw, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { EmptyState, fmtDate, LoadingState, PageHeader, StatusBadge, StatusTabs, StatusToggle, type StatusFilter } from "@/components/admin-ui";
@@ -28,7 +28,7 @@ function UsersPage() {
 
   const toggle = (u: CompanyAdmin) => async () => {
     await setUserStatus(u.id, u.status === "active" ? "inactive" : "active");
-    qc.invalidateQueries({ queryKey: ["admin"] });
+    await qc.invalidateQueries({ queryKey: usersKey });
   };
   const actions = (u: CompanyAdmin, variant: "ghost" | "outline") => (
     <>
@@ -51,8 +51,13 @@ function UsersPage() {
         <StatusTabs value={filter} onChange={setFilter} labels={["Todos", "Ativos", "Inativos"]} />
       </div>
 
-      {q.isLoading ? <LoadingState /> : q.isError ? <EmptyState>Não foi possível carregar os usuários.</EmptyState>
-        : rows.length === 0 ? <EmptyState>{q.data?.length ? "Nenhum usuário encontrado." : "Nenhum administrador cadastrado ainda."}</EmptyState> : (
+      {q.isLoading ? <LoadingState /> : q.isError ? (
+        <div className="rounded-xl border border-destructive/30 bg-destructive/5 p-6 text-center">
+          <p className="font-medium text-destructive">Não foi possível carregar os usuários.</p>
+          <p className="mt-2 break-words text-sm text-muted-foreground">{q.error instanceof Error ? q.error.message : "Erro retornado pelo Supabase."}</p>
+          <Button className="mt-4" variant="outline" onClick={() => void q.refetch()}><RefreshCw className="h-4 w-4" />Tentar novamente</Button>
+        </div>
+      ) : rows.length === 0 ? <EmptyState>{q.data?.length ? "Nenhum usuário encontrado." : "Nenhum administrador cadastrado ainda."}</EmptyState> : (
         <>
           <div className="hidden overflow-x-auto rounded-xl border md:block">
             <table className="w-full text-sm">

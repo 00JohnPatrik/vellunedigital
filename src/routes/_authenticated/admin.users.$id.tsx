@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
-import { ArrowLeft, Loader2, Pencil, Send } from "lucide-react";
+import { ArrowLeft, Loader2, Pencil, RefreshCw, Send } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
@@ -36,6 +36,16 @@ function UserDetail() {
     </Link>
   );
   if (valid && q.isLoading) return <div>{back}<LoadingState /></div>;
+  if (valid && q.isError) return (
+    <div>
+      {back}
+      <div className="rounded-xl border border-destructive/30 bg-destructive/5 p-6 text-center">
+        <p className="font-medium text-destructive">Não foi possível carregar este usuário.</p>
+        <p className="mt-2 break-words text-sm text-muted-foreground">{q.error instanceof Error ? q.error.message : "Erro retornado pelo Supabase."}</p>
+        <Button className="mt-4" variant="outline" onClick={() => void q.refetch()}><RefreshCw className="h-4 w-4" />Tentar novamente</Button>
+      </div>
+    </div>
+  );
   const u = q.data;
   if (!valid || !u) return <div>{back}<EmptyState>Usuário não encontrado.</EmptyState></div>;
 
