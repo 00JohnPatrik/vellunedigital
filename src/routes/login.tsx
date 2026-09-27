@@ -67,7 +67,15 @@ function LoginPage() {
   }
 
   return (
-    <AuthCard title="Bem-vindo de volta" subtitle="Acesse sua conta para continuar criando experiências memoráveis.">
+    <AuthCard
+      title="Bem-vindo de volta"
+      subtitle="Acesse sua conta para continuar criando experiências memoráveis."
+      footer={
+        <p className="mt-3 text-center text-[10px] font-medium tracking-[0.16em] text-muted-foreground/60" aria-label="Versão v1.1">
+          v1.1
+        </p>
+      }
+    >
       <form onSubmit={onSubmit} className="space-y-5" noValidate>
         <div className="space-y-2">
           <Label htmlFor="identifier">E-mail ou telefone</Label>

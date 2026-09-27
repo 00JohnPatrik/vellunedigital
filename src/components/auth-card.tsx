@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { ArrowUpRight, LockKeyhole, Sparkles } from "lucide-react";
 
-export function AuthCard({ title, subtitle, children }: { title: string; subtitle?: string; children: ReactNode }) {
+export function AuthCard({ title, subtitle, children, footer }: { title: string; subtitle?: string; children: ReactNode; footer?: ReactNode }) {
   return (
     <main className="relative flex min-h-screen overflow-hidden bg-auth px-4 py-6 text-foreground sm:px-6 sm:py-10">
       <div className="pointer-events-none absolute -left-32 top-[-10rem] h-80 w-80 rounded-full bg-primary/10 blur-3xl" />
@@ -60,6 +60,7 @@ export function AuthCard({ title, subtitle, children }: { title: string; subtitl
             <div className="pt-6">{children}</div>
           </div>
           <p className="mt-5 text-center text-xs text-muted-foreground">Seus dados são tratados com segurança e privacidade.</p>
+          {footer}
         </section>
       </div>
     </main>
