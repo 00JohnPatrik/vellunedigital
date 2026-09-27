@@ -71,8 +71,8 @@ function LoginPage() {
       title="Bem-vindo de volta"
       subtitle="Acesse sua conta para continuar criando experiências memoráveis."
       footer={
-        <p className="mt-3 text-center text-[10px] font-medium tracking-[0.16em] text-muted-foreground/60" aria-label="Versão v1.4">
-          v1.4
+        <p className="mt-3 text-center text-[10px] font-medium tracking-[0.16em] text-muted-foreground/60" aria-label="Versão v1.5">
+          v1.5
         </p>
       }
     >

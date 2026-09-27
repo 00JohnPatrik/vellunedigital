@@ -1,6 +1,7 @@
 // @ts-nocheck
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { BackgroundLayers, BlockView } from "@/components/block-render";
+import { BLOCKS, newBlock, type Block, type BlockType } from "@/lib/templates";
 
 function useIsCompact() {
   const [compact, setCompact] = useState(false);
@@ -120,16 +121,21 @@ type EditorPointer = { clientX: number; clientY: number };
 
 export type EditorPoint = { x: number; y: number };
 
-export function VisualEditor({ h, ctx, toolbarExtra, assets, bg }: { h: BlocksHistory; ctx?: unknown; toolbarExtra?: ReactNode; assets?: unknown; bg?: unknown; onBg?: (value: any) => void }) {
+export function VisualEditor({ h, ctx, toolbarExtra, assets, bg, onBg }: { h: BlocksHistory; ctx?: unknown; toolbarExtra?: ReactNode; assets?: unknown; bg?: unknown; onBg?: (value: any) => void }) {
   const canvasRef = useRef<HTMLDivElement>(null);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
-  const dragRef = useRef<{ id: string; offsetX: number; offsetY: number } | null>(null);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [zoom, setZoom] = useState(100);
+  const [showGrid, setShowGrid] = useState(true);
+  const [marquee, setMarquee] = useState<{ x: number; y: number; width: number; height: number } | null>(null);
+  const interaction = useRef<{ mode: "drag" | "resize" | "marquee"; id?: string; startX: number; startY: number; originX?: number; originY?: number; originWidth?: number; originHeight?: number; selected?: string[] } | null>(null);
+  const blocks = Array.isArray(h?.blocks) ? h.blocks : [];
+  const selected = blocks.filter((block: any) => selectedIds.includes(block.id));
 
   const getPosition = (block: any, index: number) => ({
     x: typeof block.x === "number" ? block.x : 24,
     y: typeof block.y === "number" ? block.y : 24 + index * 96,
   });
-
+  const getSize = (block: any) => ({ width: typeof block.width === "number" ? block.width : 320, height: typeof block.height === "number" ? block.height : 92 });
   const getBlockLabel = (block: any) => {
     const props = block.props ?? {};
     if (block.type === "text") return props.text || "Texto";
@@ -141,95 +147,71 @@ export function VisualEditor({ h, ctx, toolbarExtra, assets, bg }: { h: BlocksHi
     if (block.type === "rsvp") return props.label || "Confirmar presença";
     if (block.type === "whatsapp") return props.label || "Fale pelo WhatsApp";
     if (block.type === "button") return props.label || "Botão";
-    if (block.type === "gallery") return "Galeria";
-    if (block.type === "qr_code") return "QR Code";
-    if (block.type === "divider") return "Divisor";
-    return String(block.type || "Bloco");
+    return BLOCKS[block.type as BlockType]?.label ?? String(block.type || "Bloco");
   };
-
+  const canvasPoint = (event: React.PointerEvent) => {
+    const rect = canvasRef.current?.getBoundingClientRect();
+    return rect ? { x: (event.clientX - rect.left) / (zoom / 100), y: (event.clientY - rect.top) / (zoom / 100) } : { x: 0, y: 0 };
+  };
+  const select = (id: string, additive: boolean) => setSelectedIds((current) => additive ? current.includes(id) ? current.filter((item) => item !== id) : [...current, id] : [id]);
   const startDrag = (event: React.PointerEvent<HTMLDivElement>, block: any, index: number) => {
     if (block.locked) return;
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const rect = canvas.getBoundingClientRect();
-    const position = getPosition(block, index);
-    dragRef.current = {
-      id: block.id,
-      offsetX: event.clientX - rect.left - position.x,
-      offsetY: event.clientY - rect.top - position.y,
-    };
-    setSelectedId(block.id);
-    event.currentTarget.setPointerCapture(event.pointerId);
-    event.preventDefault();
+    const point = canvasPoint(event); const position = getPosition(block, index);
+    select(block.id, event.shiftKey || event.ctrlKey || event.metaKey);
+    interaction.current = { mode: "drag", id: block.id, startX: point.x, startY: point.y, originX: position.x, originY: position.y, selected: selectedIds.includes(block.id) ? selectedIds : [block.id] };
+    event.currentTarget.setPointerCapture(event.pointerId); event.stopPropagation(); event.preventDefault();
   };
-
-  const moveDrag = (event: React.PointerEvent<HTMLDivElement>) => {
-    const drag = dragRef.current;
-    const canvas = canvasRef.current;
-    if (!drag || !canvas) return;
-    const rect = canvas.getBoundingClientRect();
-    const rawX = Math.max(0, event.clientX - rect.left - drag.offsetX);
-    const rawY = Math.max(0, event.clientY - rect.top - drag.offsetY);
-    const x = event.shiftKey ? Math.round(rawX / GRID_UNIT) * GRID_UNIT : Math.round(rawX);
-    const y = event.shiftKey ? Math.round(rawY / GRID_UNIT) * GRID_UNIT : Math.round(rawY);
-    h.set((blocks) => blocks.map((block: any) => block.id === drag.id ? { ...block, x, y } : block), `drag:${drag.id}`);
+  const startResize = (event: React.PointerEvent<HTMLButtonElement>, block: any, index: number) => {
+    const point = canvasPoint(event); const position = getPosition(block, index); const size = getSize(block);
+    interaction.current = { mode: "resize", id: block.id, startX: point.x, startY: point.y, originX: position.x, originY: position.y, originWidth: size.width, originHeight: size.height };
+    event.currentTarget.setPointerCapture(event.pointerId); event.stopPropagation();
   };
-
-  const stopDrag = (event: React.PointerEvent<HTMLDivElement>) => {
-    if (dragRef.current) {
-      if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
-      dragRef.current = null;
+  const moveInteraction = (event: React.PointerEvent<HTMLDivElement>) => {
+    const current = interaction.current; if (!current) return;
+    const point = canvasPoint(event);
+    if (current.mode === "marquee") {
+      setMarquee({ x: Math.min(current.startX, point.x), y: Math.min(current.startY, point.y), width: Math.abs(point.x - current.startX), height: Math.abs(point.y - current.startY) }); return;
+    }
+    const dx = point.x - current.startX; const dy = point.y - current.startY;
+    if (current.mode === "resize" && current.id) {
+      h.set((items) => items.map((item: any) => item.id === current.id ? { ...item, width: Math.max(120, Math.round((current.originWidth ?? 320) + dx)), height: Math.max(56, Math.round((current.originHeight ?? 92) + dy)) } : item), `resize:${current.id}`); return;
+    }
+    if (current.mode === "drag" && current.id) {
+      const snap = event.shiftKey ? GRID_UNIT : 1;
+      const x = Math.max(0, Math.round(((current.originX ?? 0) + dx) / snap) * snap); const y = Math.max(0, Math.round(((current.originY ?? 0) + dy) / snap) * snap);
+      h.set((items) => items.map((item: any) => item.id === current.id ? { ...item, x, y } : item), `drag:${current.id}`);
     }
   };
-
-  const blocks = Array.isArray(h?.blocks) ? h.blocks : [];
-  const canvasHeight = Math.max(560, ...blocks.map((block: any, index: number) => getPosition(block, index).y + 92));
-
+  const stopInteraction = () => {
+    const current = interaction.current;
+    if (current?.mode === "marquee" && marquee) {
+      const next = blocks.filter((block: any, index: number) => { const p = getPosition(block, index); const s = getSize(block); return p.x < marquee.x + marquee.width && p.x + s.width > marquee.x && p.y < marquee.y + marquee.height && p.y + s.height > marquee.y; }).map((block: any) => block.id);
+      setSelectedIds(next);
+    }
+    interaction.current = null; setMarquee(null);
+  };
+  const addElement = (type: BlockType) => { const block = newBlock(type); h.set((items) => [...items, { ...block, x: 32, y: Math.max(24, ...items.map((item: any, index: number) => getPosition(item, index).y + 110)) }]); setSelectedIds([block.id]); };
+  const duplicate = () => { if (!selected.length) return; const copies = selected.filter((block: any) => block.type !== "rsvp" || !blocks.some((item: any) => item.type === "rsvp" && !selectedIds.includes(item.id))).map((block: any) => ({ ...structuredClone(block), id: crypto.randomUUID(), x: (block.x ?? 24) + 24, y: (block.y ?? 24) + 24 })); h.set((items) => [...items, ...copies]); setSelectedIds(copies.map((block: any) => block.id)); };
+  const remove = () => { if (!selected.length) return; h.set((items) => items.filter((block: any) => !selectedIds.includes(block.id) || block.locked)); setSelectedIds([]); };
+  const rotate = (amount: number) => h.set((items) => items.map((block: any) => selectedIds.includes(block.id) && !block.locked ? { ...block, rotation: (block.rotation ?? 0) + amount } : block), "selection:rotation");
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => { const target = event.target as HTMLElement; if (target.closest("input, textarea, [contenteditable=true], [role=combobox]")) return; if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "z") { event.preventDefault(); event.shiftKey ? h.redo() : h.undo(); } else if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "y") { event.preventDefault(); h.redo(); } else if ((event.key === "Delete" || event.key === "Backspace") && selectedIds.length) { event.preventDefault(); remove(); } else if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "d") { event.preventDefault(); duplicate(); } else if (event.key === "Escape") setSelectedIds([]); };
+    window.addEventListener("keydown", onKey); return () => window.removeEventListener("keydown", onKey);
+  }, [selectedIds, blocks]);
+  const canvasHeight = Math.max(640, ...blocks.map((block: any, index: number) => getPosition(block, index).y + getSize(block).height + 32));
   return (
     <div className="space-y-3">
       <div className="flex flex-wrap items-center gap-2 rounded-2xl border bg-card p-3 shadow-sm">
-        <div className="min-w-0 flex-1">
-          <p className="text-sm font-semibold text-foreground">Editor visual</p>
-          <p className="text-xs text-muted-foreground">Arraste os elementos diretamente no convite para posicioná-los livremente.</p>
-        </div>
+        <div className="min-w-0 flex-1"><p className="text-sm font-semibold text-foreground">Editor visual v1.5</p><p className="text-xs text-muted-foreground">Biblioteca, canvas livre, camadas e edição responsiva.</p></div>
+        <div className="flex flex-wrap items-center gap-1 rounded-lg border bg-muted/40 p-1">{(["text", "image", "gallery", "date", "time", "location", "button", "divider"] as BlockType[]).map((type) => <button key={type} type="button" className="rounded-md px-2 py-1 text-xs text-muted-foreground hover:bg-background hover:text-foreground" onClick={() => addElement(type)}>+ {BLOCKS[type].label}</button>)}</div>
+        <button type="button" className="rounded-md border px-2 py-1 text-xs" onClick={() => setZoom((value) => Math.max(50, value - 10))}>−</button><span className="min-w-12 text-center text-xs">{zoom}%</span><button type="button" className="rounded-md border px-2 py-1 text-xs" onClick={() => setZoom((value) => Math.min(150, value + 10))}>+</button>
+        <button type="button" className={`rounded-md border px-2 py-1 text-xs ${showGrid ? "bg-primary/10 text-primary" : "text-muted-foreground"}`} onClick={() => setShowGrid((value) => !value)}>Guias</button>
         {toolbarExtra}
       </div>
-      <div className="overflow-auto rounded-2xl border bg-muted/40 p-3 shadow-inner sm:p-6">
-        <div
-          ref={canvasRef}
-          className="relative isolate mx-auto w-full max-w-[768px] overflow-hidden rounded-2xl border bg-card shadow-sm"
-          style={{ minHeight: canvasHeight, backgroundColor: bg && (bg as any).color ? (bg as any).color : undefined }}
-          onPointerMove={moveDrag}
-          onPointerUp={stopDrag}
-          onPointerCancel={stopDrag}
-          onClick={() => setSelectedId(null)}
-          aria-label="Área de edição do convite"
-        >
-          <BackgroundLayers bg={bg as any} />
-          {blocks.length === 0 && (
-            <div className="absolute inset-0 z-10 flex items-center justify-center text-center text-sm text-muted-foreground">
-              Nenhum bloco foi adicionado.
-            </div>
-          )}
-          {blocks.map((block: any, index: number) => {
-            const position = getPosition(block, index);
-            const isSelected = selectedId === block.id;
-            return (
-              <div
-                key={block.id || index}
-                className={`absolute left-0 top-0 min-h-16 w-[calc(100%-2rem)] max-w-[680px] cursor-grab rounded-xl border bg-background/80 p-4 text-foreground shadow-sm backdrop-blur-[1px] transition-shadow active:cursor-grabbing ${isSelected ? "border-primary ring-2 ring-primary/30" : "border-border/70 hover:shadow-md"} ${block.hidden ? "opacity-50" : ""}`}
-                style={{ transform: `translate(${position.x}px, ${position.y}px)`, zIndex: typeof block.zIndex === "number" ? block.zIndex : index + 1 }}
-                onPointerDown={(event) => startDrag(event, block, index)}
-                onClick={(event) => { event.stopPropagation(); setSelectedId(block.id); }}
-                title={block.locked ? "Bloco bloqueado" : "Arraste para mover"}
-              >
-                <BlockView block={block} ctx={ctx as any} interactive={false} />
-              </div>
-            );
-          })}
-        </div>
-      </div>
-      <p className="text-xs text-muted-foreground">Blocos: {blocks.length} · selecione e arraste um elemento para atualizar sua posição.</p>
+      {selectedIds.length > 0 && <div className="flex flex-wrap items-center gap-2 rounded-xl border border-primary/30 bg-primary/5 p-2 text-xs"><span className="font-medium">{selectedIds.length} selecionado(s)</span><button type="button" className="rounded border px-2 py-1" onClick={duplicate}>Duplicar</button><button type="button" className="rounded border px-2 py-1" onClick={() => rotate(-15)}>↶ Girar</button><button type="button" className="rounded border px-2 py-1" onClick={() => rotate(15)}>↷ Girar</button><button type="button" className="rounded border border-destructive/30 px-2 py-1 text-destructive" onClick={remove}>Excluir</button></div>}
+      <div className="overflow-auto rounded-2xl border bg-muted/40 p-3 shadow-inner sm:p-6"><div className="mx-auto origin-top transition-transform" style={{ width: `${100 / (zoom / 100)}%`, minHeight: canvasHeight / (zoom / 100) }}><div ref={canvasRef} className={`relative isolate mx-auto w-full max-w-[768px] overflow-hidden rounded-2xl border bg-card shadow-sm ${showGrid ? "[background-image:linear-gradient(to_right,hsl(var(--border)/.25)_1px,transparent_1px),linear-gradient(to_bottom,hsl(var(--border)/.25)_1px,transparent_1px)] [background-size:16px_16px]" : ""}`} style={{ minHeight: canvasHeight, backgroundColor: bg && (bg as any).color ? (bg as any).color : undefined, transform: `scale(${zoom / 100})`, transformOrigin: "top center" }} onPointerDown={(event) => { if (event.target === event.currentTarget) { const p = canvasPoint(event); interaction.current = { mode: "marquee", startX: p.x, startY: p.y }; setSelectedIds([]); } }} onPointerMove={moveInteraction} onPointerUp={stopInteraction} onPointerCancel={stopInteraction} aria-label="Área de edição do convite"><BackgroundLayers bg={bg as any} />{blocks.length === 0 && <div className="absolute inset-0 flex items-center justify-center text-center text-sm text-muted-foreground">Adicione elementos pela biblioteca acima.</div>}{marquee && <div className="pointer-events-none absolute z-50 border border-primary bg-primary/10" style={{ left: marquee.x, top: marquee.y, width: marquee.width, height: marquee.height }} />}{blocks.map((block: any, index: number) => { const position = getPosition(block, index); const size = getSize(block); const isSelected = selectedIds.includes(block.id); return <div key={block.id || index} className={`group absolute left-0 top-0 rounded-xl border bg-background/85 p-4 text-foreground shadow-sm backdrop-blur-[1px] ${isSelected ? "border-primary ring-2 ring-primary/30" : "border-border/70 hover:shadow-md"} ${block.hidden ? "opacity-50" : ""}`} style={{ width: size.width, minHeight: size.height, transform: `translate(${position.x}px, ${position.y}px) rotate(${block.rotation ?? 0}deg) scale(${block.scale ?? 1})`, transformOrigin: "center", opacity: block.opacity ?? 1, zIndex: block.zIndex ?? index + 1 }} onPointerDown={(event) => startDrag(event, block, index)} onClick={(event) => { event.stopPropagation(); select(block.id, event.shiftKey || event.ctrlKey || event.metaKey); }}><div className="pointer-events-none h-full w-full"><BlockView block={block} ctx={ctx as any} interactive={false} /></div>{isSelected && <><div className="absolute -top-7 left-0 max-w-full truncate rounded bg-primary px-2 py-1 text-[10px] text-primary-foreground">{getBlockLabel(block)}</div><button type="button" aria-label="Redimensionar bloco" className="absolute -bottom-2 -right-2 h-4 w-4 cursor-se-resize rounded-full border-2 border-background bg-primary" onPointerDown={(event) => startResize(event, block, index)} /></>}</div>; })}</div></div></div>
+      <div className="rounded-xl border bg-card p-3"><p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Camadas</p><div className="flex flex-wrap gap-2">{blocks.map((block: any, index: number) => <button key={block.id} type="button" className={`rounded-md border px-2 py-1 text-xs ${selectedIds.includes(block.id) ? "border-primary bg-primary/10 text-primary" : "text-muted-foreground"}`} onClick={() => select(block.id, false)}>{index + 1}. {getBlockLabel(block)}</button>)}</div></div>
+      <p className="text-xs text-muted-foreground">Arraste com mouse ou toque, use Shift para snap, Shift/Ctrl para múltipla seleção e arraste o fundo para selecionar uma área. Alterações são persistidas pelo autosave existente.</p>
     </div>
   );
   /*
