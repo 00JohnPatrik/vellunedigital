@@ -3,7 +3,7 @@ import { AlertTriangle, CalendarDays, ChevronLeft, ChevronRight, Clock, Maximize
 import { QRCodeSVG } from "qrcode.react";
 import { PreviewImage } from "@/components/template-ui";
 import { RsvpForm } from "@/components/rsvp-form";
-import { BLOCKS, type Background, type Block } from "@/lib/templates";
+import { BLOCKS, getBlockGeometry, type Background, type Block } from "@/lib/templates";
 import { fontCss, formatDate, formatTime, isKnownType, pick, type EventCtx } from "@/lib/blocks";
 import { cn } from "@/lib/utils";
 import { useAssetUrl } from "@/lib/assets";
@@ -178,7 +178,10 @@ export function BackgroundLayers({ bg }: { bg?: Background | undefined }) {
 /** Read-only rendering of a whole invitation (hidden blocks are skipped). */
 export function InvitationCanvas({ blocks, ctx, className, background }: { blocks: Block[]; ctx?: EventCtx | undefined; className?: string | undefined; background?: Background | undefined }) {
   const visible = blocks.filter((b) => !b.hidden);
-  const hasFreeCanvasBlock = visible.some((b) => [b.x, b.y, b.width, b.height, b.rotation, b.zIndex, b.scale, b.opacity].some((value) => value !== undefined));
+  const hasFreeCanvasBlock = visible.some((b) => {
+    const geometry = getBlockGeometry(b);
+    return Object.keys(geometry).length > 0;
+  });
   return (
     <div
       className={cn(
@@ -190,16 +193,17 @@ export function InvitationCanvas({ blocks, ctx, className, background }: { block
     >
       <BackgroundLayers bg={background} />
       {visible.length ? visible.map((b) => {
-        const free = hasFreeCanvasBlock && [b.x, b.y, b.width, b.height, b.rotation, b.zIndex, b.scale, b.opacity].some((value) => value !== undefined);
+        const geometry = getBlockGeometry(b);
+        const free = hasFreeCanvasBlock && Object.keys(geometry).length > 0;
         const frame: CSSProperties = free ? {
           position: "absolute",
-          left: b.x ?? 24,
-          top: b.y ?? 24,
-          width: b.width,
-          height: b.height,
-          zIndex: b.zIndex,
-          opacity: b.opacity ?? 1,
-          transform: `rotate(${b.rotation ?? 0}deg) scale(${b.scale ?? 1})`,
+          left: geometry.x ?? 24,
+          top: geometry.y ?? 24,
+          width: geometry.width,
+          height: geometry.height,
+          zIndex: geometry.zIndex,
+          opacity: geometry.opacity ?? 1,
+          transform: `rotate(${geometry.rotation ?? 0}deg) scale(${geometry.scale ?? 1})`,
           transformOrigin: "center",
         } : {};
         return <div key={b.id} className={cn(free && "overflow-hidden")} style={frame}><BlockView block={b} ctx={ctx} interactive /></div>;

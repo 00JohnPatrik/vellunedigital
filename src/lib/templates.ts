@@ -49,6 +49,36 @@ export type Block = {
   locked?: boolean;
   groupId?: string;
 };
+
+export const BLOCK_GEOMETRY_KEYS = ["x", "y", "width", "height", "rotation", "zIndex", "scale", "opacity"] as const;
+export type BlockGeometryKey = (typeof BLOCK_GEOMETRY_KEYS)[number];
+export type BlockGeometry = Pick<Block, BlockGeometryKey>;
+
+const numericGeometryValue = (value: unknown) => {
+  if (typeof value === "number" && Number.isFinite(value)) return value;
+  if (typeof value === "string" && value.trim() !== "") {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : undefined;
+  }
+  return undefined;
+};
+
+/** Reads geometry from the canonical block fields while accepting older content that stored it in props. */
+export function getBlockGeometry(block: Block): BlockGeometry {
+  const result: BlockGeometry = {};
+  for (const key of BLOCK_GEOMETRY_KEYS) {
+    const value = numericGeometryValue(block[key]);
+    const legacyValue = numericGeometryValue(block.props?.[key]);
+    if (value !== undefined) result[key] = value;
+    else if (legacyValue !== undefined) result[key] = legacyValue;
+  }
+  return result;
+}
+
+/** Converts legacy geometry in props to canonical fields without removing the original props. */
+export function normalizeBlockGeometry(block: Block): Block {
+  return { ...block, ...getBlockGeometry(block) };
+}
 export type Background = { color?: string; image?: string; size?: "cover" | "contain"; x?: "left" | "center" | "right"; y?: "top" | "center" | "bottom"; overlay?: number };
 export type TemplateContent = { version: 1; blocks: Block[]; settings?: { background?: Background } };
 /** Builds content keeping `version`/`blocks` and adding `settings.background` only when set. */

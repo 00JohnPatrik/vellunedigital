@@ -238,7 +238,19 @@ export function VisualEditor({ h, ctx, toolbarExtra, assets, bg, onBg }: { h: Bl
     if (selected === id) setSelected(null);
     toast("Bloco excluído.", { action: { label: "Desfazer", onClick: h.undo } });
   };
-  const setProp = (id: string, k: string, v: string) => set((bs) => bs.map((b) => (b.id === id && !b.locked ? { ...b, props: { ...b.props, [k]: v } } : b)), `${id}:${k}`);
+  const setProp = (id: string, k: string, v: string) => set((bs) => bs.map((b) => {
+    if (b.id !== id || b.locked) return b;
+    const geometryKeys = new Set(["x", "y", "width", "height", "rotation", "zIndex", "scale", "opacity"]);
+    if (!geometryKeys.has(k)) return { ...b, props: { ...b.props, [k]: v } };
+    if (v.trim() === "") {
+      const next = { ...b };
+      delete next[k as "x" | "y" | "width" | "height" | "rotation" | "zIndex" | "scale" | "opacity"];
+      return next;
+    }
+    const numeric = Number(v);
+    if (!Number.isFinite(numeric)) return b;
+    return { ...b, [k]: numeric };
+  }), `${id}:${k}`);
   const alignSelected = (align: "left" | "center" | "right") => { if (sel && !sel.locked) setProp(sel.id, "align", align); };
   const alignMultiple = (align: "left" | "center" | "right") => {
     if (selectedIds.length < 2) return alignSelected(align);
