@@ -1,6 +1,7 @@
 // @ts-nocheck
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { BackgroundLayers, BlockView } from "@/components/block-render";
+import { ImageUpload } from "@/components/image-upload";
 import { BLOCKS, newBlock, type Block, type BlockType } from "@/lib/templates";
 
 function useIsCompact() {
@@ -252,7 +253,59 @@ export function VisualEditor({ h, ctx, toolbarExtra, assets, bg, onBg }: { h: Bl
         {toolbarExtra}
       </div>
       {selectedIds.length > 0 && <div className="flex flex-wrap items-center gap-2 rounded-xl border border-primary/30 bg-primary/5 p-2 text-xs"><span className="font-medium">{selectedIds.length} selecionado(s)</span><button type="button" className="rounded border px-2 py-1" onClick={duplicate}>Duplicar</button><button type="button" className="rounded border px-2 py-1" onClick={() => rotate(-15)}>↶ Girar</button><button type="button" className="rounded border px-2 py-1" onClick={() => rotate(15)}>↷ Girar</button><button type="button" className="rounded border px-2 py-1" onClick={() => h.set((items) => items.map((item: any) => selectedIds.includes(item.id) ? { ...item, locked: !item.locked } : item), "selection:lock")}>{selected.some((item: any) => item.locked) ? "Desbloquear" : "Bloquear"}</button><button type="button" className="rounded border px-2 py-1" onClick={() => h.set((items) => items.map((item: any) => selectedIds.includes(item.id) ? { ...item, hidden: !item.hidden } : item), "selection:visibility")}>{selected.some((item: any) => item.hidden) ? "Mostrar" : "Ocultar"}</button><button type="button" className="rounded border border-destructive/30 px-2 py-1 text-destructive" onClick={remove}>Excluir</button></div>}
-      <div className="overflow-auto rounded-2xl border bg-muted/40 p-3 shadow-inner sm:p-6"><div className="mx-auto origin-top transition-transform" style={{ width: `${100 / (zoom / 100)}%`, minHeight: canvasHeight / (zoom / 100) }}><div ref={canvasRef} className={`relative isolate mx-auto w-full max-w-[768px] overflow-hidden rounded-2xl border bg-card shadow-sm ${showGrid ? "[background-image:linear-gradient(to_right,hsl(var(--border)/.25)_1px,transparent_1px),linear-gradient(to_bottom,hsl(var(--border)/.25)_1px,transparent_1px)] [background-size:16px_16px]" : ""}`} style={{ minHeight: canvasHeight, backgroundColor: bg && (bg as any).color ? (bg as any).color : undefined, transform: `scale(${zoom / 100})`, transformOrigin: "top center" }} onPointerDown={(event) => { if (event.target === event.currentTarget) { const p = canvasPoint(event); interaction.current = { mode: "marquee", startX: p.x, startY: p.y }; setSelectedIds([]); } }} onPointerMove={moveInteraction} onPointerUp={stopInteraction} onPointerCancel={stopInteraction} aria-label="Área de edição do convite"><BackgroundLayers bg={bg as any} />{blocks.length === 0 && <div className="absolute inset-0 flex items-center justify-center text-center text-sm text-muted-foreground">Adicione elementos pela biblioteca acima.</div>}{marquee && <div className="pointer-events-none absolute z-50 border border-primary bg-primary/10" style={{ left: marquee.x, top: marquee.y, width: marquee.width, height: marquee.height }} />}{blocks.map((block: any, index: number) => { const position = getPosition(block, index); const size = getSize(block); const isSelected = selectedIds.includes(block.id); return <div key={block.id || index} className={`group absolute left-0 top-0 rounded-xl border bg-background/85 p-4 text-foreground shadow-sm backdrop-blur-[1px] ${isSelected ? "border-primary ring-2 ring-primary/30" : "border-border/70 hover:shadow-md"} ${block.hidden ? "opacity-50" : ""}`} style={{ width: size.width, minHeight: size.height, transform: `translate(${position.x}px, ${position.y}px) rotate(${block.rotation ?? 0}deg) scale(${block.scale ?? 1})`, transformOrigin: "center", opacity: block.opacity ?? 1, zIndex: block.zIndex ?? index + 1 }} onPointerDown={(event) => startDrag(event, block, index)} onClick={(event) => { event.stopPropagation(); select(block.id, event.shiftKey || event.ctrlKey || event.metaKey); }}><div className="pointer-events-none h-full w-full"><BlockView block={block} ctx={ctx as any} interactive={false} /></div>{isSelected && <><div className="absolute -top-7 left-0 max-w-full truncate rounded bg-primary px-2 py-1 text-[10px] text-primary-foreground">{getBlockLabel(block)}</div><button type="button" aria-label="Redimensionar bloco" className="absolute -bottom-2 -right-2 h-4 w-4 cursor-se-resize rounded-full border-2 border-background bg-primary" onPointerDown={(event) => startResize(event, block, index)} /></>}</div>; })}</div></div></div>
+      <div className="grid gap-4 lg:grid-cols-[240px_minmax(0,1fr)]">
+        <aside className="rounded-2xl border bg-card p-4 shadow-sm" aria-label="Configurações do convite">
+          <div className="space-y-4">
+            <div>
+              <p className="text-sm font-semibold text-foreground">Fundo</p>
+              <p className="mt-1 text-xs text-muted-foreground">Atualize o fundo do convite em tempo real.</p>
+            </div>
+            <div className="space-y-1.5">
+              <label htmlFor="editor-background-color" className="text-xs font-medium text-foreground">Cor</label>
+              <div className="flex items-center gap-2">
+                <input
+                  id="editor-background-color"
+                  type="color"
+                  value={(bg as any)?.color || "#ffffff"}
+                  onChange={(event) => onBg?.({ ...((bg as any) || {}), color: event.target.value })}
+                  className="h-9 w-12 cursor-pointer rounded-md border bg-transparent p-1"
+                />
+                {(bg as any)?.color && <button type="button" className="text-xs text-muted-foreground hover:text-foreground" onClick={() => onBg?.({ ...((bg as any) || {}), color: "" })}>Limpar</button>}
+              </div>
+            </div>
+            <div className="space-y-1.5">
+              <label htmlFor="editor-background-gradient" className="text-xs font-medium text-foreground">Gradiente</label>
+              <input
+                id="editor-background-gradient"
+                type="text"
+                value={(bg as any)?.gradient || ""}
+                onChange={(event) => onBg?.({ ...((bg as any) || {}), gradient: event.target.value })}
+                placeholder="linear-gradient(135deg, #fff, #e8d8ff)"
+                className="h-9 w-full rounded-md border bg-background px-3 text-xs text-foreground outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-ring"
+              />
+              {(bg as any)?.gradient && <button type="button" className="text-xs text-muted-foreground hover:text-foreground" onClick={() => onBg?.({ ...((bg as any) || {}), gradient: "" })}>Remover gradiente</button>}
+            </div>
+            <div className="space-y-2">
+              <p className="text-xs font-medium text-foreground">Imagem</p>
+              <ImageUpload scope={assets as any} value={(bg as any)?.image || ""} onChange={(value) => onBg?.({ ...((bg as any) || {}), image: value })} />
+              <input
+                type="url"
+                value={String((bg as any)?.image || "").startsWith("storage:") ? "" : ((bg as any)?.image || "")}
+                onChange={(event) => onBg?.({ ...((bg as any) || {}), image: event.target.value })}
+                placeholder="Ou cole uma URL https://..."
+                className="h-9 w-full rounded-md border bg-background px-3 text-xs text-foreground outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-ring"
+              />
+              {(bg as any)?.image && <button type="button" className="w-full rounded-md border px-2 py-1.5 text-xs text-destructive hover:bg-destructive/10" onClick={() => onBg?.({ ...((bg as any) || {}), image: "" })}>Remover imagem</button>}
+            </div>
+            {(bg as any)?.image && <div className="space-y-3 border-t pt-3">
+              <label className="block text-xs font-medium text-foreground">Escala: {Math.round(Number((bg as any)?.imageScale || 100))}%</label>
+              <input type="range" min="25" max="200" step="5" value={Number((bg as any)?.imageScale || 100)} onChange={(event) => onBg?.({ ...((bg as any) || {}), imageScale: Number(event.target.value) })} className="w-full accent-primary" />
+              <label className="block text-xs font-medium text-foreground">Opacidade: {Math.round(Number((bg as any)?.imageOpacity ?? 1) * 100)}%</label>
+              <input type="range" min="0" max="1" step="0.05" value={Number((bg as any)?.imageOpacity ?? 1)} onChange={(event) => onBg?.({ ...((bg as any) || {}), imageOpacity: Number(event.target.value) })} className="w-full accent-primary" />
+            </div>}
+          </div>
+        </aside>
+        <div className="overflow-auto rounded-2xl border bg-muted/40 p-3 shadow-inner sm:p-6"><div className="mx-auto origin-top transition-transform" style={{ width: `${100 / (zoom / 100)}%`, minHeight: canvasHeight / (zoom / 100) }}><div ref={canvasRef} className={`relative isolate mx-auto w-full max-w-[768px] overflow-hidden rounded-2xl border bg-card shadow-sm ${showGrid ? "[background-image:linear-gradient(to_right,hsl(var(--border)/.25)_1px,transparent_1px),linear-gradient(to_bottom,hsl(var(--border)/.25)_1px,transparent_1px)] [background-size:16px_16px]" : ""}`} style={{ minHeight: canvasHeight, backgroundColor: bg && (bg as any).color ? (bg as any).color : undefined, transform: `scale(${zoom / 100})`, transformOrigin: "top center" }} onPointerDown={(event) => { if (event.target === event.currentTarget) { const p = canvasPoint(event); interaction.current = { mode: "marquee", startX: p.x, startY: p.y }; setSelectedIds([]); } }} onPointerMove={moveInteraction} onPointerUp={stopInteraction} onPointerCancel={stopInteraction} aria-label="Área de edição do convite"><BackgroundLayers bg={bg as any} />{blocks.length === 0 && <div className="absolute inset-0 flex items-center justify-center text-center text-sm text-muted-foreground">Adicione elementos pela biblioteca acima.</div>}{marquee && <div className="pointer-events-none absolute z-50 border border-primary bg-primary/10" style={{ left: marquee.x, top: marquee.y, width: marquee.width, height: marquee.height }} />}{blocks.map((block: any, index: number) => { const position = getPosition(block, index); const size = getSize(block); const isSelected = selectedIds.includes(block.id); return <div key={block.id || index} className={`group absolute left-0 top-0 rounded-xl ${isSelected ? "border-2 border-primary ring-2 ring-primary/30" : "border border-transparent hover:border-primary/40"} ${block.hidden ? "opacity-50" : ""}`} style={{ width: size.width, minHeight: size.height, transform: `translate(${position.x}px, ${position.y}px) rotate(${block.rotation ?? 0}deg) scale(${block.scale ?? 1})`, transformOrigin: "center", opacity: block.opacity ?? 1, zIndex: block.zIndex ?? index + 1 }} onPointerDown={(event) => startDrag(event, block, index)} onClick={(event) => { event.stopPropagation(); select(block.id, event.shiftKey || event.ctrlKey || event.metaKey); }}><div className="pointer-events-none h-full w-full"><BlockView block={block} ctx={ctx as any} interactive={false} /></div>{isSelected && <><div className="absolute -top-7 left-0 max-w-full truncate rounded bg-primary px-2 py-1 text-[10px] text-primary-foreground">{getBlockLabel(block)}</div><button type="button" aria-label="Redimensionar bloco" className="absolute -bottom-2 -right-2 h-4 w-4 cursor-se-resize rounded-full border-2 border-background bg-primary" onPointerDown={(event) => startResize(event, block, index)} /></>}</div>; })}</div></div></div></div>
       <div className="rounded-xl border bg-card p-3"><p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Camadas</p><div className="flex flex-wrap gap-2">{blocks.map((block: any, index: number) => <button key={block.id} type="button" className={`rounded-md border px-2 py-1 text-xs ${selectedIds.includes(block.id) ? "border-primary bg-primary/10 text-primary" : "text-muted-foreground"}`} onClick={() => select(block.id, false)}>{index + 1}. {getBlockLabel(block)}</button>)}</div></div>
       <p className="text-xs text-muted-foreground">Arraste com mouse ou toque, use Shift para snap, Shift/Ctrl para múltipla seleção, Ctrl/Cmd+C para copiar, Ctrl/Cmd+V para colar e arraste o fundo para selecionar uma área. Alterações são persistidas pelo autosave existente.</p>
     </div>
