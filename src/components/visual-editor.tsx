@@ -25,6 +25,7 @@ import { STORAGE_PREFIX, type AssetScope, useAssetUrl } from "@/lib/assets";
 import { BLOCKS, newBlock, type Background, type Block, type BlockType } from "@/lib/templates";
 import { FONTS, isKnownType, type EventCtx } from "@/lib/blocks";
 import { cn } from "@/lib/utils";
+import { VisualTransformLayer } from "@/components/visual-transform-layer";
 
 function useIsCompact() {
   const [compact, setCompact] = useState(false);
@@ -199,6 +200,7 @@ export const editorSnappedPosition = (
 
 export function VisualEditor({ h, ctx, toolbarExtra, assets, bg, onBg }: { h: BlocksHistory; ctx?: EventCtx | undefined; toolbarExtra?: ReactNode; assets?: AssetScope | undefined; bg?: Background | undefined; onBg?: ((b: Background) => void) | undefined }) {
   const { blocks, set } = h;
+  const editorRoot = useRef<HTMLDivElement>(null);
   // Side panels only fit from 1024px up; below that Elements/Properties open as bottom drawers.
   const isMobile = useIsCompact();
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
@@ -363,7 +365,8 @@ export function VisualEditor({ h, ctx, toolbarExtra, assets, bg, onBg }: { h: Bl
   const props = !sel && onBg ? <BackgroundPanel bg={bg ?? {}} onBg={onBg} assets={assets} /> : <Properties assets={assets} block={sel} setProp={setProp} actions={actions} convertToText={convertToText} blocksLen={blocks.length} index={sel ? blocks.indexOf(sel) : -1} />;
 
   return (
-    <div className="flex flex-col gap-4">
+    <div ref={editorRoot} className="relative flex flex-col gap-4">
+      <VisualTransformLayer root={editorRoot.current} blocks={blocks} selectedIds={selectedIds} zoom={zoom} onChange={(update) => set(update, "transform")}/>
       {/* Toolbar */}
       <div className="flex flex-wrap items-center gap-2 rounded-2xl border bg-card p-2.5 shadow-sm sm:sticky sm:top-4 sm:z-20 sm:p-3">
         <div className="flex items-center gap-1 rounded-lg bg-muted/60 p-0.5" aria-label="Histórico">

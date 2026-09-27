@@ -68,7 +68,7 @@ function Countdown({ p, ctx }: { p: Record<string, string>; ctx?: EventCtx | und
 }
 
 /** Renders one block. The exact same JSON is used by the editor canvas and every preview. */
-export function BlockView({ block, ctx, interactive = false }: { block: Block; ctx?: EventCtx | undefined; interactive?: boolean }) {
+function BlockContent({ block, ctx, interactive = false }: { block: Block; ctx?: EventCtx | undefined; interactive?: boolean }) {
   const p = block.props ?? {};
   if (!isKnownType(block.type)) {
     return (
@@ -150,6 +150,14 @@ export function BlockView({ block, ctx, interactive = false }: { block: Block; c
       return <Row align={p["align"]}><hr style={style} className={cn("border-0 border-border", p["width"] === "auto" ? "w-1/3" : WIDTH[p["width"] ?? "full"])} /></Row>;
     }
   }
+}
+
+export function BlockView({ block, ctx, interactive = false }: { block: Block; ctx?: EventCtx | undefined; interactive?: boolean }) {
+  return (
+    <div data-editor-block={block.id} data-editor-block-locked={block.locked ? "true" : "false"} className="min-h-0 min-w-0 h-full w-full">
+      <BlockContent block={block} ctx={ctx} interactive={interactive} />
+    </div>
+  );
 }
 
 function Info({ align = "center", label, icon, children }: { align?: string | undefined; label?: string | undefined; icon: ReactNode; children: ReactNode }) {
