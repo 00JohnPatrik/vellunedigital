@@ -23,6 +23,16 @@ export function validateContent(c: unknown): string | null {
     ids.add(b.id);
     if (!isKnownType(b.type)) return `Bloco desconhecido ("${String(b.type)}"). Corrija ou exclua antes de salvar.`;
     if (b.props && typeof b.props !== "object") return "Propriedades de bloco inválidas.";
+    for (const key of ["x", "y", "width", "height", "rotation", "zIndex", "scale", "opacity"] as const) {
+      const value = b[key];
+      if (value !== undefined && (typeof value !== "number" || !Number.isFinite(value))) {
+        return `A propriedade ${key} do bloco é inválida.`;
+      }
+    }
+    if (b.width !== undefined && b.width <= 0) return "A largura do bloco deve ser maior que zero.";
+    if (b.height !== undefined && b.height <= 0) return "A altura do bloco deve ser maior que zero.";
+    if (b.scale !== undefined && b.scale <= 0) return "A escala do bloco deve ser maior que zero.";
+    if (b.opacity !== undefined && (b.opacity < 0 || b.opacity > 1)) return "A opacidade do bloco deve estar entre 0 e 1.";
   }
   return null;
 }

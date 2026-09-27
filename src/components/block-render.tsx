@@ -178,11 +178,32 @@ export function BackgroundLayers({ bg }: { bg?: Background | undefined }) {
 /** Read-only rendering of a whole invitation (hidden blocks are skipped). */
 export function InvitationCanvas({ blocks, ctx, className, background }: { blocks: Block[]; ctx?: EventCtx | undefined; className?: string | undefined; background?: Background | undefined }) {
   const visible = blocks.filter((b) => !b.hidden);
+  const hasFreeCanvasBlock = visible.some((b) => [b.x, b.y, b.width, b.height, b.rotation, b.zIndex, b.scale, b.opacity].some((value) => value !== undefined));
   return (
-    <div className={cn("relative isolate mx-auto flex w-full max-w-md flex-col gap-5 overflow-hidden rounded-2xl border bg-card p-6 shadow-sm", className)} style={bgColorStyle(background)}>
+    <div
+      className={cn(
+        "relative isolate mx-auto w-full max-w-md overflow-hidden rounded-2xl border bg-card shadow-sm",
+        hasFreeCanvasBlock ? "min-h-[640px] p-0" : "flex flex-col gap-5 p-6",
+        className,
+      )}
+      style={bgColorStyle(background)}
+    >
       <BackgroundLayers bg={background} />
-      {visible.length ? visible.map((b) => <BlockView key={b.id} block={b} ctx={ctx} interactive />)
-        : <p className="py-10 text-center text-sm text-muted-foreground">Este convite ainda não possui blocos.</p>}
+      {visible.length ? visible.map((b) => {
+        const free = hasFreeCanvasBlock && [b.x, b.y, b.width, b.height, b.rotation, b.zIndex, b.scale, b.opacity].some((value) => value !== undefined);
+        const frame: CSSProperties = free ? {
+          position: "absolute",
+          left: b.x ?? 24,
+          top: b.y ?? 24,
+          width: b.width,
+          height: b.height,
+          zIndex: b.zIndex,
+          opacity: b.opacity ?? 1,
+          transform: `rotate(${b.rotation ?? 0}deg) scale(${b.scale ?? 1})`,
+          transformOrigin: "center",
+        } : {};
+        return <div key={b.id} className={cn(free && "overflow-hidden")} style={frame}><BlockView block={b} ctx={ctx} interactive /></div>;
+      }) : <p className="py-10 text-center text-sm text-muted-foreground">Este convite ainda não possui blocos.</p>}
     </div>
   );
 }

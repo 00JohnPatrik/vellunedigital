@@ -596,12 +596,52 @@ function Properties({ block, setProp, actions, convertToText, index, blocksLen, 
   }
   const p = block.props ?? {};
   const custom = p["source"] === "custom";
+  const layoutNumber = (key: string, fallback: string) => p[key] ?? fallback;
+  const layoutText = (key: string, fallback = "") => p[key] ?? fallback;
   if (block.type === "gallery") return <GalleryProperties block={block} setProp={setProp} assets={assets} actions={actions} index={index} blocksLen={blocksLen} />;
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between gap-2 border-b pb-2">
         <span className="text-sm font-medium">{BLOCKS[block.type].label}</span>
         <BlockActions b={block} first={index === 0} last={index === blocksLen - 1} actions={actions} compact />
+      </div>
+      <div className="space-y-3 rounded-lg border bg-muted/20 p-3">
+        <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Canvas livre</p>
+        <div className="grid grid-cols-2 gap-2">
+          {([[
+            "x", "X", "0"
+          ], ["y", "Y", "0"], ["width", "Largura", ""], ["height", "Altura", ""]] as const).map(([key, label, fallback]) => (
+            <div key={key} className="space-y-1">
+              <Label htmlFor={`layout-${block.id}-${key}`} className="text-xs text-muted-foreground">{label}</Label>
+              <Input
+                id={`layout-${block.id}-${key}`}
+                type="number"
+                min={key === "width" || key === "height" ? 1 : undefined}
+                value={layoutNumber(key, fallback)}
+                onChange={(event) => setProp(block.id, key, event.target.value)}
+                className="h-8"
+              />
+            </div>
+          ))}
+        </div>
+        <div className="grid grid-cols-2 gap-2">
+          {([["rotation", "Rotação", "0"], ["zIndex", "Camada", "0"], ["scale", "Escala", "1"], ["opacity", "Opacidade", "1"]] as const).map(([key, label, fallback]) => (
+            <div key={key} className="space-y-1">
+              <Label htmlFor={`layout-${block.id}-${key}`} className="text-xs text-muted-foreground">{label}</Label>
+              <Input
+                id={`layout-${block.id}-${key}`}
+                type="number"
+                min={key === "scale" ? 0.1 : key === "opacity" ? 0 : undefined}
+                max={key === "opacity" ? 1 : undefined}
+                step={key === "scale" || key === "opacity" ? 0.1 : 1}
+                value={layoutNumber(key, fallback)}
+                onChange={(event) => setProp(block.id, key, event.target.value)}
+                className="h-8"
+              />
+            </div>
+          ))}
+        </div>
+        <p className="text-[11px] text-muted-foreground">Blocos antigos sem coordenadas continuam usando o layout vertical compatível.</p>
       </div>
       {CONTROLS[block.type].map((c) => {
         // Custom-value fields only matter when the source is "custom".

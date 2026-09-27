@@ -32,7 +32,23 @@ export const BLOCKS: Record<BlockType, { label: string; defaults: Record<string,
   divider: { label: "Divisor", defaults: { thickness: "1", width: "full", align: "center", style: "solid" } },
 };
 
-export type Block = { id: string; type: BlockType; props: Record<string, string>; hidden?: boolean; locked?: boolean };
+export type Block = {
+  id: string;
+  type: BlockType;
+  props: Record<string, string>;
+  /** Optional free-canvas layout values. Older blocks omit these fields and keep the flow layout. */
+  x?: number;
+  y?: number;
+  width?: number;
+  height?: number;
+  rotation?: number;
+  zIndex?: number;
+  scale?: number;
+  opacity?: number;
+  hidden?: boolean;
+  locked?: boolean;
+  groupId?: string;
+};
 export type Background = { color?: string; image?: string; size?: "cover" | "contain"; x?: "left" | "center" | "right"; y?: "top" | "center" | "bottom"; overlay?: number };
 export type TemplateContent = { version: 1; blocks: Block[]; settings?: { background?: Background } };
 /** Builds content keeping `version`/`blocks` and adding `settings.background` only when set. */
