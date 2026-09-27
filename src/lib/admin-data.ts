@@ -14,7 +14,8 @@ export type CompanyAdmin = {
 
 export type PresenceUser = {
   id: string; name: string; email: string; phone: string | null; role: string; status: Status;
-  company_id: string | null; last_login_at: string | null; last_seen_at: string | null;
+  company_id: string | null; auth_user_id: string | null; created_at: string; updated_at: string;
+  last_login_at: string | null; last_seen_at: string | null;
   company: { id: string; name: string; status: Status } | null;
 };
 
@@ -41,7 +42,7 @@ const userCols = "id, name, email, phone, role, status, company_id, auth_user_id
 export async function listUsersPresence(): Promise<PresenceUser[]> {
   const { data, error } = await supabase
     .from("users")
-    .select("id, name, email, phone, role, status, company_id, last_login_at, last_seen_at, company:companies!users_company_id_fkey(id, name, status)")
+    .select(userCols)
     .is("deleted_at", null)
     .order("last_seen_at", { ascending: false, nullsFirst: false })
     .order("name");

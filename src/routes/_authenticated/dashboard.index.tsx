@@ -12,6 +12,7 @@ export const Route = createFileRoute("/_authenticated/dashboard/")({
 function CompanyDashboard() {
   const report = useQuery({ queryKey: ["reports", "company"], queryFn: () => fetchReport() });
   const recent = useQuery({ queryKey: ["reports", "recent"], queryFn: () => recentResponses(5) });
+  const { appUser } = Route.useRouteContext();
   if (report.isLoading) return <LoadingState />;
   if (report.error) {
     return (
@@ -41,7 +42,7 @@ function CompanyDashboard() {
           </div>
         ) : <RecentResponses rows={recent.data ?? []} />}
       </Section>
-      <CompanyDashboardEnhancements companyId={Route.useRouteContext().appUser.company!.id} />
+      <CompanyDashboardEnhancements companyId={appUser.company!.id} />
     </div>
   );
 }
