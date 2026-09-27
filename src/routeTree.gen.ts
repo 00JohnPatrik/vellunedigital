@@ -20,19 +20,25 @@ import { Route as AuthenticatedCustomersRouteImport } from './routes/_authentica
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedInvitationsRouteImport } from './routes/_authenticated/invitations'
 import { Route as AuthenticatedReportsRouteImport } from './routes/_authenticated/reports'
+import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedTemplatesRouteImport } from './routes/_authenticated/templates'
 import { Route as ConviteSlugRouteImport } from './routes/convite.$slug'
+import { Route as PainelConviteTokenRouteImport } from './routes/painel-convite.$token'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin.index'
 import { Route as AuthenticatedAdminSectionRouteImport } from './routes/_authenticated/admin.$section'
+import { Route as AuthenticatedAdminPlansRouteImport } from './routes/_authenticated/admin.plans'
 import { Route as AuthenticatedAdminReportsRouteImport } from './routes/_authenticated/admin.reports'
+import { Route as AuthenticatedAdminSubscriptionsRouteImport } from './routes/_authenticated/admin.subscriptions'
 import { Route as AuthenticatedAdminTrashRouteImport } from './routes/_authenticated/admin.trash'
 import { Route as AuthenticatedCustomersIndexRouteImport } from './routes/_authenticated/customers.index'
 import { Route as AuthenticatedCustomersIdRouteImport } from './routes/_authenticated/customers.$id'
 import { Route as AuthenticatedDashboardIndexRouteImport } from './routes/_authenticated/dashboard.index'
 import { Route as AuthenticatedDashboardSectionRouteImport } from './routes/_authenticated/dashboard.$section'
+import { Route as AuthenticatedDashboardAssinaturaRouteImport } from './routes/_authenticated/dashboard.assinatura'
 import { Route as AuthenticatedInvitationsIndexRouteImport } from './routes/_authenticated/invitations.index'
 import { Route as AuthenticatedInvitationsNewRouteImport } from './routes/_authenticated/invitations.new'
 import { Route as AuthenticatedReportsIndexRouteImport } from './routes/_authenticated/reports.index'
+import { Route as AuthenticatedSettingsBrandRouteImport } from './routes/_authenticated/settings.brand'
 import { Route as AuthenticatedTemplatesIndexRouteImport } from './routes/_authenticated/templates.index'
 import { Route as AuthenticatedTemplatesIdRouteImport } from './routes/_authenticated/templates.$id'
 import { Route as AuthenticatedTemplatesNewRouteImport } from './routes/_authenticated/templates.new'
@@ -45,8 +51,11 @@ import { Route as AuthenticatedAdminTemplatesNewRouteImport } from './routes/_au
 import { Route as AuthenticatedAdminUsersIndexRouteImport } from './routes/_authenticated/admin.users.index'
 import { Route as AuthenticatedAdminUsersIdRouteImport } from './routes/_authenticated/admin.users.$id'
 import { Route as AuthenticatedAdminUsersNewRouteImport } from './routes/_authenticated/admin.users.new'
+import { Route as AuthenticatedInvitationsIdCheckinRouteImport } from './routes/_authenticated/invitations.$id.checkin'
 import { Route as AuthenticatedInvitationsIdEditorRouteImport } from './routes/_authenticated/invitations.$id.editor'
+import { Route as AuthenticatedInvitationsIdGuestsRouteImport } from './routes/_authenticated/invitations.$id.guests'
 import { Route as AuthenticatedInvitationsIdPreviewRouteImport } from './routes/_authenticated/invitations.$id.preview'
+import { Route as AuthenticatedInvitationsIdReportRouteImport } from './routes/_authenticated/invitations.$id.report'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -103,6 +112,11 @@ const AuthenticatedReportsRoute = AuthenticatedReportsRouteImport.update({
   path: '/reports',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedTemplatesRoute = AuthenticatedTemplatesRouteImport.update({
   id: '/templates',
   path: '/templates',
@@ -111,6 +125,11 @@ const AuthenticatedTemplatesRoute = AuthenticatedTemplatesRouteImport.update({
 const ConviteSlugRoute = ConviteSlugRouteImport.update({
   id: '/convite/$slug',
   path: '/convite/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PainelConviteTokenRoute = PainelConviteTokenRouteImport.update({
+  id: '/painel-convite/$token',
+  path: '/painel-convite/$token',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexRouteImport.update({
@@ -124,10 +143,21 @@ const AuthenticatedAdminSectionRoute =
     path: '/$section',
     getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
+const AuthenticatedAdminPlansRoute = AuthenticatedAdminPlansRouteImport.update({
+  id: '/plans',
+  path: '/plans',
+  getParentRoute: () => AuthenticatedAdminRoute,
+} as any)
 const AuthenticatedAdminReportsRoute =
   AuthenticatedAdminReportsRouteImport.update({
     id: '/reports',
     path: '/reports',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminSubscriptionsRoute =
+  AuthenticatedAdminSubscriptionsRouteImport.update({
+    id: '/subscriptions',
+    path: '/subscriptions',
     getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
 const AuthenticatedAdminTrashRoute = AuthenticatedAdminTrashRouteImport.update({
@@ -159,6 +189,12 @@ const AuthenticatedDashboardSectionRoute =
     path: '/$section',
     getParentRoute: () => AuthenticatedDashboardRoute,
   } as any)
+const AuthenticatedDashboardAssinaturaRoute =
+  AuthenticatedDashboardAssinaturaRouteImport.update({
+    id: '/assinatura',
+    path: '/assinatura',
+    getParentRoute: () => AuthenticatedDashboardRoute,
+  } as any)
 const AuthenticatedInvitationsIndexRoute =
   AuthenticatedInvitationsIndexRouteImport.update({
     id: '/',
@@ -176,6 +212,12 @@ const AuthenticatedReportsIndexRoute =
     id: '/',
     path: '/',
     getParentRoute: () => AuthenticatedReportsRoute,
+  } as any)
+const AuthenticatedSettingsBrandRoute =
+  AuthenticatedSettingsBrandRouteImport.update({
+    id: '/brand',
+    path: '/brand',
+    getParentRoute: () => AuthenticatedSettingsRoute,
   } as any)
 const AuthenticatedTemplatesIndexRoute =
   AuthenticatedTemplatesIndexRouteImport.update({
@@ -249,16 +291,34 @@ const AuthenticatedAdminUsersNewRoute =
     path: '/users/new',
     getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
+const AuthenticatedInvitationsIdCheckinRoute =
+  AuthenticatedInvitationsIdCheckinRouteImport.update({
+    id: '/$id/checkin',
+    path: '/$id/checkin',
+    getParentRoute: () => AuthenticatedInvitationsRoute,
+  } as any)
 const AuthenticatedInvitationsIdEditorRoute =
   AuthenticatedInvitationsIdEditorRouteImport.update({
     id: '/$id/editor',
     path: '/$id/editor',
     getParentRoute: () => AuthenticatedInvitationsRoute,
   } as any)
+const AuthenticatedInvitationsIdGuestsRoute =
+  AuthenticatedInvitationsIdGuestsRouteImport.update({
+    id: '/$id/guests',
+    path: '/$id/guests',
+    getParentRoute: () => AuthenticatedInvitationsRoute,
+  } as any)
 const AuthenticatedInvitationsIdPreviewRoute =
   AuthenticatedInvitationsIdPreviewRouteImport.update({
     id: '/$id/preview',
     path: '/$id/preview',
+    getParentRoute: () => AuthenticatedInvitationsRoute,
+  } as any)
+const AuthenticatedInvitationsIdReportRoute =
+  AuthenticatedInvitationsIdReportRouteImport.update({
+    id: '/$id/report',
+    path: '/$id/report',
     getParentRoute: () => AuthenticatedInvitationsRoute,
   } as any)
 
@@ -273,14 +333,20 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof AuthenticatedDashboardRouteWithChildren
   '/invitations': typeof AuthenticatedInvitationsRouteWithChildren
   '/reports': typeof AuthenticatedReportsRouteWithChildren
+  '/settings': typeof AuthenticatedSettingsRouteWithChildren
   '/templates': typeof AuthenticatedTemplatesRouteWithChildren
   '/convite/$slug': typeof ConviteSlugRoute
+  '/painel-convite/$token': typeof PainelConviteTokenRoute
   '/admin/$section': typeof AuthenticatedAdminSectionRoute
+  '/admin/plans': typeof AuthenticatedAdminPlansRoute
   '/admin/reports': typeof AuthenticatedAdminReportsRoute
+  '/admin/subscriptions': typeof AuthenticatedAdminSubscriptionsRoute
   '/admin/trash': typeof AuthenticatedAdminTrashRoute
   '/customers/$id': typeof AuthenticatedCustomersIdRoute
   '/dashboard/$section': typeof AuthenticatedDashboardSectionRoute
+  '/dashboard/assinatura': typeof AuthenticatedDashboardAssinaturaRoute
   '/invitations/new': typeof AuthenticatedInvitationsNewRoute
+  '/settings/brand': typeof AuthenticatedSettingsBrandRoute
   '/templates/$id': typeof AuthenticatedTemplatesIdRoute
   '/templates/new': typeof AuthenticatedTemplatesNewRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
@@ -295,8 +361,11 @@ export interface FileRoutesByFullPath {
   '/admin/templates/new': typeof AuthenticatedAdminTemplatesNewRoute
   '/admin/users/$id': typeof AuthenticatedAdminUsersIdRoute
   '/admin/users/new': typeof AuthenticatedAdminUsersNewRoute
+  '/invitations/$id/checkin': typeof AuthenticatedInvitationsIdCheckinRoute
   '/invitations/$id/editor': typeof AuthenticatedInvitationsIdEditorRoute
+  '/invitations/$id/guests': typeof AuthenticatedInvitationsIdGuestsRoute
   '/invitations/$id/preview': typeof AuthenticatedInvitationsIdPreviewRoute
+  '/invitations/$id/report': typeof AuthenticatedInvitationsIdReportRoute
   '/admin/companies/': typeof AuthenticatedAdminCompaniesIndexRoute
   '/admin/templates/': typeof AuthenticatedAdminTemplatesIndexRoute
   '/admin/users/': typeof AuthenticatedAdminUsersIndexRoute
@@ -307,13 +376,19 @@ export interface FileRoutesByTo {
   '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/settings': typeof AuthenticatedSettingsRouteWithChildren
   '/convite/$slug': typeof ConviteSlugRoute
+  '/painel-convite/$token': typeof PainelConviteTokenRoute
   '/admin/$section': typeof AuthenticatedAdminSectionRoute
+  '/admin/plans': typeof AuthenticatedAdminPlansRoute
   '/admin/reports': typeof AuthenticatedAdminReportsRoute
+  '/admin/subscriptions': typeof AuthenticatedAdminSubscriptionsRoute
   '/admin/trash': typeof AuthenticatedAdminTrashRoute
   '/customers/$id': typeof AuthenticatedCustomersIdRoute
   '/dashboard/$section': typeof AuthenticatedDashboardSectionRoute
+  '/dashboard/assinatura': typeof AuthenticatedDashboardAssinaturaRoute
   '/invitations/new': typeof AuthenticatedInvitationsNewRoute
+  '/settings/brand': typeof AuthenticatedSettingsBrandRoute
   '/templates/$id': typeof AuthenticatedTemplatesIdRoute
   '/templates/new': typeof AuthenticatedTemplatesNewRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
@@ -328,8 +403,11 @@ export interface FileRoutesByTo {
   '/admin/templates/new': typeof AuthenticatedAdminTemplatesNewRoute
   '/admin/users/$id': typeof AuthenticatedAdminUsersIdRoute
   '/admin/users/new': typeof AuthenticatedAdminUsersNewRoute
+  '/invitations/$id/checkin': typeof AuthenticatedInvitationsIdCheckinRoute
   '/invitations/$id/editor': typeof AuthenticatedInvitationsIdEditorRoute
+  '/invitations/$id/guests': typeof AuthenticatedInvitationsIdGuestsRoute
   '/invitations/$id/preview': typeof AuthenticatedInvitationsIdPreviewRoute
+  '/invitations/$id/report': typeof AuthenticatedInvitationsIdReportRoute
   '/admin/companies': typeof AuthenticatedAdminCompaniesIndexRoute
   '/admin/templates': typeof AuthenticatedAdminTemplatesIndexRoute
   '/admin/users': typeof AuthenticatedAdminUsersIndexRoute
@@ -347,14 +425,20 @@ export interface FileRoutesById {
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRouteWithChildren
   '/_authenticated/invitations': typeof AuthenticatedInvitationsRouteWithChildren
   '/_authenticated/reports': typeof AuthenticatedReportsRouteWithChildren
+  '/_authenticated/settings': typeof AuthenticatedSettingsRouteWithChildren
   '/_authenticated/templates': typeof AuthenticatedTemplatesRouteWithChildren
   '/convite/$slug': typeof ConviteSlugRoute
+  '/painel-convite/$token': typeof PainelConviteTokenRoute
   '/_authenticated/admin/$section': typeof AuthenticatedAdminSectionRoute
+  '/_authenticated/admin/plans': typeof AuthenticatedAdminPlansRoute
   '/_authenticated/admin/reports': typeof AuthenticatedAdminReportsRoute
+  '/_authenticated/admin/subscriptions': typeof AuthenticatedAdminSubscriptionsRoute
   '/_authenticated/admin/trash': typeof AuthenticatedAdminTrashRoute
   '/_authenticated/customers/$id': typeof AuthenticatedCustomersIdRoute
   '/_authenticated/dashboard/$section': typeof AuthenticatedDashboardSectionRoute
+  '/_authenticated/dashboard/assinatura': typeof AuthenticatedDashboardAssinaturaRoute
   '/_authenticated/invitations/new': typeof AuthenticatedInvitationsNewRoute
+  '/_authenticated/settings/brand': typeof AuthenticatedSettingsBrandRoute
   '/_authenticated/templates/$id': typeof AuthenticatedTemplatesIdRoute
   '/_authenticated/templates/new': typeof AuthenticatedTemplatesNewRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
@@ -369,8 +453,11 @@ export interface FileRoutesById {
   '/_authenticated/admin/templates/new': typeof AuthenticatedAdminTemplatesNewRoute
   '/_authenticated/admin/users/$id': typeof AuthenticatedAdminUsersIdRoute
   '/_authenticated/admin/users/new': typeof AuthenticatedAdminUsersNewRoute
+  '/_authenticated/invitations/$id/checkin': typeof AuthenticatedInvitationsIdCheckinRoute
   '/_authenticated/invitations/$id/editor': typeof AuthenticatedInvitationsIdEditorRoute
+  '/_authenticated/invitations/$id/guests': typeof AuthenticatedInvitationsIdGuestsRoute
   '/_authenticated/invitations/$id/preview': typeof AuthenticatedInvitationsIdPreviewRoute
+  '/_authenticated/invitations/$id/report': typeof AuthenticatedInvitationsIdReportRoute
   '/_authenticated/admin/companies/': typeof AuthenticatedAdminCompaniesIndexRoute
   '/_authenticated/admin/templates/': typeof AuthenticatedAdminTemplatesIndexRoute
   '/_authenticated/admin/users/': typeof AuthenticatedAdminUsersIndexRoute
@@ -388,14 +475,20 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/invitations'
     | '/reports'
+    | '/settings'
     | '/templates'
     | '/convite/$slug'
+    | '/painel-convite/$token'
     | '/admin/$section'
+    | '/admin/plans'
     | '/admin/reports'
+    | '/admin/subscriptions'
     | '/admin/trash'
     | '/customers/$id'
     | '/dashboard/$section'
+    | '/dashboard/assinatura'
     | '/invitations/new'
+    | '/settings/brand'
     | '/templates/$id'
     | '/templates/new'
     | '/admin/'
@@ -410,8 +503,11 @@ export interface FileRouteTypes {
     | '/admin/templates/new'
     | '/admin/users/$id'
     | '/admin/users/new'
+    | '/invitations/$id/checkin'
     | '/invitations/$id/editor'
+    | '/invitations/$id/guests'
     | '/invitations/$id/preview'
+    | '/invitations/$id/report'
     | '/admin/companies/'
     | '/admin/templates/'
     | '/admin/users/'
@@ -422,13 +518,19 @@ export interface FileRouteTypes {
     | '/forgot-password'
     | '/login'
     | '/reset-password'
+    | '/settings'
     | '/convite/$slug'
+    | '/painel-convite/$token'
     | '/admin/$section'
+    | '/admin/plans'
     | '/admin/reports'
+    | '/admin/subscriptions'
     | '/admin/trash'
     | '/customers/$id'
     | '/dashboard/$section'
+    | '/dashboard/assinatura'
     | '/invitations/new'
+    | '/settings/brand'
     | '/templates/$id'
     | '/templates/new'
     | '/admin'
@@ -443,8 +545,11 @@ export interface FileRouteTypes {
     | '/admin/templates/new'
     | '/admin/users/$id'
     | '/admin/users/new'
+    | '/invitations/$id/checkin'
     | '/invitations/$id/editor'
+    | '/invitations/$id/guests'
     | '/invitations/$id/preview'
+    | '/invitations/$id/report'
     | '/admin/companies'
     | '/admin/templates'
     | '/admin/users'
@@ -461,14 +566,20 @@ export interface FileRouteTypes {
     | '/_authenticated/dashboard'
     | '/_authenticated/invitations'
     | '/_authenticated/reports'
+    | '/_authenticated/settings'
     | '/_authenticated/templates'
     | '/convite/$slug'
+    | '/painel-convite/$token'
     | '/_authenticated/admin/$section'
+    | '/_authenticated/admin/plans'
     | '/_authenticated/admin/reports'
+    | '/_authenticated/admin/subscriptions'
     | '/_authenticated/admin/trash'
     | '/_authenticated/customers/$id'
     | '/_authenticated/dashboard/$section'
+    | '/_authenticated/dashboard/assinatura'
     | '/_authenticated/invitations/new'
+    | '/_authenticated/settings/brand'
     | '/_authenticated/templates/$id'
     | '/_authenticated/templates/new'
     | '/_authenticated/admin/'
@@ -483,8 +594,11 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/templates/new'
     | '/_authenticated/admin/users/$id'
     | '/_authenticated/admin/users/new'
+    | '/_authenticated/invitations/$id/checkin'
     | '/_authenticated/invitations/$id/editor'
+    | '/_authenticated/invitations/$id/guests'
     | '/_authenticated/invitations/$id/preview'
+    | '/_authenticated/invitations/$id/report'
     | '/_authenticated/admin/companies/'
     | '/_authenticated/admin/templates/'
     | '/_authenticated/admin/users/'
@@ -498,6 +612,7 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   ConviteSlugRoute: typeof ConviteSlugRoute
+  PainelConviteTokenRoute: typeof PainelConviteTokenRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -579,6 +694,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedReportsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/settings': {
+      id: '/_authenticated/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof AuthenticatedSettingsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/templates': {
       id: '/_authenticated/templates'
       path: '/templates'
@@ -591,6 +713,13 @@ declare module '@tanstack/react-router' {
       path: '/convite/$slug'
       fullPath: '/convite/$slug'
       preLoaderRoute: typeof ConviteSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/painel-convite/$token': {
+      id: '/painel-convite/$token'
+      path: '/painel-convite/$token'
+      fullPath: '/painel-convite/$token'
+      preLoaderRoute: typeof PainelConviteTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/admin/': {
@@ -607,11 +736,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminSectionRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
+    '/_authenticated/admin/plans': {
+      id: '/_authenticated/admin/plans'
+      path: '/plans'
+      fullPath: '/admin/plans'
+      preLoaderRoute: typeof AuthenticatedAdminPlansRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
     '/_authenticated/admin/reports': {
       id: '/_authenticated/admin/reports'
       path: '/reports'
       fullPath: '/admin/reports'
       preLoaderRoute: typeof AuthenticatedAdminReportsRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/subscriptions': {
+      id: '/_authenticated/admin/subscriptions'
+      path: '/subscriptions'
+      fullPath: '/admin/subscriptions'
+      preLoaderRoute: typeof AuthenticatedAdminSubscriptionsRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
     '/_authenticated/admin/trash': {
@@ -649,6 +792,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardSectionRouteImport
       parentRoute: typeof AuthenticatedDashboardRoute
     }
+    '/_authenticated/dashboard/assinatura': {
+      id: '/_authenticated/dashboard/assinatura'
+      path: '/assinatura'
+      fullPath: '/dashboard/assinatura'
+      preLoaderRoute: typeof AuthenticatedDashboardAssinaturaRouteImport
+      parentRoute: typeof AuthenticatedDashboardRoute
+    }
     '/_authenticated/invitations/': {
       id: '/_authenticated/invitations/'
       path: '/'
@@ -669,6 +819,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/reports/'
       preLoaderRoute: typeof AuthenticatedReportsIndexRouteImport
       parentRoute: typeof AuthenticatedReportsRoute
+    }
+    '/_authenticated/settings/brand': {
+      id: '/_authenticated/settings/brand'
+      path: '/brand'
+      fullPath: '/settings/brand'
+      preLoaderRoute: typeof AuthenticatedSettingsBrandRouteImport
+      parentRoute: typeof AuthenticatedSettingsRoute
     }
     '/_authenticated/templates/': {
       id: '/_authenticated/templates/'
@@ -754,11 +911,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminUsersNewRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
+    '/_authenticated/invitations/$id/checkin': {
+      id: '/_authenticated/invitations/$id/checkin'
+      path: '/$id/checkin'
+      fullPath: '/invitations/$id/checkin'
+      preLoaderRoute: typeof AuthenticatedInvitationsIdCheckinRouteImport
+      parentRoute: typeof AuthenticatedInvitationsRoute
+    }
     '/_authenticated/invitations/$id/editor': {
       id: '/_authenticated/invitations/$id/editor'
       path: '/$id/editor'
       fullPath: '/invitations/$id/editor'
       preLoaderRoute: typeof AuthenticatedInvitationsIdEditorRouteImport
+      parentRoute: typeof AuthenticatedInvitationsRoute
+    }
+    '/_authenticated/invitations/$id/guests': {
+      id: '/_authenticated/invitations/$id/guests'
+      path: '/$id/guests'
+      fullPath: '/invitations/$id/guests'
+      preLoaderRoute: typeof AuthenticatedInvitationsIdGuestsRouteImport
       parentRoute: typeof AuthenticatedInvitationsRoute
     }
     '/_authenticated/invitations/$id/preview': {
@@ -768,12 +939,21 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedInvitationsIdPreviewRouteImport
       parentRoute: typeof AuthenticatedInvitationsRoute
     }
+    '/_authenticated/invitations/$id/report': {
+      id: '/_authenticated/invitations/$id/report'
+      path: '/$id/report'
+      fullPath: '/invitations/$id/report'
+      preLoaderRoute: typeof AuthenticatedInvitationsIdReportRouteImport
+      parentRoute: typeof AuthenticatedInvitationsRoute
+    }
   }
 }
 
 interface AuthenticatedAdminRouteChildren {
   AuthenticatedAdminSectionRoute: typeof AuthenticatedAdminSectionRoute
+  AuthenticatedAdminPlansRoute: typeof AuthenticatedAdminPlansRoute
   AuthenticatedAdminReportsRoute: typeof AuthenticatedAdminReportsRoute
+  AuthenticatedAdminSubscriptionsRoute: typeof AuthenticatedAdminSubscriptionsRoute
   AuthenticatedAdminTrashRoute: typeof AuthenticatedAdminTrashRoute
   AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
   AuthenticatedAdminCompaniesIdRoute: typeof AuthenticatedAdminCompaniesIdRoute
@@ -789,7 +969,9 @@ interface AuthenticatedAdminRouteChildren {
 
 const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
   AuthenticatedAdminSectionRoute: AuthenticatedAdminSectionRoute,
+  AuthenticatedAdminPlansRoute: AuthenticatedAdminPlansRoute,
   AuthenticatedAdminReportsRoute: AuthenticatedAdminReportsRoute,
+  AuthenticatedAdminSubscriptionsRoute: AuthenticatedAdminSubscriptionsRoute,
   AuthenticatedAdminTrashRoute: AuthenticatedAdminTrashRoute,
   AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
   AuthenticatedAdminCompaniesIdRoute: AuthenticatedAdminCompaniesIdRoute,
@@ -824,12 +1006,15 @@ const AuthenticatedCustomersRouteWithChildren =
 
 interface AuthenticatedDashboardRouteChildren {
   AuthenticatedDashboardSectionRoute: typeof AuthenticatedDashboardSectionRoute
+  AuthenticatedDashboardAssinaturaRoute: typeof AuthenticatedDashboardAssinaturaRoute
   AuthenticatedDashboardIndexRoute: typeof AuthenticatedDashboardIndexRoute
 }
 
 const AuthenticatedDashboardRouteChildren: AuthenticatedDashboardRouteChildren =
   {
     AuthenticatedDashboardSectionRoute: AuthenticatedDashboardSectionRoute,
+    AuthenticatedDashboardAssinaturaRoute:
+      AuthenticatedDashboardAssinaturaRoute,
     AuthenticatedDashboardIndexRoute: AuthenticatedDashboardIndexRoute,
   }
 
@@ -841,18 +1026,27 @@ const AuthenticatedDashboardRouteWithChildren =
 interface AuthenticatedInvitationsRouteChildren {
   AuthenticatedInvitationsNewRoute: typeof AuthenticatedInvitationsNewRoute
   AuthenticatedInvitationsIndexRoute: typeof AuthenticatedInvitationsIndexRoute
+  AuthenticatedInvitationsIdCheckinRoute: typeof AuthenticatedInvitationsIdCheckinRoute
   AuthenticatedInvitationsIdEditorRoute: typeof AuthenticatedInvitationsIdEditorRoute
+  AuthenticatedInvitationsIdGuestsRoute: typeof AuthenticatedInvitationsIdGuestsRoute
   AuthenticatedInvitationsIdPreviewRoute: typeof AuthenticatedInvitationsIdPreviewRoute
+  AuthenticatedInvitationsIdReportRoute: typeof AuthenticatedInvitationsIdReportRoute
 }
 
 const AuthenticatedInvitationsRouteChildren: AuthenticatedInvitationsRouteChildren =
   {
     AuthenticatedInvitationsNewRoute: AuthenticatedInvitationsNewRoute,
     AuthenticatedInvitationsIndexRoute: AuthenticatedInvitationsIndexRoute,
+    AuthenticatedInvitationsIdCheckinRoute:
+      AuthenticatedInvitationsIdCheckinRoute,
     AuthenticatedInvitationsIdEditorRoute:
       AuthenticatedInvitationsIdEditorRoute,
+    AuthenticatedInvitationsIdGuestsRoute:
+      AuthenticatedInvitationsIdGuestsRoute,
     AuthenticatedInvitationsIdPreviewRoute:
       AuthenticatedInvitationsIdPreviewRoute,
+    AuthenticatedInvitationsIdReportRoute:
+      AuthenticatedInvitationsIdReportRoute,
   }
 
 const AuthenticatedInvitationsRouteWithChildren =
@@ -870,6 +1064,19 @@ const AuthenticatedReportsRouteChildren: AuthenticatedReportsRouteChildren = {
 
 const AuthenticatedReportsRouteWithChildren =
   AuthenticatedReportsRoute._addFileChildren(AuthenticatedReportsRouteChildren)
+
+interface AuthenticatedSettingsRouteChildren {
+  AuthenticatedSettingsBrandRoute: typeof AuthenticatedSettingsBrandRoute
+}
+
+const AuthenticatedSettingsRouteChildren: AuthenticatedSettingsRouteChildren = {
+  AuthenticatedSettingsBrandRoute: AuthenticatedSettingsBrandRoute,
+}
+
+const AuthenticatedSettingsRouteWithChildren =
+  AuthenticatedSettingsRoute._addFileChildren(
+    AuthenticatedSettingsRouteChildren,
+  )
 
 interface AuthenticatedTemplatesRouteChildren {
   AuthenticatedTemplatesIdRoute: typeof AuthenticatedTemplatesIdRoute
@@ -895,6 +1102,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRouteWithChildren
   AuthenticatedInvitationsRoute: typeof AuthenticatedInvitationsRouteWithChildren
   AuthenticatedReportsRoute: typeof AuthenticatedReportsRouteWithChildren
+  AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRouteWithChildren
   AuthenticatedTemplatesRoute: typeof AuthenticatedTemplatesRouteWithChildren
 }
 
@@ -904,6 +1112,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedDashboardRoute: AuthenticatedDashboardRouteWithChildren,
   AuthenticatedInvitationsRoute: AuthenticatedInvitationsRouteWithChildren,
   AuthenticatedReportsRoute: AuthenticatedReportsRouteWithChildren,
+  AuthenticatedSettingsRoute: AuthenticatedSettingsRouteWithChildren,
   AuthenticatedTemplatesRoute: AuthenticatedTemplatesRouteWithChildren,
 }
 
@@ -918,6 +1127,7 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   ConviteSlugRoute: ConviteSlugRoute,
+  PainelConviteTokenRoute: PainelConviteTokenRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
