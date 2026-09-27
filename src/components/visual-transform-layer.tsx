@@ -8,7 +8,7 @@ type Mode = "drag" | "resize" | "rotate";
 type Handle = "nw" | "ne" | "se" | "sw";
 type SafeGeometry = ReturnType<typeof getBlockGeometry>;
 
-type Props = {
+export type VisualTransformLayerProps = {
   root: HTMLDivElement | null;
   blocks: Block[];
   selectedIds: string[];
@@ -72,7 +72,7 @@ function scaleFromZoom(zoom: number) {
   return Number.isFinite(zoom) && zoom > 0 ? zoom / 100 : 1;
 }
 
-class VisualTransformErrorBoundary extends Component<{ children: ReactNode }, { error: Error | null }> {
+export class VisualTransformErrorBoundary extends Component<{ children: ReactNode }, { error: Error | null }> {
   state: { error: Error | null } = { error: null };
 
   static getDerivedStateFromError(error: Error) {
@@ -80,19 +80,19 @@ class VisualTransformErrorBoundary extends Component<{ children: ReactNode }, { 
   }
 
   componentDidCatch(error: Error, info: ErrorInfo) {
-    console.error("[VisualTransformLayer]", {
+    console.error("[VisualTransformLayer] Erro na camada de transformação", {
       message: error?.message ?? String(error),
       stack: error?.stack ?? "",
+      componentStack: info.componentStack ?? "",
       error,
-      componentStack: info.componentStack,
     });
   }
 
   render() {
     if (!this.state.error) return this.props.children;
     return (
-      <div className="pointer-events-none fixed right-4 top-4 z-50 max-w-sm rounded-lg border border-destructive/40 bg-background/95 px-4 py-3 text-sm shadow-lg">
-        <p className="font-medium text-destructive">Não foi possível ativar as ferramentas de transformação.</p>
+      <div className="pointer-events-none fixed right-4 top-4 z-50 max-w-sm rounded-lg border border-destructive/40 bg-background/95 px-4 py-3 text-sm shadow-lg" role="status">
+        <p className="font-medium text-destructive">Camada de transformação indisponível</p>
         <p className="mt-1 break-words text-xs text-muted-foreground">
           {this.state.error.message || "Erro inesperado na camada de transformação."}
         </p>
@@ -101,15 +101,7 @@ class VisualTransformErrorBoundary extends Component<{ children: ReactNode }, { 
   }
 }
 
-export function VisualTransformLayer(props: Props) {
-  return (
-    <VisualTransformErrorBoundary>
-      <VisualTransformLayerContent {...props} />
-    </VisualTransformErrorBoundary>
-  );
-}
-
-function VisualTransformLayerContent({ root, blocks, selectedIds, zoom, onChange }: Props) {
+export function VisualTransformLayer({ root, blocks, selectedIds, zoom, onChange }: VisualTransformLayerProps) {
   const [rect, setRect] = useState<DOMRect | null>(null);
   const interaction = useRef<Interaction | null>(null);
   const measureFrame = useRef<number | null>(null);

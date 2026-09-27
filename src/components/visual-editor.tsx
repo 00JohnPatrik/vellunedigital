@@ -21,7 +21,7 @@ import {
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
 import { BackgroundLayers, bgColorStyle, BlockView } from "@/components/block-render";
-import { VisualTransformLayer } from "@/components/visual-transform-layer";
+import { VisualTransformErrorBoundary, VisualTransformLayer } from "@/components/visual-transform-layer";
 import { ImageUpload } from "@/components/image-upload";
 import { STORAGE_PREFIX, type AssetScope, useAssetUrl } from "@/lib/assets";
 import { BLOCKS, newBlock, type Background, type Block, type BlockType } from "@/lib/templates";
@@ -260,13 +260,15 @@ export function VisualEditor({ h, ctx, toolbarExtra, assets, bg, onBg }: { h: Bl
     if (!mounted || !root) return;
 
     mounted.render(
-      <VisualTransformLayer
-        root={root}
-        blocks={blocks}
-        selectedIds={selectedIds}
-        zoom={zoom}
-        onChange={applyTransform}
-      />,
+      <VisualTransformErrorBoundary>
+        <VisualTransformLayer
+          root={root}
+          blocks={blocks}
+          selectedIds={selectedIds}
+          zoom={zoom}
+          onChange={applyTransform}
+        />
+      </VisualTransformErrorBoundary>,
     );
   }, [applyTransform, blocks, selectedIds, zoom]);
 
