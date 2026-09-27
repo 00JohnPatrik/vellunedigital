@@ -169,15 +169,22 @@ function Info({ align = "center", label, icon, children }: { align?: string | un
   );
 }
 
-export const bgColorStyle = (bg?: Background) => (bg?.color ? { backgroundColor: bg.color } : undefined);
+export const bgColorStyle = (bg?: Background) => {
+  if (!bg?.color && !bg?.gradient) return undefined;
+  return {
+    ...(bg.color ? { backgroundColor: bg.color } : {}),
+    ...(bg.gradient ? { backgroundImage: bg.gradient } : {}),
+  };
+};
 
-/** Background image + dark overlay, painted behind the content (parent needs `relative isolate`). */
+/** Background image, gradient and dark overlay, painted behind the content (parent needs `relative isolate`). */
 export function BackgroundLayers({ bg }: { bg?: Background | undefined }) {
   const src = useAssetUrl(bg?.image);
   const overlay = Math.min(40, Math.max(0, Number(bg?.overlay) || 0));
+  const backgroundImage = [bg?.gradient, src ? `url("${src}")` : ""].filter(Boolean).join(", ") || undefined;
   return (
     <>
-      {src && <div aria-hidden className="pointer-events-none absolute inset-0 -z-10 bg-no-repeat" style={{ backgroundImage: `url("${src}")`, backgroundSize: bg?.size ?? "cover", backgroundPosition: `${bg?.x ?? "center"} ${bg?.y ?? "center"}` }} />}
+      {backgroundImage && <div aria-hidden className="pointer-events-none absolute inset-0 -z-10 bg-no-repeat" style={{ backgroundImage, backgroundSize: src ? bg?.size ?? "cover" : "cover", backgroundPosition: src ? `${bg?.x ?? "center"} ${bg?.y ?? "center"}` : "center" }} />}
       {overlay > 0 && <div aria-hidden className="pointer-events-none absolute inset-0 -z-10 bg-foreground dark:bg-background" style={{ opacity: overlay / 100 }} />}
     </>
   );

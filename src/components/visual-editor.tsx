@@ -835,6 +835,12 @@ function BackgroundPanel({ bg, onBg, assets }: { bg: Background; onBg: (b: Backg
         </div>
       </div>
       <div className="space-y-1.5">
+        <Label htmlFor="background-gradient" className="text-xs">Gradiente CSS</Label>
+        <Input id="background-gradient" type="text" placeholder="linear-gradient(135deg, #fff, #e8d8ff)" className="h-8" value={bg.gradient ?? ""} onChange={(e) => up({ gradient: e.target.value.trim() })} />
+        {bg.gradient && <Button type="button" size="sm" variant="ghost" onClick={() => up({ gradient: "" })}>Remover gradiente</Button>}
+        <p className="text-[11px] text-muted-foreground">Use linear-gradient, radial-gradient ou outro gradiente CSS válido.</p>
+      </div>
+      <div className="space-y-1.5">
         <Label className="text-xs">Imagem de fundo</Label>
         <ImageUpload scope={assets} value={img} onChange={(v) => up({ image: v })} />
         <Input type="url" placeholder="Ou cole uma URL https://..." className="h-8" value={img.startsWith(STORAGE_PREFIX) ? "" : img} onChange={(e) => up({ image: e.target.value.trim() })} />
