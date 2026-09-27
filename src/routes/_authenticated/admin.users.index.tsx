@@ -5,7 +5,7 @@ import { Plus, RefreshCw, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { EmptyState, fmtDate, LoadingState, PageHeader, StatusBadge, StatusTabs, StatusToggle, type StatusFilter } from "@/components/admin-ui";
-import { listCompanyAdmins, listUsersPresence, setUserStatus, usersKey, type CompanyAdmin } from "@/lib/admin-data";
+import { listCompanyAdmins, listUsersPresence, setUserStatus, usersKey, type CompanyAdmin, type PresenceUser } from "@/lib/admin-data";
 import { AdminPresence } from "@/components/phase7-ui";
 import { getPresenceStatus, presenceClass, presenceLabel } from "@/components/presence-tracker";
 
@@ -54,11 +54,11 @@ function UsersPage() {
       (!s || (u.name ?? "").toLowerCase().includes(s) || (u.email ?? "").toLowerCase().includes(s) || (!!digits && !!u.phone?.includes(digits))));
   }, [q.data, search, filter]);
 
-  const toggle = (u: CompanyAdmin) => async () => {
+  const toggle = (u: Pick<CompanyAdmin, "id" | "status">) => async () => {
     await setUserStatus(u.id, u.status === "active" ? "inactive" : "active");
     await qc.invalidateQueries({ queryKey: usersKey });
   };
-  const actions = (u: CompanyAdmin, variant: "ghost" | "outline") => (
+  const actions = (u: PresenceUser, variant: "ghost" | "outline") => (
     <>
       <Button variant={variant} size="sm" asChild><Link to="/admin/users/$id" params={{ id: u.id }}>Ver</Link></Button>
       <Button variant={variant} size="sm" asChild><Link to="/admin/users/$id" params={{ id: u.id }} search={{ edit: true }}>Editar</Link></Button>
