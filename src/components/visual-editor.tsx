@@ -157,9 +157,20 @@ export function VisualEditor({ h, ctx, toolbarExtra, assets, bg, onBg }: { h: Bl
   const select = (id: string, additive: boolean) => setSelectedIds((current) => additive ? current.includes(id) ? current.filter((item) => item !== id) : [...current, id] : [id]);
   const startDrag = (event: React.PointerEvent<HTMLDivElement>, block: any, index: number) => {
     if (block.locked) return;
-    const point = canvasPoint(event); const position = getPosition(block, index);
-    select(block.id, event.shiftKey || event.ctrlKey || event.metaKey);
-    interaction.current = { mode: "drag", id: block.id, startX: point.x, startY: point.y, originX: position.x, originY: position.y, selected: selectedIds.includes(block.id) ? selectedIds : [block.id] };
+    const additive = event.shiftKey || event.ctrlKey || event.metaKey;
+    const activeIds = selectedIds.includes(block.id) && !additive ? selectedIds : additive ? (selectedIds.includes(block.id) ? selectedIds : [...selectedIds, block.id]) : [block.id];
+    const point = canvasPoint(event);
+    const position = getPosition(block, index);
+    select(block.id, additive);
+    interaction.current = {
+      mode: "drag",
+      id: block.id,
+      startX: point.x,
+      startY: point.y,
+      originX: position.x,
+      originY: position.y,
+      selected: activeIds,
+    };
     event.currentTarget.setPointerCapture(event.pointerId); event.stopPropagation(); event.preventDefault();
   };
   const startResize = (event: React.PointerEvent<HTMLButtonElement>, block: any, index: number) => {
@@ -179,8 +190,22 @@ export function VisualEditor({ h, ctx, toolbarExtra, assets, bg, onBg }: { h: Bl
     }
     if (current.mode === "drag" && current.id) {
       const snap = event.shiftKey ? GRID_UNIT : 1;
-      const x = Math.max(0, Math.round(((current.originX ?? 0) + dx) / snap) * snap); const y = Math.max(0, Math.round(((current.originY ?? 0) + dy) / snap) * snap);
-      h.set((items) => items.map((item: any) => item.id === current.id ? { ...item, x, y } : item), `drag:${current.id}`);
+      const x = Math.max(0, Math.round(((current.originX ?? 0) + dx) / snap) * snap);
+      const y = Math.max(0, Math.round(((current.originY ?? 0) + dy) / snap) * snap);
+      const movingIds = current.selected?.length ? current.selected : [current.id];
+      const originBlock = blocks.find((item: any) => item.id === current.id);
+      const originPosition = originBlock ? getPosition(originBlock, blocks.indexOf(originBlock)) : { x: 24, y: 24 };
+      const deltaX = x - originPosition.x;
+      const deltaY = y - originPosition.y;
+      h.set((items) => items.map((item: any) => {
+        if (!movingIds.includes(item.id) || item.locked) return item;
+        const itemPosition = getPosition(item, items.indexOf(item));
+        return {
+          ...item,
+          x: Math.max(0, Math.round((itemPosition.x + deltaX) / snap) * snap),
+          y: Math.max(0, Math.round((itemPosition.y + deltaY) / snap) * snap),
+        };
+      }), `drag:${movingIds.join(",")}`);
     }
   };
   const stopInteraction = () => {
