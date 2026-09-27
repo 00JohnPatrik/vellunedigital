@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
+import { Component, useMemo, useState, type ReactNode } from "react";
 import { Plus, RefreshCw, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,6 +13,33 @@ export const Route = createFileRoute("/_authenticated/admin/users/")({
   component: UsersPage,
 });
 
+/** Mensagem real devolvida pelo Supabase/JS — não esconde a causa do erro. */
+function errorText(err: unknown): string {
+  if (!err) return "";
+  if (err instanceof Error) return err.message;
+  if (typeof err === "object") {
+    const e = err as { message?: string; details?: string; hint?: string; code?: string };
+    return [e.message, e.details, e.hint, e.code ? `(${e.code})` : ""].filter(Boolean).join(" — ");
+  }
+  return String(err);
+}
+
+/**
+ * Isola widgets auxiliares: se um deles falhar, a listagem continua funcionando e o
+ * erro exato (mensagem + stack, com arquivo e linha) é registrado no console.
+ */
+class WidgetBoundary extends Component<{ name: string; children: ReactNode }, { error: Error | null }> {
+  override state: { error: Error | null } = { error: null };
+  static getDerivedStateFromError(error: Error) { return { error }; }
+  override componentDidCatch(error: Error) { console.error(`[admin/users] falha em ${this.props.name}:`, error); }
+  override render() {
+    if (this.state.error) {
+      return <p className="text-xs text-muted-foreground">Painel de presença indisponível: {errorText(this.state.error)}</p>;
+    }
+    return this.props.children;
+  }
+}
+
 function UsersPage() {
   const qc = useQueryClient();
   const q = useQuery({ queryKey: usersKey, queryFn: () => listCompanyAdmins() });
@@ -23,7 +50,7 @@ function UsersPage() {
     const s = search.trim().toLowerCase();
     const digits = s.replace(/\D/g, "");
     return (q.data ?? []).filter((u) => (filter === "all" || u.status === filter) &&
-      (!s || u.name.toLowerCase().includes(s) || u.email.toLowerCase().includes(s) || (!!digits && !!u.phone?.includes(digits))));
+      (!s || (u.name ?? "").toLowerCase().includes(s) || (u.email ?? "").toLowerCase().includes(s) || (!!digits && !!u.phone?.includes(digits))));
   }, [q.data, search, filter]);
 
   const toggle = (u: CompanyAdmin) => async () => {
@@ -42,7 +69,11 @@ function UsersPage() {
     <div>
       <PageHeader title="Usuários" description="Administradores das empresas."
         action={<Button asChild><Link to="/admin/users/new"><Plus className="h-4 w-4" />Novo administrador</Link></Button>} />
-      <div className="mb-4"><AdminPresence /></div>
+      <div className="mb-4">
+        <WidgetBoundary name="AdminPresence">
+          <AdminPresence />
+        </WidgetBoundary>
+      </div>
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center">
         <div className="relative flex-1 sm:max-w-sm">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -54,7 +85,7 @@ function UsersPage() {
       {q.isLoading ? <LoadingState /> : q.isError ? (
         <div className="rounded-xl border border-destructive/30 bg-destructive/5 p-6 text-center">
           <p className="font-medium text-destructive">Não foi possível carregar os usuários.</p>
-          <p className="mt-2 break-words text-sm text-muted-foreground">{q.error instanceof Error ? q.error.message : "Erro retornado pelo Supabase."}</p>
+          <p className="mt-2 break-words text-sm text-muted-foreground">{errorText(q.error) || "Erro retornado pelo Supabase."}</p>
           <Button className="mt-4" variant="outline" onClick={() => void q.refetch()}><RefreshCw className="h-4 w-4" />Tentar novamente</Button>
         </div>
       ) : rows.length === 0 ? <EmptyState>{q.data?.length ? "Nenhum usuário encontrado." : "Nenhum administrador cadastrado ainda."}</EmptyState> : (
