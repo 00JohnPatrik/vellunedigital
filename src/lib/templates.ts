@@ -82,8 +82,12 @@ export function normalizeBlockGeometry(block: Block): Block {
 export type Background = { color?: string; image?: string; size?: "cover" | "contain"; x?: "left" | "center" | "right"; y?: "top" | "center" | "bottom"; overlay?: number };
 export type TemplateContent = { version: 1; blocks: Block[]; settings?: { background?: Background } };
 /** Builds content keeping `version`/`blocks` and adding `settings.background` only when set. */
-export const buildContent = (blocks: Block[], bg: Background | undefined): TemplateContent =>
-  bg && Object.values(bg).some((x) => x !== undefined && x !== "" && x !== 0) ? { version: 1, blocks, settings: { background: bg } } : { version: 1, blocks };
+export const buildContent = (blocks: Block[], bg: Background | undefined): TemplateContent => {
+  const normalizedBlocks = blocks.map((block) => normalizeBlockGeometry(block));
+  return bg && Object.values(bg).some((x) => x !== undefined && x !== "" && x !== 0)
+    ? { version: 1, blocks: normalizedBlocks, settings: { background: bg } }
+    : { version: 1, blocks: normalizedBlocks };
+};
 export type Template = {
   id: string; company_id: string | null; name: string; category: Category; type: "official" | "company";
   preview_image: string | null; content: TemplateContent; status: Status; created_at: string; updated_at: string;

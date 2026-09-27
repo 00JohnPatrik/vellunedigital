@@ -40,7 +40,11 @@ export function validateContent(c: unknown): string | null {
 /** Normalizes loaded content without dropping anything (unknown blocks are kept for correction). */
 export function normalizeBlocks(c: TemplateContent | null | undefined): Block[] {
   const list = Array.isArray(c?.blocks) ? c!.blocks : [];
-  return structuredClone(list).map((b) => ({ ...b, id: typeof b?.id === "string" && b.id ? b.id : crypto.randomUUID(), props: b?.props && typeof b.props === "object" ? b.props : {} }));
+  return structuredClone(list).map((b) => normalizeBlockGeometry({
+    ...b,
+    id: typeof b?.id === "string" && b.id ? b.id : crypto.randomUUID(),
+    props: b?.props && typeof b.props === "object" ? b.props : {},
+  }));
 }
 
 export const FONTS = [
