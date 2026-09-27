@@ -38,12 +38,21 @@ const guestColumns = "id, company_id, invitation_id, guest_id, name, phone, emai
 export async function getInvitationForGuests(invitationId: string) {
   const { data, error } = await supabase
     .from("invitations")
-    .select("id, company_id, name, status")
+    .select("id, company_id, name, status, event_date, event_time, venue_name, address")
     .eq("id", invitationId)
     .neq("status", "deleted")
     .maybeSingle();
   if (error) throw error;
-  return data as { id: string; company_id: string; name: string; status: string } | null;
+  return data as {
+    id: string;
+    company_id: string;
+    name: string;
+    status: string;
+    event_date: string;
+    event_time: string;
+    venue_name: string | null;
+    address: string | null;
+  } | null;
 }
 
 export async function listInvitationGuests(invitationId: string, search = "", page = 1, pageSize = 20) {
