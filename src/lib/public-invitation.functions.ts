@@ -66,7 +66,7 @@ export const getPublicInvitation = createServerFn({ method: "GET" })
             .select("brand_name, logo_url, favicon_url, primary_color, secondary_color, accent_color, show_vellune_branding, whatsapp_number, contact_email, website_url")
             .eq("company_id", out.invitation.company_id)
             .maybeSingle();
-          out.invitation.branding = branding as PublicInvitation["branding"];
+          out.invitation.branding = (branding ?? null) as NonNullable<PublicInvitation["branding"]> | null;
         }
       }
     }

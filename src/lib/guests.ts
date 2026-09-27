@@ -1,4 +1,6 @@
-import { supabase } from "@/integrations/supabase/client";
+import { supabase as typedSupabase } from "@/integrations/supabase/client";
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- tables newer than generated types
+const supabase = typedSupabase as any;
 
 export type InvitationGuest = {
   id: string;
@@ -235,7 +237,7 @@ export function parseGuestsCsv(text: string): GuestValues[] {
     cells.push(value.trim());
     return cells;
   };
-  const header = parse(lines[0]).map((cell) => cell.toLowerCase());
+  const header = parse(lines[0] ?? "").map((cell) => cell.toLowerCase());
   const index = (name: string) => header.indexOf(name);
   const nameIndex = index("name");
   if (nameIndex < 0) throw new Error("O CSV precisa conter a coluna name.");

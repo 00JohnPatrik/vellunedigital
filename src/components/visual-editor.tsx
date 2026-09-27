@@ -119,7 +119,7 @@ type EditorPointer = { clientX: number; clientY: number };
 
 export type EditorPoint = { x: number; y: number };
 
-export function VisualEditor({ h, ctx, toolbarExtra, assets, bg }: { h: BlocksHistory; ctx?: unknown; toolbarExtra?: ReactNode; assets?: unknown; bg?: unknown; onBg?: (value: unknown) => void }) {
+export function VisualEditor({ h, ctx, toolbarExtra, assets, bg }: { h: BlocksHistory; ctx?: unknown; toolbarExtra?: ReactNode; assets?: unknown; bg?: unknown; onBg?: (value: any) => void }) {
   const canvasRef = useRef<HTMLDivElement>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const dragRef = useRef<{ id: string; offsetX: number; offsetY: number } | null>(null);

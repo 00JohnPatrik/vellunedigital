@@ -1,4 +1,6 @@
-import { supabase } from "@/integrations/supabase/client";
+import { supabase as typedSupabase } from "@/integrations/supabase/client";
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- tables newer than generated types
+const supabase = typedSupabase as any;
 
 export type SubscriptionPlan = {
   id: string;

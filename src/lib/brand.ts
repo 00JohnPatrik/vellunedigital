@@ -106,7 +106,7 @@ export async function hasCustomBranding(companyId: string) {
   if (!data?.plan_id || (data.expires_at && new Date(data.expires_at) < new Date())) return false;
   const plan = await supabase.from("subscription_plans").select("features").eq("id", data.plan_id).single();
   if (plan.error) throw plan.error;
-  return (plan.data?.features as Record<string, unknown> | null)?.custom_branding === true;
+  return (plan.data?.features as Record<string, unknown> | null)?.["custom_branding"] === true;
 }
 
 export async function listCompanyDomains(companyId: string): Promise<CompanyDomain[]> {
