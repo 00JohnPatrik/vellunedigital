@@ -1,4 +1,5 @@
 import { memo, useCallback, useEffect, useRef, useState, type ReactNode } from "react";
+import { createRoot, type Root } from "react-dom/client";
 import {
   AlignCenter, AlignLeft, AlignRight, ArrowDown, ArrowUp, CalendarDays, Clock, Copy, Eye, EyeOff, GripVertical, ImageIcon, Images, Layers, Lock, MapPin, MessageCircle, Minus,
   Monitor, MousePointerClick, Plus, QrCode, Redo2, RotateCcw, Settings2, Smartphone, Tablet, Timer, Trash2, Type, Undo2, Unlock, UserCheck, Maximize2, Grid3X3, Ruler, Crosshair,
@@ -20,6 +21,7 @@ import {
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
 import { BackgroundLayers, bgColorStyle, BlockView } from "@/components/block-render";
+import { VisualTransformLayer } from "@/components/visual-transform-layer";
 import { ImageUpload } from "@/components/image-upload";
 import { STORAGE_PREFIX, type AssetScope, useAssetUrl } from "@/lib/assets";
 import { BLOCKS, newBlock, type Background, type Block, type BlockType } from "@/lib/templates";
@@ -227,6 +229,46 @@ export function VisualEditor({ h, ctx, toolbarExtra, assets, bg, onBg }: { h: Bl
       return next;
     });
   };
+
+  const transformRoot = useRef<Root | null>(null);
+  const transformHost = useRef<HTMLDivElement | null>(null);
+  const applyTransform = useCallback((update: (items: Block[]) => Block[]) => {
+    set(update, "transform");
+  }, [set]);
+
+  useEffect(() => {
+    const root = editorRoot.current;
+    if (!root) return;
+
+    const host = document.createElement("div");
+    host.setAttribute("data-visual-transform-layer-host", "true");
+    document.body.appendChild(host);
+    transformHost.current = host;
+    transformRoot.current = createRoot(host);
+
+    return () => {
+      transformRoot.current?.unmount();
+      transformRoot.current = null;
+      transformHost.current?.remove();
+      transformHost.current = null;
+    };
+  }, []);
+
+  useEffect(() => {
+    const mounted = transformRoot.current;
+    const root = editorRoot.current;
+    if (!mounted || !root) return;
+
+    mounted.render(
+      <VisualTransformLayer
+        root={root}
+        blocks={blocks}
+        selectedIds={selectedIds}
+        zoom={zoom}
+        onChange={applyTransform}
+      />,
+    );
+  }, [applyTransform, blocks, selectedIds, zoom]);
 
   // Atalhos de edição, ignorando campos de formulário para não interferir na digitação.
   useEffect(() => {
