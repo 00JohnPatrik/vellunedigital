@@ -99,7 +99,12 @@ function EditorForm({ inv }: { inv: Invitation }) {
       setState("error"); setErrMsg(invitationError(err));
       if (manual) toast.error(invitationError(err));
       return false;
-    } finally { inFlight.current = false; }
+    } finally {
+      inFlight.current = false;
+      if (version.current !== target && !timer.current) {
+        timer.current = setTimeout(() => void save(), AUTOSAVE_MS);
+      }
+    }
   }, [inv.id, qc]);
 
   // Debounced autosave on any real change (StrictMode-safe: compares against the loaded snapshot).
