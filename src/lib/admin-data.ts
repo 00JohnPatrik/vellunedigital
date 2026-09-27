@@ -8,6 +8,13 @@ export type CompanyRow = Company & { users: { id: string; name: string; role: st
 export type CompanyAdmin = {
   id: string; name: string; email: string; phone: string | null; role: "company_admin"; status: Status;
   company_id: string; auth_user_id: string | null; created_at: string; updated_at: string;
+  last_login_at: string | null; last_seen_at: string | null;
+  company: { id: string; name: string; status: Status } | null;
+};
+
+export type PresenceUser = {
+  id: string; name: string; email: string; phone: string | null; role: string; status: Status;
+  company_id: string | null; last_login_at: string | null; last_seen_at: string | null;
   company: { id: string; name: string; status: Status } | null;
 };
 
@@ -29,7 +36,18 @@ export async function getCompany(id: string): Promise<Company | null> {
   return data as Company | null;
 }
 
-const userCols = "id, name, email, phone, role, status, company_id, auth_user_id, created_at, updated_at, company:companies!users_company_id_fkey(id, name, status)";
+const userCols = "id, name, email, phone, role, status, company_id, auth_user_id, created_at, updated_at, last_login_at, last_seen_at, company:companies!users_company_id_fkey(id, name, status)";
+
+export async function listUsersPresence(): Promise<PresenceUser[]> {
+  const { data, error } = await supabase
+    .from("users")
+    .select("id, name, email, phone, role, status, company_id, last_login_at, last_seen_at, company:companies!users_company_id_fkey(id, name, status)")
+    .is("deleted_at", null)
+    .order("last_seen_at", { ascending: false, nullsFirst: false })
+    .order("name");
+  if (error) throw error;
+  return data as unknown as PresenceUser[];
+}
 
 export async function listCompanyAdmins(companyId?: string): Promise<CompanyAdmin[]> {
   let q = supabase.from("users").select(userCols).eq("role", "company_admin").is("deleted_at", null).order("name");

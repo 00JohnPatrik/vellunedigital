@@ -41,6 +41,10 @@ export const signInWithPhone = createServerFn({ method: "POST" })
       password: data.password,
     });
     if (error || !s.session) return generic;
+    await supabaseAdmin
+      .from("users")
+      .update({ last_login_at: new Date().toISOString(), last_seen_at: new Date().toISOString() })
+      .eq("auth_user_id", s.session.user.id);
     return {
       ok: true as const,
       access_token: s.session.access_token,

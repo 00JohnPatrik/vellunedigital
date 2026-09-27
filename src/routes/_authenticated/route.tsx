@@ -1,6 +1,7 @@
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { canUseAdminArea, loadAppUser } from "@/lib/app-user";
+import { PresenceTracker } from "@/components/presence-tracker";
 
 // AuthGuard: signed-in + active account, profile/company/role resolved automatically.
 export const Route = createFileRoute("/_authenticated")({
@@ -15,5 +16,10 @@ export const Route = createFileRoute("/_authenticated")({
     }
     return { user: data.user, appUser };
   },
-  component: () => <Outlet />,
+  component: () => (
+    <>
+      <PresenceTracker />
+      <Outlet />
+    </>
+  ),
 });

@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ActivitySummary } from "@/components/phase7-ui";
 import { fetchReport, globalCounts, totals } from "@/lib/reports";
+import { listUsersPresence, type PresenceUser } from "@/lib/admin-data";
+import { getPresenceStatus, presenceClass, presenceLabel } from "@/components/presence-tracker";
 
 export const Route = createFileRoute("/_authenticated/admin/")({
   component: AdminDashboard,
@@ -50,8 +52,13 @@ function ProgressMetric({ label, value, total, color }: { label: string; value: 
 function AdminDashboard() {
   const counts = useQuery({ queryKey: ["reports", "global-counts"], queryFn: globalCounts });
   const report = useQuery({ queryKey: ["reports", "global"], queryFn: () => fetchReport() });
+  const users = useQuery({
+    queryKey: ["admin", "users", "presence"],
+    queryFn: listUsersPresence,
+    refetchInterval: 30_000,
+  });
 
-  if (counts.isLoading || report.isLoading) return <LoadingState />;
+  if (counts.isLoading || report.isLoading || users.isLoading) return <LoadingState />;
   if (counts.error || report.error || !counts.data) {
     return <div className="rounded-xl border border-destructive/30 bg-destructive/5 p-6 text-sm text-destructive">Não foi possível carregar os dados reais do dashboard.</div>;
   }
@@ -69,6 +76,7 @@ function AdminDashboard() {
       />
 
       <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4" aria-label="Indicadores principais">
+        <MetricCard label="Online agora" value={(users.data ?? []).filter((u) => getPresenceStatus(u.last_seen_at) === "online").length} description="Usuários vistos nos últimos 2 minutos" icon={UserCheck} accent="bg-emerald-500 text-emerald-600" />
         <MetricCard label="Empresas ativas" value={counts.data.companies} description="Organizações cadastradas" icon={Building2} accent="bg-sky-500 text-sky-600" />
         <MetricCard label="Usuários ativos" value={counts.data.users} description="Contas com acesso liberado" icon={Users} accent="bg-violet-500 text-violet-600" />
         <MetricCard label="Convites criados" value={metrics.invitations} description="Total consolidado" icon={FileText} accent="bg-amber-500 text-amber-600" />
@@ -108,6 +116,20 @@ function AdminDashboard() {
       </section>
 
       <section className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(300px,0.42fr)]">
+        <Card>
+          <CardHeader><CardTitle>Usuários agora</CardTitle><CardDescription>Presença baseada no último heartbeat registrado.</CardDescription></CardHeader>
+          <CardContent className="space-y-3">
+            {(users.data ?? []).slice(0, 8).map((user: PresenceUser) => {
+              const presence = getPresenceStatus(user.last_seen_at);
+              return <div key={user.id} className="flex items-center justify-between gap-3 rounded-xl border p-3 transition-colors hover:bg-muted/40">
+                <div className="min-w-0"><p className="truncate text-sm font-medium">{user.name}</p><p className="truncate text-xs text-muted-foreground">{user.company?.name ?? "Acesso global"}</p></div>
+                <span className="flex shrink-0 items-center gap-2 text-xs text-muted-foreground"><span className={`h-2 w-2 rounded-full ${presenceClass(presence)}`} />{presenceLabel(presence)}</span>
+              </div>;
+            })}
+            {(users.data ?? []).length === 0 && <p className="text-sm text-muted-foreground">Nenhum usuário encontrado.</p>}
+            <Button asChild variant="outline" className="w-full"><Link to="/admin/users">Ver lista completa<ArrowUpRight className="h-4 w-4" /></Link></Button>
+          </CardContent>
+        </Card>
         <Card><CardHeader><CardTitle>Atividade recente</CardTitle><CardDescription>Eventos e indicadores disponíveis para a conta atual.</CardDescription></CardHeader><CardContent><ActivitySummary /></CardContent></Card>
         <Card><CardHeader><CardTitle>Ações rápidas</CardTitle><CardDescription>Acesse os principais fluxos administrativos.</CardDescription></CardHeader><CardContent className="grid gap-2">
           <Button asChild variant="outline" className="justify-between"><Link to="/admin/companies/new">Cadastrar empresa<ExternalLink className="h-4 w-4" /></Link></Button>

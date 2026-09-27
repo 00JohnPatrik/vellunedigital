@@ -5,8 +5,9 @@ import { Plus, RefreshCw, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { EmptyState, fmtDate, LoadingState, PageHeader, StatusBadge, StatusTabs, StatusToggle, type StatusFilter } from "@/components/admin-ui";
-import { listCompanyAdmins, setUserStatus, usersKey, type CompanyAdmin } from "@/lib/admin-data";
+import { listCompanyAdmins, listUsersPresence, setUserStatus, usersKey, type CompanyAdmin } from "@/lib/admin-data";
 import { AdminPresence } from "@/components/phase7-ui";
+import { getPresenceStatus, presenceClass, presenceLabel } from "@/components/presence-tracker";
 
 export const Route = createFileRoute("/_authenticated/admin/users/")({
   head: () => ({ meta: [{ title: "Usuários — Vellune Digital" }] }),
@@ -42,7 +43,7 @@ class WidgetBoundary extends Component<{ name: string; children: ReactNode }, { 
 
 function UsersPage() {
   const qc = useQueryClient();
-  const q = useQuery({ queryKey: usersKey, queryFn: () => listCompanyAdmins() });
+  const q = useQuery({ queryKey: usersKey, queryFn: () => listUsersPresence() });
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<StatusFilter>("all");
 
@@ -100,6 +101,8 @@ function UsersPage() {
                   <th className="px-4 py-3 font-medium">Empresa</th>
                   <th className="hidden px-4 py-3 font-medium xl:table-cell">Função</th>
                   <th className="px-4 py-3 font-medium">Status</th>
+                  <th className="hidden px-4 py-3 font-medium lg:table-cell">Presença</th>
+                  <th className="hidden px-4 py-3 font-medium lg:table-cell">Último acesso</th>
                   <th className="hidden px-4 py-3 font-medium lg:table-cell">Criado em</th>
                   <th className="px-4 py-3 text-right font-medium">Ações</th>
                 </tr>
@@ -113,6 +116,8 @@ function UsersPage() {
                     <td className="px-4 py-3">{u.company?.name ?? "—"}</td>
                     <td className="hidden px-4 py-3 xl:table-cell">Admin da empresa</td>
                     <td className="px-4 py-3"><StatusBadge status={u.status} /></td>
+                    <td className="hidden px-4 py-3 lg:table-cell"><span className="inline-flex items-center gap-2 text-xs"><span className={`h-2 w-2 rounded-full ${presenceClass(getPresenceStatus(u.last_seen_at))}`} />{presenceLabel(getPresenceStatus(u.last_seen_at))}</span></td>
+                    <td className="hidden px-4 py-3 lg:table-cell">{u.last_login_at ? fmtDate(u.last_login_at) : "Nunca"}</td>
                     <td className="hidden px-4 py-3 lg:table-cell">{fmtDate(u.created_at)}</td>
                     <td className="px-4 py-3"><div className="flex justify-end gap-2">{actions(u, "ghost")}</div></td>
                   </tr>
