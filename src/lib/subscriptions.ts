@@ -1,4 +1,6 @@
-import { supabase } from "@/integrations/supabase/client";
+import { supabase as typedSupabase } from "@/integrations/supabase/client";
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- tables newer than generated types
+const supabase = typedSupabase as any;
 
 export type SubscriptionPlan = {
   id: string;
@@ -102,8 +104,8 @@ export async function listCompanySubscriptions(): Promise<CompanySubscription[]>
   if (error) throw error;
   if (companiesError) throw companiesError;
   if (plansError) throw plansError;
-  const companyMap = new Map((companies ?? []).map((company) => [company.id, company]));
-  const planMap = new Map((plans ?? []).map((plan) => [plan.id, plan as SubscriptionPlan]));
+  const companyMap = new Map<string, { id: string; name: string }>((companies ?? []).map((company: { id: string; name: string }) => [company.id, company]));
+  const planMap = new Map<string, SubscriptionPlan>((plans ?? []).map((plan: SubscriptionPlan) => [plan.id, plan as SubscriptionPlan]));
   return ((subscriptions ?? []) as CompanySubscription[]).map((subscription) => ({
     ...subscription,
     company: companyMap.get(subscription.company_id) ?? null,
@@ -136,9 +138,9 @@ export async function saveCompanySubscription(values: {
 
 export async function updateSubscriptionStatus(id: string, status: string) {
   const values: Record<string, string | null> = { status };
-  if (status === "active") values.activated_at = new Date().toISOString();
-  if (status === "suspended") values.suspended_at = new Date().toISOString();
-  if (status === "cancelled") values.cancelled_at = new Date().toISOString();
+  if (status === "active") values["activated_at"] = new Date().toISOString();
+  if (status === "suspended") values["suspended_at"] = new Date().toISOString();
+  if (status === "cancelled") values["cancelled_at"] = new Date().toISOString();
   const { error } = await supabase.from("company_subscriptions").update(values).eq("id", id);
   if (error) throw error;
 }

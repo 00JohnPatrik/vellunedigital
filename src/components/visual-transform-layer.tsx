@@ -11,13 +11,13 @@ export type VisualTransformLayerProps = {
 };
 
 export class VisualTransformErrorBoundary extends Component<{ children: ReactNode }, { error: Error | null }> {
-  state: { error: Error | null } = { error: null };
+  override state: { error: Error | null } = { error: null };
 
   static getDerivedStateFromError(error: Error) {
     return { error };
   }
 
-  componentDidCatch(error: Error, info: ErrorInfo) {
+  override componentDidCatch(error: Error, info: ErrorInfo) {
     console.error("[VisualTransformLayer] Erro na camada de transformação", {
       message: error?.message ?? String(error),
       stack: error?.stack ?? "",
@@ -26,7 +26,7 @@ export class VisualTransformErrorBoundary extends Component<{ children: ReactNod
     });
   }
 
-  render() {
+  override render() {
     if (!this.state.error) return this.props.children;
     return (
       <div className="pointer-events-none fixed right-4 top-4 z-50 max-w-sm rounded-lg border border-destructive/40 bg-background/95 px-4 py-3 text-sm shadow-lg" role="status">

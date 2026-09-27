@@ -1,4 +1,4 @@
-import { BLOCKS, type Block, type BlockType, type TemplateContent } from "@/lib/templates";
+import { BLOCKS, normalizeBlockGeometry, type Block, type BlockType, type TemplateContent } from "@/lib/templates";
 
 /** Event data used by date/time/location/countdown blocks when their source is "event". */
 export type EventCtx = {
