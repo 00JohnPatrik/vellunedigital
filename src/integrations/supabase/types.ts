@@ -55,6 +55,185 @@ export type Database = {
           },
         ]
       }
+      company_branding: {
+        Row: {
+          accent_color: string | null
+          brand_name: string | null
+          company_id: string
+          contact_email: string | null
+          created_at: string
+          favicon_url: string | null
+          id: string
+          logo_url: string | null
+          primary_color: string | null
+          secondary_color: string | null
+          show_vellune_branding: boolean
+          updated_at: string
+          website_url: string | null
+          whatsapp_number: string | null
+        }
+        Insert: {
+          accent_color?: string | null
+          brand_name?: string | null
+          company_id: string
+          contact_email?: string | null
+          created_at?: string
+          favicon_url?: string | null
+          id?: string
+          logo_url?: string | null
+          primary_color?: string | null
+          secondary_color?: string | null
+          show_vellune_branding?: boolean
+          updated_at?: string
+          website_url?: string | null
+          whatsapp_number?: string | null
+        }
+        Update: {
+          accent_color?: string | null
+          brand_name?: string | null
+          company_id?: string
+          contact_email?: string | null
+          created_at?: string
+          favicon_url?: string | null
+          id?: string
+          logo_url?: string | null
+          primary_color?: string | null
+          secondary_color?: string | null
+          show_vellune_branding?: boolean
+          updated_at?: string
+          website_url?: string | null
+          whatsapp_number?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "company_branding_company_fk"
+            columns: ["company_id"]
+            isOneToOne: true
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      company_domains: {
+        Row: {
+          company_id: string
+          created_at: string
+          domain: string
+          domain_type: string
+          id: string
+          is_primary: boolean
+          notes: string | null
+          status: string
+          updated_at: string
+          verification_token: string
+          verified_at: string | null
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          domain: string
+          domain_type?: string
+          id?: string
+          is_primary?: boolean
+          notes?: string | null
+          status?: string
+          updated_at?: string
+          verification_token?: string
+          verified_at?: string | null
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          domain?: string
+          domain_type?: string
+          id?: string
+          is_primary?: boolean
+          notes?: string | null
+          status?: string
+          updated_at?: string
+          verification_token?: string
+          verified_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "company_domains_company_fk"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      company_subscriptions: {
+        Row: {
+          activated_at: string | null
+          cancelled_at: string | null
+          changed_by: string | null
+          company_id: string
+          created_at: string
+          expires_at: string | null
+          id: string
+          notes: string | null
+          plan_id: string
+          starts_at: string
+          status: string
+          suspended_at: string | null
+          updated_at: string
+        }
+        Insert: {
+          activated_at?: string | null
+          cancelled_at?: string | null
+          changed_by?: string | null
+          company_id: string
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          notes?: string | null
+          plan_id: string
+          starts_at?: string
+          status?: string
+          suspended_at?: string | null
+          updated_at?: string
+        }
+        Update: {
+          activated_at?: string | null
+          cancelled_at?: string | null
+          changed_by?: string | null
+          company_id?: string
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          notes?: string | null
+          plan_id?: string
+          starts_at?: string
+          status?: string
+          suspended_at?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "company_subscriptions_changed_by_fk"
+            columns: ["changed_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "company_subscriptions_company_fk"
+            columns: ["company_id"]
+            isOneToOne: true
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "company_subscriptions_plan_fk"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "subscription_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       customers: {
         Row: {
           company_id: string
@@ -166,6 +345,134 @@ export type Database = {
             columns: ["template_id"]
             isOneToOne: false
             referencedRelation: "templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      guest_checkins: {
+        Row: {
+          checked_in_at: string
+          company_id: string
+          created_at: string
+          guest_id: string
+          id: string
+          invitation_id: string
+          status: Database["public"]["Enums"]["record_status"]
+          updated_at: string
+        }
+        Insert: {
+          checked_in_at?: string
+          company_id: string
+          created_at?: string
+          guest_id: string
+          id?: string
+          invitation_id: string
+          status?: Database["public"]["Enums"]["record_status"]
+          updated_at?: string
+        }
+        Update: {
+          checked_in_at?: string
+          company_id?: string
+          created_at?: string
+          guest_id?: string
+          id?: string
+          invitation_id?: string
+          status?: Database["public"]["Enums"]["record_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "guest_checkins_company_fk"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "guest_checkins_guest_fk"
+            columns: ["invitation_id", "guest_id", "company_id"]
+            isOneToOne: false
+            referencedRelation: "invitation_guests"
+            referencedColumns: ["invitation_id", "guest_id", "company_id"]
+          },
+          {
+            foreignKeyName: "guest_checkins_invitation_fk"
+            columns: ["invitation_id"]
+            isOneToOne: false
+            referencedRelation: "invitations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      invitation_guests: {
+        Row: {
+          company_id: string
+          created_at: string
+          deleted_at: string | null
+          deleted_by: string | null
+          email: string | null
+          guest_id: string
+          id: string
+          invitation_id: string
+          name: string
+          people_count: number
+          phone: string | null
+          qr_token: string
+          status: Database["public"]["Enums"]["record_status"]
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          deleted_at?: string | null
+          deleted_by?: string | null
+          email?: string | null
+          guest_id?: string
+          id?: string
+          invitation_id: string
+          name: string
+          people_count?: number
+          phone?: string | null
+          qr_token?: string
+          status?: Database["public"]["Enums"]["record_status"]
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          deleted_at?: string | null
+          deleted_by?: string | null
+          email?: string | null
+          guest_id?: string
+          id?: string
+          invitation_id?: string
+          name?: string
+          people_count?: number
+          phone?: string | null
+          qr_token?: string
+          status?: Database["public"]["Enums"]["record_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invitation_guests_company_fk"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invitation_guests_deleted_by_fk"
+            columns: ["deleted_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invitation_guests_invitation_fk"
+            columns: ["invitation_id"]
+            isOneToOne: false
+            referencedRelation: "invitations"
             referencedColumns: ["id"]
           },
         ]
@@ -345,6 +652,7 @@ export type Database = {
         Row: {
           created_at: string
           email: string | null
+          guest_id: string | null
           id: string
           invitation_id: string
           name: string
@@ -356,6 +664,7 @@ export type Database = {
         Insert: {
           created_at?: string
           email?: string | null
+          guest_id?: string | null
           id?: string
           invitation_id: string
           name: string
@@ -367,6 +676,7 @@ export type Database = {
         Update: {
           created_at?: string
           email?: string | null
+          guest_id?: string | null
           id?: string
           invitation_id?: string
           name?: string
@@ -377,6 +687,13 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "rsvp_responses_invitation_guest_fk"
+            columns: ["invitation_id", "guest_id"]
+            isOneToOne: false
+            referencedRelation: "invitation_guests"
+            referencedColumns: ["invitation_id", "guest_id"]
+          },
+          {
             foreignKeyName: "rsvp_responses_invitation_id_fkey"
             columns: ["invitation_id"]
             isOneToOne: false
@@ -384,6 +701,60 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      subscription_plans: {
+        Row: {
+          code: string
+          created_at: string
+          customers_limit: number | null
+          description: string | null
+          duration_days: number
+          features: Json
+          guests_limit: number | null
+          id: string
+          invitations_limit: number | null
+          name: string
+          premium_templates_limit: number | null
+          price_monthly: number
+          status: Database["public"]["Enums"]["record_status"]
+          storage_limit_mb: number | null
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          customers_limit?: number | null
+          description?: string | null
+          duration_days?: number
+          features?: Json
+          guests_limit?: number | null
+          id?: string
+          invitations_limit?: number | null
+          name: string
+          premium_templates_limit?: number | null
+          price_monthly?: number
+          status?: Database["public"]["Enums"]["record_status"]
+          storage_limit_mb?: number | null
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          customers_limit?: number | null
+          description?: string | null
+          duration_days?: number
+          features?: Json
+          guests_limit?: number | null
+          id?: string
+          invitations_limit?: number | null
+          name?: string
+          premium_templates_limit?: number | null
+          price_monthly?: number
+          status?: Database["public"]["Enums"]["record_status"]
+          storage_limit_mb?: number | null
+          updated_at?: string
+        }
+        Relationships: []
       }
       templates: {
         Row: {
