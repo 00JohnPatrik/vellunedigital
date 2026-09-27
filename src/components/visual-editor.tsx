@@ -21,7 +21,6 @@ import {
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
 import { BackgroundLayers, bgColorStyle, BlockView } from "@/components/block-render";
-import { VisualTransformErrorBoundary, VisualTransformLayer } from "@/components/visual-transform-layer";
 import { ImageUpload } from "@/components/image-upload";
 import { STORAGE_PREFIX, type AssetScope, useAssetUrl } from "@/lib/assets";
 import { BLOCKS, newBlock, type Background, type Block, type BlockType } from "@/lib/templates";
@@ -230,47 +229,6 @@ export function VisualEditor({ h, ctx, toolbarExtra, assets, bg, onBg }: { h: Bl
     });
   };
 
-  const transformRoot = useRef<Root | null>(null);
-  const transformHost = useRef<HTMLDivElement | null>(null);
-  const applyTransform = useCallback((update: (items: Block[]) => Block[]) => {
-    set(update, "transform");
-  }, [set]);
-
-  useEffect(() => {
-    const root = editorRoot.current;
-    if (!root) return;
-
-    const host = document.createElement("div");
-    host.setAttribute("data-visual-transform-layer-host", "true");
-    document.body.appendChild(host);
-    transformHost.current = host;
-    transformRoot.current = createRoot(host);
-
-    return () => {
-      transformRoot.current?.unmount();
-      transformRoot.current = null;
-      transformHost.current?.remove();
-      transformHost.current = null;
-    };
-  }, []);
-
-  useEffect(() => {
-    const mounted = transformRoot.current;
-    const root = editorRoot.current;
-    if (!mounted || !root) return;
-
-    mounted.render(
-      <VisualTransformErrorBoundary>
-        <VisualTransformLayer
-          root={root}
-          blocks={blocks}
-          selectedIds={selectedIds}
-          zoom={zoom}
-          onChange={applyTransform}
-        />
-      </VisualTransformErrorBoundary>,
-    );
-  }, [applyTransform, blocks, selectedIds, zoom]);
 
   // Atalhos de edição, ignorando campos de formulário para não interferir na digitação.
   useEffect(() => {
