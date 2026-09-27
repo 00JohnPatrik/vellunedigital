@@ -120,11 +120,122 @@ type EditorPointer = { clientX: number; clientY: number };
 export type EditorPoint = { x: number; y: number };
 
 export function VisualEditor({ h, ctx, toolbarExtra, assets, bg }: { h: BlocksHistory; ctx?: unknown; toolbarExtra?: ReactNode; assets?: unknown; bg?: unknown; onBg?: (value: unknown) => void }) {
+  const canvasRef = useRef<HTMLDivElement>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const dragRef = useRef<{ id: string; offsetX: number; offsetY: number } | null>(null);
+
+  const getPosition = (block: any, index: number) => ({
+    x: typeof block.x === "number" ? block.x : 24,
+    y: typeof block.y === "number" ? block.y : 24 + index * 96,
+  });
+
+  const getBlockLabel = (block: any) => {
+    const props = block.props ?? {};
+    if (block.type === "text") return props.text || "Texto";
+    if (block.type === "image") return props.url ? "Imagem" : "Imagem sem endereço";
+    if (block.type === "date") return "Data do evento";
+    if (block.type === "time") return "Horário do evento";
+    if (block.type === "location") return "Local do evento";
+    if (block.type === "countdown") return props.title || "Contagem regressiva";
+    if (block.type === "rsvp") return props.label || "Confirmar presença";
+    if (block.type === "whatsapp") return props.label || "Fale pelo WhatsApp";
+    if (block.type === "button") return props.label || "Botão";
+    if (block.type === "gallery") return "Galeria";
+    if (block.type === "qr_code") return "QR Code";
+    if (block.type === "divider") return "Divisor";
+    return String(block.type || "Bloco");
+  };
+
+  const startDrag = (event: React.PointerEvent<HTMLDivElement>, block: any, index: number) => {
+    if (block.locked) return;
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const rect = canvas.getBoundingClientRect();
+    const position = getPosition(block, index);
+    dragRef.current = {
+      id: block.id,
+      offsetX: event.clientX - rect.left - position.x,
+      offsetY: event.clientY - rect.top - position.y,
+    };
+    setSelectedId(block.id);
+    event.currentTarget.setPointerCapture(event.pointerId);
+    event.preventDefault();
+  };
+
+  const moveDrag = (event: React.PointerEvent<HTMLDivElement>) => {
+    const drag = dragRef.current;
+    const canvas = canvasRef.current;
+    if (!drag || !canvas) return;
+    const rect = canvas.getBoundingClientRect();
+    const x = Math.max(0, Math.round(event.clientX - rect.left - drag.offsetX));
+    const y = Math.max(0, Math.round(event.clientY - rect.top - drag.offsetY));
+    h.set((blocks) => blocks.map((block: any) => block.id === drag.id ? { ...block, x, y } : block), `drag:${drag.id}`);
+  };
+
+  const stopDrag = (event: React.PointerEvent<HTMLDivElement>) => {
+    if (dragRef.current) {
+      if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
+      dragRef.current = null;
+    }
+  };
+
+  const blocks = Array.isArray(h?.blocks) ? h.blocks : [];
+  const canvasHeight = Math.max(560, ...blocks.map((block: any, index: number) => getPosition(block, index).y + 92));
+
   return (
-    <div className="flex min-h-[320px] flex-col items-center justify-center gap-3 rounded-2xl border border-dashed bg-card/60 p-8 text-center">
-      <p className="font-display text-lg font-semibold tracking-tight text-foreground">Editor temporariamente isolado</p>
-      <p className="max-w-md text-sm text-muted-foreground">Interface de diagnóstico sem hooks, refs, efeitos, DOM, canvas, lógica do editor ou VisualTransformLayer.</p>
-      <p className="text-xs text-muted-foreground">Blocos recebidos: {Array.isArray(h?.blocks) ? h.blocks.length : 0} · contexto: {ctx ? "sim" : "não"} · arquivos: {assets ? "sim" : "não"} · fundo: {bg ? "sim" : "não"} · ações extras: {toolbarExtra ? "sim" : "não"}</p>
+    <div className="space-y-3">
+      <div className="flex flex-wrap items-center gap-2 rounded-2xl border bg-card p-3 shadow-sm">
+        <div className="min-w-0 flex-1">
+          <p className="text-sm font-semibold text-foreground">Editor visual</p>
+          <p className="text-xs text-muted-foreground">Arraste os blocos com o mouse para posicioná-los livremente.</p>
+        </div>
+        {toolbarExtra}
+      </div>
+      <div className="overflow-auto rounded-2xl border bg-muted/40 p-3 shadow-inner sm:p-6">
+        <div
+          ref={canvasRef}
+          className="relative mx-auto w-full max-w-[768px] overflow-hidden rounded-2xl border bg-card p-4 shadow-sm sm:p-6"
+          style={{ minHeight: canvasHeight, backgroundColor: bg && (bg as any).color ? (bg as any).color : undefined }}
+          onPointerMove={moveDrag}
+          onPointerUp={stopDrag}
+          onPointerCancel={stopDrag}
+          onClick={() => setSelectedId(null)}
+          aria-label="Área de edição do convite"
+        >
+          {blocks.length === 0 && (
+            <div className="absolute inset-0 flex items-center justify-center text-center text-sm text-muted-foreground">
+              Nenhum bloco foi adicionado.
+            </div>
+          )}
+          {blocks.map((block: any, index: number) => {
+            const position = getPosition(block, index);
+            const props = block.props ?? {};
+            const isSelected = selectedId === block.id;
+            const imageUrl = props.url || "";
+            return (
+              <div
+                key={block.id || index}
+                className={`absolute left-0 top-0 min-h-16 w-[calc(100%-2rem)] max-w-[680px] cursor-grab rounded-xl border bg-background/95 p-4 text-foreground shadow-sm transition-shadow active:cursor-grabbing ${isSelected ? "border-primary ring-2 ring-primary/30" : "border-border hover:shadow-md"} ${block.hidden ? "opacity-50" : ""}`}
+                style={{ transform: `translate(${position.x}px, ${position.y}px)`, zIndex: typeof block.zIndex === "number" ? block.zIndex : index + 1 }}
+                onPointerDown={(event) => startDrag(event, block, index)}
+                onClick={(event) => { event.stopPropagation(); setSelectedId(block.id); }}
+                title={block.locked ? "Bloco bloqueado" : "Arraste para mover"}
+              >
+                {block.type === "image" && imageUrl ? (
+                  <img src={imageUrl} alt={props.alt || "Imagem do convite"} className="mx-auto max-h-40 w-full rounded-lg object-cover" draggable={false} />
+                ) : block.type === "divider" ? (
+                  <div className="h-px w-full bg-border" />
+                ) : (
+                  <p className={`whitespace-pre-wrap text-sm ${block.type === "text" ? "font-medium" : "text-muted-foreground"}`}>
+                    {getBlockLabel(block)}
+                  </p>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+      <p className="text-xs text-muted-foreground">Blocos: {blocks.length} · selecione e arraste um bloco para atualizar sua posição.</p>
     </div>
   );
   /*
