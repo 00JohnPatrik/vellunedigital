@@ -24,6 +24,8 @@ import { ImageUpload } from "@/components/image-upload";
 import { STORAGE_PREFIX, type AssetScope, useAssetUrl } from "@/lib/assets";
 import { BLOCKS, newBlock, type Background, type Block, type BlockType } from "@/lib/templates";
 import { FONTS, isKnownType, type EventCtx } from "@/lib/blocks";
+import { cn } from "@/lib/utils";
+
 function useIsCompact() {
   const [compact, setCompact] = useState(false);
   useEffect(() => {
@@ -34,7 +36,6 @@ function useIsCompact() {
   }, []);
   return compact;
 }
-import { cn } from "@/lib/utils";
 
 /* ---------------- History (local, session only) ---------------- */
 

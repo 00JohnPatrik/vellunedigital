@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
-import { Bell, CheckCircle2, Clock3, ExternalLink, Heart, History, Megaphone, Users, UserPlus, Wifi } from "lucide-react";
+import { Bell, CheckCircle2, Clock3, ExternalLink, Heart, History, Megaphone, UserPlus, Wifi } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -10,7 +10,6 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Separator } from "@/components/ui/separator";
 import { SubscriptionOverviewCard } from "@/components/subscription-ui";
 import { listInvitations, type Invitation } from "@/lib/invitations";
-import { formatMoney } from "@/lib/subscriptions";
 import type { AppUser } from "@/lib/app-user";
 
 export function NotificationCenter({ appUser }: { appUser: AppUser }) {
