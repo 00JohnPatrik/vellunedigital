@@ -406,7 +406,6 @@ export function VisualEditor({ h, ctx, toolbarExtra, assets, bg }: { h: BlocksHi
 
   return (
     <div ref={editorRoot} className="relative flex flex-col gap-4">
-      {/* Toolbar */}
       <div className="flex flex-wrap items-center gap-2 rounded-2xl border bg-card p-2.5 shadow-sm sm:sticky sm:top-4 sm:z-20 sm:p-3">
         <div className="flex items-center gap-1 rounded-lg bg-muted/60 p-0.5" aria-label="Histórico">
           <Button type="button" variant="ghost" size="icon" className="h-8 w-8" aria-label="Desfazer" title="Desfazer (Ctrl+Z)" disabled={!h.canUndo} onClick={h.undo}><Undo2 className="h-4 w-4" /></Button>
@@ -813,7 +812,7 @@ function GalleryProperties({ block, setProp, assets, actions, index, blocksLen }
   </div>;
 }
 
-/* ---------------- Background (shown when no block is selected) ---------------- */
+// Background panel
 
 function BgSelect({ label, value, options, onChange }: { label: string; value: string; options: [string, string][]; onChange: (v: string) => void }) {
   return (
