@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
+import { Component, useCallback, useEffect, useMemo, useRef, useState, type ErrorInfo, type ReactNode, type PointerEvent as ReactPointerEvent } from "react";
 import { RotateCw } from "lucide-react";
 import { getBlockGeometry, type Block } from "@/lib/templates";
 import { cn } from "@/lib/utils";
@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 type Point = { x: number; y: number };
 type Mode = "drag" | "resize" | "rotate";
 type Handle = "nw" | "n" | "ne" | "e" | "se" | "s" | "sw" | "w";
+type SafeGeometry = ReturnType<typeof getBlockGeometry>;
 
 type Props = {
   root: HTMLDivElement | null;
@@ -19,47 +20,120 @@ const handles: Handle[] = ["nw", "n", "ne", "e", "se", "s", "sw", "w"];
 const minSize = 24;
 
 function pointer(event: PointerEvent | ReactPointerEvent): Point {
-  return { x: event.clientX, y: event.clientY };
+  return {
+    x: Number.isFinite(event.clientX) ? event.clientX : 0,
+    y: Number.isFinite(event.clientY) ? event.clientY : 0,
+  };
+}
+
+function isFinitePoint(value: Point | undefined): value is Point {
+  return Boolean(value) && Number.isFinite(value.x) && Number.isFinite(value.y);
+}
+
+function isValidRect(rect: DOMRect | undefined): rect is DOMRect {
+  return Boolean(rect) && [rect.left, rect.top, rect.right, rect.bottom, rect.width, rect.height].every(Number.isFinite) && rect.width > 0 && rect.height > 0;
+}
+
+function safeGeometry(block: Block): SafeGeometry {
+  try {
+    const geometry = getBlockGeometry(block);
+    return Object.fromEntries(Object.entries(geometry).filter(([, value]) => typeof value === "number" && Number.isFinite(value))) as SafeGeometry;
+  } catch (error) {
+    console.error("[VisualTransformLayer] Falha ao ler geometria do bloco", error);
+    return {};
+  }
+}
+
+function finiteOr(value: number | undefined, fallback: number) {
+  return typeof value === "number" && Number.isFinite(value) ? value : fallback;
 }
 
 function clamp(value: number, minimum: number, maximum?: number) {
-  return Math.max(minimum, maximum === undefined ? Number.POSITIVE_INFINITY : Math.min(maximum, value));
+  if (!Number.isFinite(value)) return minimum;
+  const safeMaximum = maximum !== undefined && Number.isFinite(maximum) ? maximum : Number.POSITIVE_INFINITY;
+  return Math.max(minimum, Math.min(safeMaximum, value));
 }
 
-export function VisualTransformLayer({ root, blocks, selectedIds, zoom, onChange }: Props) {
+class VisualTransformErrorBoundary extends Component<{ children: ReactNode }, { error: Error | null }> {
+  state: { error: Error | null } = { error: null };
+
+  static getDerivedStateFromError(error: Error) {
+    return { error };
+  }
+
+  componentDidCatch(error: Error, info: ErrorInfo) {
+    console.error("[VisualTransformLayer]", {
+      message: error?.message ?? String(error),
+      stack: error?.stack ?? "",
+      error,
+      componentStack: info.componentStack,
+    });
+  }
+
+  render() {
+    if (!this.state.error) return this.props.children;
+    const message = this.state.error.message || "Erro inesperado na camada de transformação.";
+    return (
+      <div className="pointer-events-none fixed right-4 top-4 z-50 max-w-sm rounded-lg border border-destructive/40 bg-background/95 px-4 py-3 text-sm shadow-lg">
+        <p className="font-medium text-destructive">Não foi possível ativar as ferramentas de transformação.</p>
+        <p className="mt-1 break-words text-xs text-muted-foreground">{message}</p>
+      </div>
+    );
+  }
+}
+
+export function VisualTransformLayer(props: Props) {
+  return (
+    <VisualTransformErrorBoundary>
+      <VisualTransformLayerContent {...props} />
+    </VisualTransformErrorBoundary>
+  );
+}
+
+function VisualTransformLayerContent({ root, blocks, selectedIds, zoom, onChange }: Props) {
   const [rects, setRects] = useState<Record<string, DOMRect>>({});
   const interaction = useRef<{
     mode: Mode;
     handle?: Handle;
     start: Point;
-    initial: Record<string, { rect: DOMRect; geometry: ReturnType<typeof getBlockGeometry> }>;
-    center?: Point;
+    initial: Record<string, { rect: DOMRect; geometry: SafeGeometry }>;
+    center: Point;
   } | null>(null);
   const scale = Number.isFinite(zoom) && zoom > 0 ? zoom / 100 : 1;
-  const selected = useMemo(() => blocks.filter((block) => selectedIds.includes(block.id) && !block.locked), [blocks, selectedIds]);
-  const measurableSelected = useMemo(() => selected.filter((block) => rects[block.id]), [selected, rects]);
+  const safeBlocks = Array.isArray(blocks) ? blocks : [];
+  const safeSelectedIds = Array.isArray(selectedIds) ? selectedIds.filter((id): id is string => typeof id === "string" && id.length > 0) : [];
+  const selected = useMemo(
+    () => safeBlocks.filter((block) => block && typeof block.id === "string" && safeSelectedIds.includes(block.id) && !block.locked),
+    [safeBlocks, safeSelectedIds],
+  );
+  const measurableSelected = useMemo(
+    () => selected.filter((block) => isValidRect(rects[block.id])),
+    [selected, rects],
+  );
 
   const measure = useCallback(() => {
-    if (!root) return;
+    if (!root || !Array.isArray(selected)) {
+      setRects({});
+      return;
+    }
     const next: Record<string, DOMRect> = {};
-    for (const block of selected) {
-      const escapedId = typeof CSS !== "undefined" && typeof CSS.escape === "function"
-        ? CSS.escape(block.id)
-        : block.id.replace(/([\\"\\'])/g, "\\\\$1");
-      const element = root.querySelector<HTMLElement>(`[data-editor-block="${escapedId}"]`);
-      if (element) {
+    try {
+      const elements = Array.from(root.querySelectorAll<HTMLElement>("[data-editor-block]"));
+      for (const block of selected) {
+        const element = elements.find((candidate) => candidate.getAttribute("data-editor-block") === block.id);
+        if (!element) continue;
         const rect = element.getBoundingClientRect();
-        if ([rect.left, rect.top, rect.width, rect.height].every(Number.isFinite)) {
-          next[block.id] = rect;
-        }
+        if (isValidRect(rect)) next[block.id] = rect;
       }
+    } catch (error) {
+      console.error("[VisualTransformLayer] Falha ao medir elementos", error);
     }
     setRects(next);
   }, [root, selected]);
 
   useEffect(() => {
     measure();
-    const observer = root ? new ResizeObserver(measure) : null;
+    const observer = root && typeof ResizeObserver !== "undefined" ? new ResizeObserver(measure) : null;
     if (root) observer?.observe(root);
     window.addEventListener("scroll", measure, true);
     window.addEventListener("resize", measure);
@@ -68,88 +142,115 @@ export function VisualTransformLayer({ root, blocks, selectedIds, zoom, onChange
       window.removeEventListener("scroll", measure, true);
       window.removeEventListener("resize", measure);
     };
-  }, [measure, root, blocks, selectedIds, zoom]);
+  }, [measure, root, safeBlocks, safeSelectedIds, zoom]);
 
-  if (!root || !measurableSelected.length) return null;
-  const measured = measurableSelected.map((block) => rects[block.id]).filter((rect): rect is DOMRect => Boolean(rect));
-  if (!measured.length) return null;
+  if (!root || !selected.length || measurableSelected.length !== selected.length) return null;
+  const measured = measurableSelected.map((block) => rects[block.id]).filter(isValidRect);
+  if (measured.length !== selected.length) return null;
+
   const bounds = {
     left: Math.min(...measured.map((rect) => rect.left)),
     top: Math.min(...measured.map((rect) => rect.top)),
     right: Math.max(...measured.map((rect) => rect.right)),
     bottom: Math.max(...measured.map((rect) => rect.bottom)),
   };
-  const width = Math.max(1, bounds.right - bounds.left);
-  const height = Math.max(1, bounds.bottom - bounds.top);
+  if (![bounds.left, bounds.top, bounds.right, bounds.bottom].every(Number.isFinite)) return null;
+
+  const width = Math.max(minSize, bounds.right - bounds.left);
+  const height = Math.max(minSize, bounds.bottom - bounds.top);
   const center = { x: bounds.left + width / 2, y: bounds.top + height / 2 };
+  if (!isFinitePoint(center)) return null;
 
   const startInteraction = (event: ReactPointerEvent, mode: Mode, handle?: Handle) => {
+    const start = pointer(event);
+    if (!isFinitePoint(start) || !isFinitePoint(center) || measurableSelected.length !== selected.length) return;
+    const initialEntries = measurableSelected.map((block) => {
+      const rect = rects[block.id];
+      if (!isValidRect(rect)) return null;
+      return [block.id, { rect, geometry: safeGeometry(block) }] as const;
+    }).filter((entry): entry is readonly [string, { rect: DOMRect; geometry: SafeGeometry }] => Boolean(entry));
+    if (initialEntries.length !== selected.length) return;
+
     event.preventDefault();
     event.stopPropagation();
-    const start = pointer(event);
     interaction.current = {
       mode,
       handle,
       start,
       center,
-      initial: Object.fromEntries(measurableSelected.map((block) => {
-        const rect = rects[block.id];
-        return [block.id, { rect, geometry: getBlockGeometry(block) }];
-      }).filter((entry): entry is [string, { rect: DOMRect; geometry: ReturnType<typeof getBlockGeometry> }] => Boolean(entry[1].rect))) as Record<string, { rect: DOMRect; geometry: ReturnType<typeof getBlockGeometry> }>,
+      initial: Object.fromEntries(initialEntries),
     };
-    event.currentTarget.setPointerCapture(event.pointerId);
+    try {
+      event.currentTarget.setPointerCapture(event.pointerId);
+    } catch (error) {
+      console.error("[VisualTransformLayer] Falha ao capturar ponteiro", error);
+    }
   };
 
   const updateInteraction = (event: ReactPointerEvent) => {
     const current = interaction.current;
     if (!current) return;
-    const delta = { x: (event.clientX - current.start.x) / scale, y: (event.clientY - current.start.y) / scale };
+    const currentPoint = pointer(event);
+    if (!isFinitePoint(currentPoint) || !isFinitePoint(current.start)) return;
+    const delta = {
+      x: (currentPoint.x - current.start.x) / scale,
+      y: (currentPoint.y - current.start.y) / scale,
+    };
+    if (!isFinitePoint(delta)) return;
+
     if (current.mode === "drag") {
       onChange((currentBlocks) => currentBlocks.map((block) => {
         const item = current.initial[block.id];
-        if (!item || !item.rect || block.locked) return block;
-        const startX = Number.isFinite(item.geometry.x) ? item.geometry.x! : 0;
-        const startY = Number.isFinite(item.geometry.y) ? item.geometry.y! : 0;
-        return { ...block, x: startX + delta.x, y: startY + delta.y };
+        if (!item || !isValidRect(item.rect) || block.locked) return block;
+        return { ...block, x: finiteOr(item.geometry.x, 0) + delta.x, y: finiteOr(item.geometry.y, 0) + delta.y };
       }));
     } else if (current.mode === "resize") {
-      const handle = current.handle!;
+      const handle = current.handle;
+      if (!handle || !Number.isFinite(width) || !Number.isFinite(height) || width <= 0 || height <= 0) return;
       const horizontal = handle.includes("e") ? delta.x : handle.includes("w") ? -delta.x : 0;
       const vertical = handle.includes("s") ? delta.y : handle.includes("n") ? -delta.y : 0;
       const scaleX = clamp((width + horizontal) / width, minSize / width);
       const scaleY = clamp((height + vertical) / height, minSize / height);
+      if (![scaleX, scaleY].every(Number.isFinite)) return;
       onChange((currentBlocks) => currentBlocks.map((block) => {
         const item = current.initial[block.id];
-        if (!item || !item.rect || block.locked) return block;
+        if (!item || !isValidRect(item.rect) || block.locked) return block;
         const relativeX = (item.rect.left - bounds.left) / width;
         const relativeY = (item.rect.top - bounds.top) / height;
         const nextWidth = Math.max(minSize, item.rect.width * scaleX / scale);
         const nextHeight = Math.max(minSize, item.rect.height * scaleY / scale);
-        const startX = Number.isFinite(item.geometry.x) ? item.geometry.x! : 0;
-        const startY = Number.isFinite(item.geometry.y) ? item.geometry.y! : 0;
-        const nextX = startX + (handle.includes("w") ? delta.x : 0) + relativeX * width * (scaleX - 1);
-        const nextY = startY + (handle.includes("n") ? delta.y : 0) + relativeY * height * (scaleY - 1);
+        const nextX = finiteOr(item.geometry.x, 0) + (handle.includes("w") ? delta.x : 0) + relativeX * width * (scaleX - 1);
+        const nextY = finiteOr(item.geometry.y, 0) + (handle.includes("n") ? delta.y : 0) + relativeY * height * (scaleY - 1);
+        if (![nextX, nextY, nextWidth, nextHeight].every(Number.isFinite)) return block;
         return { ...block, x: nextX, y: nextY, width: nextWidth, height: nextHeight };
       }));
     } else {
-      const angle = Math.atan2(event.clientY - center.y, event.clientX - center.x) - Math.atan2(current.start.y - center.y, current.start.x - center.x);
-      const degrees = angle * (180 / Math.PI);
+      const startAngle = Math.atan2(current.start.y - current.center.y, current.start.x - current.center.x);
+      const currentAngle = Math.atan2(currentPoint.y - current.center.y, currentPoint.x - current.center.x);
+      if (![startAngle, currentAngle].every(Number.isFinite)) return;
+      const degrees = (currentAngle - startAngle) * (180 / Math.PI);
+      if (!Number.isFinite(degrees)) return;
       onChange((currentBlocks) => currentBlocks.map((block) => {
         const item = current.initial[block.id];
-        if (!item || block.locked) return block;
-        return { ...block, rotation: (item.geometry.rotation ?? 0) + degrees };
+        if (!item || !isValidRect(item.rect) || block.locked) return block;
+        return { ...block, rotation: finiteOr(item.geometry.rotation, 0) + degrees };
       }));
     }
     measure();
   };
 
-  const endInteraction = () => { interaction.current = null; measure(); };
+  const endInteraction = () => {
+    interaction.current = null;
+    measure();
+  };
 
   return (
     <div className="pointer-events-none fixed z-40" style={{ left: bounds.left, top: bounds.top, width, height }} aria-label="Transformação do elemento selecionado">
       <div className="absolute inset-0 border-2 border-primary/80" />
       <div className="pointer-events-auto absolute left-1/2 top-0 -translate-x-1/2 -translate-y-1/2">
-        <button type="button" aria-label="Girar seleção" className="flex h-7 w-7 items-center justify-center rounded-full border-2 border-primary bg-background text-primary shadow-sm" onPointerDown={(event) => startInteraction(event, "rotate")} onPointerMove={updateInteraction} onPointerUp={endInteraction} onPointerCancel={endInteraction}><RotateCw className="h-3.5 w-3.5" /></button>
+        <button type="button" aria-label="Girar seleção" className="flex h-7 w-7 items-center justify-center rounded-full border-2 border-primary bg-background text-primary shadow-sm" onPointerDown={(event) => startInteraction(event, "rotate")} onPointerMove={updateInteraction} onPointerUp={endInteraction} onPointerCancel={endInteraction}>
+          <RotateCw className="h-3.5 w-3.5" />
+        </button>
       </div>
       {handles.map((handle) => {
         const horizontal = handle.includes("w") ? "left-0" : handle.includes("e") ? "right-0" : "left-1/2 -translate-x-1/2";
