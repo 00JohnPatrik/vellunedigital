@@ -148,7 +148,22 @@ type EditorPointer = { clientX: number; clientY: number };
 export type EditorPoint = { x: number; y: number };
 
 export function VisualEditor({ h, ctx, toolbarExtra, assets, bg, onBg }: { h: BlocksHistory; ctx?: EventCtx | undefined; toolbarExtra?: ReactNode; assets?: AssetScope | undefined; bg?: Background | undefined; onBg?: ((b: Background) => void) | undefined }) {
-  const { blocks, set } = h;
+  /* eslint-disable react-hooks/rules-of-hooks, no-unreachable */
+  // ISOLAMENTO TEMPORÁRIO (teste): o retorno abaixo é o componente inteiro.
+  // Sem hooks, efeitos, refs, acesso ao DOM, Pointer Events, geometria, Supabase ou transformação.
+  // O corpo original do editor permanece logo depois do retorno, como código morto (nunca executado),
+  // apenas para preservar o arquivo: apague este bloco de retorno para restaurar o editor.
+  return (
+    <div className="flex min-h-[320px] flex-col items-center justify-center gap-2 rounded-2xl border border-dashed bg-card/60 p-8 text-center">
+      <p className="font-display text-lg font-semibold tracking-tight text-foreground">Editor temporariamente isolado</p>
+      <p className="max-w-md text-sm text-muted-foreground">
+        Teste de isolamento: este é um componente React mínimo, sem hooks, efeitos, refs, acesso ao DOM, Pointer Events, geometria, consultas ao Supabase ou lógica de transformação.
+      </p>
+      <p className="text-xs text-muted-foreground">
+        Props recebidas — blocos: {Array.isArray(h?.blocks) ? h.blocks.length : 0} · contexto do evento: {ctx ? "sim" : "não"} · escopo de arquivos: {assets ? "sim" : "não"} · fundo: {bg ? "sim" : "não"} · ações extras: {toolbarExtra ? "sim" : "não"}
+      </p>
+    </div>
+  );
   const editorRoot = useRef<HTMLDivElement>(null);
   // Side panels only fit from 1024px up; below that Elements/Properties open as bottom drawers.
   const isMobile = useIsCompact();
