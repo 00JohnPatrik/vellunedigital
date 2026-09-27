@@ -104,8 +104,8 @@ export async function listCompanySubscriptions(): Promise<CompanySubscription[]>
   if (error) throw error;
   if (companiesError) throw companiesError;
   if (plansError) throw plansError;
-  const companyMap = new Map((companies ?? []).map((company: { id: string; name: string }) => [company.id, company]));
-  const planMap = new Map((plans ?? []).map((plan: SubscriptionPlan) => [plan.id, plan as SubscriptionPlan]));
+  const companyMap = new Map<string, { id: string; name: string }>((companies ?? []).map((company: { id: string; name: string }) => [company.id, company]));
+  const planMap = new Map<string, SubscriptionPlan>((plans ?? []).map((plan: SubscriptionPlan) => [plan.id, plan as SubscriptionPlan]));
   return ((subscriptions ?? []) as CompanySubscription[]).map((subscription) => ({
     ...subscription,
     company: companyMap.get(subscription.company_id) ?? null,
