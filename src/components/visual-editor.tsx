@@ -1,5 +1,4 @@
 import { memo, useCallback, useEffect, useRef, useState, type ReactNode } from "react";
-import { createRoot, type Root } from "react-dom/client";
 import {
   AlignCenter, AlignLeft, AlignRight, ArrowDown, ArrowUp, CalendarDays, Clock, Copy, Eye, EyeOff, GripVertical, ImageIcon, Images, Layers, Lock, MapPin, MessageCircle, Minus,
   Monitor, MousePointerClick, Plus, QrCode, Redo2, RotateCcw, Settings2, Smartphone, Tablet, Timer, Trash2, Type, Undo2, Unlock, UserCheck, Maximize2, Grid3X3, Ruler, Crosshair,
