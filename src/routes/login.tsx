@@ -177,7 +177,7 @@ function LoginPage() {
               </form>
             )}
           </div>
-          <p className="mt-6 text-center text-[10px] font-medium tracking-[0.22em] text-slate-500">Vellune Digital · v1.2</p>
+          <p className="mt-6 text-center text-[10px] font-medium tracking-[0.22em] text-slate-500">Vellune Digital · v1.5</p>
         </section>
       </div>
     </main>
