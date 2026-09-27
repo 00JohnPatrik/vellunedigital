@@ -205,15 +205,16 @@ export function InvitationCanvas({ blocks, ctx, className, background }: { block
       {visible.length ? visible.map((b, index) => {
         const geometry = geometries[index] ?? {};
         const free = hasFreeCanvasBlock && Object.keys(geometry).length > 0;
+        const safeNumber = (value: number | undefined, fallback: number) => Number.isFinite(value) ? value! : fallback;
         const frame: CSSProperties = free ? {
           position: "absolute",
-          left: geometry.x ?? 24,
-          top: geometry.y ?? 24,
-          width: geometry.width,
-          height: geometry.height,
-          zIndex: geometry.zIndex,
-          opacity: geometry.opacity ?? 1,
-          transform: `rotate(${geometry.rotation ?? 0}deg) scale(${geometry.scale ?? 1})`,
+          left: safeNumber(geometry.x, 24),
+          top: safeNumber(geometry.y, 24),
+          width: geometry.width !== undefined && Number.isFinite(geometry.width) && geometry.width > 0 ? geometry.width : undefined,
+          height: geometry.height !== undefined && Number.isFinite(geometry.height) && geometry.height > 0 ? geometry.height : undefined,
+          zIndex: geometry.zIndex !== undefined && Number.isFinite(geometry.zIndex) ? geometry.zIndex : undefined,
+          opacity: geometry.opacity !== undefined && Number.isFinite(geometry.opacity) ? Math.min(1, Math.max(0, geometry.opacity)) : 1,
+          transform: `rotate(${safeNumber(geometry.rotation, 0)}deg) scale(${geometry.scale !== undefined && Number.isFinite(geometry.scale) && geometry.scale > 0 ? geometry.scale : 1})`,
           transformOrigin: "center",
           boxSizing: "border-box",
         } : {};

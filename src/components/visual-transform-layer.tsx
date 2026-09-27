@@ -37,13 +37,22 @@ export function VisualTransformLayer({ root, blocks, selectedIds, zoom, onChange
   } | null>(null);
   const scale = Number.isFinite(zoom) && zoom > 0 ? zoom / 100 : 1;
   const selected = useMemo(() => blocks.filter((block) => selectedIds.includes(block.id) && !block.locked), [blocks, selectedIds]);
+  const measurableSelected = useMemo(() => selected.filter((block) => rects[block.id]), [selected, rects]);
 
   const measure = useCallback(() => {
     if (!root) return;
     const next: Record<string, DOMRect> = {};
     for (const block of selected) {
-      const element = root.querySelector<HTMLElement>(`[data-editor-block="${CSS.escape(block.id)}"]`);
-      if (element) next[block.id] = element.getBoundingClientRect();
+      const escapedId = typeof CSS !== "undefined" && typeof CSS.escape === "function"
+        ? CSS.escape(block.id)
+        : block.id.replace(/([\\"\\'])/g, "\\\\$1");
+      const element = root.querySelector<HTMLElement>(`[data-editor-block="${escapedId}"]`);
+      if (element) {
+        const rect = element.getBoundingClientRect();
+        if ([rect.left, rect.top, rect.width, rect.height].every(Number.isFinite)) {
+          next[block.id] = rect;
+        }
+      }
     }
     setRects(next);
   }, [root, selected]);
@@ -61,8 +70,8 @@ export function VisualTransformLayer({ root, blocks, selectedIds, zoom, onChange
     };
   }, [measure, root, blocks, selectedIds, zoom]);
 
-  if (!root || !selected.length) return null;
-  const measured = selected.map((block) => rects[block.id]).filter(Boolean);
+  if (!root || !measurableSelected.length) return null;
+  const measured = measurableSelected.map((block) => rects[block.id]).filter((rect): rect is DOMRect => Boolean(rect));
   if (!measured.length) return null;
   const bounds = {
     left: Math.min(...measured.map((rect) => rect.left)),
@@ -83,7 +92,10 @@ export function VisualTransformLayer({ root, blocks, selectedIds, zoom, onChange
       handle,
       start,
       center,
-      initial: Object.fromEntries(selected.map((block) => [block.id, { rect: rects[block.id]!, geometry: getBlockGeometry(block) }])) as Record<string, { rect: DOMRect; geometry: ReturnType<typeof getBlockGeometry> }>,
+      initial: Object.fromEntries(measurableSelected.map((block) => {
+        const rect = rects[block.id];
+        return [block.id, { rect, geometry: getBlockGeometry(block) }];
+      }).filter((entry): entry is [string, { rect: DOMRect; geometry: ReturnType<typeof getBlockGeometry> }] => Boolean(entry[1].rect))) as Record<string, { rect: DOMRect; geometry: ReturnType<typeof getBlockGeometry> }>,
     };
     event.currentTarget.setPointerCapture(event.pointerId);
   };
@@ -95,8 +107,10 @@ export function VisualTransformLayer({ root, blocks, selectedIds, zoom, onChange
     if (current.mode === "drag") {
       onChange((currentBlocks) => currentBlocks.map((block) => {
         const item = current.initial[block.id];
-        if (!item || block.locked) return block;
-        return { ...block, x: (item.geometry.x ?? item.rect.left) + delta.x, y: (item.geometry.y ?? item.rect.top) + delta.y };
+        if (!item || !item.rect || block.locked) return block;
+        const startX = Number.isFinite(item.geometry.x) ? item.geometry.x! : 0;
+        const startY = Number.isFinite(item.geometry.y) ? item.geometry.y! : 0;
+        return { ...block, x: startX + delta.x, y: startY + delta.y };
       }));
     } else if (current.mode === "resize") {
       const handle = current.handle!;
@@ -106,13 +120,15 @@ export function VisualTransformLayer({ root, blocks, selectedIds, zoom, onChange
       const scaleY = clamp((height + vertical) / height, minSize / height);
       onChange((currentBlocks) => currentBlocks.map((block) => {
         const item = current.initial[block.id];
-        if (!item || block.locked) return block;
+        if (!item || !item.rect || block.locked) return block;
         const relativeX = (item.rect.left - bounds.left) / width;
         const relativeY = (item.rect.top - bounds.top) / height;
         const nextWidth = Math.max(minSize, item.rect.width * scaleX / scale);
         const nextHeight = Math.max(minSize, item.rect.height * scaleY / scale);
-        const nextX = (item.geometry.x ?? item.rect.left) + (handle.includes("w") ? delta.x : 0) + relativeX * width * (scaleX - 1);
-        const nextY = (item.geometry.y ?? item.rect.top) + (handle.includes("n") ? delta.y : 0) + relativeY * height * (scaleY - 1);
+        const startX = Number.isFinite(item.geometry.x) ? item.geometry.x! : 0;
+        const startY = Number.isFinite(item.geometry.y) ? item.geometry.y! : 0;
+        const nextX = startX + (handle.includes("w") ? delta.x : 0) + relativeX * width * (scaleX - 1);
+        const nextY = startY + (handle.includes("n") ? delta.y : 0) + relativeY * height * (scaleY - 1);
         return { ...block, x: nextX, y: nextY, width: nextWidth, height: nextHeight };
       }));
     } else {
