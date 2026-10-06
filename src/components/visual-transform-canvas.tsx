@@ -1,7 +1,7 @@
 // @ts-nocheck
 import { useEffect, useMemo, useRef, useState } from "react";
 import { BlockView } from "@/components/block-render";
-import type { Block } from "@/lib/templates";
+import { getBlockGeometry, type Block } from "@/lib/templates";
 
 type Point = { x: number; y: number };
 type Guide = { axis: "x" | "y"; value: number; kind?: "edge" | "center" | "grid" };
@@ -32,6 +32,7 @@ type Geometry = {
   height: number;
   rotation: number;
   scale: number;
+  zIndex: number;
 };
 
 type Interaction = {
@@ -72,13 +73,15 @@ const DEFAULT_GEOMETRY: Record<string, { width: number; height: number }> = {
 };
 function geometry(block: any, index: number): Geometry {
   const fallback = DEFAULT_GEOMETRY[block.type] ?? { width: 300, height: 72 };
+  const shared = (getBlockGeometry(block) ?? {}) as Record<string, unknown>;
   return {
-    x: number(block.x, 24),
-    y: number(block.y, 24 + index * 96),
-    width: Math.min(MAX_SIZE, Math.max(MIN_SIZE, number(block.width, fallback.width))),
-    height: Math.min(MAX_SIZE, Math.max(MIN_SIZE, number(block.height, fallback.height))),
-    rotation: number(block.rotation, 0),
-    scale: Math.max(0.1, number(block.scale, 1)),
+    x: number(block.x, number(shared.x, 24)),
+    y: number(block.y, number(shared.y, 24 + index * 96)),
+    width: Math.min(MAX_SIZE, Math.max(MIN_SIZE, number(block.width, number(shared.width, fallback.width)))),
+    height: Math.min(MAX_SIZE, Math.max(MIN_SIZE, number(block.height, number(shared.height, fallback.height)))),
+    rotation: number(block.rotation, number(shared.rotation, 0)),
+    scale: Math.max(0.1, number(block.scale, number(shared.scale, 1))),
+    zIndex: number(block.zIndex, number(shared.zIndex, index + 1)),
   };
 }
 
@@ -363,7 +366,7 @@ export function VisualTransformCanvas({ blocks, selectedIds, zoom, canvasRef, ct
           height: value.height + hit * 2,
           transform: `translate(${value.x - hit}px, ${value.y - hit}px) rotate(${value.rotation}deg) scale(${value.scale})`,
           transformOrigin: "center",
-          zIndex: block.zIndex ?? index + 1,
+          zIndex: value.zIndex,
           touchAction: "none",
           pointerEvents: hidden ? "none" : "auto",
           padding: hit,
