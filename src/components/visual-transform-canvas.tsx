@@ -56,12 +56,27 @@ function number(value: unknown, fallback: number) {
   return typeof value === "number" && Number.isFinite(value) ? value : fallback;
 }
 
+const DEFAULT_GEOMETRY: Record<string, { width: number; height: number }> = {
+  text: { width: 360, height: 72 },
+  image: { width: 300, height: 190 },
+  gallery: { width: 300, height: 220 },
+  date: { width: 280, height: 60 },
+  time: { width: 280, height: 60 },
+  location: { width: 320, height: 76 },
+  countdown: { width: 340, height: 90 },
+  rsvp: { width: 340, height: 250 },
+  whatsapp: { width: 260, height: 56 },
+  button: { width: 260, height: 56 },
+  qr_code: { width: 160, height: 190 },
+  divider: { width: 320, height: 24 },
+};
 function geometry(block: any, index: number): Geometry {
+  const fallback = DEFAULT_GEOMETRY[block.type] ?? { width: 300, height: 72 };
   return {
     x: number(block.x, 24),
     y: number(block.y, 24 + index * 96),
-    width: Math.min(MAX_SIZE, Math.max(MIN_SIZE, number(block.width, 720))),
-    height: Math.min(MAX_SIZE, Math.max(MIN_SIZE, number(block.height, 72))),
+    width: Math.min(MAX_SIZE, Math.max(MIN_SIZE, number(block.width, fallback.width))),
+    height: Math.min(MAX_SIZE, Math.max(MIN_SIZE, number(block.height, fallback.height))),
     rotation: number(block.rotation, 0),
     scale: Math.max(0.1, number(block.scale, 1)),
   };
