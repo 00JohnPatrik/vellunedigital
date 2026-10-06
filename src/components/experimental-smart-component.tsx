@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import { CalendarDays, CheckCircle2, ExternalLink, Gift, Link2, MapPin, MessageCircle, Shirt, UsersRound } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import { Button } from "@/components/ui/button";
@@ -104,7 +105,7 @@ function cardClass(v: SmartVisualConfig) {
   return cn("h-full rounded-xl border p-4 shadow-sm", v.radius === "none" ? "rounded-none" : v.radius === "lg" && "rounded-2xl", v.compact && "p-2.5");
 }
 
-function ActionLink({ href, children, className }: { href?: string; children: React.ReactNode; className?: string }) {
+function ActionLink({ href, children, className }: { href?: string; children: ReactNode; className?: string }) {
   if (!href) return <Button type="button" className={className}>{children}</Button>;
   return <Button type="button" asChild className={className}><a href={href} target="_blank" rel="noreferrer">{children}</a></Button>;
 }
@@ -132,7 +133,7 @@ export function SmartComponentPreview({ element }: { element: any }): React.Reac
   const type = element?.type as SmartComponentType;
   if (!SMART_COMPONENT_CATALOG.some((item) => item.type === type)) return null;
   const { functional: f, visual: v } = getProps(element);
-  const style = { background: v.background, color: v.color, textAlign: v.align || "center" } as React.CSSProperties;
+  const style = { background: v.background, color: v.color, textAlign: v.align || "center" } as CSSProperties;
   const title = SMART_COMPONENT_CATALOG.find((item) => item.type === type)?.label;
   const content = (() => {
     switch (type) {
