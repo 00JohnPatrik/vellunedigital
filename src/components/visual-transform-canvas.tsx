@@ -1,7 +1,7 @@
 // @ts-nocheck
 import { useEffect, useMemo, useRef, useState } from "react";
 import { BlockView } from "@/components/block-render";
-import { getBlockGeometry, type Block } from "@/lib/templates";
+import { resolveBlockGeometry, type Block } from "@/lib/templates";
 
 type Point = { x: number; y: number };
 type Guide = { axis: "x" | "y"; value: number; kind?: "edge" | "center" | "grid" };
@@ -57,31 +57,16 @@ function number(value: unknown, fallback: number) {
   return typeof value === "number" && Number.isFinite(value) ? value : fallback;
 }
 
-const DEFAULT_GEOMETRY: Record<string, { width: number; height: number }> = {
-  text: { width: 360, height: 72 },
-  image: { width: 300, height: 190 },
-  gallery: { width: 300, height: 220 },
-  date: { width: 280, height: 60 },
-  time: { width: 280, height: 60 },
-  location: { width: 320, height: 76 },
-  countdown: { width: 340, height: 90 },
-  rsvp: { width: 340, height: 250 },
-  whatsapp: { width: 260, height: 56 },
-  button: { width: 260, height: 56 },
-  qr_code: { width: 160, height: 190 },
-  divider: { width: 320, height: 24 },
-};
-function geometry(block: any, index: number): Geometry {
-  const fallback = DEFAULT_GEOMETRY[block.type] ?? { width: 300, height: 72 };
-  const shared = (getBlockGeometry(block) ?? {}) as Record<string, unknown>;
+function geometry(block: Block, index: number): Geometry {
+  const resolved = resolveBlockGeometry(block, index);
   return {
-    x: number(block.x, number(shared.x, 24)),
-    y: number(block.y, number(shared.y, 24 + index * 96)),
-    width: Math.min(MAX_SIZE, Math.max(MIN_SIZE, number(block.width, number(shared.width, fallback.width)))),
-    height: Math.min(MAX_SIZE, Math.max(MIN_SIZE, number(block.height, number(shared.height, fallback.height)))),
-    rotation: number(block.rotation, number(shared.rotation, 0)),
-    scale: Math.max(0.1, number(block.scale, number(shared.scale, 1))),
-    zIndex: number(block.zIndex, number(shared.zIndex, index + 1)),
+    x: resolved.x,
+    y: resolved.y,
+    width: Math.min(MAX_SIZE, Math.max(MIN_SIZE, resolved.width)),
+    height: Math.min(MAX_SIZE, Math.max(MIN_SIZE, resolved.height)),
+    rotation: resolved.rotation,
+    scale: resolved.scale,
+    zIndex: resolved.zIndex,
   };
 }
 
