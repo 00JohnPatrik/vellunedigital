@@ -41,6 +41,7 @@ import { NotificationCenter } from "@/components/phase7-ui";
 import { applyTheme, type AppUser } from "@/lib/app-user";
 import type { NavItem } from "@/lib/nav";
 import { cn } from "@/lib/utils";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 type Props = { base: "/admin" | "/dashboard"; nav: NavItem[]; appUser: AppUser; children: ReactNode };
 type ThemeChoice = "light" | "dark" | null;
@@ -132,42 +133,74 @@ export function AppShell({ base, nav, appUser, children }: Props) {
   }
 
   const links = (compact: boolean) => (
-    <nav className="flex flex-1 flex-col gap-1 p-3">
-      {nav.map((item) => {
-        const to = item.to ?? (item.slug ? `${base}/${item.slug}` : base);
-        return (
-          <Link
-            key={`${item.slug}-${item.label}`}
-            to={to}
-            activeOptions={{ exact: !item.slug }}
-            onClick={() => setMobileOpen(false)}
-            className="flex items-center gap-3 rounded-md px-3 py-2 text-sm text-sidebar-foreground/80 transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-            activeProps={{ className: "bg-sidebar-accent text-sidebar-accent-foreground font-medium" }}
-            title={item.label}
-          >
-            <item.icon className="h-4 w-4 shrink-0" />
-            {!compact && <span className="truncate">{item.label}</span>}
-          </Link>
-        );
-      })}
-      <button
-        onClick={signOut}
-        title="Sair"
-        className="mt-auto flex items-center gap-3 rounded-md px-3 py-2 text-sm text-sidebar-foreground/80 hover:bg-sidebar-accent"
-      >
-        <LogOut className="h-4 w-4 shrink-0" />
-        {!compact && <span>Sair</span>}
-      </button>
-    </nav>
+    <TooltipProvider delayDuration={compact ? 150 : 500}>
+      <nav className="flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto overflow-x-hidden p-3">
+        <div className="space-y-1">
+          {nav.map((item) => {
+            const to = item.to ?? (item.slug ? `${base}/${item.slug}` : base);
+            const link = (
+              <Link
+                key={`${item.slug}-${item.label}`}
+                to={to}
+                activeOptions={{ exact: !item.slug }}
+                onClick={() => setMobileOpen(false)}
+                className={cn(
+                  "group relative flex h-10 items-center gap-3 overflow-hidden rounded-xl border border-transparent px-3 text-sm text-sidebar-foreground/65 transition-all duration-200 hover:border-cyan-400/10 hover:bg-cyan-400/[0.07] hover:text-sidebar-foreground",
+                  compact && "justify-center px-0",
+                )}
+                activeProps={{ className: "border-cyan-400/15 bg-cyan-400/[0.12] font-medium text-sidebar-foreground shadow-[inset_3px_0_0_0_theme(colors.cyan.400)]" }}
+                aria-label={compact ? item.label : undefined}
+              >
+                <item.icon className="h-[18px] w-[18px] shrink-0 text-sidebar-foreground/55 transition-colors group-hover:text-cyan-300 group-data-[active=true]:text-cyan-300" />
+                {!compact && <span className="truncate">{item.label}</span>}
+                {!compact && <span className="ml-auto h-1.5 w-1.5 rounded-full bg-cyan-300 opacity-0 shadow-[0_0_10px_theme(colors.cyan.300)] transition-opacity group-data-[active=true]:opacity-100" />}
+              </Link>
+            );
+
+            if (!compact) return link;
+
+            return (
+              <Tooltip key={`${item.slug}-${item.label}-tooltip`}>
+                <TooltipTrigger asChild>{link}</TooltipTrigger>
+                <TooltipContent side="right" sideOffset={12} className="border border-cyan-300/15 bg-[#10243e] text-slate-100 shadow-xl">
+                  {item.label}
+                </TooltipContent>
+              </Tooltip>
+            );
+          })}
+        </div>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button
+              onClick={signOut}
+              aria-label="Sair"
+              className={cn(
+                "mt-auto flex h-10 items-center gap-3 rounded-xl border border-transparent px-3 text-sm text-sidebar-foreground/55 transition-all hover:border-rose-300/10 hover:bg-rose-400/[0.08] hover:text-rose-200",
+                compact && "justify-center px-0",
+              )}
+            >
+              <LogOut className="h-[18px] w-[18px] shrink-0" />
+              {!compact && <span>Sair</span>}
+            </button>
+          </TooltipTrigger>
+          {compact && <TooltipContent side="right" sideOffset={12} className="border border-rose-300/15 bg-[#10243e] text-slate-100 shadow-xl">Sair</TooltipContent>}
+        </Tooltip>
+      </nav>
+    </TooltipProvider>
   );
 
   const brand = (compact: boolean) => (
-    <div className="flex h-14 items-center gap-2 border-b border-sidebar-border px-4">
-      <div className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-md bg-sidebar-accent">
+    <div className={cn("flex h-[4.5rem] items-center gap-3 border-b border-sidebar-border/70 px-4", compact && "justify-center px-0")}>
+      <div className="relative flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-cyan-300/20 bg-cyan-300/10 shadow-[0_0_24px_theme(colors.cyan.400/15%)]">
         <img src="/uploads/LogoClara.png" alt="Vellune Digital" className="h-full w-full object-cover dark:hidden" />
         <img src="/uploads/logoEscura.jpg" alt="Vellune Digital" className="hidden h-full w-full object-cover dark:block" />
       </div>
-      {!compact && <span className="font-display font-semibold">Vellune Digital</span>}
+      {!compact && (
+        <div className="min-w-0">
+          <span className="block truncate font-display text-sm font-semibold tracking-tight text-sidebar-foreground">Vellune</span>
+          <span className="block truncate text-[10px] font-medium uppercase tracking-[0.2em] text-cyan-300/70">Digital</span>
+        </div>
+      )}
     </div>
   );
 
@@ -182,8 +215,8 @@ export function AppShell({ base, nav, appUser, children }: Props) {
       <aside
         aria-label="Navegação principal"
         className={cn(
-          "fixed inset-y-0 left-0 z-30 hidden flex-col border-r border-sidebar-border bg-sidebar transition-[width] md:flex",
-          collapsed ? "w-16" : "w-16 lg:w-60",
+          "fixed inset-y-0 left-0 z-30 hidden flex-col border-r border-sidebar-border/70 bg-sidebar shadow-[12px_0_40px_-28px_rgba(34,211,238,0.45)] transition-[width] duration-300 md:flex dark:bg-[#071426]",
+          collapsed ? "w-[4.5rem]" : "w-[4.5rem] lg:w-64",
         )}
       >
         <div className="hidden lg:block">{brand(collapsed)}</div>
@@ -193,7 +226,7 @@ export function AppShell({ base, nav, appUser, children }: Props) {
       </aside>
 
       <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
-        <SheetContent id="mobile-navigation" side="left" className="flex w-64 flex-col bg-sidebar p-0">
+        <SheetContent id="mobile-navigation" side="left" className="flex w-[min(18rem,calc(100vw-1rem))] max-w-[calc(100vw-1rem)] flex-col overflow-hidden border-r border-cyan-300/10 bg-sidebar p-0 shadow-2xl dark:bg-[#071426]">
           <SheetTitle className="sr-only">Menu de navegação</SheetTitle>
           {brand(false)}
           {links(false)}
@@ -228,18 +261,20 @@ export function AppShell({ base, nav, appUser, children }: Props) {
         </DialogContent>
       </Dialog>
 
-      <div className={cn("flex min-h-screen flex-col transition-[padding]", collapsed ? "md:pl-16" : "md:pl-16 lg:pl-60")}>
-        <header className="sticky top-0 z-20 flex h-14 items-center gap-3 border-b bg-background/85 px-4 backdrop-blur">
+      <div className={cn("flex min-h-screen min-w-0 flex-col transition-[padding] duration-300 dark:bg-[#071426]", collapsed ? "md:pl-[4.5rem]" : "md:pl-[4.5rem] lg:pl-64")}>
+        <header className="sticky top-0 z-20 flex h-[4.5rem] min-w-0 items-center gap-3 border-b border-border/60 bg-background/80 px-4 shadow-[0_8px_30px_-24px_rgba(34,211,238,0.45)] backdrop-blur-xl dark:border-white/[0.07] dark:bg-[#071426]/80 sm:px-6">
           <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setMobileOpen(true)} aria-label="Abrir menu" aria-expanded={mobileOpen} aria-controls="mobile-navigation">
             <Menu className="h-5 w-5" />
           </Button>
           <Button variant="ghost" size="icon" className="hidden lg:inline-flex" onClick={() => setCollapsed((current) => !current)} aria-label="Recolher menu">
             {collapsed ? <PanelLeftOpen className="h-5 w-5" /> : <PanelLeftClose className="h-5 w-5" />}
           </Button>
-          <button onClick={() => setSearchOpen(true)} className="hidden min-w-0 flex-1 items-center gap-2 text-left text-sm text-muted-foreground sm:flex" aria-label="Abrir busca global">
-            <Search className="h-4 w-4" />
-            <span className="truncate">Buscar no painel...</span>
-            <kbd className="ml-auto hidden rounded border bg-muted px-1.5 py-0.5 text-[10px] font-medium lg:inline-flex">Ctrl K</kbd>
+          <button onClick={() => setSearchOpen(true)} className="group hidden min-w-0 flex-1 items-center gap-3 text-left text-sm text-muted-foreground sm:flex" aria-label="Abrir busca global">
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-border/70 bg-muted/40 transition-colors group-hover:border-cyan-300/30 group-hover:bg-cyan-300/10">
+              <Search className="h-4 w-4 transition-colors group-hover:text-cyan-300" />
+            </span>
+            <span className="truncate transition-colors group-hover:text-foreground">Buscar no painel...</span>
+            <kbd className="ml-auto hidden rounded-lg border border-border/70 bg-muted/60 px-2 py-1 text-[10px] font-medium text-muted-foreground lg:inline-flex">Ctrl K</kbd>
           </button>
           <div className="min-w-0 flex-1 truncate text-sm text-muted-foreground sm:hidden">{appUser.company?.name ?? "Administração global"}</div>
           <div
@@ -283,7 +318,7 @@ export function AppShell({ base, nav, appUser, children }: Props) {
             </DropdownMenuContent>
           </DropdownMenu>
         </header>
-        <main className="flex-1 p-4 sm:p-6 lg:p-8">{children}</main>
+        <main className="min-w-0 flex-1 bg-[radial-gradient(circle_at_top_right,rgba(34,211,238,0.045),transparent_30%)] p-4 sm:p-6 lg:p-8">{children}</main>
       </div>
 
       <ThemeDialog open={theme === null} userId={appUser.id} onSaved={setTheme} />
