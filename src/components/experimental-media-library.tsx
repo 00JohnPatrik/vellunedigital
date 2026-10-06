@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
 import { Clock3, Heart, ImagePlus, Search, Sparkles, Upload } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 
@@ -39,6 +38,17 @@ const writeJson = (key: string, value: unknown) => {
   } catch {
     // A biblioteca continua utilizável mesmo quando o armazenamento local está cheio.
   }
+};
+
+const createLocalId = () => {
+  try {
+    if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+      return `local-media-${crypto.randomUUID()}`;
+    }
+  } catch {
+    // Usa o fallback abaixo quando a API de criptografia não estiver disponível.
+  }
+  return `local-media-${Date.now()}-${Math.random().toString(36).slice(2)}`;
 };
 
 const kindLabel: Record<MediaKind, string> = {
@@ -90,11 +100,16 @@ export function ExperimentalMediaLibrary({ onInsert }: Props) {
       setError("O arquivo deve ter no máximo 8 MB para permanecer no armazenamento local.");
       return;
     }
+
     const reader = new FileReader();
+    reader.onerror = () => setError("Não foi possível ler este arquivo. Tente selecionar a mídia novamente.");
     reader.onload = () => {
-      if (typeof reader.result !== "string") return;
+      if (typeof reader.result !== "string") {
+        setError("Não foi possível preparar este arquivo para o editor.");
+        return;
+      }
       const item: LocalMediaItem = {
-        id: `local-media-${crypto.randomUUID()}`,
+        id: createLocalId(),
         name: file.name,
         src: reader.result,
         kind,
@@ -108,7 +123,12 @@ export function ExperimentalMediaLibrary({ onInsert }: Props) {
       setError("");
       insert(item);
     };
-    reader.readAsDataURL(file);
+
+    try {
+      reader.readAsDataURL(file);
+    } catch {
+      setError("Não foi possível ler este arquivo. Tente selecionar a mídia novamente.");
+    }
   };
 
   const insert = (item: LocalMediaItem) => {
@@ -144,7 +164,7 @@ export function ExperimentalMediaLibrary({ onInsert }: Props) {
       <div className="flex gap-1 overflow-x-auto pb-1">
         {categories.map((item) => <button key={item} type="button" onClick={() => setCategory(item)} className={cn("whitespace-nowrap rounded-md border px-2 py-1 text-xs", category === item ? "border-primary bg-primary/10 text-primary" : "text-muted-foreground hover:bg-muted")}>{item}</button>)}
       </div>
-      {error && <p className="text-xs text-destructive">{error}</p>}
+      {error && <p className="text-xs text-destructive" role="alert">{error}</p>}
       {filtered.length === 0 ? (
         <div className="rounded-lg border border-dashed p-5 text-center text-xs text-muted-foreground"><Sparkles className="mx-auto mb-2 h-5 w-5" />Adicione uma mídia local para começar.</div>
       ) : (
