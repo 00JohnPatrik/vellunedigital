@@ -178,6 +178,85 @@ export type TemplateValues = { name: string; category: Category | ""; preview_im
 export const newBlock = (type: BlockType): Block => ({ id: crypto.randomUUID(), type, props: { ...BLOCKS[type].defaults } });
 
 export const STARTERS: Record<string, { label: string; build: () => TemplateContent }> = {
+  editorial: {
+    label: "Vellune Editorial — base profissional",
+    build: () => ({
+      version: 1,
+      settings: {
+        background: {
+          color: "#f7f3ee",
+          gradient: "linear-gradient(180deg, #f7f3ee 0%, #efe6dc 48%, #f8f5f1 100%)",
+          overlay: 0,
+          imageOpacity: 1,
+        },
+      },
+      blocks: [
+        {
+          ...newBlock("text"),
+          x: 32, y: 42, width: 356, height: 42, zIndex: 2,
+          props: { text: "UM MOMENTO ESPECIAL", size: "sm", font: "sans", bold: "", align: "center", color: "#8a7664", width: "full", fontSize: "12", letterSpacing: "3.2", lineHeight: "1.2", textTransform: "uppercase" },
+        },
+        {
+          ...newBlock("text"),
+          x: 24, y: 94, width: 372, height: 116, zIndex: 3,
+          props: { text: "Você está\nconvidado", size: "2xl", font: "display", bold: "", align: "center", color: "#2e2a27", width: "full", fontSize: "46", letterSpacing: "-1.2", lineHeight: "1.02" },
+        },
+        {
+          ...newBlock("divider"),
+          x: 108, y: 228, width: 204, height: 20, zIndex: 4,
+          props: { thickness: "1", width: "full", align: "center", style: "solid" },
+        },
+        {
+          ...newBlock("text"),
+          x: 42, y: 266, width: 336, height: 62, zIndex: 5,
+          props: { text: "Para celebrar um dia feito de detalhes,\nafeto e pessoas especiais.", size: "md", font: "sans", bold: "", align: "center", color: "#655b54", width: "full", fontSize: "17", letterSpacing: "0", lineHeight: "1.45" },
+        },
+        {
+          ...newBlock("date"),
+          x: 46, y: 356, width: 326, height: 66, zIndex: 6,
+          props: { source: "event", date: "", format: "long", label: "DATA", align: "center" },
+        },
+        {
+          ...newBlock("time"),
+          x: 46, y: 436, width: 326, height: 66, zIndex: 7,
+          props: { source: "event", time: "", format: "text", label: "HORÁRIO", align: "center" },
+        },
+        {
+          ...newBlock("location"),
+          x: 36, y: 520, width: 346, height: 112, zIndex: 8,
+          props: { source: "event", name: "", address: "", show_name: "1", show_address: "1", show_city: "1", show_directions: "1", align: "center" },
+        },
+        {
+          ...newBlock("rsvp"),
+          x: 54, y: 666, width: 310, height: 94, zIndex: 9,
+          props: {
+            title: "Sua presença tornará este momento ainda mais especial.",
+            label: "Confirmar presença",
+            preset: "pill",
+            style: "solid",
+            fontFamily: "sans",
+            fontSize: "15",
+            fontWeight: "600",
+            textTransform: "none",
+            textColor: "#ffffff",
+            backgroundColor: "#6f6258",
+            borderColor: "#6f6258",
+            radius: "999",
+            paddingX: "28",
+            paddingY: "12",
+            shadow: "soft",
+            width: "auto",
+            align: "center",
+          },
+        },
+        {
+          ...newBlock("text"),
+          x: 42, y: 804, width: 336, height: 34, zIndex: 10,
+          props: { text: "Esperamos você.", size: "md", font: "display", bold: "", align: "center", color: "#6f6258", width: "full", fontSize: "19", lineHeight: "1.2" },
+        },
+      ],
+    }),
+  },
   blank: { label: "Em branco", build: () => ({ version: 1, blocks: [] }) },
   basic: {
     label: "Convite básico",
