@@ -210,6 +210,7 @@ export function BlockView({ block, ctx, interactive = false }: { block: Block; c
     ...(independentRadius ? { borderTopLeftRadius: Math.max(0, Number(p["radiusTopLeft"]) || radius), borderTopRightRadius: Math.max(0, Number(p["radiusTopRight"]) || radius), borderBottomRightRadius: Math.max(0, Number(p["radiusBottomRight"]) || radius), borderBottomLeftRadius: Math.max(0, Number(p["radiusBottomLeft"]) || radius) } : radius > 0 ? { borderRadius: radius } : {}),
     ...(shadow ? { boxShadow: shadow } : {}),
     ...(blur > 0 || brightness !== 100 ? { filter: `blur(${blur}px) brightness(${brightness}%)` } : {}),
+    opacity: Number.isFinite(Number(block.opacity)) ? Math.min(1, Math.max(0, Number(block.opacity))) : 1,
   };
   return (
     <div
@@ -314,7 +315,6 @@ export function InvitationCanvas({ blocks, ctx, className, background }: { block
           width: geometry.width !== undefined && Number.isFinite(geometry.width) && geometry.width > 0 ? geometry.width : undefined,
           height: geometry.height !== undefined && Number.isFinite(geometry.height) && geometry.height > 0 ? geometry.height : undefined,
           zIndex: geometry.zIndex !== undefined && Number.isFinite(geometry.zIndex) ? geometry.zIndex : undefined,
-          opacity: geometry.opacity !== undefined && Number.isFinite(geometry.opacity) ? Math.min(1, Math.max(0, geometry.opacity)) : 1,
           transform: `rotate(${safeNumber(geometry.rotation, 0)}deg) scale(${geometry.scale !== undefined && Number.isFinite(geometry.scale) && geometry.scale > 0 ? geometry.scale : 1})`,
           transformOrigin: "center",
           boxSizing: "border-box",
