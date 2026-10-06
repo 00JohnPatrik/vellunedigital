@@ -146,7 +146,7 @@ export function VisualEditor({ h, ctx, assets, bg, onBg }: { h: BlocksHistory; c
   const [toolCategory, setToolCategory] = useState("Elementos");
   const compact = useIsCompact();
   const [marquee, setMarquee] = useState<{ x: number; y: number; width: number; height: number } | null>(null);
-  const interaction = useRef<{ mode: "drag" | "resize" | "marquee"; id?: string; startX: number; startY: number; originX?: number; originY?: number; originWidth?: number; originHeight?: number; selected?: string[] } | null>(null);
+  const interaction = useRef<{ mode: "drag" | "resize" | "marquee" | "background"; id?: string; startX: number; startY: number; originX?: number; originY?: number; originWidth?: number; originHeight?: number; selected?: string[] } | null>(null);
   const clipboard = useRef<any[]>([]);
   const blocks = Array.isArray(h?.blocks) ? h.blocks : [];
   const selected = blocks.filter((block: any) => selectedIds.includes(block.id));
@@ -264,6 +264,14 @@ export function VisualEditor({ h, ctx, assets, bg, onBg }: { h: BlocksHistory; c
       setMarquee({ x: Math.min(current.startX, point.x), y: Math.min(current.startY, point.y), width: Math.abs(point.x - current.startX), height: Math.abs(point.y - current.startY) }); return;
     }
     const dx = point.x - current.startX; const dy = point.y - current.startY;
+    if (current.mode === "background") {
+      onBg?.({
+        ...((bg as any) || {}),
+        imageOffsetX: Math.round((current.originX ?? 0) + dx),
+        imageOffsetY: Math.round((current.originY ?? 0) + dy),
+      });
+      return;
+    }
     if (current.mode === "resize" && current.id) {
       const originWidth = current.originWidth ?? 320;
       const originHeight = current.originHeight ?? 92;
@@ -298,6 +306,22 @@ export function VisualEditor({ h, ctx, assets, bg, onBg }: { h: BlocksHistory; c
         };
       }), `drag:${movingIds.join(",")}`);
     }
+  };
+  const startBackgroundDrag = (event: React.PointerEvent<HTMLDivElement>) => {
+    if (!bg || !(bg as any).image) return;
+    const point = canvasPoint(event);
+    interaction.current = {
+      mode: "background",
+      startX: point.x,
+      startY: point.y,
+      originX: Number((bg as any).imageOffsetX) || 0,
+      originY: Number((bg as any).imageOffsetY) || 0,
+    };
+    setContextPanel("background");
+    setMobileSheet(compact ? "background" : mobileSheet);
+    event.currentTarget.setPointerCapture(event.pointerId);
+    event.stopPropagation();
+    event.preventDefault();
   };
   const stopInteraction = () => {
     const current = interaction.current;
@@ -379,7 +403,18 @@ export function VisualEditor({ h, ctx, assets, bg, onBg }: { h: BlocksHistory; c
         </aside>
         <main className="min-w-0 flex-1 bg-muted/30 p-2 sm:p-4 lg:p-6">
           <div className="mb-3 flex items-center justify-between gap-2 rounded-xl border border-border/70 bg-card/90 px-3 py-2 lg:hidden"><div><p className="text-xs font-semibold">Editor visual</p><p className="text-[10px] text-muted-foreground">Canvas livre e responsivo</p></div><span className="text-xs text-muted-foreground">{zoom}%</span></div>
-          <div className="h-full overflow-auto rounded-2xl border border-border/70 bg-muted/40 p-3 shadow-inner sm:p-6"><div className="mx-auto origin-top transition-transform" style={{ width: `${100 / (zoom / 100)}%`, minHeight: canvasHeight / (zoom / 100) }}><div ref={canvasRef} className={`relative isolate mx-auto w-full max-w-[768px] overflow-hidden rounded-2xl border bg-card shadow-sm ${showGrid ? "[background-image:linear-gradient(to_right,hsl(var(--border)/.25)_1px,transparent_1px),linear-gradient(to_bottom,hsl(var(--border)/.25)_1px,transparent_1px)] [background-size:16px_16px]" : ""}`} style={{ minHeight: canvasHeight, backgroundColor: bg && (bg as any).color ? (bg as any).color : undefined, transform: `scale(${zoom / 100})`, transformOrigin: "top center" }} onPointerDown={(event) => { if (event.target === event.currentTarget) { const p = canvasPoint(event); interaction.current = { mode: "marquee", startX: p.x, startY: p.y }; setSelectedIds([]); } }} onPointerMove={moveInteraction} onPointerUp={stopInteraction} onPointerCancel={stopInteraction} aria-label="Área de edição do convite"><BackgroundLayers bg={bg as any} />{blocks.length === 0 && <div className="absolute inset-0 flex items-center justify-center p-6 text-center text-sm text-muted-foreground">Adicione elementos pela barra de ferramentas.</div>}{marquee && <div className="pointer-events-none absolute z-50 border border-primary bg-primary/10" style={{ left: marquee.x, top: marquee.y, width: marquee.width, height: marquee.height }} />}<VisualTransformCanvas
+          <div className="h-full overflow-auto rounded-2xl border border-border/70 bg-muted/40 p-3 shadow-inner sm:p-6"><div className="mx-auto origin-top transition-transform" style={{ width: `${100 / (zoom / 100)}%`, minHeight: canvasHeight / (zoom / 100) }}><div ref={canvasRef} className={`relative isolate mx-auto w-full max-w-[768px] overflow-hidden rounded-2xl border bg-card shadow-sm ${showGrid ? "[background-image:linear-gradient(to_right,hsl(var(--border)/.25)_1px,transparent_1px),linear-gradient(to_bottom,hsl(var(--border)/.25)_1px,transparent_1px)] [background-size:16px_16px]" : ""}`} style={{ minHeight: canvasHeight, backgroundColor: bg && (bg as any).color ? (bg as any).color : undefined, transform: `scale(${zoom / 100})`, transformOrigin: "top center" }} onPointerDown={(event) => { if (event.target === event.currentTarget) { const p = canvasPoint(event); interaction.current = { mode: "marquee", startX: p.x, startY: p.y }; setSelectedIds([]); } }} onPointerMove={moveInteraction} onPointerUp={stopInteraction} onPointerCancel={stopInteraction} aria-label="Área de edição do convite"><BackgroundLayers bg={bg as any} />
+              {(bg as any)?.image && (
+                <div
+                  className="absolute inset-0 z-[1] cursor-grab active:cursor-grabbing"
+                  onPointerDown={startBackgroundDrag}
+                  onPointerMove={moveInteraction}
+                  onPointerUp={stopInteraction}
+                  onPointerCancel={stopInteraction}
+                  title="Arraste para reposicionar o fundo"
+                  aria-label="Mover imagem de fundo"
+                />
+              )}{blocks.length === 0 && <div className="absolute inset-0 flex items-center justify-center p-6 text-center text-sm text-muted-foreground">Adicione elementos pela barra de ferramentas.</div>}{marquee && <div className="pointer-events-none absolute z-50 border border-primary bg-primary/10" style={{ left: marquee.x, top: marquee.y, width: marquee.width, height: marquee.height }} />}<VisualTransformCanvas
               blocks={blocks}
               selectedIds={selectedIds}
               zoom={zoom}
