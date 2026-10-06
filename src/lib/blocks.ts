@@ -33,6 +33,7 @@ export function validateContent(c: unknown): string | null {
     if (b.height !== undefined && b.height <= 0) return "A altura do bloco deve ser maior que zero.";
     if (b.scale !== undefined && b.scale <= 0) return "A escala do bloco deve ser maior que zero.";
     if (b.opacity !== undefined && (b.opacity < 0 || b.opacity > 1)) return "A opacidade do bloco deve estar entre 0 e 1.";
+    if (b.animation !== undefined && (!b.animation || typeof b.animation !== "object")) return "A animação do bloco é inválida.";
   }
   return null;
 }

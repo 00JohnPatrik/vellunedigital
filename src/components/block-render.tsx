@@ -7,6 +7,7 @@ import { BLOCKS, getBlockGeometry, type Background, type Block } from "@/lib/tem
 import { fontCss, formatDate, formatTime, isKnownType, pick, type EventCtx } from "@/lib/blocks";
 import { cn } from "@/lib/utils";
 import { useAssetUrl } from "@/lib/assets";
+import { animationStyle, normalizeAnimation, parallaxStyle } from "@/lib/invitation-editor-animation";
 
 const ALIGN: Record<string, string> = { left: "justify-start text-left", center: "justify-center text-center", right: "justify-end text-right" };
 const WIDTH: Record<string, string> = { auto: "w-auto max-w-full", partial: "w-full sm:w-2/3", full: "w-full" };
@@ -57,6 +58,52 @@ function useNow(active: boolean) {
   const [now, setNow] = useState(() => Date.now());
   useEffect(() => { if (!active) return; const t = setInterval(() => setNow(Date.now()), 1000); return () => clearInterval(t); }, [active]);
   return now;
+}
+
+function useReducedMotion() {
+  const [reduced, setReduced] = useState(false);
+  useEffect(() => {
+    const media = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const update = () => setReduced(media.matches);
+    update();
+    media.addEventListener("change", update);
+    return () => media.removeEventListener("change", update);
+  }, []);
+  return reduced;
+}
+
+function useBlockAnimation(animationValue: unknown, selected: boolean) {
+  const animation = normalizeAnimation(animationValue);
+  const reducedMotion = useReducedMotion();
+  const [playing, setPlaying] = useState(animation.trigger === "on_load");
+  const [parallax, setParallax] = useState({ x: 0, y: 0 });
+  const ref = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    setPlaying(animation.trigger === "on_load");
+  }, [animation.trigger, animation.enabled]);
+
+  useEffect(() => {
+    if (animation.trigger !== "on_scroll" || !ref.current) return;
+    const observer = new IntersectionObserver(([entry]) => setPlaying(Boolean(entry?.isIntersecting)), { threshold: 0.15 });
+    observer.observe(ref.current);
+    return () => observer.disconnect();
+  }, [animation.trigger]);
+
+  useEffect(() => {
+    if (!animation.parallax || reducedMotion || typeof window === "undefined") return;
+    const onPointer = (event: PointerEvent) => {
+      setParallax({ x: (event.clientX / Math.max(1, window.innerWidth) - 0.5) * 2, y: (event.clientY / Math.max(1, window.innerHeight) - 0.5) * 2 });
+    };
+    window.addEventListener("pointermove", onPointer, { passive: true });
+    return () => window.removeEventListener("pointermove", onPointer);
+  }, [animation.parallax, reducedMotion]);
+
+  const style = {
+    ...animationStyle(animation, { playing, selected, reducedMotion }),
+    ...parallaxStyle(animation, parallax, !reducedMotion),
+  } as CSSProperties;
+  return { ref, style, playing, setPlaying, animation };
 }
 
 function Countdown({ p, ctx }: { p: Record<string, string>; ctx?: EventCtx | undefined }) {
@@ -195,8 +242,13 @@ function BlockContent({ block, ctx, interactive = false }: { block: Block; ctx?:
   }
 }
 
-export function BlockView({ block, ctx, interactive = false }: { block: Block; ctx?: EventCtx | undefined; interactive?: boolean }) {
+export function BlockView({ block, ctx, interactive = false, selected = false, index = 0 }: { block: Block; ctx?: EventCtx | undefined; interactive?: boolean; selected?: boolean; index?: number }) {
   const p = block.props ?? {};
+  const animationState = useBlockAnimation(block.animation, selected);
+  const animation = animationState.animation;
+  const handleInteraction = () => {
+    if (animation.trigger === "on_click") animationState.setPlaying(true);
+  };
   const fill = p["fill"] ?? "none";
   const borderWidth = Math.min(20, Math.max(0, Number(p["borderWidth"]) || 0));
   const radius = Math.max(0, Math.min(160, Number(p["borderRadius"]) || 0));
@@ -220,8 +272,15 @@ export function BlockView({ block, ctx, interactive = false }: { block: Block; c
       data-editor-block={block.id}
       data-editor-block-locked={block.locked ? "true" : "false"}
       data-editor-block-visibility={block.visibility === false || block.hidden ? "hidden" : "visible"}
+      ref={animationState.ref}
       className="relative min-h-0 min-w-0 h-full w-full"
-      style={appearance}
+      style={{ ...appearance, ...animationState.style }}
+      onMouseEnter={() => { if (animation.trigger === "on_hover") animationState.setPlaying(true); }}
+      onMouseLeave={() => { if (animation.trigger === "on_hover") animationState.setPlaying(false); }}
+      onClick={handleInteraction}
+      role={animation.trigger === "on_click" ? "button" : undefined}
+      tabIndex={animation.trigger === "on_click" ? 0 : undefined}
+      aria-label={animation.trigger === "on_click" ? "Ativar animação do elemento" : undefined}
     >
       <BlockContent block={block} ctx={ctx} interactive={interactive} />
     </div>
@@ -334,7 +393,7 @@ export function InvitationCanvas({ blocks, ctx, className, background }: { block
           transformOrigin: "center",
           boxSizing: "border-box",
         } : {};
-        return <div key={b.id} className={cn("min-w-0", free && "overflow-visible")} style={frame}><BlockView block={b} ctx={ctx} interactive /></div>;
+        return <div key={b.id} className={cn("min-w-0", free && "overflow-visible")} style={frame}><BlockView block={b} ctx={ctx} interactive index={index} /></div>;
       }) : <p className="py-10 text-center text-sm text-muted-foreground">Este convite ainda não possui blocos.</p>}
     </div>
   );

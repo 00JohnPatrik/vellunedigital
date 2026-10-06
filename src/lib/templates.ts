@@ -1,5 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { Status } from "@/components/admin-ui";
+import type { EditorAnimation } from "@/lib/invitation-editor-animation";
 
 export const CATEGORIES = [
   { value: "casamento", label: "Casamento" },
@@ -51,6 +52,7 @@ export type Block = {
   hidden?: boolean;
   locked?: boolean;
   groupId?: string;
+  animation?: EditorAnimation;
 };
 
 export const BLOCK_GEOMETRY_KEYS = ["x", "y", "width", "height", "rotation", "zIndex", "scale", "opacity"] as const;

@@ -94,6 +94,8 @@ export function parallaxStyle(animationValue: unknown, offset: { x: number; y: n
   const animation = normalizeAnimation(animationValue);
   if (!enabled || !animation.parallax) return {};
   return {
-    transform: `translate3d(${offset.x * animation.parallax / MAX_PARALLAX}px, ${offset.y * animation.parallax / MAX_PARALLAX}px, ${animation.depth}px)`,
+    "--vellune-parallax-x": `${offset.x * animation.parallax / MAX_PARALLAX}px`,
+    "--vellune-parallax-y": `${offset.y * animation.parallax / MAX_PARALLAX}px`,
+    "--vellune-parallax-z": `${animation.depth}px`,
   } as Record<string, string>;
 }
