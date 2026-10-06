@@ -248,7 +248,9 @@ export function BackgroundLayers({ bg }: { bg?: Background | undefined }) {
   const overlay = Math.min(40, Math.max(0, Number(bg?.overlay) || 0));
   const scale = Math.min(300, Math.max(10, Number(bg?.imageScale) || 100));
   const imageOpacity = Math.min(1, Math.max(0, Number.isFinite(Number(bg?.imageOpacity)) ? Number(bg?.imageOpacity) : 1));
-  const position = `${bg?.x ?? "center"} ${bg?.y ?? "center"}`;
+  const offsetX = Number(bg?.imageOffsetX) || 0;
+  const offsetY = Number(bg?.imageOffsetY) || 0;
+  const position = `calc(${bg?.x === "left" ? "0%" : bg?.x === "right" ? "100%" : "50%"} + ${offsetX}px) calc(${bg?.y === "top" ? "0%" : bg?.y === "bottom" ? "100%" : "50%"} + ${offsetY}px)`;
   const coverZoom = bg?.size === "cover" ? Math.max(1, scale / 100) : 1;
   const imageSize = bg?.size === "contain" ? `${scale}% auto` : "cover";
   return (
