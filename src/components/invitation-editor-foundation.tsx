@@ -55,12 +55,17 @@ function canvasBackgroundStyle(background?: Record<string, unknown>) {
   const opacity = Number(background?.imageOpacity ?? 1);
   const positionX = typeof background?.x === "string" ? background.x : "center";
   const positionY = typeof background?.y === "string" ? background.y : "center";
+  const fit = typeof background?.fit === "string" ? background.fit : "cover";
+  const rotation = Number(background?.rotation || 0);
+  const imageSize = fit === "fill" ? "100% 100%" : fit === "contain" ? `${Math.max(25, Math.min(200, scale))}% ${Math.max(25, Math.min(200, scale))}%` : `${Math.max(25, Math.min(200, scale))}% auto`;
   return {
     backgroundColor: color || undefined,
     backgroundImage: image ? `linear-gradient(rgb(255 255 255 / ${Math.max(0, Math.min(1, 1 - opacity))}), rgb(255 255 255 / ${Math.max(0, Math.min(1, 1 - opacity))})), url(\"${image}\")` : gradient || undefined,
-    backgroundSize: image ? `${Math.max(25, Math.min(200, scale))}% auto` : undefined,
+    backgroundSize: image ? imageSize : undefined,
     backgroundPosition: image ? `${positionX} ${positionY}` : undefined,
     backgroundRepeat: image ? "no-repeat" : undefined,
+    backgroundOrigin: "border-box",
+    transform: rotation ? `rotate(${rotation}deg)` : undefined,
   } as React.CSSProperties;
 }
 
@@ -245,7 +250,7 @@ export function InvitationEditorFoundation({ invitationId, content, onSave }: Pr
       {viewMode === "edit" && <aside className="hidden border-l bg-card/80 p-4 xl:block"><div className="sticky top-0"><div className="mb-4 flex items-center gap-2 border-b pb-3"><MousePointer2 className="h-4 w-4 text-primary" /><div><p className="text-sm font-semibold">Propriedades</p><p className="text-[11px] text-muted-foreground">Ajustes do elemento selecionado</p></div></div>{sectionSelected ? <SectionBackgroundProperties background={sectionBackground} onChange={updateSectionBackground} /> : <Properties selected={primary} count={selected.length} update={updateSelected} remove={remove} duplicate={duplicate} group={group} ungroup={ungroup} />}</div></aside>}
     </div>
     <div className="flex flex-wrap items-center gap-3 border-t bg-card p-3 sm:p-4"><div className="flex items-center gap-2"><Layers3 className="h-4 w-4 text-primary" /><span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Seções</span></div><div className="flex min-w-0 flex-1 gap-2 overflow-x-auto pb-1">{h.document.sections.map((section, index) => <button key={section.id} type="button" className={cn("whitespace-nowrap rounded-lg border bg-background px-3 py-1.5 text-xs transition-colors hover:border-primary hover:bg-primary/5", index === 0 && "border-primary/40 bg-primary/5 text-primary")}><span className="mr-1.5 text-[10px] text-muted-foreground">{String(index + 1).padStart(2, "0")}</span>{section.name}</button>)}</div><Button size="sm" variant="outline" className="shrink-0" onClick={() => { localStorage.removeItem(localRecoveryKey(invitationId)); setState("saved"); }}>Limpar recuperação</Button></div>
-    <Sheet open={panel !== null} onOpenChange={(open) => !open && setPanel(null)}><SheetContent side="bottom" className="max-h-[84vh] overflow-y-auto"><SheetHeader><SheetTitle>{panel === "library" ? "Biblioteca de mídia e elementos" : panel === "layers" ? "Camadas" : "Propriedades"}</SheetTitle></SheetHeader><div className="mt-4">{panel === "library" ? <LibraryPanel library={library} search={search} setSearch={setSearch} category={category} setCategory={setCategory} favorite={favorite} setFavorite={setFavorite} error={assetError} /> : panel === "layers" ? <LayersPanel elements={h.document.elements} selectedIds={selectedIds} select={select} /> : <Properties selected={primary} count={selected.length} update={updateSelected} remove={remove} duplicate={duplicate} group={group} ungroup={ungroup} />}</div></SheetContent></Sheet>
+    <Sheet open={panel !== null} onOpenChange={(open) => !open && setPanel(null)}><SheetContent side="bottom" className="max-h-[84vh] overflow-y-auto"><SheetHeader><SheetTitle>{panel === "library" ? "Biblioteca de mídia e elementos" : panel === "layers" ? "Camadas" : "Propriedades"}</SheetTitle></SheetHeader><div className="mt-4">{panel === "library" ? <LibraryPanel library={library} search={search} setSearch={setSearch} category={category} setCategory={setCategory} favorite={favorite} setFavorite={setFavorite} error={assetError} /> : panel === "layers" ? <LayersPanel elements={h.document.elements} selectedIds={selectedIds} select={select} /> : sectionSelected ? <SectionBackgroundProperties background={sectionBackground} onChange={updateSectionBackground} /> : <Properties selected={primary} count={selected.length} update={updateSelected} remove={remove} duplicate={duplicate} group={group} ungroup={ungroup} />}</div></SheetContent></Sheet>
     <ExperimentalTemplateLibrary open={templateLibraryOpen} document={h.document} onClose={() => setTemplateLibraryOpen(false)} onApply={applyLibraryItem} />
   </section></TooltipProvider>;
 }
@@ -295,12 +300,37 @@ function LayersPanel({ elements, selectedIds, select }: any) { return <div class
 function SectionBackgroundProperties({ background, onChange }: { background: Record<string, unknown>; onChange: (background: Record<string, unknown>) => void }) {
   const value = (key: string, fallback = "") => String(background[key] ?? fallback);
   const update = (patch: Record<string, unknown>) => onChange({ ...background, ...patch });
+  const uploadLocalImage = (file: any) => {
+    if (!file) return;
+    const accepted = ["image/jpeg", "image/png", "image/webp"];
+    if (!accepted.includes(file.type)) return;
+    if (file.size > 10 * 1024 * 1024) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (typeof reader.result === "string") update({ image: reader.result, imageSource: "local" });
+    };
+    reader.readAsDataURL(file);
+  };
   return <div className="space-y-4 rounded-xl border border-primary/20 bg-primary/5 p-3">
-    <div><p className="text-sm font-semibold">Fundo da seção</p><p className="text-xs text-muted-foreground">Aplicado diretamente no canvas do convite.</p></div>
+    <div><p className="text-sm font-semibold">Fundo do convite</p><p className="text-xs text-muted-foreground">Aplicado diretamente no único canvas e mantido apenas no estado experimental.</p></div>
     <label className="block space-y-1 text-xs text-muted-foreground">Cor<input type="color" value={value("color", "#ffffff")} onChange={(event) => update({ color: event.target.value })} className="h-9 w-full cursor-pointer rounded-md border bg-background p-1" /></label>
     <label className="block space-y-1 text-xs text-muted-foreground">Gradiente CSS<Input value={value("gradient")} onChange={(event) => update({ gradient: event.target.value })} placeholder="linear-gradient(135deg, #fff, #e8d8ff)" /></label>
-    <label className="block space-y-1 text-xs text-muted-foreground">Imagem ou textura<Input value={value("image")} onChange={(event) => update({ image: event.target.value })} placeholder="https://..." /></label>
-    {value("image") && <><label className="block space-y-1 text-xs text-muted-foreground">Escala: {Math.round(Number(background.imageScale ?? 100))}%<input type="range" min="25" max="200" step="5" value={Number(background.imageScale ?? 100)} onChange={(event) => update({ imageScale: Number(event.target.value) })} className="w-full accent-primary" /></label><label className="block space-y-1 text-xs text-muted-foreground">Opacidade: {Math.round(Number(background.imageOpacity ?? 1) * 100)}%<input type="range" min="0" max="1" step="0.05" value={Number(background.imageOpacity ?? 1)} onChange={(event) => update({ imageOpacity: Number(event.target.value) })} className="w-full accent-primary" /></label></>}
+    <div className="space-y-2 rounded-lg border bg-background/70 p-2.5">
+      <p className="text-xs font-medium text-foreground">Imagem</p>
+      <label className="flex cursor-pointer items-center justify-center rounded-md border border-dashed border-primary/40 bg-primary/5 px-3 py-3 text-center text-xs text-muted-foreground transition-colors hover:bg-primary/10">
+        <input type="file" accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp" className="sr-only" onChange={(event) => uploadLocalImage(event.target.files?.[0])} />
+        Enviar JPG, PNG ou WebP
+      </label>
+      <Input value={value("image")} onChange={(event) => update({ image: event.target.value, imageSource: "url" })} placeholder="Ou cole uma URL https://..." />
+      <p className="text-[11px] text-muted-foreground">O upload local é aplicado imediatamente e não cria elemento comum.</p>
+    </div>
+    {value("image") && <div className="space-y-3 rounded-lg border bg-background/70 p-2.5">
+      <label className="block space-y-1 text-xs text-muted-foreground">Preenchimento<select value={value("fit", "cover")} onChange={(event) => update({ fit: event.target.value })} className="h-9 w-full rounded-md border bg-background px-2 text-foreground"><option value="cover">Cover · cobrir</option><option value="contain">Contain · conter</option><option value="fill">Fill · preencher</option></select></label>
+      <label className="block space-y-1 text-xs text-muted-foreground">Zoom: {Math.round(Number(background.imageScale ?? 100))}%<input type="range" min="25" max="200" step="5" value={Number(background.imageScale ?? 100)} onChange={(event) => update({ imageScale: Number(event.target.value) })} className="w-full accent-primary" /></label>
+      <div className="grid grid-cols-2 gap-2"><label className="block space-y-1 text-xs text-muted-foreground">Posição horizontal<select value={value("x", "center")} onChange={(event) => update({ x: event.target.value })} className="h-9 w-full rounded-md border bg-background px-2 text-foreground"><option value="left">Esquerda</option><option value="center">Centro</option><option value="right">Direita</option></select></label><label className="block space-y-1 text-xs text-muted-foreground">Posição vertical<select value={value("y", "center")} onChange={(event) => update({ y: event.target.value })} className="h-9 w-full rounded-md border bg-background px-2 text-foreground"><option value="top">Topo</option><option value="center">Centro</option><option value="bottom">Base</option></select></label></div>
+      <label className="block space-y-1 text-xs text-muted-foreground">Opacidade: {Math.round(Number(background.imageOpacity ?? 1) * 100)}%<input type="range" min="0" max="1" step="0.05" value={Number(background.imageOpacity ?? 1)} onChange={(event) => update({ imageOpacity: Number(event.target.value) })} className="w-full accent-primary" /></label>
+      <details><summary className="cursor-pointer text-xs font-medium text-foreground">Mais opções</summary><label className="mt-3 block space-y-1 text-xs text-muted-foreground">Rotação: {Number(background.rotation ?? 0)}°<input type="range" min="-180" max="180" step="1" value={Number(background.rotation ?? 0)} onChange={(event) => update({ rotation: Number(event.target.value) })} className="w-full accent-primary" /></label></details>
+    </div>}
     <Button type="button" size="sm" variant="outline" onClick={() => onChange({})}>Limpar fundo</Button>
   </div>;
 }
