@@ -1,6 +1,7 @@
 // @ts-nocheck
 import { useCallback, useEffect, useRef, useState } from "react";
 import { BackgroundLayers, BlockView } from "@/components/block-render";
+import { VisualTransformCanvas } from "@/components/visual-transform-canvas";
 import { ImageUpload } from "@/components/image-upload";
 import { BLOCKS, newBlock, type Block, type BlockType } from "@/lib/templates";
 
