@@ -6,6 +6,7 @@ import { VisualTransformCanvas } from "@/components/visual-transform-canvas";
 import { BackgroundPropertiesPanel, ContextualPropertiesPanel } from "@/components/contextual-properties-panel";
 import { BLOCKS, getBlockDefaultSize, getNextBlockZIndex, moveBlockLayer, newBlock, resolveBlockGeometry, type Block, type BlockType } from "@/lib/templates";
 import { ElementsLibrary } from "@/components/elements-library";
+import { TemplateGallery } from "@/components/template-gallery";
 import { Grid3X3, Minus, Plus, Redo2, Undo2, PanelLeft, PanelRight, Sparkles } from "lucide-react";
 
 function useIsCompact() {
@@ -145,6 +146,7 @@ export function VisualEditor({ h, ctx, assets, bg, onBg }: { h: BlocksHistory; c
   const [contextPanel, setContextPanel] = useState<"elements" | "layers" | "background" | "view" | null>("elements");
   const [mobileSheet, setMobileSheet] = useState<"elements" | "layers" | "properties" | "background" | "view" | null>(null);
   const [toolCategory, setToolCategory] = useState("Elementos");
+  const [templateOpen, setTemplateOpen] = useState(false);
   const compact = useIsCompact();
   const [marquee, setMarquee] = useState<{ x: number; y: number; width: number; height: number } | null>(null);
   const interaction = useRef<{ mode: "drag" | "resize" | "marquee" | "background"; id?: string; startX: number; startY: number; originX?: number; originY?: number; originWidth?: number; originHeight?: number; selected?: string[] } | null>(null);
@@ -153,6 +155,13 @@ export function VisualEditor({ h, ctx, assets, bg, onBg }: { h: BlocksHistory; c
   const selected = blocks.filter((block: any) => selectedIds.includes(block.id));
   const editorCategories = EDITOR_CATEGORIES;
   const categoryGroups = editorCategories;
+  const applyStarterTemplate = (content: any) => {
+    h.set(structuredClone(content.blocks ?? []), "template:apply");
+    onBg?.(structuredClone(content.settings?.background ?? {}));
+    setSelectedIds([]);
+    setContextPanel("elements");
+    setToolCategory("Elementos");
+  };
   const addBlockByType = (type: BlockType) => {
     if (type === "rsvp" && blocks.some((block: any) => block.type === "rsvp")) {
       window.alert(RSVP_DUP);
@@ -397,8 +406,15 @@ export function VisualEditor({ h, ctx, assets, bg, onBg }: { h: BlocksHistory; c
       <div className="flex min-h-0 flex-1 flex-col lg:flex-row">
         <aside className="hidden w-[236px] shrink-0 flex-col border-r border-border/70 bg-card/95 lg:flex" aria-label="Ferramentas do editor">
           <div className="border-b border-border/70 p-3">
-            <p className="text-sm font-semibold text-foreground">Ferramentas</p>
-            <p className="mt-1 text-xs text-muted-foreground">Adicione e organize o convite.</p>
+            <div className="flex items-center justify-between gap-2">
+              <div>
+                <p className="text-sm font-semibold text-foreground">Ferramentas</p>
+                <p className="mt-1 text-xs text-muted-foreground">Adicione e organize o convite.</p>
+              </div>
+              <button type="button" onClick={() => setTemplateOpen(true)} className="inline-flex h-8 items-center gap-1.5 rounded-md border border-primary/30 bg-primary/10 px-2.5 text-[11px] font-medium text-primary transition hover:bg-primary/15" aria-label="Abrir modelos">
+                <Sparkles className="h-3.5 w-3.5" />Modelos
+              </button>
+            </div>
           </div>
           <div className="grid grid-cols-2 gap-1.5 border-b border-border/70 p-3">
             {(["text", "image", "gallery", "date", "time", "location", "button", "divider"] as BlockType[]).map((type) => (
@@ -539,6 +555,7 @@ export function VisualEditor({ h, ctx, assets, bg, onBg }: { h: BlocksHistory; c
         </div> : <ElementsLibrary availableTypes={(categoryGroups[toolCategory] || []) as BlockType[]} onAdd={addBlockByType} />}
       </section>
       <p className="text-xs text-muted-foreground">Arraste com mouse ou toque, use Shift para snap, Shift/Ctrl para múltipla seleção, Ctrl/Cmd+C para copiar, Ctrl/Cmd+V para colar e arraste o fundo para selecionar uma área. Alterações são persistidas pelo autosave existente.</p>
+      <TemplateGallery open={templateOpen} onClose={() => setTemplateOpen(false)} onApply={applyStarterTemplate} hasContent={blocks.length > 0} />
     </div>
   );
   /*
