@@ -1,4 +1,4 @@
-import { useEffect, useState, type CSSProperties, type ReactNode } from "react";
+import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { AlertTriangle, CalendarDays, ChevronLeft, ChevronRight, Clock, Maximize2, MapPin, MessageCircle, Navigation, X } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import { PreviewImage } from "@/components/template-ui";
