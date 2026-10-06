@@ -165,12 +165,25 @@ function BlockContent({ block, ctx, interactive = false }: { block: Block; ctx?:
 }
 
 export function BlockView({ block, ctx, interactive = false }: { block: Block; ctx?: EventCtx | undefined; interactive?: boolean }) {
+  const p = block.props ?? {};
+  const fill = p["fill"] ?? "none";
+  const borderWidth = Math.min(20, Math.max(0, Number(p["borderWidth"]) || 0));
+  const appearance: CSSProperties = {
+    ...(fill === "solid" && p["fillColor"] ? { backgroundColor: p["fillColor"] } : {}),
+    ...(fill === "gradient" && p["fillGradient"] ? { backgroundImage: p["fillGradient"] } : {}),
+    ...(borderWidth > 0 ? {
+      borderWidth,
+      borderStyle: (p["borderStyle"] as CSSProperties["borderStyle"]) || "solid",
+      borderColor: p["borderColor"] || "currentColor",
+    } : {}),
+  };
   return (
     <div
       data-editor-block={block.id}
       data-editor-block-locked={block.locked ? "true" : "false"}
       data-editor-block-visibility={block.visibility === false || block.hidden ? "hidden" : "visible"}
       className="relative min-h-0 min-w-0 h-full w-full"
+      style={appearance}
     >
       <BlockContent block={block} ctx={ctx} interactive={interactive} />
     </div>
