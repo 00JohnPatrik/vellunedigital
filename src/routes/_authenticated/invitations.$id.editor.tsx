@@ -58,6 +58,21 @@ function EditorForm({ inv }: { inv: Invitation }) {
   const [publishing, setPublishing] = useState(false);
   const navigate = useNavigate();
 
+  const openEditorPreview = () => {
+    try {
+      sessionStorage.setItem(`editor-preview-snapshot:${inv.id}`, JSON.stringify({
+        savedAt: Date.now(),
+        blocks: h.blocks,
+        background: bg,
+        event: v,
+        customerId,
+      }));
+    } catch {
+      // A prévia continua funcionando com o conteúdo salvo se o armazenamento estiver indisponível.
+    }
+    void navigate({ to: "/invitations/$id/preview", params: { id: inv.id } });
+  };
+
   const snap = useRef({ v, customerId, blocks: h.blocks, bg });
   snap.current = { v, customerId, blocks: h.blocks, bg };
   const version = useRef(0);
@@ -137,7 +152,7 @@ function EditorForm({ inv }: { inv: Invitation }) {
     <Button type="button" size="sm" variant="outline" onClick={() => setRsvpOpen(true)}><UserCheck className="h-4 w-4" /><span className="hidden sm:inline">RSVP</span></Button>
     <Button type="button" size="sm" variant="outline" asChild><Link to="/invitations/$id/guests" params={{ id: inv.id }}><Users className="h-4 w-4" /><span className="hidden sm:inline">Convidados</span></Link></Button>
     <Button type="button" size="sm" variant="outline" asChild><Link to="/invitations/$id/checkin" params={{ id: inv.id }}><QrCode className="h-4 w-4" /><span className="hidden sm:inline">Check-in</span></Link></Button>
-    <Button type="button" size="sm" variant="outline" asChild><Link to="/invitations/$id/preview" params={{ id: inv.id }}><Eye className="h-4 w-4" /><span className="hidden sm:inline">Visualizar</span></Link></Button>
+    <Button type="button" size="sm" variant="outline" onClick={openEditorPreview}><Eye className="h-4 w-4" /><span className="hidden sm:inline">Visualizar</span></Button>
     <Button type="button" size="sm" onClick={() => void save(true)} disabled={state === "saving"}>{state === "saving" && <Loader2 className="h-4 w-4 animate-spin" />}Salvar</Button>
     {isPublic ? <Button type="button" size="sm" variant="secondary" onClick={() => setShareOpen(true)}><Share2 className="h-4 w-4" /><span className="hidden sm:inline">Compartilhar</span></Button> : <Button type="button" size="sm" variant="secondary" onClick={() => void publish()} disabled={publishing}>{publishing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}<span className="hidden sm:inline">Publicar convite</span></Button>}
   </>;
@@ -164,7 +179,7 @@ function EditorForm({ inv }: { inv: Invitation }) {
         <div className="fixed inset-x-2 bottom-2 z-40 grid grid-cols-4 gap-1 rounded-2xl border border-border/80 bg-card/95 p-1.5 shadow-2xl shadow-black/30 backdrop-blur-xl md:hidden" role="toolbar" aria-label="Ações rápidas do editor">
           <Button type="button" size="sm" variant="ghost" className="h-11 flex-col gap-0.5 px-1 text-[10px]" onClick={() => setEventOpen(true)}><SlidersHorizontal className="h-4 w-4" />Dados</Button>
           <Button type="button" size="sm" variant="ghost" className="h-11 flex-col gap-0.5 px-1 text-[10px]" onClick={() => setRsvpOpen(true)}><UserCheck className="h-4 w-4" />RSVP</Button>
-          <Button type="button" size="sm" variant="ghost" className="h-11 flex-col gap-0.5 px-1 text-[10px]" asChild><Link to="/invitations/$id/preview" params={{ id: inv.id }}><Eye className="h-4 w-4" />Preview</Link></Button>
+          <Button type="button" size="sm" variant="ghost" className="h-11 flex-col gap-0.5 px-1 text-[10px]" onClick={openEditorPreview}><Eye className="h-4 w-4" />Preview</Button>
           <Button type="button" size="sm" variant="default" className="h-11 flex-col gap-0.5 px-1 text-[10px]" onClick={() => void save(true)} disabled={state === "saving"}><PanelBottom className="h-4 w-4" />Salvar</Button>
         </div>
 
