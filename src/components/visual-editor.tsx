@@ -98,6 +98,18 @@ const CONTROLS: Record<BlockType, Ctl[]> = {
     { k: "show_city", label: "Mostrar cidade/UF", t: "switch" }, { k: "show_directions", label: "Botão \"Como chegar\"", t: "switch" }, ALIGN,
   ],
   countdown: [SOURCE, { k: "target", label: "Data e hora personalizadas", t: "datetime-local" }, { k: "title", label: "Título", t: "text" }, ALIGN],
+  shape: [
+    { k: "shape", label: "Forma", t: "select", options: [["rectangle", "Retângulo"], ["circle", "Círculo"], ["triangle", "Triângulo"], ["star", "Estrela"], ["heart", "Coração"]] },
+    { k: "fill", label: "Preenchimento", t: "select", options: [["none", "Nenhum"], ["solid", "Sólido"], ["gradient", "Gradiente"]] },
+    { k: "fillColor", label: "Cor", t: "color" },
+    { k: "borderColor", label: "Cor da borda", t: "color" },
+    { k: "borderWidth", label: "Espessura da borda", t: "text" },
+  ],
+  decoration: [
+    { k: "shape", label: "Decoração", t: "select", options: [["line", "Linha"], ["circle", "Círculo"], ["star", "Estrela"], ["heart", "Coração"]] },
+    { k: "borderColor", label: "Cor", t: "color" },
+    { k: "borderWidth", label: "Espessura", t: "text" },
+  ],
   rsvp: [{ k: "title", label: "Texto acima do botão", t: "text" }, { k: "label", label: "Texto do botão", t: "text" }, { k: "preset", label: "Preset visual", t: "select", options: [["classic", "Clássico"], ["pill", "Pílula"], ["minimal", "Minimalista"], ["square", "Quadrado"]] }, BTN_STYLE, { k: "fontFamily", label: "Fonte", t: "text" }, { k: "fontSize", label: "Tamanho da fonte", t: "text" }, { k: "fontWeight", label: "Peso da fonte", t: "select", options: [["400", "Regular"], ["500", "Médio"], ["600", "Semibold"], ["700", "Negrito"]] }, { k: "textTransform", label: "Texto", t: "select", options: [["none", "Normal"], ["uppercase", "Maiúsculas"], ["capitalize", "Inicial maiúscula"]] }, { k: "textColor", label: "Cor do texto", t: "color" }, { k: "backgroundColor", label: "Cor do botão", t: "color" }, { k: "borderColor", label: "Cor da borda", t: "color" }, { k: "radius", label: "Raio dos cantos", t: "text" }, { k: "paddingX", label: "Espaçamento horizontal", t: "text" }, { k: "paddingY", label: "Espaçamento vertical", t: "text" }, { k: "shadow", label: "Sombra", t: "select", options: [["none", "Nenhuma"], ["soft", "Suave"], ["strong", "Intensa"]] }, WIDTH, ALIGN],
   whatsapp: [{ k: "label", label: "Texto do botão", t: "text" }, { k: "phone", label: "Telefone", t: "tel" }, { k: "message", label: "Mensagem", t: "text" }, BTN_STYLE, WIDTH, ALIGN],
   button: [{ k: "label", label: "Texto", t: "text" }, { k: "url", label: "Link (https://...)", t: "url" }, { k: "preset", label: "Preset visual", t: "select", options: [["classic", "Clássico"], ["pill", "Pílula"], ["minimal", "Minimalista"], ["square", "Quadrado"]] }, BTN_STYLE, { k: "fontFamily", label: "Fonte", t: "text" }, { k: "fontSize", label: "Tamanho da fonte", t: "text" }, { k: "fontWeight", label: "Peso da fonte", t: "select", options: [["400", "Regular"], ["500", "Médio"], ["600", "Semibold"], ["700", "Negrito"]] }, { k: "textTransform", label: "Texto", t: "select", options: [["none", "Normal"], ["uppercase", "Maiúsculas"], ["capitalize", "Inicial maiúscula"]] }, { k: "textColor", label: "Cor do texto", t: "color" }, { k: "backgroundColor", label: "Cor do botão", t: "color" }, { k: "borderColor", label: "Cor da borda", t: "color" }, { k: "radius", label: "Raio dos cantos", t: "text" }, { k: "paddingX", label: "Espaçamento horizontal", t: "text" }, { k: "paddingY", label: "Espaçamento vertical", t: "text" }, { k: "shadow", label: "Sombra", t: "select", options: [["none", "Nenhuma"], ["soft", "Suave"], ["strong", "Intensa"]] }, WIDTH, ALIGN],
@@ -417,7 +429,7 @@ export function VisualEditor({ h, ctx, assets, bg, onBg }: { h: BlocksHistory; c
             </div>
           </div>
           <div className="grid grid-cols-2 gap-1.5 border-b border-border/70 p-3">
-            {(["text", "image", "gallery", "date", "time", "location", "button", "divider"] as BlockType[]).map((type) => (
+            {(["text", "image", "gallery", "date", "time", "location", "button", "divider", "shape", "decoration"] as BlockType[]).map((type) => (
               <button key={type} type="button" className="rounded-lg border border-border/70 bg-background px-2 py-2 text-left text-[11px] text-muted-foreground transition hover:border-primary/50 hover:bg-primary/5 hover:text-foreground" onClick={() => addElement(type)}>
                 + {BLOCKS[type].label}
               </button>
@@ -552,7 +564,7 @@ export function VisualEditor({ h, ctx, assets, bg, onBg }: { h: BlocksHistory; c
               <button type="button" className="rounded px-1.5 py-1 text-[11px] text-destructive hover:bg-destructive/10" aria-label={`Excluir ${getBlockLabel(block)}`} onClick={() => removeByIds([block.id])}>Excluir</button>
             </div>)}
           </div>
-        </div> : <ElementsLibrary availableTypes={(categoryGroups[toolCategory] || []) as BlockType[]} onAdd={addBlockByType} />}
+        </div> : <ElementsLibrary availableTypes={Object.keys(BLOCKS) as BlockType[]} onAdd={addBlockByType} />}
       </section>
       <p className="text-xs text-muted-foreground">Arraste com mouse ou toque, use Shift para snap, Shift/Ctrl para múltipla seleção, Ctrl/Cmd+C para copiar, Ctrl/Cmd+V para colar e arraste o fundo para selecionar uma área. Alterações são persistidas pelo autosave existente.</p>
       <TemplateGallery open={templateOpen} onClose={() => setTemplateOpen(false)} onApply={applyStarterTemplate} hasContent={blocks.length > 0} />

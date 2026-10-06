@@ -127,7 +127,13 @@ export function ElementsLibrary({ availableTypes, onAdd, assets, onAddImage }: E
       add({ id: "shape-rectangle", label: "Retângulo visual", description: "Insere um bloco de texto pronto para receber preenchimento, borda e cantos personalizados.", category: "Elementos", type: "text", preview: "rectangle", eyebrow: "Preset visual", tags: ["forma", "retângulo"] });
     }
 
-    if (has("divider")) add({ id: "divider", label: "Linha decorativa", description: "Separador visual para criar ritmo e organizar a composição.", category: "Elementos", type: "divider", preview: "line", eyebrow: "Decoração", tags: ["linha", "separador"] });
+    if (has("shape")) {
+      add({ id: "shape-rectangle", label: "Retângulo", description: "Forma versátil para criar cartões, destaques e áreas de composição.", category: "Elementos", type: "shape", preview: "rectangle", eyebrow: "Forma", tags: ["forma", "retângulo", "cartão"] });
+      add({ id: "shape-circle", label: "Círculo", description: "Forma circular para criar pontos de destaque e composições decorativas.", category: "Elementos", type: "shape", preview: "circle", eyebrow: "Forma", tags: ["forma", "círculo"] });
+      add({ id: "shape-star", label: "Estrela", description: "Elemento decorativo para destacar momentos e chamadas visuais.", category: "Elementos", type: "shape", preview: "circle", eyebrow: "Forma", tags: ["forma", "estrela", "decoração"] });
+    }
+    if (has("decoration")) add({ id: "decoration-line", label: "Linha decorativa", description: "Decoração minimalista para separar e organizar a composição.", category: "Elementos", type: "decoration", preview: "line", eyebrow: "Decoração", tags: ["linha", "separador", "decoração"] });
+    if (has("divider")) add({ id: "divider", label: "Divisor", description: "Separador visual para criar ritmo e organizar a composição.", category: "Elementos", type: "divider", preview: "line", eyebrow: "Decoração", tags: ["linha", "separador"] });
     if (has("image")) add({ id: "image", label: "Imagem", description: "Adicione uma foto com descrição acessível e enquadramento ajustável.", category: "Mídia", type: "image", preview: "image", eyebrow: "Fotografia", tags: ["foto", "imagem"] });
     if (has("gallery")) add({ id: "gallery", label: "Galeria de fotos", description: "Monte uma grade ou carrossel com as imagens do convite.", category: "Mídia", type: "gallery", preview: "image", eyebrow: "Fotografia", tags: ["galeria", "fotos"] });
     if (has("date")) add({ id: "date", label: typeLabel("date"), description: "Mostra a data do evento usando os dados cadastrados.", category: "Elementos", type: "date", preview: "event", eyebrow: "Evento", tags: ["data", "calendário"] });

@@ -120,6 +120,9 @@ function BlockContent({ block, ctx, interactive = false }: { block: Block; ctx?:
     }
     case "image":
       return <ImageBlock p={p} />;
+    case "shape":
+    case "decoration":
+      return <ShapeBlock p={p} />;
     case "gallery":
       return <GalleryBlock p={p} />;
     case "date": {
@@ -334,6 +337,34 @@ export function InvitationCanvas({ blocks, ctx, className, background }: { block
       }) : <p className="py-10 text-center text-sm text-muted-foreground">Este convite ainda não possui blocos.</p>}
     </div>
   );
+}
+
+function ShapeBlock({ p }: { p: Record<string, string> }) {
+  const shape = p["shape"] || "rectangle";
+  const fill = p["fill"] || (shape === "line" ? "none" : "solid");
+  const fillColor = p["fillColor"] || "#7c3aed";
+  const borderColor = p["borderColor"] || fillColor;
+  const borderWidth = Math.min(20, Math.max(0, Number(p["borderWidth"]) || 0));
+  const radius = Math.max(0, Math.min(999, Number(p["borderRadius"]) || 0));
+  const independent = p["radiusIndependent"] === "1";
+  const shadow = p["shadow"] === "soft" ? "0 4px 14px rgb(15 23 42 / .14)" : p["shadow"] === "medium" ? "0 8px 24px rgb(15 23 42 / .2)" : p["shadow"] === "strong" ? "0 14px 36px rgb(15 23 42 / .28)" : undefined;
+  const style: CSSProperties = {
+    width: "100%",
+    height: "100%",
+    backgroundColor: fill === "solid" ? fillColor : undefined,
+    backgroundImage: fill === "gradient" ? p["fillGradient"] || undefined : undefined,
+    borderWidth: shape === "line" ? Math.max(1, borderWidth || 1) : borderWidth,
+    borderStyle: p["borderStyle"] || "solid",
+    borderColor,
+    borderRadius: independent ? undefined : radius,
+    borderTopLeftRadius: independent ? Number(p["radiusTopLeft"]) || radius : undefined,
+    borderTopRightRadius: independent ? Number(p["radiusTopRight"]) || radius : undefined,
+    borderBottomRightRadius: independent ? Number(p["radiusBottomRight"]) || radius : undefined,
+    borderBottomLeftRadius: independent ? Number(p["radiusBottomLeft"]) || radius : undefined,
+    boxShadow: shadow,
+    clipPath: shape === "circle" ? "circle(50% at 50% 50%)" : shape === "triangle" ? "polygon(50% 0%, 100% 100%, 0% 100%)" : shape === "star" ? "polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 100%, 50% 73%, 21% 100%, 32% 57%, 2% 35%, 39% 35%)" : shape === "heart" ? "path(\"M50 90 C20 68 0 50 0 28 C0 8 24 0 50 24 C76 0 100 8 100 28 C100 50 80 68 50 90 Z\")" : undefined,
+  };
+  return <div className="flex h-full w-full items-center justify-center" aria-label={`${shape} visual`}><div className="h-full w-full" style={style} /></div>;
 }
 
 function ImageBlock({ p }: { p: Record<string, string> }) {
