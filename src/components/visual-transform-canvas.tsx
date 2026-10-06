@@ -261,21 +261,27 @@ export function VisualTransformCanvas({ blocks, selectedIds, zoom, canvasRef, ct
       let offsetY = dy;
       const moved = { ...current.bounds, left: current.bounds.left + dx, right: current.bounds.right + dx, top: current.bounds.top + dy, bottom: current.bounds.bottom + dy };
       const others = blocks.filter((block: any) => !current.ids.includes(block.id));
-      const xCandidates = [SAFE_MARGIN, size.width / 2, size.width - SAFE_MARGIN];
-      const yCandidates = [SAFE_MARGIN, size.height / 2, size.height - SAFE_MARGIN];
-      for (const other of others) {
-        const box = rotatedBounds(geometry(other, blocks.indexOf(other)));
-        xCandidates.push(box.left, box.right, (box.left + box.right) / 2);
-        yCandidates.push(box.top, box.bottom, (box.top + box.bottom) / 2);
-      }
-      const snapX = nearest((moved.left + moved.right) / 2, xCandidates);
-      const snapY = nearest((moved.top + moved.bottom) / 2, yCandidates);
       const nextGuides: Guide[] = [];
-      if (snapX !== (moved.left + moved.right) / 2) { offsetX += snapX - (moved.left + moved.right) / 2; nextGuides.push({ axis: "x", value: snapX, kind: "center" }); }
-      if (snapY !== (moved.top + moved.bottom) / 2) { offsetY += snapY - (moved.top + moved.bottom) / 2; nextGuides.push({ axis: "y", value: snapY, kind: "center" }); }
-      const gridX = Math.round((current.bounds.left + offsetX) / GRID_UNIT) * GRID_UNIT;
-      const gridY = Math.round((current.bounds.top + offsetY) / GRID_UNIT) * GRID_UNIT;
       if (event.shiftKey) {
+        const xCandidates = [SAFE_MARGIN, size.width / 2, size.width - SAFE_MARGIN];
+        const yCandidates = [SAFE_MARGIN, size.height / 2, size.height - SAFE_MARGIN];
+        for (const other of others) {
+          const box = rotatedBounds(geometry(other, blocks.indexOf(other)));
+          xCandidates.push(box.left, box.right, (box.left + box.right) / 2);
+          yCandidates.push(box.top, box.bottom, (box.top + box.bottom) / 2);
+        }
+        const snapX = nearest((moved.left + moved.right) / 2, xCandidates);
+        const snapY = nearest((moved.top + moved.bottom) / 2, yCandidates);
+        if (snapX !== (moved.left + moved.right) / 2) {
+          offsetX += snapX - (moved.left + moved.right) / 2;
+          nextGuides.push({ axis: "x", value: snapX, kind: "center" });
+        }
+        if (snapY !== (moved.top + moved.bottom) / 2) {
+          offsetY += snapY - (moved.top + moved.bottom) / 2;
+          nextGuides.push({ axis: "y", value: snapY, kind: "center" });
+        }
+        const gridX = Math.round((current.bounds.left + offsetX) / GRID_UNIT) * GRID_UNIT;
+        const gridY = Math.round((current.bounds.top + offsetY) / GRID_UNIT) * GRID_UNIT;
         offsetX += gridX - (current.bounds.left + offsetX);
         offsetY += gridY - (current.bounds.top + offsetY);
         nextGuides.push({ axis: "x", value: gridX, kind: "grid" }, { axis: "y", value: gridY, kind: "grid" });
@@ -333,11 +339,59 @@ export function VisualTransformCanvas({ blocks, selectedIds, zoom, canvasRef, ct
       const value = geometry(block, index);
       const isSelected = selectedIds.includes(block.id);
       const hidden = block.hidden === true || block.visibility === false;
-      return <div key={block.id || index} className={`group absolute left-0 top-0 rounded-xl ${isSelected ? "border-2 border-primary ring-2 ring-primary/30" : "border border-transparent hover:border-primary/40"} ${hidden ? "opacity-35" : ""}`} style={{ width: value.width, height: value.height, transform: `translate(${value.x}px, ${value.y}px) rotate(${value.rotation}deg) scale(${value.scale})`, transformOrigin: "center", opacity: block.opacity ?? 1, zIndex: block.zIndex ?? index + 1, touchAction: "none", pointerEvents: hidden ? "none" : "auto" }} onPointerDown={(event) => { if (hidden || block.locked) return; onSelect(block.id, event.shiftKey || event.ctrlKey || event.metaKey); begin(event, "move", undefined, block); }} onPointerMove={move} onPointerUp={end} onPointerCancel={end} onClick={(event) => { event.stopPropagation(); onSelect(block.id, event.shiftKey || event.ctrlKey || event.metaKey); }}><div className="pointer-events-none h-full w-full"><BlockView block={block} ctx={ctx as any} interactive={false} /></div>{isSelected && <div className="absolute -top-7 left-0 max-w-full truncate rounded bg-primary px-2 py-1 text-[10px] text-primary-foreground">{String(block.type)}</div>}</div>;
+      const hit = isSelected ? 10 : 6;
+      return <div
+        key={block.id || index}
+        className={`group absolute left-0 top-0 rounded-xl ${isSelected ? "border-2 border-primary ring-2 ring-primary/30" : "border border-transparent hover:border-primary/40"} ${hidden ? "opacity-35" : ""}`}
+        style={{
+          width: value.width + hit * 2,
+          height: value.height + hit * 2,
+          transform: `translate(${value.x - hit}px, ${value.y - hit}px) rotate(${value.rotation}deg) scale(${value.scale})`,
+          transformOrigin: "center",
+          opacity: block.opacity ?? 1,
+          zIndex: block.zIndex ?? index + 1,
+          touchAction: "none",
+          pointerEvents: hidden ? "none" : "auto",
+          padding: hit,
+          boxSizing: "border-box",
+        }}
+        onPointerDown={(event) => {
+          if (hidden || block.locked) return;
+          onSelect(block.id, event.shiftKey || event.ctrlKey || event.metaKey);
+          begin(event, "move", undefined, block);
+        }}
+        onPointerMove={move}
+        onPointerUp={end}
+        onPointerCancel={end}
+        onClick={(event) => {
+          event.stopPropagation();
+          onSelect(block.id, event.shiftKey || event.ctrlKey || event.metaKey);
+        }}
+      >
+        <div className="pointer-events-none h-full w-full rounded-lg">
+          <BlockView block={block} ctx={ctx as any} interactive={false} />
+        </div>
+        {isSelected && <div className="pointer-events-none absolute -top-7 left-0 max-w-full truncate rounded bg-primary px-2 py-1 text-[10px] text-primary-foreground">{String(block.type)}</div>}
+      </div>;
     })}
     {selectedBounds && <div className="pointer-events-none absolute z-[80] border-2 border-primary" style={{ left: selectedBounds.left, top: selectedBounds.top, width: selectedBounds.width, height: selectedBounds.height }}>
-      {selected.length === 1 && !selected[0]?.locked && <button type="button" aria-label="Girar seleção" className="pointer-events-auto absolute left-1/2 top-0 h-4 w-4 -translate-x-1/2 -translate-y-7 rounded-full border-2 border-background bg-primary" style={{ cursor: cursorFor("rotate"), touchAction: "none" }} onPointerDown={(event) => begin(event, "rotate")} onPointerMove={move} onPointerUp={end} onPointerCancel={end} />}
-      {HANDLES.map((handle) => { const position = { nw: "-left-2 -top-2", n: "left-1/2 -top-2 -translate-x-1/2", ne: "-right-2 -top-2", e: "-right-2 top-1/2 -translate-y-1/2", se: "-bottom-2 -right-2", s: "bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2", sw: "-bottom-2 -left-2", w: "-left-2 top-1/2 -translate-y-1/2" }[handle]; return <button key={handle} type="button" aria-label={`Redimensionar ${handle}`} disabled={selected.some((item: any) => item.locked)} className={`pointer-events-auto absolute h-4 w-4 rounded-full border-2 border-background bg-primary disabled:cursor-not-allowed disabled:opacity-50 ${position}`} style={{ cursor: cursorFor(handle), touchAction: "none" }} onPointerDown={(event) => begin(event, "resize", handle)} onPointerMove={move} onPointerUp={end} onPointerCancel={end} />; })}
+      {selected.length === 1 && !selected[0]?.locked && <button type="button" aria-label="Girar seleção" className="pointer-events-auto absolute left-1/2 top-0 h-6 w-6 -translate-x-1/2 -translate-y-9 rounded-full border-2 border-background bg-primary shadow-sm" style={{ cursor: cursorFor("rotate"), touchAction: "none" }} onPointerDown={(event) => begin(event, "rotate")} onPointerMove={move} onPointerUp={end} onPointerCancel={end} />}
+      {HANDLES.map((handle) => {
+        const position = {
+          nw: "-left-3 -top-3", n: "left-1/2 -top-3 -translate-x-1/2",
+          ne: "-right-3 -top-3", e: "-right-3 top-1/2 -translate-y-1/2",
+          se: "-bottom-3 -right-3", s: "-bottom-3 left-1/2 -translate-x-1/2",
+          sw: "-bottom-3 -left-3", w: "-left-3 top-1/2 -translate-y-1/2"
+        }[handle];
+        return <button key={handle} type="button" aria-label={`Redimensionar ${handle}`} disabled={selected.some((item: any) => item.locked)}
+          className={`pointer-events-auto absolute h-6 w-6 rounded-full border-2 border-background bg-primary shadow-sm disabled:cursor-not-allowed disabled:opacity-50 ${position}`}
+          style={{ cursor: cursorFor(handle), touchAction: "none" }}
+          onPointerDown={(event) => begin(event, "resize", handle)}
+          onPointerMove={move}
+          onPointerUp={end}
+          onPointerCancel={end}
+        />;
+      })}
       {selected.length > 1 && <span className="absolute -top-7 left-0 rounded bg-primary px-2 py-1 text-[10px] text-primary-foreground">{selected.length} elementos</span>}
     </div>}
   </>;
