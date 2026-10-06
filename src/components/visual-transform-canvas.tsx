@@ -4,7 +4,7 @@ import { BlockView } from "@/components/block-render";
 import type { Block } from "@/lib/templates";
 
 type Point = { x: number; y: number };
-type Guide = { axis: "x" | "y"; value: number };
+type Guide = { axis: "x" | "y"; value: number; kind?: "edge" | "center" | "grid" };
 
 type Props = {
   blocks: Block[];
@@ -25,12 +25,21 @@ type Bounds = {
   height: number;
 };
 
+type Geometry = {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  rotation: number;
+  scale: number;
+};
+
 type Interaction = {
   mode: "move" | "resize" | "rotate";
   ids: string[];
   pointerId: number;
   start: Point;
-  originals: Record<string, any>;
+  originals: Record<string, Geometry>;
   bounds: Bounds;
   handle?: string;
   aspect: number;
@@ -39,34 +48,54 @@ type Interaction = {
 
 const MIN_SIZE = 24;
 const MAX_SIZE = 2000;
+const GRID_UNIT = 16;
+const SAFE_MARGIN = 24;
 const HANDLES = ["nw", "n", "ne", "e", "se", "s", "sw", "w"] as const;
 
 function number(value: unknown, fallback: number) {
   return typeof value === "number" && Number.isFinite(value) ? value : fallback;
 }
 
-function geometry(block: any, index: number) {
-  const width = Math.min(MAX_SIZE, Math.max(MIN_SIZE, number(block.width, 720)));
-  const height = Math.min(MAX_SIZE, Math.max(MIN_SIZE, number(block.height, 72)));
+function geometry(block: any, index: number): Geometry {
   return {
     x: number(block.x, 24),
     y: number(block.y, 24 + index * 96),
-    width,
-    height,
+    width: Math.min(MAX_SIZE, Math.max(MIN_SIZE, number(block.width, 720))),
+    height: Math.min(MAX_SIZE, Math.max(MIN_SIZE, number(block.height, 72))),
     rotation: number(block.rotation, 0),
     scale: Math.max(0.1, number(block.scale, 1)),
   };
 }
 
-function boundsOf(blocks: any[], selectedIds: string[]) {
+function rotatedBounds(value: Geometry): Bounds {
+  const angle = value.rotation * Math.PI / 180;
+  const cos = Math.abs(Math.cos(angle));
+  const sin = Math.abs(Math.sin(angle));
+  const width = value.width * value.scale;
+  const height = value.height * value.scale;
+  const boundsWidth = width * cos + height * sin;
+  const boundsHeight = width * sin + height * cos;
+  const centerX = value.x + value.width / 2;
+  const centerY = value.y + value.height / 2;
+  return {
+    left: centerX - boundsWidth / 2,
+    top: centerY - boundsHeight / 2,
+    right: centerX + boundsWidth / 2,
+    bottom: centerY + boundsHeight / 2,
+    width: boundsWidth,
+    height: boundsHeight,
+  };
+}
+
+function boundsOf(blocks: any[], selectedIds: string[]): Bounds | null {
   const selected = blocks
-    .map((block, index) => ({ block, geometry: geometry(block, index) }))
+    .map((block, index) => ({ block, bounds: rotatedBounds(geometry(block, index)) }))
     .filter(({ block }) => selectedIds.includes(block.id));
   if (!selected.length) return null;
-  const left = Math.min(...selected.map(({ geometry }) => geometry.x));
-  const top = Math.min(...selected.map(({ geometry }) => geometry.y));
-  const right = Math.max(...selected.map(({ geometry }) => geometry.x + geometry.width));
-  const bottom = Math.max(...selected.map(({ geometry }) => geometry.y + geometry.height));
+  const left = Math.min(...selected.map(({ bounds }) => bounds.left));
+  const top = Math.min(...selected.map(({ bounds }) => bounds.top));
+  const right = Math.max(...selected.map(({ bounds }) => bounds.right));
+  const bottom = Math.max(...selected.map(({ bounds }) => bounds.bottom));
   return { left, top, right, bottom, width: right - left, height: bottom - top };
 }
 
@@ -81,9 +110,17 @@ function clamp(value: number, min: number, max: number) {
   return Math.min(max, Math.max(min, value));
 }
 
-function snap(value: number, candidates: number[], threshold = 8) {
-  const candidate = candidates.find((item) => Math.abs(item - value) <= threshold);
-  return candidate === undefined ? value : candidate;
+function nearest(value: number, candidates: number[], threshold = 8) {
+  let best = value;
+  let distance = threshold + 1;
+  for (const candidate of candidates) {
+    const current = Math.abs(candidate - value);
+    if (current <= threshold && current < distance) {
+      best = candidate;
+      distance = current;
+    }
+  }
+  return best;
 }
 
 function resizeBounds(start: Interaction, point: Point, proportional: boolean, canvasWidth: number, canvasHeight: number) {
@@ -103,7 +140,6 @@ function resizeBounds(start: Interaction, point: Point, proportional: boolean, c
 
   let width = Math.max(MIN_SIZE, Math.min(MAX_SIZE, right - left));
   let height = Math.max(MIN_SIZE, Math.min(MAX_SIZE, bottom - top));
-
   if (proportional) {
     const ratio = start.aspect || 1;
     if (Math.abs(dx) >= Math.abs(dy)) height = Math.max(MIN_SIZE, Math.min(MAX_SIZE, width / ratio));
@@ -159,24 +195,17 @@ export function VisualTransformCanvas({ blocks, selectedIds, zoom, canvasRef, ct
       if (!selectedIds.length || isTextInput(event.target)) return;
       const movable = blocks.filter((block: any) => selectedIds.includes(block.id) && !block.locked);
       if (!movable.length) return;
-
-      if (event.key === "Escape") {
-        finish();
-        return;
-      }
-
+      if (event.key === "Escape") { finish(); return; }
       if (event.key === "Delete" || event.key === "Backspace") {
         event.preventDefault();
         onChange((items: any[]) => items.filter((item) => !selectedIds.includes(item.id) || item.locked), "keyboard:delete");
         return;
       }
-
       if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "a") {
         event.preventDefault();
         blocks.forEach((block: any) => onSelect(block.id, true));
         return;
       }
-
       if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "d") {
         event.preventDefault();
         const source = blocks.filter((block: any) => selectedIds.includes(block.id) && block.type !== "rsvp");
@@ -185,7 +214,6 @@ export function VisualTransformCanvas({ blocks, selectedIds, zoom, canvasRef, ct
         onChange((items: any[]) => [...items, ...copies], "keyboard:duplicate");
         return;
       }
-
       const step = event.shiftKey ? 10 : 1;
       const delta = event.key === "ArrowLeft" ? { x: -step, y: 0 } : event.key === "ArrowRight" ? { x: step, y: 0 } : event.key === "ArrowUp" ? { x: 0, y: -step } : event.key === "ArrowDown" ? { x: 0, y: step } : null;
       if (!delta) return;
@@ -194,10 +222,12 @@ export function VisualTransformCanvas({ blocks, selectedIds, zoom, canvasRef, ct
       onChange((items: any[]) => items.map((item: any) => {
         if (!selectedIds.includes(item.id) || item.locked) return item;
         const value = geometry(item, blocks.indexOf(item));
-        return { ...item, x: Math.round(clamp(value.x + delta.x, 0, Math.max(0, size.width - value.width))), y: Math.round(clamp(value.y + delta.y, 0, Math.max(0, size.height - value.height))) };
+        const box = rotatedBounds(value);
+        const nextX = clamp(value.x + delta.x, -box.left + value.x, size.width - (box.right - value.x));
+        const nextY = clamp(value.y + delta.y, -box.top + value.y, size.height - (box.bottom - value.y));
+        return { ...item, x: Math.round(nextX), y: Math.round(nextY) };
       }), "keyboard:move");
     };
-
     document.addEventListener("keydown", onKeyDown);
     return () => document.removeEventListener("keydown", onKeyDown);
   }, [blocks, selectedIds, onChange, onSelect]);
@@ -205,28 +235,14 @@ export function VisualTransformCanvas({ blocks, selectedIds, zoom, canvasRef, ct
   const begin = (event: React.PointerEvent, mode: Interaction["mode"], handle?: string, block?: any) => {
     event.stopPropagation();
     const additive = event.shiftKey || event.ctrlKey || event.metaKey;
-    const requestedIds = block?.id
-      ? selectedIds.includes(block.id) ? selectedIds : additive ? [...selectedIds, block.id] : [block.id]
-      : selectedIds;
+    const requestedIds = block?.id ? selectedIds.includes(block.id) ? selectedIds : additive ? [...selectedIds, block.id] : [block.id] : selectedIds;
     const ids = requestedIds.filter((id) => !blocks.find((item: any) => item.id === id)?.locked);
     const activeBlocks = blocks.filter((item: any) => ids.includes(item.id));
-    if (!ids.length || !activeBlocks.length) return;
     const bounds = boundsOf(blocks, ids);
-    if (!bounds) return;
-
+    if (!ids.length || !activeBlocks.length || !bounds) return;
     const originals = Object.fromEntries(activeBlocks.map((item: any) => [item.id, geometry(item, blocks.indexOf(item))]));
     const point = pointerPoint(event, canvasRef.current, zoom);
-    interaction.current = {
-      mode,
-      ids,
-      pointerId: event.pointerId,
-      start: point,
-      originals,
-      bounds,
-      handle,
-      aspect: bounds.width / Math.max(MIN_SIZE, bounds.height),
-      center: { x: bounds.left + bounds.width / 2, y: bounds.top + bounds.height / 2 },
-    };
+    interaction.current = { mode, ids, pointerId: event.pointerId, start: point, originals, bounds, handle, aspect: bounds.width / Math.max(MIN_SIZE, bounds.height), center: { x: bounds.left + bounds.width / 2, y: bounds.top + bounds.height / 2 } };
     (event.currentTarget as HTMLElement).setPointerCapture?.(event.pointerId);
     setGuides([]);
   };
@@ -243,16 +259,27 @@ export function VisualTransformCanvas({ blocks, selectedIds, zoom, canvasRef, ct
     if (current.mode === "move") {
       let offsetX = dx;
       let offsetY = dy;
-      const movedCenterX = current.bounds.left + current.bounds.width / 2 + offsetX;
-      const movedCenterY = current.bounds.top + current.bounds.height / 2 + offsetY;
+      const moved = { ...current.bounds, left: current.bounds.left + dx, right: current.bounds.right + dx, top: current.bounds.top + dy, bottom: current.bounds.bottom + dy };
       const others = blocks.filter((block: any) => !current.ids.includes(block.id));
-      const xCandidates = [size.width / 2, ...others.map((block: any, index: number) => { const value = geometry(block, index); return value.x + value.width / 2; })];
-      const yCandidates = [size.height / 2, ...others.map((block: any, index: number) => { const value = geometry(block, index); return value.y + value.height / 2; })];
-      const snappedX = snap(movedCenterX, xCandidates);
-      const snappedY = snap(movedCenterY, yCandidates);
+      const xCandidates = [SAFE_MARGIN, size.width / 2, size.width - SAFE_MARGIN];
+      const yCandidates = [SAFE_MARGIN, size.height / 2, size.height - SAFE_MARGIN];
+      for (const other of others) {
+        const box = rotatedBounds(geometry(other, blocks.indexOf(other)));
+        xCandidates.push(box.left, box.right, (box.left + box.right) / 2);
+        yCandidates.push(box.top, box.bottom, (box.top + box.bottom) / 2);
+      }
+      const snapX = nearest((moved.left + moved.right) / 2, xCandidates);
+      const snapY = nearest((moved.top + moved.bottom) / 2, yCandidates);
       const nextGuides: Guide[] = [];
-      if (snappedX !== movedCenterX) { offsetX += snappedX - movedCenterX; nextGuides.push({ axis: "x", value: snappedX }); }
-      if (snappedY !== movedCenterY) { offsetY += snappedY - movedCenterY; nextGuides.push({ axis: "y", value: snappedY }); }
+      if (snapX !== (moved.left + moved.right) / 2) { offsetX += snapX - (moved.left + moved.right) / 2; nextGuides.push({ axis: "x", value: snapX, kind: "center" }); }
+      if (snapY !== (moved.top + moved.bottom) / 2) { offsetY += snapY - (moved.top + moved.bottom) / 2; nextGuides.push({ axis: "y", value: snapY, kind: "center" }); }
+      const gridX = Math.round((current.bounds.left + offsetX) / GRID_UNIT) * GRID_UNIT;
+      const gridY = Math.round((current.bounds.top + offsetY) / GRID_UNIT) * GRID_UNIT;
+      if (event.shiftKey) {
+        offsetX += gridX - (current.bounds.left + offsetX);
+        offsetY += gridY - (current.bounds.top + offsetY);
+        nextGuides.push({ axis: "x", value: gridX, kind: "grid" }, { axis: "y", value: gridY, kind: "grid" });
+      }
       offsetX = clamp(offsetX, -current.bounds.left, size.width - current.bounds.right);
       offsetY = clamp(offsetY, -current.bounds.top, size.height - current.bounds.bottom);
       setGuides(nextGuides);
@@ -292,23 +319,16 @@ export function VisualTransformCanvas({ blocks, selectedIds, zoom, canvasRef, ct
     onChange((items: any[]) => items.map((item: any) => {
       const original = current.originals[item.id];
       if (!original) return item;
-      return {
-        ...item,
-        x: Math.round(resized.left + (original.x - current.bounds.left) * sx),
-        y: Math.round(resized.top + (original.y - current.bounds.top) * sy),
-        width: Math.round(Math.max(MIN_SIZE, original.width * sx)),
-        height: Math.round(Math.max(MIN_SIZE, original.height * sy)),
-      };
+      return { ...item, x: Math.round(resized.left + (original.x - current.bounds.left) * sx), y: Math.round(resized.top + (original.y - current.bounds.top) * sy), width: Math.round(Math.max(MIN_SIZE, original.width * sx)), height: Math.round(Math.max(MIN_SIZE, original.height * sy)) };
     }), "transform:resize");
   };
 
-  const end = (event?: React.PointerEvent) => {
-    event?.stopPropagation();
-    finish();
-  };
+  const end = (event?: React.PointerEvent) => { event?.stopPropagation(); finish(); };
 
   return <>
-    {guides.map((guide, index) => <div key={`${guide.axis}-${index}`} className="pointer-events-none absolute z-[70] border-primary/70" style={guide.axis === "x" ? { left: guide.value, top: 0, bottom: 0, borderLeftWidth: 1, borderLeftStyle: "dashed" } : { top: guide.value, left: 0, right: 0, borderTopWidth: 1, borderTopStyle: "dashed" }} />)}
+    <div aria-hidden className="pointer-events-none absolute inset-0 z-0 opacity-30" style={{ backgroundImage: "linear-gradient(to right, hsl(var(--border)) 1px, transparent 1px), linear-gradient(to bottom, hsl(var(--border)) 1px, transparent 1px)", backgroundSize: `${GRID_UNIT}px ${GRID_UNIT}px` }} />
+    <div aria-hidden className="pointer-events-none absolute z-[5] border border-dashed border-amber-500/50" style={{ left: SAFE_MARGIN, top: SAFE_MARGIN, right: SAFE_MARGIN, bottom: SAFE_MARGIN }} />
+    {guides.map((guide, index) => <div key={`${guide.axis}-${index}`} className={`pointer-events-none absolute z-[70] ${guide.kind === "grid" ? "border-amber-400/60" : "border-primary/70"}`} style={guide.axis === "x" ? { left: guide.value, top: 0, bottom: 0, borderLeftWidth: 1, borderLeftStyle: "dashed" } : { top: guide.value, left: 0, right: 0, borderTopWidth: 1, borderTopStyle: "dashed" }} />)}
     {blocks.map((block: any, index: number) => {
       const value = geometry(block, index);
       const isSelected = selectedIds.includes(block.id);
