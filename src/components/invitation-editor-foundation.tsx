@@ -15,7 +15,7 @@ import { ExperimentalTemplateLibrary, ExperimentalElementLibrary, ExperimentalTe
 import { ExperimentalSectionsPanel } from "@/components/experimental-sections-panel";
 import { ExperimentalMobileBar } from "@/components/experimental-mobile-bar";
 import { ExperimentalMediaLibrary } from "@/components/experimental-media-library";
-import { SmartComponentPreview } from "@/components/experimental-smart-component";
+import { SmartComponentPreview, supportsSmartComponentPreview } from "@/components/experimental-smart-component";
 import { PREVIEW_PRESETS, getQualityScore, validateInvitationEditorDocument, validateResponsivePreset, type PreviewPreset, type QualityAlert } from "@/lib/invitation-editor-quality";
 
 type Props = { invitationId: string; content: unknown; onSave?: (document: InvitationEditorDocument) => void };
@@ -270,8 +270,7 @@ export function InvitationEditorFoundation({ invitationId, content, onSave }: Pr
 }
 
 function SmartPreview({ element }: { element: EditorElement }) {
-  const experimentalPreview = SmartComponentPreview({ element });
-  if (experimentalPreview) return experimentalPreview;
+  if (supportsSmartComponentPreview(element)) return <SmartComponentPreview element={element} />;
   const block = element.content.block as any;
   const props = block?.props ?? {};
   const type = element.type as SmartElementType;

@@ -79,6 +79,10 @@ export const SMART_COMPONENT_CATALOG: SmartComponentDefinition[] = [
   { type: "custom_link", label: "Link personalizado", category: "Ações", tags: ["url", "personalizado", "externo"], description: "Destino externo configurável", icon: "external" },
 ];
 
+export function supportsSmartComponentPreview(element: { type?: unknown } | null | undefined) {
+  return SMART_COMPONENT_CATALOG.some((item) => item.type === element?.type);
+}
+
 function normalize(value: unknown): SmartFunctionalConfig {
   return value && typeof value === "object" ? value as SmartFunctionalConfig : {};
 }
