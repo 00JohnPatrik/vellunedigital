@@ -10,6 +10,7 @@ import { BlockView } from "@/components/block-render";
 import { listFiles, useAssetUrl, type AssetScope } from "@/lib/assets";
 import { localRecoveryKey, normalizeInvitationContent, createMediaElement, createShapeElement, createSmartElement, createTextElement, SMART_ELEMENT_DEFINITIONS, updateElement, type EditorElement, type EditorSaveState, type InvitationEditorDocument, type SmartElementType } from "@/lib/invitation-editor-foundation";
 import { ANIMATION_FEATURE_FLAG, ANIMATION_PRESETS, DEFAULT_ANIMATION, animationStyle, normalizeAnimation, parallaxStyle, type EditorAnimation } from "@/lib/invitation-editor-animation";
+import { ExperimentalTemplateLibrary, type ExperimentalLibraryItem, type LibraryMode } from "@/lib/invitation-editor-library";
 
 type Props = { invitationId: string; content: unknown; onSave?: (document: InvitationEditorDocument) => void };
 type History = { past: InvitationEditorDocument[]; present: InvitationEditorDocument; future: InvitationEditorDocument[] };
@@ -47,6 +48,7 @@ export function InvitationEditorFoundation({ invitationId, content, onSave }: Pr
   const [zoom, setZoom] = useState(100);
   const [state, setState] = useState<EditorSaveState>("saved");
   const [panel, setPanel] = useState<"library" | "properties" | "layers" | null>(null);
+  const [templateLibraryOpen, setTemplateLibraryOpen] = useState(false);
   const [clipboard, setClipboard] = useState<EditorElement[]>([]);
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("Todos");
@@ -64,6 +66,28 @@ export function InvitationEditorFoundation({ invitationId, content, onSave }: Pr
   const selected = h.document.elements.filter((element) => selectedIds.includes(element.id));
   const primary = selected[0];
   const mark = useCallback((next: any, key?: string) => { h.change(next, key); setState("dirty"); }, [h.change]);
+  const applyLibraryItem = useCallback((item: ExperimentalLibraryItem, mode: LibraryMode) => {
+    const created = item.elements.map((definition, index) => {
+      const x = 48 + (index % 2) * 24;
+      const y = 48 + index * 88;
+      if (definition.type === "text") return createTextElement(x, y);
+      if (definition.type === "shape") return createShapeElement(definition.shape ?? "rectangle", x, y);
+      return createSmartElement((definition.smartType ?? "special_text") as SmartElementType, x, y);
+    }).map((element, index) => {
+      const definition = item.elements[index];
+      if (definition.type === "text" && definition.text) return { ...element, content: { ...element.content, text: definition.text } };
+      if (definition.type === "smart" && definition.text && element.content.block) return { ...element, content: { ...element.content, block: { ...element.content.block, props: { ...(element.content.block.props ?? {}), text: definition.text } } } };
+      return element;
+    });
+    mark((document) => {
+      const base = mode === "replace" ? [] : document.elements;
+      const offset = mode === "replace" ? 0 : base.length * 24;
+      const elements = [...base, ...created.map((element, index) => ({ ...element, id: crypto.randomUUID(), x: element.x + offset, y: element.y + offset, zIndex: base.length + index + 1 }))];
+      const section = { id: crypto.randomUUID(), name: item.name, height: Math.max(640, 520 + created.length * 88), elementIds: elements.slice(base.length).map((element) => element.id) };
+      return { ...document, elements, sections: mode === "replace" ? [section] : [...document.sections, section] };
+    }, "library");
+    setSelectedIds(created.map((element) => element.id));
+  }, [mark]);
   const updateAnimation = (patch: Partial<EditorAnimation>) => {
     if (!primary) return;
     updateSelected({ animation: { ...normalizeAnimation(primary.animation), ...patch } });
@@ -148,7 +172,7 @@ export function InvitationEditorFoundation({ invitationId, content, onSave }: Pr
 
   return <TooltipProvider><section className="overflow-hidden rounded-2xl border border-dashed border-primary/40 bg-muted/20 shadow-sm" aria-label="Editor experimental isolado">
     <style>{`@keyframes vellune-fade-in{from{opacity:0}to{opacity:1}}@keyframes vellune-fade-out{from{opacity:1}to{opacity:0}}@keyframes vellune-slide_up-in{from{opacity:0;transform:translateY(28px)}to{opacity:1;transform:translateY(0)}}@keyframes vellune-slide_down-in{from{opacity:0;transform:translateY(-28px)}to{opacity:1;transform:translateY(0)}}@keyframes vellune-slide_left-in{from{opacity:0;transform:translateX(28px)}to{opacity:1;transform:translateX(0)}}@keyframes vellune-slide_right-in{from{opacity:0;transform:translateX(-28px)}to{opacity:1;transform:translateX(0)}}@keyframes vellune-zoom-in{from{opacity:0;transform:scale(.88)}to{opacity:1;transform:scale(1)}}@keyframes vellune-blur-in{from{opacity:0;filter:blur(10px)}to{opacity:1;filter:blur(0)}}@keyframes vellune-float-in{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}@keyframes vellune-pulse-in{0%,100%{opacity:1}50%{opacity:.72}}@media(prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important}}`}</style>
-    <header className="flex flex-wrap items-center gap-2 border-b bg-card p-3"><div className="min-w-0 flex-1"><p className="flex items-center gap-2 text-sm font-semibold"><WandSparkles className="h-4 w-4 text-primary" />Editor experimental isolado</p><p className="text-xs text-muted-foreground">Estado próprio, reversível e salvo apenas na recuperação local. O conteúdo oficial do convite não é alterado.</p></div><SaveStatus state={state} /><div className="flex items-center gap-1"><Button size="sm" variant={previewing ? "secondary" : "outline"} onClick={() => setPreviewing((value) => !value)}>{previewing ? "Pausar" : "Reproduzir"}</Button><Button size="sm" variant="outline" onClick={() => { setPreviewKey((value) => value + 1); setPreviewTime(0); setPreviewing(true); }}>Reiniciar</Button><ActionButton label="Desfazer" onClick={() => { h.undo(); setState("dirty"); }} disabled={!h.canUndo}><Undo2 className="h-4 w-4" /></ActionButton><ActionButton label="Refazer" onClick={() => { h.redo(); setState("dirty"); }} disabled={!h.canRedo}><Redo2 className="h-4 w-4" /></ActionButton><ActionButton label="Biblioteca" onClick={() => setPanel("library")}><Grid2X2 className="h-4 w-4" /></ActionButton><ActionButton label="Camadas" onClick={() => setPanel("layers")}><Layers3 className="h-4 w-4" /></ActionButton></div></header>
+    <header className="flex flex-wrap items-center gap-2 border-b bg-card p-3"><div className="min-w-0 flex-1"><p className="flex items-center gap-2 text-sm font-semibold"><WandSparkles className="h-4 w-4 text-primary" />Editor experimental isolado</p><p className="text-xs text-muted-foreground">Estado próprio, reversível e salvo apenas na recuperação local. O conteúdo oficial do convite não é alterado.</p></div><SaveStatus state={state} /><div className="flex items-center gap-1"><Button size="sm" variant={previewing ? "secondary" : "outline"} onClick={() => setPreviewing((value) => !value)}>{previewing ? "Pausar" : "Reproduzir"}</Button><Button size="sm" variant="outline" onClick={() => { setPreviewKey((value) => value + 1); setPreviewTime(0); setPreviewing(true); }}>Reiniciar</Button><ActionButton label="Desfazer" onClick={() => { h.undo(); setState("dirty"); }} disabled={!h.canUndo}><Undo2 className="h-4 w-4" /></ActionButton><ActionButton label="Refazer" onClick={() => { h.redo(); setState("dirty"); }} disabled={!h.canRedo}><Redo2 className="h-4 w-4" /></ActionButton><ActionButton label="Biblioteca de elementos" onClick={() => setPanel("library")}><Grid2X2 className="h-4 w-4" /></ActionButton><ActionButton label="Templates e seções" onClick={() => setTemplateLibraryOpen(true)}><LayoutTemplate className="h-4 w-4" /></ActionButton><ActionButton label="Camadas" onClick={() => setPanel("layers")}><Layers3 className="h-4 w-4" /></ActionButton></div></header>
     <div className="grid min-h-[720px] lg:grid-cols-[220px_minmax(0,1fr)_260px]">
       <aside className="hidden border-r bg-card p-3 lg:block"><LibraryPanel library={library} search={search} setSearch={setSearch} category={category} setCategory={setCategory} favorite={favorite} setFavorite={setFavorite} error={assetError} /></aside>
       <main className="relative overflow-auto bg-muted/40 p-3 sm:p-8" onPointerMove={moveDrag} onPointerUp={endDrag} onPointerCancel={endDrag} onPointerMove={(event) => { if (!drag.current && previewing && !reducedMotion) { const rect = event.currentTarget.getBoundingClientRect(); setParallaxOffset({ x: Math.max(-1, Math.min(1, (event.clientX - rect.left - rect.width / 2) / (rect.width / 2))), y: Math.max(-1, Math.min(1, (event.clientY - rect.top - rect.height / 2) / (rect.height / 2))) }); } moveDrag(event); }} onWheel={(event) => { if (event.ctrlKey) { event.preventDefault(); setZoom((value) => Math.max(50, Math.min(180, value + (event.deltaY > 0 ? -5 : 5)))); } }}>
@@ -163,6 +187,7 @@ export function InvitationEditorFoundation({ invitationId, content, onSave }: Pr
     </div>
     <div className="flex flex-wrap items-center gap-2 border-t bg-card p-3"><span className="text-xs font-medium text-muted-foreground">Seções</span>{h.document.sections.map((section) => <span key={section.id} className="rounded-md border bg-background px-3 py-1.5 text-xs">{section.name}</span>)}<Button size="sm" variant="outline" className="ml-auto" onClick={() => { localStorage.removeItem(localRecoveryKey(invitationId)); setState("saved"); }}>Limpar recuperação</Button></div>
     <Sheet open={panel !== null} onOpenChange={(open) => !open && setPanel(null)}><SheetContent side="bottom" className="max-h-[84vh] overflow-y-auto"><SheetHeader><SheetTitle>{panel === "library" ? "Biblioteca de mídia e elementos" : panel === "layers" ? "Camadas" : "Propriedades"}</SheetTitle></SheetHeader><div className="mt-4">{panel === "library" ? <LibraryPanel library={library} search={search} setSearch={setSearch} category={category} setCategory={setCategory} favorite={favorite} setFavorite={setFavorite} error={assetError} /> : panel === "layers" ? <LayersPanel elements={h.document.elements} selectedIds={selectedIds} select={select} /> : <Properties selected={primary} count={selected.length} update={updateSelected} remove={remove} duplicate={duplicate} group={group} ungroup={ungroup} />}</div></SheetContent></Sheet>
+    <ExperimentalTemplateLibrary open={templateLibraryOpen} document={h.document} onClose={() => setTemplateLibraryOpen(false)} onApply={applyLibraryItem} />
   </section></TooltipProvider>;
 }
 
