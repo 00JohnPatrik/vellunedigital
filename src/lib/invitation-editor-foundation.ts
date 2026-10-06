@@ -83,7 +83,7 @@ function blockElement(block: Block, index: number): EditorElement {
     opacity: Math.min(1, Math.max(0, numberValue(source.opacity, 1))),
     styles: {},
     content: { block: structuredClone(block), text: props.text },
-    groupId: null,
+    groupId: typeof source.groupId === "string" && source.groupId ? source.groupId : null,
   };
 }
 
@@ -127,6 +127,8 @@ export function toPersistedInvitationContent(document: InvitationEditorDocument,
     block.locked = element.locked;
     block.hidden = !element.visible;
     block.visibility = element.visible;
+    if (element.groupId) block.groupId = element.groupId;
+    else delete block.groupId;
     return block;
   });
   const sourceSettings = base.settings && typeof base.settings === "object" ? base.settings as Record<string, unknown> : {};

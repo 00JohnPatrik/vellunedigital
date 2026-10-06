@@ -177,9 +177,20 @@ function isTextInput(target: EventTarget | null) {
   return element.tagName === "INPUT" || element.tagName === "TEXTAREA" || element.tagName === "SELECT" || element.isContentEditable;
 }
 
-export function VisualTransformCanvas({ blocks, selectedIds, zoom, canvasRef, ctx, onSelect, onChange }: Props) {
+export function VisualTransformCanvas({ blocks, selectedIds: selectedIdsProp, zoom, canvasRef, ctx, onSelect, onChange }: Props) {
   const interaction = useRef<Interaction | null>(null);
   const [guides, setGuides] = useState<Guide[]>([]);
+  const groupMembers = (ids: string[]) => {
+    const groups = new Set(
+      blocks
+        .filter((block: any) => ids.includes(block.id) && block.groupId)
+        .map((block: any) => block.groupId),
+    );
+    return blocks
+      .filter((block: any) => ids.includes(block.id) || (block.groupId && groups.has(block.groupId)))
+      .map((block: any) => block.id);
+  };
+  const selectedIds = useMemo(() => groupMembers(selectedIdsProp), [blocks, selectedIdsProp]);
   const selectedBounds = useMemo(() => boundsOf(blocks, selectedIds), [blocks, selectedIds]);
   const selected = blocks.filter((block: any) => selectedIds.includes(block.id));
 
@@ -346,7 +357,14 @@ export function VisualTransformCanvas({ blocks, selectedIds, zoom, canvasRef, ct
         }}
         onPointerDown={(event) => {
           if (hidden || block.locked) return;
-          onSelect(block.id, event.shiftKey || event.ctrlKey || event.metaKey);
+          const additive = event.shiftKey || event.ctrlKey || event.metaKey;
+          const memberIds = block.groupId
+            ? blocks.filter((item: any) => item.groupId === block.groupId).map((item: any) => item.id)
+            : [block.id];
+          onSelect(block.id, additive);
+          if (!additive) {
+            memberIds.slice(1).forEach((id) => onSelect(id, true));
+          }
           begin(event, "move", undefined, block);
         }}
         onPointerMove={move}
@@ -354,7 +372,14 @@ export function VisualTransformCanvas({ blocks, selectedIds, zoom, canvasRef, ct
         onPointerCancel={end}
         onClick={(event) => {
           event.stopPropagation();
-          onSelect(block.id, event.shiftKey || event.ctrlKey || event.metaKey);
+          const additive = event.shiftKey || event.ctrlKey || event.metaKey;
+          const memberIds = block.groupId
+            ? blocks.filter((item: any) => item.groupId === block.groupId).map((item: any) => item.id)
+            : [block.id];
+          onSelect(block.id, additive);
+          if (!additive) {
+            memberIds.slice(1).forEach((id) => onSelect(id, true));
+          }
         }}
       >
         <div className="pointer-events-none h-full w-full rounded-lg">
