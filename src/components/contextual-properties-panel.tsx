@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { AlignCenter, AlignHorizontalDistributeCenter, AlignHorizontalJustifyCenter, AlignLeft, AlignRight, AlignVerticalDistributeCenter, ArrowDown, ArrowUp, Copy, Eye, EyeOff, Layers3, Lock, Maximize2, Move, RotateCcw, Trash2, Unlock } from "lucide-react";
+import { AlignCenter, AlignHorizontalDistributeCenter, AlignHorizontalJustifyCenter, AlignLeft, AlignRight, AlignVerticalDistributeCenter, ArrowDown, ArrowUp, Copy, Eye, EyeOff, Layers3, Lock, Move, RotateCcw, Trash2, Unlock } from "lucide-react";
 import type { Block } from "@/lib/templates";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -51,14 +51,17 @@ export function ContextualPropertiesPanel({ blocks, selectedIds, onChange, onDup
     if (key === "opacity") value = clamp(value, 0, 1);
     if (key === "width" || key === "height") value = Math.max(1, value);
     if (key === "scale") value = Math.max(0.1, value);
-    apply({ [key]: value } as Partial<BlockWithLayout>, `properties:${key}`);
 
-    if (!keepRatio || selected.length !== 1 || (key !== "width" && key !== "height")) return;
-    const sourceWidth = Math.max(1, numberValue(primary?.width, 720));
-    const sourceHeight = Math.max(1, numberValue(primary?.height, 72));
-    const ratio = sourceWidth / sourceHeight;
-    if (key === "width") apply({ height: Math.max(1, Math.round(value / ratio)) }, "properties:ratio");
-    if (key === "height") apply({ width: Math.max(1, Math.round(value * ratio)) }, "properties:ratio");
+    const patch: Partial<BlockWithLayout> = { [key]: value } as Partial<BlockWithLayout>;
+    if (keepRatio && selected.length === 1 && (key === "width" || key === "height")) {
+      const sourceWidth = Math.max(1, numberValue(primary?.width, 720));
+      const sourceHeight = Math.max(1, numberValue(primary?.height, 72));
+      const ratio = sourceWidth / sourceHeight;
+      if (key === "width") patch.height = Math.max(1, Math.round(value / ratio));
+      if (key === "height") patch.width = Math.max(1, Math.round(value * ratio));
+    }
+
+    apply(patch, `properties:${key}`);
   };
 
   const align = (axis: "x" | "y", mode: "start" | "center" | "end") => {
