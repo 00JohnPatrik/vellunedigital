@@ -2,7 +2,7 @@ import { buildContent, type Background } from "@/lib/templates";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { AlertCircle, ArrowLeft, Check, Eye, Loader2, Send, Settings2, Share2, UserCheck, Users, QrCode } from "lucide-react";
+import { AlertCircle, ArrowLeft, Check, Eye, Loader2, PanelBottom, QrCode, Send, Settings2, Share2, SlidersHorizontal, UserCheck, Users } from "lucide-react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { ShareDialog } from "@/components/share-dialog";
 import { RsvpPanel } from "@/components/rsvp-panel";
@@ -27,24 +27,15 @@ function EditorPage() {
   const { id } = Route.useParams();
   const q = useQuery({ queryKey: [...invitationsKey, id], queryFn: () => getInvitation(id), refetchOnWindowFocus: false });
   if (q.isLoading) {
-    return (
-      <div className="flex min-h-[50vh] items-center justify-center rounded-2xl border bg-card/50 p-8">
-        <LoadingState />
-      </div>
-    );
+    return <div className="flex min-h-[50vh] items-center justify-center rounded-2xl border bg-card/50 p-8"><LoadingState /></div>;
   }
   if (!q.data) {
-    return (
-      <div className="mx-auto flex min-h-[50vh] max-w-lg flex-col items-center justify-center rounded-2xl border border-dashed bg-card/60 px-6 py-12 text-center">
-        <BackLink />
-        <EmptyState>Convite não encontrado.</EmptyState>
-      </div>
-    );
+    return <div className="mx-auto flex min-h-[50vh] max-w-lg flex-col items-center justify-center rounded-2xl border border-dashed bg-card/60 px-6 py-12 text-center"><BackLink /><EmptyState>Convite não encontrado.</EmptyState></div>;
   }
   return <EditorForm key={q.data.id} inv={q.data} />;
 }
 
-const BackLink = () => <Link to="/invitations" className="mb-4 inline-flex items-center rounded-md px-2 py-1 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground">← Convites</Link>;
+const BackLink = () => <Link to="/invitations" className="mb-4 inline-flex items-center rounded-md px-2 py-1 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"><ArrowLeft className="mr-1 h-4 w-4" />Convites</Link>;
 
 type SaveState = "saved" | "dirty" | "saving" | "error";
 const AUTOSAVE_MS = 1500;
@@ -141,52 +132,50 @@ function EditorForm({ inv }: { inv: Invitation }) {
   const ctx = useMemo(() => invitationCtx(inv, v), [inv, v]);
   const options = (customers.data ?? []).filter((c) => c.company_id === inv.company_id && (c.status === "active" || c.id === inv.customer_id));
 
+  const toolbar = <>
+    <Button type="button" size="sm" variant="outline" onClick={() => setEventOpen(true)}><Settings2 className="h-4 w-4" /><span className="hidden sm:inline">Dados do evento</span></Button>
+    <Button type="button" size="sm" variant="outline" onClick={() => setRsvpOpen(true)}><UserCheck className="h-4 w-4" /><span className="hidden sm:inline">RSVP</span></Button>
+    <Button type="button" size="sm" variant="outline" asChild><Link to="/invitations/$id/guests" params={{ id: inv.id }}><Users className="h-4 w-4" /><span className="hidden sm:inline">Convidados</span></Link></Button>
+    <Button type="button" size="sm" variant="outline" asChild><Link to="/invitations/$id/checkin" params={{ id: inv.id }}><QrCode className="h-4 w-4" /><span className="hidden sm:inline">Check-in</span></Link></Button>
+    <Button type="button" size="sm" variant="outline" asChild><Link to="/invitations/$id/preview" params={{ id: inv.id }}><Eye className="h-4 w-4" /><span className="hidden sm:inline">Visualizar</span></Link></Button>
+    <Button type="button" size="sm" onClick={() => void save(true)} disabled={state === "saving"}>{state === "saving" && <Loader2 className="h-4 w-4 animate-spin" />}Salvar</Button>
+    {isPublic ? <Button type="button" size="sm" variant="secondary" onClick={() => setShareOpen(true)}><Share2 className="h-4 w-4" /><span className="hidden sm:inline">Compartilhar</span></Button> : <Button type="button" size="sm" variant="secondary" onClick={() => void publish()} disabled={publishing}>{publishing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}<span className="hidden sm:inline">Publicar convite</span></Button>}
+  </>;
+
   return (
-    <div className="dark min-h-[calc(100vh-2rem)] rounded-[1.5rem] bg-background p-2 text-foreground sm:p-3 lg:p-4">
+    <div className="dark min-h-[calc(100vh-2rem)] rounded-[1.5rem] bg-background p-2 pb-20 text-foreground sm:p-3 sm:pb-3 lg:p-4">
       <div className="mx-auto max-w-[1800px] space-y-3">
-        <header className="rounded-2xl border border-border/70 bg-card/95 p-3 shadow-2xl shadow-black/20 backdrop-blur-xl sm:p-4">
-          <div className="flex flex-wrap items-center gap-3">
-            <Button variant="ghost" size="sm" className="shrink-0" asChild><Link to="/invitations"><ArrowLeft className="h-4 w-4" />Voltar</Link></Button>
+        <header className="sticky top-2 z-30 rounded-2xl border border-border/70 bg-card/95 p-3 shadow-2xl shadow-black/20 backdrop-blur-xl sm:top-3 sm:p-4">
+          <div className="flex min-h-9 items-center gap-2.5 sm:gap-3">
+            <Button variant="ghost" size="icon" className="shrink-0 sm:hidden" asChild><Link to="/invitations" aria-label="Voltar para convites"><ArrowLeft className="h-4 w-4" /></Link></Button>
+            <Button variant="ghost" size="sm" className="hidden shrink-0 sm:inline-flex" asChild><Link to="/invitations"><ArrowLeft className="h-4 w-4" />Voltar</Link></Button>
             <div className="hidden h-8 w-px bg-border sm:block" />
             <div className="min-w-0 flex-1">
-              <div className="flex flex-wrap items-center gap-2">
-                <h1 className="min-w-0 truncate font-display text-lg font-semibold tracking-tight sm:text-xl">{v.name || inv.name}</h1>
-                <InvitationStatusBadge status={status} />
-              </div>
-              <p className="mt-1 flex items-center gap-1.5 truncate text-xs text-muted-foreground"><span className="inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />{isPublic ? "Link público" : "Link reservado"}: /convite/{inv.slug}</p>
+              <div className="flex items-center gap-2"><h1 className="min-w-0 truncate font-display text-base font-semibold tracking-tight sm:text-xl">{v.name || inv.name}</h1><InvitationStatusBadge status={status} /></div>
+              <p className="mt-0.5 hidden truncate text-xs text-muted-foreground sm:block">{isPublic ? "Link público" : "Link reservado"}: /convite/{inv.slug}</p>
             </div>
-            <div className="rounded-lg border border-border/70 bg-background/70 px-2.5 py-1.5"><SaveIndicator state={state} msg={errMsg} onRetry={() => void save(true)} /></div>
+            <div className="shrink-0 rounded-lg border border-border/70 bg-background/70 px-2 py-1.5"><SaveIndicator state={state} msg={errMsg} onRetry={() => void save(true)} /></div>
           </div>
+          <div className="mt-3 hidden flex-wrap items-center justify-end gap-1.5 border-t border-border/60 pt-3 md:flex">{toolbar}</div>
         </header>
 
-        <VisualEditor h={h} bg={bg} onBg={setBg} ctx={ctx} assets={{ kind: "invitation", id: inv.id, companyId: inv.company_id }} toolbarExtra={<>
-          <Button type="button" size="sm" variant="outline" onClick={() => setEventOpen(true)}><Settings2 className="h-4 w-4" /><span className="hidden sm:inline">Dados do evento</span></Button>
-          <Button type="button" size="sm" variant="outline" onClick={() => setRsvpOpen(true)}><UserCheck className="h-4 w-4" />RSVP</Button>
-          <Button type="button" size="sm" variant="outline" asChild><Link to="/invitations/$id/guests" params={{ id: inv.id }}><Users className="h-4 w-4" /><span className="hidden sm:inline">Convidados</span></Link></Button>
-          <Button type="button" size="sm" variant="outline" asChild><Link to="/invitations/$id/checkin" params={{ id: inv.id }}><QrCode className="h-4 w-4" /><span className="hidden sm:inline">Check-in</span></Link></Button>
-          <Button type="button" size="sm" variant="outline" asChild><Link to="/invitations/$id/preview" params={{ id: inv.id }}><Eye className="h-4 w-4" /><span className="hidden sm:inline">Visualizar</span></Link></Button>
-          <Button type="button" size="sm" onClick={() => void save(true)} disabled={state === "saving"}>{state === "saving" && <Loader2 className="h-4 w-4 animate-spin" />}Salvar</Button>
-          {isPublic ? <Button type="button" size="sm" variant="secondary" onClick={() => setShareOpen(true)}><Share2 className="h-4 w-4" />Compartilhar</Button> : <Button type="button" size="sm" variant="secondary" onClick={() => void publish()} disabled={publishing}>{publishing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}Publicar convite</Button>}
-        </>} />
+        <VisualEditor h={h} bg={bg} onBg={setBg} ctx={ctx} assets={{ kind: "invitation", id: inv.id, companyId: inv.company_id }} toolbarExtra={<div className="hidden md:flex">{toolbar}</div>} />
+
+        <div className="fixed inset-x-2 bottom-2 z-40 grid grid-cols-4 gap-1 rounded-2xl border border-border/80 bg-card/95 p-1.5 shadow-2xl shadow-black/30 backdrop-blur-xl md:hidden" role="toolbar" aria-label="Ações rápidas do editor">
+          <Button type="button" size="sm" variant="ghost" className="h-11 flex-col gap-0.5 px-1 text-[10px]" onClick={() => setEventOpen(true)}><SlidersHorizontal className="h-4 w-4" />Dados</Button>
+          <Button type="button" size="sm" variant="ghost" className="h-11 flex-col gap-0.5 px-1 text-[10px]" onClick={() => setRsvpOpen(true)}><UserCheck className="h-4 w-4" />RSVP</Button>
+          <Button type="button" size="sm" variant="ghost" className="h-11 flex-col gap-0.5 px-1 text-[10px]" asChild><Link to="/invitations/$id/preview" params={{ id: inv.id }}><Eye className="h-4 w-4" />Preview</Link></Button>
+          <Button type="button" size="sm" variant="default" className="h-11 flex-col gap-0.5 px-1 text-[10px]" onClick={() => void save(true)} disabled={state === "saving"}><PanelBottom className="h-4 w-4" />Salvar</Button>
+        </div>
 
         <ShareDialog slug={inv.slug} open={shareOpen} onOpenChange={setShareOpen} />
         <RsvpPanel invitationId={inv.id} open={rsvpOpen} onOpenChange={setRsvpOpen} />
         <AlertDialog open={warnOpen}>
-          <AlertDialogContent>
-            <AlertDialogHeader><AlertDialogTitle>Convite publicado</AlertDialogTitle><AlertDialogDescription>Este convite já está publicado. A alteração será refletida imediatamente para os convidados.</AlertDialogDescription></AlertDialogHeader>
-            <AlertDialogFooter><AlertDialogCancel onClick={() => void navigate({ to: "/invitations" })}>Cancelar</AlertDialogCancel><AlertDialogAction onClick={() => setWarnOpen(false)}>Continuar</AlertDialogAction></AlertDialogFooter>
-          </AlertDialogContent>
+          <AlertDialogContent><AlertDialogHeader><AlertDialogTitle>Convite publicado</AlertDialogTitle><AlertDialogDescription>Este convite já está publicado. A alteração será refletida imediatamente para os convidados.</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel onClick={() => void navigate({ to: "/invitations" })}>Cancelar</AlertDialogCancel><AlertDialogAction onClick={() => setWarnOpen(false)}>Continuar</AlertDialogAction></AlertDialogFooter></AlertDialogContent>
         </AlertDialog>
 
         <Sheet open={eventOpen} onOpenChange={setEventOpen}>
-          <SheetContent className="w-full overflow-y-auto sm:max-w-lg">
-            <SheetHeader><SheetTitle>Dados do evento</SheetTitle></SheetHeader>
-            <div className="mt-4 space-y-4">
-              <div className="space-y-1.5"><Label>Cliente</Label><Select value={customerId} onValueChange={setCustomerId}><SelectTrigger><SelectValue placeholder={inv.customer?.name ?? "Selecione"} /></SelectTrigger><SelectContent>{options.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent></Select></div>
-              <EventFields v={v} setV={setV} errors={errors} />
-              <p className="text-xs text-muted-foreground">Blocos de data, horário, local e contagem usam estes dados quando a origem é "Dados do evento".</p>
-            </div>
-          </SheetContent>
+          <SheetContent className="w-full overflow-y-auto sm:max-w-lg"><SheetHeader><SheetTitle>Dados do evento</SheetTitle></SheetHeader><div className="mt-4 space-y-4"><div className="space-y-1.5"><Label>Cliente</Label><Select value={customerId} onValueChange={setCustomerId}><SelectTrigger><SelectValue placeholder={inv.customer?.name ?? "Selecione"} /></SelectTrigger><SelectContent>{options.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent></Select></div><EventFields v={v} setV={setV} errors={errors} /><p className="text-xs text-muted-foreground">Blocos de data, horário, local e contagem usam estes dados quando a origem é "Dados do evento".</p></div></SheetContent>
         </Sheet>
       </div>
     </div>
