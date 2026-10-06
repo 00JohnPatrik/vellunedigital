@@ -17,7 +17,6 @@ import { useBlocksHistory, VisualEditor } from "@/components/visual-editor";
 import { customersKey, listCustomers } from "@/lib/customers-data";
 import { getInvitation, invitationError, invitationsKey, publishInvitation, toEventValues, updateInvitation, validateEvent, type EventValues, type Invitation } from "@/lib/invitations";
 import { normalizeBlocks, validateContent } from "@/lib/blocks";
-import { InvitationEditorFoundation } from "@/components/invitation-editor-foundation";
 
 export const Route = createFileRoute("/_authenticated/invitations/$id/editor")({
   head: () => ({ meta: [{ title: "Editor do convite — Vellune Digital" }] }),
@@ -42,7 +41,6 @@ function EditorPage() {
       </div>
     );
   }
-  // Keyed by id only: background refetches never reset the editor state/history.
   return <EditorForm key={q.data.id} inv={q.data} />;
 }
 
@@ -69,7 +67,6 @@ function EditorForm({ inv }: { inv: Invitation }) {
   const [publishing, setPublishing] = useState(false);
   const navigate = useNavigate();
 
-  // Latest snapshot + version counter so an in-flight save never overwrites newer edits.
   const snap = useRef({ v, customerId, blocks: h.blocks, bg });
   snap.current = { v, customerId, blocks: h.blocks, bg };
   const version = useRef(0);
@@ -102,13 +99,10 @@ function EditorForm({ inv }: { inv: Invitation }) {
       return false;
     } finally {
       inFlight.current = false;
-      if (version.current !== target && !timer.current) {
-        timer.current = setTimeout(() => void save(), AUTOSAVE_MS);
-      }
+      if (version.current !== target && !timer.current) timer.current = setTimeout(() => void save(), AUTOSAVE_MS);
     }
   }, [inv.id, qc]);
 
-  // Debounced autosave on any real change (StrictMode-safe: compares against the loaded snapshot).
   const initial = useRef(JSON.stringify(snap.current));
   useEffect(() => {
     if (first.current && JSON.stringify(snap.current) === initial.current) return;
@@ -119,14 +113,10 @@ function EditorForm({ inv }: { inv: Invitation }) {
     timer.current = setTimeout(() => void save(), AUTOSAVE_MS);
   }, [v, customerId, h.blocks, bg, save]);
 
-  // Re-run a pending save once the in-flight one ends with newer edits.
   useEffect(() => {
-    if (state === "dirty" && !inFlight.current && !timer.current && version.current !== savedVersion.current) {
-      timer.current = setTimeout(() => void save(), AUTOSAVE_MS);
-    }
+    if (state === "dirty" && !inFlight.current && !timer.current && version.current !== savedVersion.current) timer.current = setTimeout(() => void save(), AUTOSAVE_MS);
   }, [state, save]);
 
-  // Warn before leaving with unsaved changes.
   useEffect(() => {
     const on = (e: BeforeUnloadEvent) => { if (state === "dirty" || state === "saving") e.preventDefault(); };
     window.addEventListener("beforeunload", on);
@@ -146,76 +136,59 @@ function EditorForm({ inv }: { inv: Invitation }) {
       void qc.invalidateQueries({ queryKey: invitationsKey });
     } catch (err) { toast.error(invitationError(err)); } finally { setPublishing(false); }
   };
-  const isPublic = status === "published" || status === "closed";
 
+  const isPublic = status === "published" || status === "closed";
   const ctx = useMemo(() => invitationCtx(inv, v), [inv, v]);
   const options = (customers.data ?? []).filter((c) => c.company_id === inv.company_id && (c.status === "active" || c.id === inv.customer_id));
 
   return (
-    <div className="space-y-5">
-      <div className="rounded-2xl border bg-card/80 p-3 shadow-sm sm:p-4">
-        <div className="flex flex-wrap items-center gap-3">
-          <Button variant="ghost" size="sm" className="shrink-0" asChild><Link to="/invitations"><ArrowLeft className="h-4 w-4" />Voltar</Link></Button>
-          <div className="hidden h-8 w-px bg-border sm:block" />
-          <div className="min-w-0 flex-1">
-            <div className="flex flex-wrap items-center gap-2">
-              <h1 className="min-w-0 truncate font-display text-lg font-semibold tracking-tight sm:text-xl">{v.name || inv.name}</h1>
-              <InvitationStatusBadge status={status} />
+    <div className="dark min-h-[calc(100vh-2rem)] rounded-[1.5rem] bg-background p-2 text-foreground sm:p-3 lg:p-4">
+      <div className="mx-auto max-w-[1800px] space-y-3">
+        <header className="rounded-2xl border border-border/70 bg-card/95 p-3 shadow-2xl shadow-black/20 backdrop-blur-xl sm:p-4">
+          <div className="flex flex-wrap items-center gap-3">
+            <Button variant="ghost" size="sm" className="shrink-0" asChild><Link to="/invitations"><ArrowLeft className="h-4 w-4" />Voltar</Link></Button>
+            <div className="hidden h-8 w-px bg-border sm:block" />
+            <div className="min-w-0 flex-1">
+              <div className="flex flex-wrap items-center gap-2">
+                <h1 className="min-w-0 truncate font-display text-lg font-semibold tracking-tight sm:text-xl">{v.name || inv.name}</h1>
+                <InvitationStatusBadge status={status} />
+              </div>
+              <p className="mt-1 flex items-center gap-1.5 truncate text-xs text-muted-foreground"><span className="inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />{isPublic ? "Link público" : "Link reservado"}: /convite/{inv.slug}</p>
             </div>
-            <p className="mt-1 flex items-center gap-1.5 truncate text-xs text-muted-foreground">
-              <span className="inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
-              {isPublic ? "Link público" : "Link reservado"}: /convite/{inv.slug}
-            </p>
+            <div className="rounded-lg border border-border/70 bg-background/70 px-2.5 py-1.5"><SaveIndicator state={state} msg={errMsg} onRetry={() => void save(true)} /></div>
           </div>
-          <div className="rounded-lg bg-muted/50 px-2.5 py-1.5"><SaveIndicator state={state} msg={errMsg} onRetry={() => void save(true)} /></div>
-        </div>
+        </header>
+
+        <VisualEditor h={h} bg={bg} onBg={setBg} ctx={ctx} assets={{ kind: "invitation", id: inv.id, companyId: inv.company_id }} toolbarExtra={<>
+          <Button type="button" size="sm" variant="outline" onClick={() => setEventOpen(true)}><Settings2 className="h-4 w-4" /><span className="hidden sm:inline">Dados do evento</span></Button>
+          <Button type="button" size="sm" variant="outline" onClick={() => setRsvpOpen(true)}><UserCheck className="h-4 w-4" />RSVP</Button>
+          <Button type="button" size="sm" variant="outline" asChild><Link to="/invitations/$id/guests" params={{ id: inv.id }}><Users className="h-4 w-4" /><span className="hidden sm:inline">Convidados</span></Link></Button>
+          <Button type="button" size="sm" variant="outline" asChild><Link to="/invitations/$id/checkin" params={{ id: inv.id }}><QrCode className="h-4 w-4" /><span className="hidden sm:inline">Check-in</span></Link></Button>
+          <Button type="button" size="sm" variant="outline" asChild><Link to="/invitations/$id/preview" params={{ id: inv.id }}><Eye className="h-4 w-4" /><span className="hidden sm:inline">Visualizar</span></Link></Button>
+          <Button type="button" size="sm" onClick={() => void save(true)} disabled={state === "saving"}>{state === "saving" && <Loader2 className="h-4 w-4 animate-spin" />}Salvar</Button>
+          {isPublic ? <Button type="button" size="sm" variant="secondary" onClick={() => setShareOpen(true)}><Share2 className="h-4 w-4" />Compartilhar</Button> : <Button type="button" size="sm" variant="secondary" onClick={() => void publish()} disabled={publishing}>{publishing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}Publicar convite</Button>}
+        </>} />
+
+        <ShareDialog slug={inv.slug} open={shareOpen} onOpenChange={setShareOpen} />
+        <RsvpPanel invitationId={inv.id} open={rsvpOpen} onOpenChange={setRsvpOpen} />
+        <AlertDialog open={warnOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader><AlertDialogTitle>Convite publicado</AlertDialogTitle><AlertDialogDescription>Este convite já está publicado. A alteração será refletida imediatamente para os convidados.</AlertDialogDescription></AlertDialogHeader>
+            <AlertDialogFooter><AlertDialogCancel onClick={() => void navigate({ to: "/invitations" })}>Cancelar</AlertDialogCancel><AlertDialogAction onClick={() => setWarnOpen(false)}>Continuar</AlertDialogAction></AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
+        <Sheet open={eventOpen} onOpenChange={setEventOpen}>
+          <SheetContent className="w-full overflow-y-auto sm:max-w-lg">
+            <SheetHeader><SheetTitle>Dados do evento</SheetTitle></SheetHeader>
+            <div className="mt-4 space-y-4">
+              <div className="space-y-1.5"><Label>Cliente</Label><Select value={customerId} onValueChange={setCustomerId}><SelectTrigger><SelectValue placeholder={inv.customer?.name ?? "Selecione"} /></SelectTrigger><SelectContent>{options.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent></Select></div>
+              <EventFields v={v} setV={setV} errors={errors} />
+              <p className="text-xs text-muted-foreground">Blocos de data, horário, local e contagem usam estes dados quando a origem é "Dados do evento".</p>
+            </div>
+          </SheetContent>
+        </Sheet>
       </div>
-
-      <VisualEditor h={h} bg={bg} onBg={setBg} ctx={ctx} assets={{ kind: "invitation", id: inv.id, companyId: inv.company_id }} toolbarExtra={<>
-        <Button type="button" size="sm" variant="outline" onClick={() => setEventOpen(true)}><Settings2 className="h-4 w-4" /><span className="hidden sm:inline">Dados do evento</span></Button>
-        <Button type="button" size="sm" variant="outline" onClick={() => setRsvpOpen(true)}><UserCheck className="h-4 w-4" />RSVP</Button>
-        <Button type="button" size="sm" variant="outline" asChild><Link to="/invitations/$id/guests" params={{ id: inv.id }}><Users className="h-4 w-4" /><span className="hidden sm:inline">Convidados</span></Link></Button>
-        <Button type="button" size="sm" variant="outline" asChild><Link to="/invitations/$id/checkin" params={{ id: inv.id }}><QrCode className="h-4 w-4" /><span className="hidden sm:inline">Check-in</span></Link></Button>
-        <Button type="button" size="sm" variant="outline" asChild><Link to="/invitations/$id/preview" params={{ id: inv.id }}><Eye className="h-4 w-4" /><span className="hidden sm:inline">Visualizar</span></Link></Button>
-        <Button type="button" size="sm" onClick={() => void save(true)} disabled={state === "saving"}>{state === "saving" && <Loader2 className="h-4 w-4 animate-spin" />}Salvar</Button>
-        {isPublic
-          ? <Button type="button" size="sm" variant="secondary" onClick={() => setShareOpen(true)}><Share2 className="h-4 w-4" />Compartilhar</Button>
-          : <Button type="button" size="sm" variant="secondary" onClick={() => void publish()} disabled={publishing}>{publishing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}Publicar convite</Button>}
-      </>} />
-
-      <InvitationEditorFoundation invitationId={inv.id} content={inv.content} />
-
-      <ShareDialog slug={inv.slug} open={shareOpen} onOpenChange={setShareOpen} />
-      <RsvpPanel invitationId={inv.id} open={rsvpOpen} onOpenChange={setRsvpOpen} />
-      <AlertDialog open={warnOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Convite publicado</AlertDialogTitle>
-            <AlertDialogDescription>Este convite já está publicado. A alteração será refletida imediatamente para os convidados.</AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => void navigate({ to: "/invitations" })}>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={() => setWarnOpen(false)}>Continuar</AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
-      <Sheet open={eventOpen} onOpenChange={setEventOpen}>
-        <SheetContent className="w-full overflow-y-auto sm:max-w-lg">
-          <SheetHeader><SheetTitle>Dados do evento</SheetTitle></SheetHeader>
-          <div className="mt-4 space-y-4">
-            <div className="space-y-1.5">
-              <Label>Cliente</Label>
-              <Select value={customerId} onValueChange={setCustomerId}>
-                <SelectTrigger><SelectValue placeholder={inv.customer?.name ?? "Selecione"} /></SelectTrigger>
-                <SelectContent>{options.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent>
-              </Select>
-            </div>
-            <EventFields v={v} setV={setV} errors={errors} />
-            <p className="text-xs text-muted-foreground">Blocos de data, horário, local e contagem usam estes dados quando a origem é "Dados do evento".</p>
-          </div>
-        </SheetContent>
-      </Sheet>
     </div>
   );
 }
@@ -224,10 +197,5 @@ function SaveIndicator({ state, msg, onRetry }: { state: SaveState; msg: string;
   if (state === "saving") return <span className="flex items-center gap-1.5 text-xs text-muted-foreground" role="status"><Loader2 className="h-3.5 w-3.5 animate-spin" />Salvando...</span>;
   if (state === "saved") return <span className="flex items-center gap-1.5 text-xs text-muted-foreground" role="status"><Check className="h-3.5 w-3.5" />Salvo</span>;
   if (state === "dirty") return <span className="text-xs text-muted-foreground" role="status">Alterações não salvas</span>;
-  return (
-    <span className="flex items-center gap-1.5 text-xs text-destructive" role="alert" title={msg}>
-      <AlertCircle className="h-3.5 w-3.5" />Não foi possível salvar
-      <Button type="button" size="sm" variant="link" className="h-auto p-0 text-xs" onClick={onRetry}>Tentar novamente</Button>
-    </span>
-  );
+  return <span className="flex items-center gap-1.5 text-xs text-destructive" role="alert" title={msg}><AlertCircle className="h-3.5 w-3.5" />Não foi possível salvar<Button type="button" size="sm" variant="link" className="h-auto p-0 text-xs" onClick={onRetry}>Tentar novamente</Button></span>;
 }
