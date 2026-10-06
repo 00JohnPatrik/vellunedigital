@@ -116,13 +116,17 @@ export function VisualTransformCanvas({ blocks, selectedIds, zoom, canvasRef, ct
   const selectedBounds = useMemo(() => boundsOf(blocks, selectedIds), [blocks, selectedIds]);
   const selected = blocks.filter((block: any) => selectedIds.includes(block.id));
 
-  const begin = (event: React.PointerEvent, mode: Interaction["mode"], handle?: string, block?: any, index?: number) => {
+  const begin = (event: React.PointerEvent, mode: Interaction["mode"], handle?: string, block?: any) => {
     event.stopPropagation();
-    if (mode !== "rotate" && block?.locked) return;
-    const ids = selectedIds.includes(block?.id) ? selectedIds : block?.id ? [block.id] : selectedIds;
+    const additive = event.shiftKey || event.ctrlKey || event.metaKey;
+    const ids = block?.id
+      ? (selectedIds.includes(block.id) ? selectedIds : additive ? [...selectedIds, block.id] : [block.id])
+      : selectedIds;
+    const activeBlocks = blocks.filter((item: any) => ids.includes(item.id));
+    if (!ids.length || !activeBlocks.length || activeBlocks.some((item: any) => item.locked)) return;
     const bounds = boundsOf(blocks, ids);
-    if (!bounds || !ids.length) return;
-    const originals = Object.fromEntries(blocks.filter((item: any) => ids.includes(item.id)).map((item: any, itemIndex: number) => [item.id, geometry(item, itemIndex)]));
+    if (!bounds) return;
+    const originals = Object.fromEntries(activeBlocks.map((item: any) => [item.id, geometry(item, blocks.indexOf(item))]));
     const point = pointerPoint(event, canvasRef.current, zoom);
     interaction.current = {
       mode,
@@ -142,6 +146,7 @@ export function VisualTransformCanvas({ blocks, selectedIds, zoom, canvasRef, ct
   const move = (event: React.PointerEvent) => {
     const current = interaction.current;
     if (!current) return;
+    event.stopPropagation();
     const point = pointerPoint(event, canvasRef.current, zoom);
     const dx = point.x - current.start.x;
     const dy = point.y - current.start.y;
@@ -154,8 +159,10 @@ export function VisualTransformCanvas({ blocks, selectedIds, zoom, canvasRef, ct
       const nextGuides: Guide[] = [];
       const movedCenterX = current.bounds.left + current.bounds.width / 2 + offsetX;
       const movedCenterY = current.bounds.top + current.bounds.height / 2 + offsetY;
-      const snappedX = snap(movedCenterX, [canvasWidth / 2, ...blocks.filter((block: any) => !current.ids.includes(block.id)).map((block: any, index: number) => geometry(block, index).x + geometry(block, index).width / 2)]);
-      const snappedY = snap(movedCenterY, [canvasHeight / 2, ...blocks.filter((block: any) => !current.ids.includes(block.id)).map((block: any, index: number) => geometry(block, index).y + geometry(block, index).height / 2)]);
+      const xCandidates = [canvasWidth / 2, ...blocks.filter((block: any) => !current.ids.includes(block.id)).map((block: any, index: number) => geometry(block, index).x + geometry(block, index).width / 2)];
+      const yCandidates = [canvasHeight / 2, ...blocks.filter((block: any) => !current.ids.includes(block.id)).map((block: any, index: number) => geometry(block, index).y + geometry(block, index).height / 2)];
+      const snappedX = snap(movedCenterX, xCandidates);
+      const snappedY = snap(movedCenterY, yCandidates);
       if (snappedX !== movedCenterX) { offsetX += snappedX - movedCenterX; nextGuides.push({ axis: "x", value: snappedX }); }
       if (snappedY !== movedCenterY) { offsetY += snappedY - movedCenterY; nextGuides.push({ axis: "y", value: snappedY }); }
       setGuides(nextGuides);
@@ -167,11 +174,23 @@ export function VisualTransformCanvas({ blocks, selectedIds, zoom, canvasRef, ct
     }
 
     if (current.mode === "rotate") {
-      const angle = Math.atan2(point.y - current.center.y, point.x - current.center.x) * 180 / Math.PI + 90;
-      const base = Math.atan2(current.start.y - current.center.y, current.start.x - current.center.x) * 180 / Math.PI + 90;
-      let rotation = angle - base + (current.originals[current.ids[0]]?.rotation || 0);
-      if (event.shiftKey) rotation = Math.round(rotation / 15) * 15;
-      onChange((items: any[]) => items.map((item: any) => current.ids.includes(item.id) ? { ...item, rotation } : item), "transform:rotate");
+      const angle = Math.atan2(point.y - current.center.y, point.x - current.center.x) * 180 / Math.PI;
+      const base = Math.atan2(current.start.y - current.center.y, current.start.x - current.center.x) * 180 / Math.PI;
+      let delta = angle - base;
+      if (delta > 180) delta -= 360;
+      if (delta < -180) delta += 360;
+      if (event.shiftKey) delta = Math.round(delta / 15) * 15;
+      const cos = Math.cos(delta * Math.PI / 180);
+      const sin = Math.sin(delta * Math.PI / 180);
+      onChange((items: any[]) => items.map((item: any) => {
+        const original = current.originals[item.id];
+        if (!original) return item;
+        const cx = original.x + original.width / 2;
+        const cy = original.y + original.height / 2;
+        const rotatedX = current.center.x + (cx - current.center.x) * cos - (cy - current.center.y) * sin;
+        const rotatedY = current.center.y + (cx - current.center.x) * sin + (cy - current.center.y) * cos;
+        return { ...item, x: Math.round(rotatedX - original.width / 2), y: Math.round(rotatedY - original.height / 2), rotation: original.rotation + delta };
+      }), "transform:rotate");
       return;
     }
 
@@ -191,7 +210,8 @@ export function VisualTransformCanvas({ blocks, selectedIds, zoom, canvasRef, ct
     }), "transform:resize");
   };
 
-  const end = () => {
+  const end = (event?: React.PointerEvent) => {
+    event?.stopPropagation();
     interaction.current = null;
     setGuides([]);
   };
@@ -202,13 +222,12 @@ export function VisualTransformCanvas({ blocks, selectedIds, zoom, canvasRef, ct
       const value = geometry(block, index);
       const isSelected = selectedIds.includes(block.id);
       const hidden = block.hidden === true || block.visibility === false;
-      return <div key={block.id || index} className={`group absolute left-0 top-0 rounded-xl ${isSelected ? "border-2 border-primary ring-2 ring-primary/30" : "border border-transparent hover:border-primary/40"} ${hidden ? "opacity-35" : ""}`} style={{ width: value.width, height: value.height, transform: `translate(${value.x}px, ${value.y}px) rotate(${value.rotation}deg) scale(${value.scale})`, transformOrigin: "center", opacity: block.opacity ?? 1, zIndex: block.zIndex ?? index + 1, touchAction: "none" }} onPointerDown={(event) => { if (hidden) return; onSelect(block.id, event.shiftKey || event.ctrlKey || event.metaKey); begin(event, "move", undefined, block, index); }} onClick={(event) => event.stopPropagation()}><div className="pointer-events-none h-full w-full"><BlockView block={block} ctx={ctx as any} interactive={false} /></div>{isSelected && <div className="absolute -top-7 left-0 max-w-full truncate rounded bg-primary px-2 py-1 text-[10px] text-primary-foreground">{String(block.type)}</div>}</div>;
+      return <div key={block.id || index} className={`group absolute left-0 top-0 rounded-xl ${isSelected ? "border-2 border-primary ring-2 ring-primary/30" : "border border-transparent hover:border-primary/40"} ${hidden ? "opacity-35" : ""}`} style={{ width: value.width, height: value.height, transform: `translate(${value.x}px, ${value.y}px) rotate(${value.rotation}deg) scale(${value.scale})`, transformOrigin: "center", opacity: block.opacity ?? 1, zIndex: block.zIndex ?? index + 1, touchAction: "none", pointerEvents: hidden ? "none" : "auto" }} onPointerDown={(event) => { if (hidden || block.locked) return; onSelect(block.id, event.shiftKey || event.ctrlKey || event.metaKey); begin(event, "move", undefined, block); }} onPointerMove={move} onPointerUp={end} onPointerCancel={end} onClick={(event) => { event.stopPropagation(); onSelect(block.id, event.shiftKey || event.ctrlKey || event.metaKey); }}><div className="pointer-events-none h-full w-full"><BlockView block={block} ctx={ctx as any} interactive={false} /></div>{isSelected && <div className="absolute -top-7 left-0 max-w-full truncate rounded bg-primary px-2 py-1 text-[10px] text-primary-foreground">{String(block.type)}</div>}</div>;
     })}
     {selectedBounds && <div className="pointer-events-none absolute z-[80] border-2 border-primary" style={{ left: selectedBounds.left, top: selectedBounds.top, width: selectedBounds.width, height: selectedBounds.height }}>
-      {selected.length === 1 && <button type="button" aria-label="Girar seleção" className="pointer-events-auto absolute left-1/2 top-0 h-4 w-4 -translate-x-1/2 -translate-y-7 rounded-full border-2 border-background bg-primary" style={{ cursor: cursorFor("rotate"), touchAction: "none" }} onPointerDown={(event) => begin(event, "rotate")} />}
-      {HANDLES.map((handle) => { const position = { nw: "-left-2 -top-2", n: "left-1/2 -top-2 -translate-x-1/2", ne: "-right-2 -top-2", e: "-right-2 top-1/2 -translate-y-1/2", se: "-bottom-2 -right-2", s: "bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2", sw: "-bottom-2 -left-2", w: "-left-2 top-1/2 -translate-y-1/2" }[handle]; return <button key={handle} type="button" aria-label={`Redimensionar ${handle}`} className={`pointer-events-auto absolute h-4 w-4 rounded-full border-2 border-background bg-primary ${position}`} style={{ cursor: cursorFor(handle), touchAction: "none" }} onPointerDown={(event) => begin(event, "resize", handle)} />; })}
+      {selected.length === 1 && !selected[0]?.locked && <button type="button" aria-label="Girar seleção" className="pointer-events-auto absolute left-1/2 top-0 h-4 w-4 -translate-x-1/2 -translate-y-7 rounded-full border-2 border-background bg-primary" style={{ cursor: cursorFor("rotate"), touchAction: "none" }} onPointerDown={(event) => begin(event, "rotate")} onPointerMove={move} onPointerUp={end} onPointerCancel={end} />}
+      {HANDLES.map((handle) => { const position = { nw: "-left-2 -top-2", n: "left-1/2 -top-2 -translate-x-1/2", ne: "-right-2 -top-2", e: "-right-2 top-1/2 -translate-y-1/2", se: "-bottom-2 -right-2", s: "bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2", sw: "-bottom-2 -left-2", w: "-left-2 top-1/2 -translate-y-1/2" }[handle]; return <button key={handle} type="button" aria-label={`Redimensionar ${handle}`} disabled={selected.some((item: any) => item.locked)} className={`pointer-events-auto absolute h-4 w-4 rounded-full border-2 border-background bg-primary disabled:cursor-not-allowed disabled:opacity-50 ${position}`} style={{ cursor: cursorFor(handle), touchAction: "none" }} onPointerDown={(event) => begin(event, "resize", handle)} onPointerMove={move} onPointerUp={end} onPointerCancel={end} />; })}
       {selected.length > 1 && <span className="absolute -top-7 left-0 rounded bg-primary px-2 py-1 text-[10px] text-primary-foreground">{selected.length} elementos</span>}
     </div>}
-    <div className="absolute inset-0 z-[90]" onPointerMove={move} onPointerUp={end} onPointerCancel={end} />
   </>;
 }
