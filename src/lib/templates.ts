@@ -160,7 +160,7 @@ export function moveBlockLayer(blocks: Block[], blockId: string, direction: -1 |
 export function normalizeBlockGeometry(block: Block): Block {
   return { ...block, ...getBlockGeometry(block) };
 }
-export type Background = { color?: string; gradient?: string; image?: string; size?: "cover" | "contain"; x?: "left" | "center" | "right"; y?: "top" | "center" | "bottom"; overlay?: number; imageScale?: number; imageOpacity?: number };
+export type Background = { color?: string; gradient?: string; image?: string; size?: "cover" | "contain"; x?: "left" | "center" | "right"; y?: "top" | "center" | "bottom"; imageOffsetX?: number; imageOffsetY?: number; overlay?: number; imageScale?: number; imageOpacity?: number };
 export type TemplateContent = { version: 1; blocks: Block[]; settings?: { background?: Background } };
 /** Builds content keeping `version`/`blocks` and adding `settings.background` only when set. */
 export const buildContent = (blocks: Block[], bg: Background | undefined): TemplateContent => {
