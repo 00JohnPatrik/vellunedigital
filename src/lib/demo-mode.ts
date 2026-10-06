@@ -15,7 +15,7 @@ const STORAGE_KEY = "vellune-demo-state";
 const now = "2026-01-15T12:00:00.000Z";
 
 export function isDemoMode() {
-  return typeof window !== "undefined" && window.location.hostname.toLowerCase() === DEMO_HOST;
+  return false;
 }
 
 const defaultContent = {
