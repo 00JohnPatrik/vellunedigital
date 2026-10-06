@@ -64,6 +64,36 @@ const numericGeometryValue = (value: unknown) => {
   return undefined;
 };
 
+/**
+ * Única fonte de verdade para o tamanho inicial dos elementos do canvas.
+ * Valores de apresentação (width/height em props como "full"/"wide") não são tratados como geometria.
+ */
+export const DEFAULT_BLOCK_GEOMETRY: Record<BlockType, { width: number; height: number }> = {
+  text: { width: 360, height: 72 },
+  image: { width: 300, height: 190 },
+  gallery: { width: 300, height: 220 },
+  date: { width: 280, height: 60 },
+  time: { width: 280, height: 60 },
+  location: { width: 320, height: 76 },
+  countdown: { width: 340, height: 90 },
+  rsvp: { width: 340, height: 250 },
+  whatsapp: { width: 260, height: 56 },
+  button: { width: 260, height: 56 },
+  qr_code: { width: 160, height: 190 },
+  divider: { width: 320, height: 24 },
+};
+
+export type ResolvedBlockGeometry = {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  rotation: number;
+  zIndex: number;
+  scale: number;
+  opacity: number;
+};
+
 /** Reads geometry from the canonical block fields while accepting older content that stored it in props. */
 export function getBlockGeometry(block: Block): BlockGeometry {
   const result: BlockGeometry = {};
@@ -74,6 +104,56 @@ export function getBlockGeometry(block: Block): BlockGeometry {
     else if (legacyValue !== undefined) result[key] = legacyValue;
   }
   return result;
+}
+
+/**
+ * Resolve a block into safe, render-ready geometry without mutating persistence.
+ * Canvas zoom is intentionally not part of this calculation.
+ */
+export function resolveBlockGeometry(block: Block, index = 0): ResolvedBlockGeometry {
+  const stored = getBlockGeometry(block);
+  const fallback = DEFAULT_BLOCK_GEOMETRY[block.type] ?? { width: 300, height: 72 };
+  return {
+    x: Math.max(0, stored.x ?? 24),
+    y: Math.max(0, stored.y ?? 24 + index * 96),
+    width: Math.max(24, stored.width ?? fallback.width),
+    height: Math.max(24, stored.height ?? fallback.height),
+    rotation: stored.rotation ?? 0,
+    zIndex: stored.zIndex ?? index + 1,
+    scale: Math.max(0.1, stored.scale ?? 1),
+    opacity: Math.min(1, Math.max(0, stored.opacity ?? 1)),
+  };
+}
+
+/** Returns the canonical starting size without forcing a new block into free-canvas mode. */
+export function getBlockDefaultSize(type: BlockType) {
+  return DEFAULT_BLOCK_GEOMETRY[type] ?? { width: 300, height: 72 };
+}
+
+/** Returns the next available layer value, using the same resolver used by the canvas. */
+export function getNextBlockZIndex(blocks: Block[]) {
+  return Math.max(0, ...blocks.map((block, index) => resolveBlockGeometry(block, index).zIndex)) + 1;
+}
+
+/**
+ * Move one block one layer up/down by swapping actual zIndex values.
+ * Array order is not used as the visual stacking source of truth.
+ */
+export function moveBlockLayer(blocks: Block[], blockId: string, direction: -1 | 1) {
+  const ranked = blocks
+    .map((block, index) => ({ block, index, zIndex: resolveBlockGeometry(block, index).zIndex }))
+    .sort((a, b) => a.zIndex - b.zIndex || a.index - b.index);
+  const current = ranked.findIndex(({ block }) => block.id === blockId);
+  const target = current + direction;
+  if (current < 0 || target < 0 || target >= ranked.length) return blocks;
+
+  const currentZ = ranked[current]!.zIndex;
+  const targetZ = ranked[target]!.zIndex;
+  return blocks.map((block) => {
+    if (block.id === blockId) return { ...block, zIndex: targetZ };
+    if (block.id === ranked[target]!.block.id) return { ...block, zIndex: currentZ };
+    return block;
+  });
 }
 
 /** Converts legacy geometry in props to canonical fields without removing the original props. */
