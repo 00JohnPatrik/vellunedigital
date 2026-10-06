@@ -5,9 +5,13 @@ import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 import { BlockView } from "@/components/block-render";
-import { localRecoveryKey, normalizeInvitationContent, type EditorElement, type EditorSaveState, type InvitationEditorDocument, createTextElement, updateElement } from "@/lib/invitation-editor-foundation";
+import { localRecoveryKey, normalizeInvitationContent, toPersistedInvitationContent, type EditorElement, type EditorSaveState, type InvitationEditorDocument, createTextElement, updateElement } from "@/lib/invitation-editor-foundation";
 
-type Props = { invitationId: string; content: unknown };
+type Props = {
+  invitationId: string;
+  content: unknown;
+  onSave?: (content: ReturnType<typeof toPersistedInvitationContent>) => Promise<void>;
+};
 type History = { past: InvitationEditorDocument[]; present: InvitationEditorDocument; future: InvitationEditorDocument[] };
 
 const clone = <T,>(value: T): T => structuredClone(value);
@@ -35,7 +39,7 @@ function SaveStatus({ state }: { state: EditorSaveState }) {
   return <span className={cn("inline-flex items-center gap-1.5 text-xs", state === "error" ? "text-destructive" : "text-muted-foreground")}><Save className="h-3.5 w-3.5" />{label}</span>;
 }
 
-export function InvitationEditorFoundation({ invitationId, content }: Props) {
+export function InvitationEditorFoundation({ invitationId, content, onSave }: Props) {
   const initial = useMemo(() => normalizeInvitationContent(content), [content]);
   const h = useDocumentHistory(initial);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
@@ -62,16 +66,19 @@ export function InvitationEditorFoundation({ invitationId, content }: Props) {
   useEffect(() => {
     if (state === "saved") return;
     setState("saving");
-    const timer = window.setTimeout(() => {
+    const timer = window.setTimeout(async () => {
       try {
         localStorage.setItem(localRecoveryKey(invitationId), JSON.stringify(h.document));
+        if (onSave) {
+          await onSave(toPersistedInvitationContent(h.document, content));
+        }
         setState("saved");
       } catch {
         setState("error");
       }
     }, 600);
     return () => window.clearTimeout(timer);
-  }, [h.document, invitationId, state]);
+  }, [content, h.document, invitationId, onSave, state]);
 
   const markChange = useCallback((next: InvitationEditorDocument | ((current: InvitationEditorDocument) => InvitationEditorDocument), key?: string) => {
     h.change(next, key);
