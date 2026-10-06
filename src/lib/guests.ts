@@ -58,6 +58,12 @@ export async function getInvitationForGuests(invitationId: string) {
 }
 
 export async function listInvitationGuests(invitationId: string, search = "", page = 1, pageSize = 20) {
+  const { isDemoMode, listDemoGuests } = await import("@/lib/demo-mode");
+  if (isDemoMode()) {
+    const all = listDemoGuests(invitationId).filter((guest) => !search.trim() || guest.name.toLowerCase().includes(search.trim().toLowerCase()));
+    const from = Math.max(0, page - 1) * pageSize;
+    return { rows: all.slice(from, from + pageSize) as InvitationGuest[], total: all.length };
+  }
   let query = supabase
     .from("invitation_guests")
     .select(guestColumns, { count: "exact" })
@@ -88,6 +94,8 @@ export async function listAllInvitationGuests(invitationId: string) {
 }
 
 export async function getGuestByToken(invitationId: string, token: string) {
+  const { isDemoMode, getDemoGuestByToken } = await import("@/lib/demo-mode");
+  if (isDemoMode()) return getDemoGuestByToken(invitationId, token) as InvitationGuest | null;
   const normalizedToken = token.trim();
   if (!normalizedToken) return null;
 
@@ -104,6 +112,8 @@ export async function getGuestByToken(invitationId: string, token: string) {
 }
 
 export async function getGuest(invitationId: string, id: string) {
+  const { isDemoMode, getDemoGuest } = await import("@/lib/demo-mode");
+  if (isDemoMode()) return getDemoGuest(invitationId, id) as InvitationGuest | null;
   const { data, error } = await supabase
     .from("invitation_guests")
     .select(guestColumns)

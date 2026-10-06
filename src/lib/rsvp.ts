@@ -11,17 +11,23 @@ export type RsvpResponse = { id: string; name: string; phone: string | null; ema
 export const rsvpKey = (id: string) => ["rsvp", id] as const;
 
 export async function getRsvpConfig(invitationId: string): Promise<RsvpConfig> {
+  const { isDemoMode, getDemoRsvpConfig } = await import("@/lib/demo-mode");
+  if (isDemoMode()) return getDemoRsvpConfig(invitationId);
   const { data, error } = await supabase.from("rsvp_configs").select("enabled, deadline, max_people, allow_phone, allow_email").eq("invitation_id", invitationId).maybeSingle();
   if (error) throw error;
   return (data as RsvpConfig | null) ?? defaultRsvpConfig;
 }
 
 export async function saveRsvpConfig(invitationId: string, c: RsvpConfig) {
+  const { isDemoMode, saveDemoRsvpConfig } = await import("@/lib/demo-mode");
+  if (isDemoMode()) { saveDemoRsvpConfig(); return; }
   const { error } = await supabase.from("rsvp_configs").upsert({ invitation_id: invitationId, ...c }, { onConflict: "invitation_id" });
   if (error) throw error;
 }
 
 export async function listRsvpResponses(invitationId: string): Promise<RsvpResponse[]> {
+  const { isDemoMode, listDemoRsvpResponses } = await import("@/lib/demo-mode");
+  if (isDemoMode()) return listDemoRsvpResponses(invitationId) as RsvpResponse[];
   const { data, error } = await supabase.from("rsvp_responses").select("id, name, phone, email, people_count, status, created_at, updated_at").eq("invitation_id", invitationId).order("updated_at", { ascending: false });
   if (error) throw error;
   return data as RsvpResponse[];
