@@ -1,6 +1,6 @@
 // @ts-nocheck
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { AlignCenter, AlignLeft, AlignRight, ArrowDown, ArrowUp, CalendarDays, Check, ChevronDown, Copy, Eye, EyeOff, ExternalLink, Gift, Grid2X2, Image as ImageIcon, Layers3, LayoutTemplate, Link2, Lock, MapPin, MessageCircle, Minus, MousePointer2, Plus, QrCode, Redo2, RotateCw, Search, Shapes, Shirt, Sparkles, Trash2, Type, Undo2, Unlock, UsersRound, WandSparkles, X, Maximize2, Minimize2, ShieldCheck, Smartphone, Monitor, Tablet, AlertTriangle, Info, CircleAlert, MousePointerClick } from "lucide-react";
+import { AlignCenter, AlignLeft, AlignRight, ArrowDown, ArrowUp, CalendarDays, Check, ChevronDown, Copy, Eye, EyeOff, ExternalLink, Gift, Grid2X2, Image as ImageIcon, Layers3, LayoutTemplate, Link2, Lock, MapPin, MessageCircle, Minus, MousePointer2, Plus, QrCode, Redo2, RotateCw, Search, Shapes, Settings2, Shirt, Sparkles, Trash2, Type, Undo2, Unlock, UsersRound, WandSparkles, X, Maximize2, Minimize2, ShieldCheck, Smartphone, Monitor, Tablet, AlertTriangle, Info, CircleAlert, MousePointerClick } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
