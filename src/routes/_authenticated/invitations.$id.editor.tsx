@@ -17,6 +17,7 @@ import { useBlocksHistory, VisualEditor } from "@/components/visual-editor";
 import { customersKey, listCustomers } from "@/lib/customers-data";
 import { getInvitation, invitationError, invitationsKey, publishInvitation, toEventValues, updateInvitation, validateEvent, type EventValues, type Invitation } from "@/lib/invitations";
 import { normalizeBlocks, validateContent } from "@/lib/blocks";
+import { InvitationEditorFoundation } from "@/components/invitation-editor-foundation";
 
 export const Route = createFileRoute("/_authenticated/invitations/$id/editor")({
   head: () => ({ meta: [{ title: "Editor do convite — Vellune Digital" }] }),
@@ -181,6 +182,8 @@ function EditorForm({ inv }: { inv: Invitation }) {
           ? <Button type="button" size="sm" variant="secondary" onClick={() => setShareOpen(true)}><Share2 className="h-4 w-4" />Compartilhar</Button>
           : <Button type="button" size="sm" variant="secondary" onClick={() => void publish()} disabled={publishing}>{publishing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}Publicar convite</Button>}
       </>} />
+
+      <InvitationEditorFoundation invitationId={inv.id} content={inv.content} />
 
       <ShareDialog slug={inv.slug} open={shareOpen} onOpenChange={setShareOpen} />
       <RsvpPanel invitationId={inv.id} open={rsvpOpen} onOpenChange={setRsvpOpen} />
