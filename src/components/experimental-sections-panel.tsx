@@ -110,11 +110,6 @@ export function ExperimentalSectionsPanel({ document, onChange, selectedSectionI
     }));
   };
 
-  const updateBackground = (key: string, value: string) => {
-    if (!selected) return;
-    updateSection(selected.id, { background: { ...(selected.background ?? {}), [key]: value } });
-  };
-
   if (!selected) return null;
 
   return (
@@ -122,7 +117,7 @@ export function ExperimentalSectionsPanel({ document, onChange, selectedSectionI
       <div className="flex flex-wrap items-center gap-2">
         <div className="min-w-0 flex-1">
           <p className="text-sm font-semibold">Navegação do documento</p>
-          <p className="text-xs text-muted-foreground">Organize seções, fundos e camadas sem sair do editor.</p>
+          <p className="text-xs text-muted-foreground">Selecione uma seção para editar seu fundo e propriedades no painel contextual.</p>
         </div>
         <Button type="button" size="sm" onClick={addSection}><Plus className="mr-1 h-4 w-4" />Adicionar seção</Button>
       </div>
@@ -159,15 +154,9 @@ export function ExperimentalSectionsPanel({ document, onChange, selectedSectionI
         <label className="space-y-1 text-xs text-muted-foreground">Altura
           <Input type="number" min={240} value={selected.height} onChange={(event) => updateSection(selected.id, { height: Math.max(240, Number(event.target.value) || 240) })} className="h-8 text-foreground" />
         </label>
-        <label className="space-y-1 text-xs text-muted-foreground">Cor do fundo
-          <Input type="color" value={String(selected.background?.color ?? "#ffffff")} onChange={(event) => updateBackground("color", event.target.value)} className="h-8 w-full cursor-pointer p-1" />
-        </label>
-        <label className="space-y-1 text-xs text-muted-foreground sm:col-span-2">Gradiente CSS
-          <Input value={String(selected.background?.gradient ?? "")} onChange={(event) => updateBackground("gradient", event.target.value)} placeholder="linear-gradient(135deg, #fff, #e8d8ff)" className="h-8 text-foreground" />
-        </label>
-        <label className="space-y-1 text-xs text-muted-foreground sm:col-span-2">Imagem de fundo
-          <Input value={String(selected.background?.image ?? "")} onChange={(event) => updateBackground("image", event.target.value)} placeholder="URL ou referência local da imagem" className="h-8 text-foreground" />
-        </label>
+        <div className="flex items-end rounded-md border border-dashed bg-background/60 px-3 py-2 text-xs text-muted-foreground sm:col-span-1">
+          O fundo é editado no painel contextual ao selecionar esta seção.
+        </div>
       </div>
     </section>
   );
