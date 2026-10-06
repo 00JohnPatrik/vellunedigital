@@ -183,14 +183,7 @@ function EditorForm({ inv }: { inv: Invitation }) {
           : <Button type="button" size="sm" variant="secondary" onClick={() => void publish()} disabled={publishing}>{publishing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}Publicar convite</Button>}
       </>} />
 
-      <InvitationEditorFoundation
-        invitationId={inv.id}
-        content={inv.content}
-        onSave={async (content) => {
-          await updateInvitation(inv.id, customerId, snap.current.v, content);
-          void qc.invalidateQueries({ queryKey: invitationsKey });
-        }}
-      />
+      <InvitationEditorFoundation invitationId={inv.id} content={inv.content} />
 
       <ShareDialog slug={inv.slug} open={shareOpen} onOpenChange={setShareOpen} />
       <RsvpPanel invitationId={inv.id} open={rsvpOpen} onOpenChange={setRsvpOpen} />

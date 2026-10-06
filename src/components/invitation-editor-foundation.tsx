@@ -11,7 +11,6 @@ import { localRecoveryKey, normalizeInvitationContent, toPersistedInvitationCont
 type Props = {
   invitationId: string;
   content: unknown;
-  onSave?: (content: ReturnType<typeof toPersistedInvitationContent>) => Promise<void>;
 };
 type History = { past: InvitationEditorDocument[]; present: InvitationEditorDocument; future: InvitationEditorDocument[] };
 
@@ -60,26 +59,29 @@ export function InvitationEditorFoundation({ invitationId, content, onSave }: Pr
     if (!stored) return;
     try {
       const recovered = JSON.parse(stored) as InvitationEditorDocument;
-      if (recovered?.version === 1 && Array.isArray(recovered.elements)) h.change(recovered);
-    } catch { /* recuperação inválida é ignorada sem afetar o convite */ }
-  }, [h, invitationId]);
+      if (recovered?.version === 1 && Array.isArray(recovered.elements)) {
+        h.change(recovered);
+        setState("dirty");
+      }
+    } catch {
+      // Recuperação inválida é ignorada sem afetar o convite oficial.
+    }
+  }, [h.change, invitationId]);
 
+  // O autosave experimental é deliberadamente local. Ele nunca atualiza
+  // invitations.content; a gravação oficial continua isolada no editor atual.
   useEffect(() => {
-    if (state === "saved") return;
-    setState("saving");
-    const timer = window.setTimeout(async () => {
+    if (state !== "dirty") return;
+    const timer = window.setTimeout(() => {
       try {
         localStorage.setItem(localRecoveryKey(invitationId), JSON.stringify(h.document));
-        if (onSave) {
-          await onSave(toPersistedInvitationContent(h.document, content));
-        }
         setState("saved");
       } catch {
         setState("error");
       }
     }, 600);
     return () => window.clearTimeout(timer);
-  }, [content, h.document, invitationId, onSave, state]);
+  }, [h.document, invitationId, state]);
 
   const markChange = useCallback((next: InvitationEditorDocument | ((current: InvitationEditorDocument) => InvitationEditorDocument), key?: string) => {
     h.change(next, key);
@@ -126,7 +128,7 @@ export function InvitationEditorFoundation({ invitationId, content, onSave }: Pr
   };
 
   return <section className="overflow-hidden rounded-2xl border border-dashed border-primary/40 bg-muted/20 shadow-sm" aria-label="Fundação do novo editor de convites">
-    <div className="flex flex-wrap items-center gap-2 border-b bg-card p-3"><div className="min-w-0 flex-1"><p className="flex items-center gap-2 text-sm font-semibold"><WandSparkles className="h-4 w-4 text-primary" />Fundação do novo editor</p><p className="text-xs text-muted-foreground">Área experimental isolada; o editor atual continua ativo e os dados ainda não são gravados no convite.</p></div><SaveStatus state={state} /><Button size="sm" variant="outline" onClick={() => { localStorage.removeItem(localRecoveryKey(invitationId)); setState("saved"); }}>Limpar recuperação</Button></div>
+    <div className="flex flex-wrap items-center gap-2 border-b bg-card p-3"><div className="min-w-0 flex-1"><p className="flex items-center gap-2 text-sm font-semibold"><WandSparkles className="h-4 w-4 text-primary" />Fundação do novo editor</p><p className="text-xs text-muted-foreground">Área experimental isolada. O estado é próprio, reversível e salvo apenas na recuperação local; invitations.content não é alterado.</p></div><SaveStatus state={state} /><Button size="sm" variant="outline" onClick={() => { localStorage.removeItem(localRecoveryKey(invitationId)); setState("saved"); }}>Limpar recuperação</Button></div>
     <div className="grid min-h-[720px] lg:grid-cols-[220px_minmax(0,1fr)_240px]">
       <aside className="hidden border-r bg-card p-3 lg:block"><PanelTitle icon={<Layers3 className="h-4 w-4" />}>Elementos</PanelTitle><div className="mt-3 space-y-2"><Button className="w-full justify-start" variant="outline" onClick={addText}><Plus className="mr-2 h-4 w-4" />Adicionar texto</Button><Button className="w-full justify-start" variant="outline" onClick={() => setMobilePanel("elements")}><Grid2X2 className="mr-2 h-4 w-4" />Biblioteca preparada</Button></div><SectionList document={h.document} /></aside>
       <main className="relative overflow-auto bg-muted/40 p-4 sm:p-8" onPointerMove={moveDrag} onPointerUp={() => setDrag(null)}><div className="mb-3 flex flex-wrap items-center justify-center gap-1"><Button size="icon" variant="outline" onClick={() => setZoom((value) => Math.max(50, value - 10))}><Minus className="h-4 w-4" /></Button><span className="min-w-14 text-center text-xs">{zoom}%</span><Button size="icon" variant="outline" onClick={() => setZoom((value) => Math.min(180, value + 10))}><Plus className="h-4 w-4" /></Button><Button size="sm" variant="outline" onClick={() => { setZoom(100); setPan({ x: 0, y: 0 }); }}><Maximize2 className="mr-1 h-4 w-4" />Centralizar</Button><Button size="sm" variant="outline" onClick={() => setMobilePanel("properties")}><MousePointer2 className="mr-1 h-4 w-4" />Propriedades</Button></div><div className="mx-auto origin-top" style={{ width: `${100 / (zoom / 100)}%`, transform: `translate(${pan.x}px, ${pan.y}px)` }}><div ref={canvasRef} className="relative mx-auto min-h-[640px] w-full max-w-[768px] overflow-hidden rounded-xl border bg-card shadow-lg" style={{ minHeight: h.document.canvas.minHeight }} onPointerDown={(event) => { if (event.target === event.currentTarget) setSelectedIds([]); }}><div className="pointer-events-none absolute inset-0 [background-image:linear-gradient(to_right,hsl(var(--border)/.2)_1px,transparent_1px),linear-gradient(to_bottom,hsl(var(--border)/.2)_1px,transparent_1px)] [background-size:16px_16px]" />{h.document.elements.map((element) => <div key={element.id} className={cn("absolute rounded-md transition-shadow", selectedIds.includes(element.id) && "ring-2 ring-primary ring-offset-2", !element.visible && "opacity-40")} style={{ left: element.x, top: element.y, width: element.width, height: element.height, zIndex: element.zIndex, opacity: element.visible ? element.opacity : 0.35, transform: `rotate(${element.rotation}deg)` }} onPointerDown={(event) => startDrag(event, element)} onClick={(event) => { event.stopPropagation(); select(element.id, event.shiftKey || event.metaKey || event.ctrlKey); }}>{element.content.block ? <BlockView block={element.content.block} interactive={false} /> : <div className="flex h-full items-center justify-center rounded border bg-primary/10 p-3 text-center text-sm">{element.content.text}</div>}{selectedIds.includes(element.id) && <span className="absolute -top-6 left-0 rounded bg-primary px-1.5 py-0.5 text-[10px] text-primary-foreground">{element.type}</span>}</div>)}</div></div><div className="mt-4 flex flex-wrap items-center justify-center gap-2 rounded-xl border bg-card p-2 lg:hidden"><Button size="sm" variant="outline" onClick={addText}><Plus className="mr-1 h-4 w-4" />Texto</Button><Button size="sm" variant="outline" onClick={() => setMobilePanel("elements")}><Layers3 className="mr-1 h-4 w-4" />Seções</Button><Button size="sm" variant="outline" onClick={() => setMobilePanel("properties")}><MousePointer2 className="mr-1 h-4 w-4" />Painel</Button></div></main>
