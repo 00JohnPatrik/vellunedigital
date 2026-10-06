@@ -76,5 +76,66 @@ export function listDemoRsvpResponses(invitationId: string) { return invitationI
 export function saveDemoRsvpConfig() { return; }
 export function getDemoCheckin() { return null; }
 export function setDemoCheckin() { return null; }
-export function demoTrash() { return listDemoInvitations().length ? [] : [makeInvitation()]; }
+export type DemoTrashItem = {
+  kind: "customer" | "template" | "invitation" | "company" | "admin";
+  id: string;
+  name: string;
+  company: string | null;
+  customer: string | null;
+  category: string | null;
+  email: string | null;
+  deleted_at: string;
+  deleted_by: string | null;
+};
+
+export type DemoBranding = {
+  brand_name: string;
+  logo_url: string | null;
+  favicon_url: string | null;
+  primary_color: string | null;
+  secondary_color: string | null;
+  accent_color: string | null;
+  show_vellune_branding: boolean;
+  whatsapp_number: string | null;
+  contact_email: string | null;
+  website_url: string | null;
+};
+
+const defaultBranding: DemoBranding = {
+  brand_name: "Vellune Digital Demo",
+  logo_url: null,
+  favicon_url: null,
+  primary_color: "#8b5cf6",
+  secondary_color: "#c4b5fd",
+  accent_color: "#f59e0b",
+  show_vellune_branding: true,
+  whatsapp_number: "5511999999999",
+  contact_email: "demo@vellunedigital.local",
+  website_url: "https://vellunedigital.lovable.app",
+};
+
+export function getDemoBranding(): DemoBranding {
+  return { ...defaultBranding, ...(readState().branding as Partial<DemoBranding> | undefined) };
+}
+
+export function saveDemoBranding(values: DemoBranding) {
+  writeState({ branding: values });
+}
+
+export function listDemoTrash(): DemoTrashItem[] {
+  const state = readState();
+  if (!state.invitationDeleted) return [];
+  const deletedAt = typeof state.invitationDeletedAt === "string" ? state.invitationDeletedAt : now;
+  return [
+    { kind: "invitation", id: DEMO_INVITATION_ID, name: "Celebração de Ana e Lucas", company: "Vellune Digital Demo", customer: "Ana e Lucas", category: null, email: null, deleted_at: deletedAt, deleted_by: "Marina Vellune" },
+    { kind: "customer", id: DEMO_CUSTOMER_ID, name: "Ana e Lucas", company: "Vellune Digital Demo", customer: null, category: null, email: "ana.lucas@example.com", deleted_at: deletedAt, deleted_by: "Marina Vellune" },
+    { kind: "template", id: DEMO_TEMPLATE_ID, name: "Romance Editorial", company: "Oficial", customer: null, category: "casamento", email: null, deleted_at: deletedAt, deleted_by: "Marina Vellune" },
+  ];
+}
+
+export function restoreDemoTrash(kind: DemoTrashItem["kind"], id: string) {
+  if (kind === "invitation" && id === DEMO_INVITATION_ID) restoreDemoInvitation();
+}
+
+export function demoTrash() { return listDemoTrash(); }
 export function resetDemoState() { if (typeof window !== "undefined") window.localStorage.removeItem(STORAGE_KEY); }

@@ -1,6 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
-
-// Logical delete / restore — super admin only (enforced by DB triggers + RLS). Nothing is physically deleted.
+import { isDemoMode, listDemoTrash, restoreDemoTrash, type DemoTrashItem } from "@/lib/demo-mode";
 
 export type TrashKind = "customer" | "template" | "invitation" | "company" | "admin";
 export const TRASH_LABEL: Record<TrashKind, string> = { customer: "Cliente", template: "Modelo", invitation: "Convite", company: "Empresa", admin: "Administrador" };
@@ -16,7 +15,12 @@ type Row = {
 
 export const trashKey = ["admin", "trash"] as const;
 
+function mapDemoItem(item: DemoTrashItem): TrashItem {
+  return item;
+}
+
 export async function listTrash(): Promise<TrashItem[]> {
+  if (isDemoMode()) return listDemoTrash().map(mapDemoItem);
   const [c, t, i, co, ad] = await Promise.all([
     supabase.from("customers").select("id, name, deleted_at, updated_at, company:companies(name), deleter:users!customers_deleted_by_fkey(name)").not("deleted_at", "is", null),
     supabase.from("templates").select("id, name, category, deleted_at, updated_at, company:companies(name), deleter:users!templates_deleted_by_fkey(name)").not("deleted_at", "is", null),
@@ -35,6 +39,7 @@ export async function listTrash(): Promise<TrashItem[]> {
 }
 
 export async function softDelete(kind: TrashKind, id: string) {
+  if (isDemoMode()) return;
   if (kind === "company" || kind === "admin") throw new Error("use setDeleted");
   const q = kind === "invitation"
     ? supabase.from("invitations").update({ status: "deleted" }).eq("id", id)
@@ -43,8 +48,11 @@ export async function softDelete(kind: TrashKind, id: string) {
   if (error) throw error;
 }
 
-/** Restores the item. Invitations come back as draft (previous state is not stored). */
 export async function restore(kind: TrashKind, id: string) {
+  if (isDemoMode()) {
+    restoreDemoTrash(kind, id);
+    return;
+  }
   if (kind === "company" || kind === "admin") {
     const { error } = await supabase.from(kind === "company" ? "companies" : "users").update({ deleted_at: null }).eq("id", id);
     if (error) throw error;

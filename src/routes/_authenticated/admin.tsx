@@ -1,11 +1,11 @@
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 import { AppShell } from "@/components/app-shell";
 import { adminNav } from "@/lib/nav";
+import { isDemoMode } from "@/lib/demo-mode";
 
-// PermissionGuard: only super_admin.
 export const Route = createFileRoute("/_authenticated/admin")({
   beforeLoad: ({ context }) => {
-    if (context.appUser.role !== "super_admin") throw redirect({ to: "/dashboard" });
+    if (!isDemoMode() && context.appUser.role !== "super_admin") throw redirect({ to: "/dashboard" });
   },
   head: () => ({ meta: [{ title: "Administração — Vellune Digital" }, { name: "robots", content: "noindex" }] }),
   component: AdminLayout,
