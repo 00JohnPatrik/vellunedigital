@@ -72,7 +72,7 @@ function useReducedMotion() {
   return reduced;
 }
 
-function useBlockAnimation(animationValue: unknown, selected: boolean) {
+function useBlockAnimation(animationValue: unknown, selected: boolean, index: number) {
   const animation = normalizeAnimation(animationValue);
   const reducedMotion = useReducedMotion();
   const [playing, setPlaying] = useState(animation.trigger === "on_load");
@@ -91,7 +91,7 @@ function useBlockAnimation(animationValue: unknown, selected: boolean) {
   }, [animation.trigger]);
 
   const style = {
-    ...animationStyle(animation, { playing, selected, reducedMotion, index: 0 }),
+    ...animationStyle(animation, { playing, selected, reducedMotion, index }),
     ...parallaxStyle(animation, motion, !reducedMotion),
   } as CSSProperties;
   return { ref, style, playing, setPlaying, animation };
@@ -235,7 +235,7 @@ function BlockContent({ block, ctx, interactive = false }: { block: Block; ctx?:
 
 export function BlockView({ block, ctx, interactive = false, selected = false, index = 0 }: { block: Block; ctx?: EventCtx | undefined; interactive?: boolean; selected?: boolean; index?: number }) {
   const p = block.props ?? {};
-  const animationState = useBlockAnimation(block.animation, selected);
+  const animationState = useBlockAnimation(block.animation, selected, index);
   const animation = animationState.animation;
   const handleInteraction = () => {
     if (animation.sensor) void requestMotionPermission();
