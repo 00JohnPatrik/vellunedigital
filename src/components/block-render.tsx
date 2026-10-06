@@ -24,11 +24,31 @@ function Row({ align = "center", children }: { align?: string | undefined; child
 }
 
 function Btn({ p, fallback, href, interactive, icon }: { p: Record<string, string>; fallback: string; href?: string | null | undefined; interactive: boolean; icon?: ReactNode }) {
-  const cls = cn("inline-flex items-center justify-center gap-2 rounded-md px-5 py-2.5 text-sm font-medium", BTN_STYLE[p["style"] ?? "solid"] ?? BTN_STYLE["solid"], WIDTH[p["width"] ?? "auto"]);
+  const preset = p["preset"] || "classic";
+  const presetClass = preset === "pill" ? "rounded-full" : preset === "minimal" ? "rounded-none border-x-0 border-t-0" : preset === "square" ? "rounded-md" : "rounded-lg";
+  const visual: CSSProperties = {
+    color: p["textColor"] || undefined,
+    backgroundColor: p["backgroundColor"] || undefined,
+    borderColor: p["borderColor"] || undefined,
+    borderWidth: p["borderWidth"] ? `${Math.max(0, Math.min(12, Number(p["borderWidth"]))) || 0}px` : undefined,
+    borderStyle: p["borderWidth"] && p["borderStyle"] ? p["borderStyle"] as CSSProperties["borderStyle"] : undefined,
+    borderRadius: p["radius"] ? `${Math.max(0, Math.min(999, Number(p["radius"]))) || 0}px` : undefined,
+    fontFamily: p["fontFamily"] || undefined,
+    fontSize: p["fontSize"] ? `${Math.max(8, Math.min(96, Number(p["fontSize"]))) || 16}px` : undefined,
+    fontWeight: p["fontWeight"] || undefined,
+    letterSpacing: p["letterSpacing"] ? `${Number(p["letterSpacing"]) || 0}px` : undefined,
+    lineHeight: p["lineHeight"] ? Number(p["lineHeight"]) || undefined : undefined,
+    paddingInline: p["paddingX"] ? `${Math.max(0, Math.min(80, Number(p["paddingX"]))) || 0}px` : undefined,
+    paddingBlock: p["paddingY"] ? `${Math.max(0, Math.min(48, Number(p["paddingY"]))) || 0}px` : undefined,
+    minHeight: p["minHeight"] ? `${Math.max(24, Math.min(160, Number(p["minHeight"]))) || 48}px` : undefined,
+    textTransform: p["textTransform"] as CSSProperties["textTransform"] || undefined,
+    boxShadow: p["shadow"] === "soft" ? "0 6px 18px rgb(15 23 42 / .14)" : p["shadow"] === "strong" ? "0 12px 28px rgb(15 23 42 / .24)" : undefined,
+  };
+  const cls = cn("inline-flex min-w-0 max-w-full items-center justify-center gap-2 px-5 py-2.5 text-center text-sm font-medium transition-colors hover:brightness-95", presetClass, BTN_STYLE[p["style"] ?? "solid"] ?? BTN_STYLE["solid"], WIDTH[p["width"] ?? "auto"]);
   const body = <>{icon}{p["label"] || fallback}</>;
   return (
     <Row align={p["align"]}>
-      {interactive && href ? <a href={href} target="_blank" rel="noopener noreferrer" className={cls}>{body}</a> : <span className={cls}>{body}</span>}
+      {interactive && href ? <a href={href} target="_blank" rel="noopener noreferrer" className={cls} style={visual}>{body}</a> : <span className={cls} style={visual}>{body}</span>}
     </Row>
   );
 }
@@ -137,7 +157,7 @@ function BlockContent({ block, ctx, interactive = false }: { block: Block; ctx?:
     case "rsvp":
       if (ctx?.rsvp && ctx.slug) {
         if (!ctx.rsvp.enabled) return null;
-        return <RsvpForm slug={ctx.slug} cfg={ctx.rsvp} title={p["title"]} label={p["label"]} />;
+        return <RsvpForm slug={ctx.slug} cfg={ctx.rsvp} title={p["title"]} label={p["label"]} visual={p} />;
       }
       return (
         <div className="space-y-2">
@@ -148,11 +168,19 @@ function BlockContent({ block, ctx, interactive = false }: { block: Block; ctx?:
     case "whatsapp": return <Btn p={p} fallback="WhatsApp" interactive={false} icon={<MessageCircle className="h-4 w-4" />} />;
     case "button": return <Btn p={p} fallback="Botão" href={/^https?:\/\//i.test(p["url"] ?? "") ? p["url"] : null} interactive={interactive} />;
     case "qr_code": {
-      const size = p["size"] === "sm" ? 96 : p["size"] === "lg" ? 176 : 128;
+      const size = p["size"] === "sm" ? 96 : p["size"] === "lg" ? 176 : p["size"] === "xl" ? 224 : 128;
       const value = p["value"] || ctx?.publicUrl || "https://convitely.app/convite/previa";
+      const qrStyle: CSSProperties = {
+        backgroundColor: p["backgroundColor"] || "hsl(var(--card))",
+        color: p["foregroundColor"] || "currentColor",
+        padding: `${Math.max(4, Math.min(32, Number(p["padding"]))) || 8}px`,
+        borderRadius: `${Math.max(0, Math.min(48, Number(p["radius"]))) || 6}px`,
+        boxShadow: p["shadow"] === "soft" ? "0 6px 18px rgb(15 23 42 / .14)" : p["shadow"] === "strong" ? "0 12px 28px rgb(15 23 42 / .24)" : undefined,
+      };
       return (
-        <div className="space-y-1">
-          <Row align={p["align"]}><div className="rounded-md bg-card p-2"><QRCodeSVG value={value} size={size} bgColor="transparent" fgColor="currentColor" /></div></Row>
+        <div className="space-y-2">
+          <Row align={p["align"]}><div style={qrStyle}><QRCodeSVG value={value} size={size} bgColor={p["backgroundColor"] || "transparent"} fgColor={p["foregroundColor"] || "currentColor"} /></div></Row>
+          {p["caption"] && <p className={cn("text-xs text-muted-foreground", ALIGN[p["align"] ?? "center"])}>{p["caption"]}</p>}
           {!p["value"] && <p className={cn("text-[11px] text-muted-foreground", ALIGN[p["align"] ?? "center"])}>Prévia — usará o link público do convite.</p>}
         </div>
       );

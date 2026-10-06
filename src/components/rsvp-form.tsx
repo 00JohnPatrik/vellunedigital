@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type CSSProperties } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { CheckCircle2, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -15,7 +15,19 @@ const FIELD_MSG: Record<string, string> = {
 type Cfg = Extract<PublicRsvp, { enabled: true }>;
 
 /** Public, login-free RSVP form. Never shows other guests. */
-export function RsvpForm({ slug, cfg, title, label }: { slug: string; cfg: Cfg; title?: string | undefined; label?: string | undefined }) {
+export function RsvpForm({ slug, cfg, title, label, visual = {} }: { slug: string; cfg: Cfg; title?: string | undefined; label?: string | undefined; visual?: Record<string, string> }) {
+  const buttonStyle: CSSProperties = {
+    backgroundColor: visual["backgroundColor"] || undefined,
+    color: visual["textColor"] || undefined,
+    borderColor: visual["borderColor"] || undefined,
+    borderRadius: visual["radius"] ? `${Number(visual["radius"]) || 0}px` : undefined,
+    fontFamily: visual["fontFamily"] || undefined,
+    fontSize: visual["fontSize"] ? `${Number(visual["fontSize"]) || 16}px` : undefined,
+    fontWeight: visual["fontWeight"] || undefined,
+    letterSpacing: visual["letterSpacing"] ? `${Number(visual["letterSpacing"]) || 0}px` : undefined,
+    textTransform: visual["textTransform"] as CSSProperties["textTransform"] || undefined,
+  };
+  const buttonClass = visual["preset"] === "pill" ? "rounded-full" : visual["preset"] === "minimal" ? "rounded-none" : "rounded-lg";
   const send = useServerFn(submitRsvp);
   const [status, setStatus] = useState<"confirmed" | "declined" | null>(null);
   const [name, setName] = useState(""); const [people, setPeople] = useState("1");
@@ -65,12 +77,12 @@ export function RsvpForm({ slug, cfg, title, label }: { slug: string; cfg: Cfg; 
   );
 
   return (
-    <div className="space-y-3 rounded-xl border p-4 text-left">
+    <div className="space-y-3 rounded-xl border p-4 text-left" style={{ borderColor: visual["containerBorderColor"] || undefined, backgroundColor: visual["containerBackgroundColor"] || undefined }}>
       <p className="text-center font-display text-lg">{label || "Confirmar presença"}</p>
       {title && <p className="text-center text-sm text-muted-foreground">{title}</p>}
       <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
         {(["confirmed", "declined"] as const).map((s) => (
-          <Button key={s} type="button" size="lg" variant={status === s ? "default" : "outline"} className={cn("h-12")} onClick={() => { setStatus(s); setDup(false); }}>
+          <Button key={s} type="button" size="lg" variant={status === s ? "default" : "outline"} className={cn("h-12 min-w-0", buttonClass)} style={buttonStyle} onClick={() => { setStatus(s); setDup(false); }}>
             {s === "confirmed" ? "Vou comparecer" : "Não poderei comparecer"}
           </Button>
         ))}
@@ -95,7 +107,7 @@ export function RsvpForm({ slug, cfg, title, label }: { slug: string; cfg: Cfg; 
               </div>
             </div>
           ) : (
-            <Button type="submit" size="lg" className="h-12 w-full" disabled={busy}>{busy && <Loader2 className="h-4 w-4 animate-spin" />}Enviar</Button>
+            <Button type="submit" size="lg" className={cn("h-12 w-full", buttonClass)} style={buttonStyle} disabled={busy}>{busy && <Loader2 className="h-4 w-4 animate-spin" />}Enviar</Button>
           )}
         </form>
       )}
