@@ -159,7 +159,7 @@ function EditorForm({ inv }: { inv: Invitation }) {
           <div className="mt-3 hidden flex-wrap items-center justify-end gap-1.5 border-t border-border/60 pt-3 md:flex">{toolbar}</div>
         </header>
 
-        <VisualEditor h={h} bg={bg} onBg={setBg} ctx={ctx} assets={{ kind: "invitation", id: inv.id, companyId: inv.company_id }} toolbarExtra={<div className="hidden md:flex">{toolbar}</div>} />
+        <VisualEditor h={h} bg={bg} onBg={setBg} ctx={ctx} assets={{ kind: "invitation", id: inv.id, companyId: inv.company_id }} />
 
         <div className="fixed inset-x-2 bottom-2 z-40 grid grid-cols-4 gap-1 rounded-2xl border border-border/80 bg-card/95 p-1.5 shadow-2xl shadow-black/30 backdrop-blur-xl md:hidden" role="toolbar" aria-label="Ações rápidas do editor">
           <Button type="button" size="sm" variant="ghost" className="h-11 flex-col gap-0.5 px-1 text-[10px]" onClick={() => setEventOpen(true)}><SlidersHorizontal className="h-4 w-4" />Dados</Button>
