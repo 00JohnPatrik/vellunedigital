@@ -89,13 +89,13 @@ export function RsvpForm({ slug, cfg, title, label, visual = {} }: { slug: strin
       </div>
       {status && (
         <form className="space-y-3" onSubmit={(e) => { e.preventDefault(); void submit(false); }} noValidate>
-          <Field id="rsvp-name" label="Nome" error={err["name"]}><Input id="rsvp-name" value={name} maxLength={120} onChange={(e) => setName(e.target.value)} autoComplete="name" className="h-11" /></Field>
+          <Field id="rsvp-name" label="Nome" error={err["name"]}><Input id="rsvp-name" value={name} maxLength={120} onChange={(e) => setName(e.target.value)} autoComplete="name" className="h-11 bg-background text-foreground border-input" /></Field>
           {status === "confirmed" && (
             <Field id="rsvp-people" label={`Número de pessoas${cfg.max_people ? ` (máx. ${cfg.max_people})` : ""}`} error={err["people"]}>
               <Input id="rsvp-people" type="number" inputMode="numeric" min={1} max={cfg.max_people ?? undefined} step={1} value={people} onChange={(e) => setPeople(e.target.value)} className="h-11" />
             </Field>
           )}
-          {cfg.allow_phone && <Field id="rsvp-phone" label="Telefone (opcional)" error={err["phone"]}><Input id="rsvp-phone" type="tel" inputMode="tel" maxLength={30} value={phone} onChange={(e) => setPhone(e.target.value)} autoComplete="tel" className="h-11" /></Field>}
+          {cfg.allow_phone && <Field id="rsvp-phone" label="Telefone (opcional)" error={err["phone"]}><Input id="rsvp-phone" type="tel" inputMode="tel" maxLength={30} value={phone} onChange={(e) => setPhone(e.target.value)} autoComplete="tel" className="h-11 bg-background text-foreground border-input" /></Field>}
           {cfg.allow_email && <Field id="rsvp-email" label="E-mail (opcional)" error={err["email"]}><Input id="rsvp-email" type="email" maxLength={200} value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" className="h-11" /></Field>}
           {err["form"] && <p className="text-sm text-destructive" role="alert">{err["form"]}</p>}
           {dup ? (
