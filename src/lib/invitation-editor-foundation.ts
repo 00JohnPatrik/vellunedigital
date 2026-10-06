@@ -1,7 +1,8 @@
 // @ts-nocheck
 import type { Block, TemplateContent } from "@/lib/templates";
 
-export type EditorElementType = "text" | "image" | "gif" | "shape" | "decoration" | "block" | "group";
+export type SmartElementType = "rsvp" | "countdown" | "location" | "whatsapp" | "button" | "link" | "calendar" | "qr_code" | "gallery" | "gift_list" | "dress_code" | "timeline" | "hosts" | "social" | "special_text" | "custom_link";
+export type EditorElementType = "text" | "image" | "gif" | "shape" | "decoration" | "block" | "group" | SmartElementType;
 export type EditorPoint = { x: number; y: number };
 export type EditorSize = { width: number; height: number };
 
@@ -147,6 +148,49 @@ export function createShapeElement(shape: EditorElement["content"]["shape"] = "r
     rotation: 0, zIndex: 1, visible: true, locked: false, opacity: 1,
     styles: { background: "#7c3aed", color: "#7c3aed", borderRadius: shape === "circle" ? 999 : 12, borderWidth: 0, borderColor: "#7c3aed" },
     content: { shape }, groupId: null,
+  };
+}
+
+export type SmartElementDefinition = {
+  type: SmartElementType;
+  label: string;
+  description: string;
+  category: "Interação" | "Evento" | "Conteúdo" | "Informação";
+  icon: string;
+  defaults: Record<string, string>;
+  width: number;
+  height: number;
+};
+
+export const SMART_ELEMENT_DEFINITIONS: SmartElementDefinition[] = [
+  { type: "rsvp", label: "RSVP", description: "Confirmação de presença", category: "Interação", icon: "check", defaults: { title: "Você poderá comparecer?", label: "Confirmar presença", style: "solid" }, width: 520, height: 170 },
+  { type: "countdown", label: "Contagem regressiva", description: "Tempo até o evento", category: "Evento", icon: "clock", defaults: { title: "Está chegando", target: "event" }, width: 520, height: 120 },
+  { type: "location", label: "Localização", description: "Local e como chegar", category: "Informação", icon: "map", defaults: { name: "Nome do local", address: "Endereço do evento", button: "Como chegar" }, width: 520, height: 150 },
+  { type: "whatsapp", label: "WhatsApp", description: "Contato direto pelo WhatsApp", category: "Interação", icon: "whatsapp", defaults: { label: "Falar pelo WhatsApp", phone: "", message: "Olá! Gostaria de saber mais sobre o evento." }, width: 440, height: 72 },
+  { type: "button", label: "Botão", description: "Ação com texto e link", category: "Interação", icon: "button", defaults: { label: "Saiba mais", url: "https://", style: "solid" }, width: 320, height: 64 },
+  { type: "link", label: "Link", description: "Link de texto personalizado", category: "Interação", icon: "link", defaults: { label: "Acessar link", url: "https://" }, width: 360, height: 48 },
+  { type: "calendar", label: "Adicionar ao calendário", description: "Lembrete do evento", category: "Evento", icon: "calendar", defaults: { label: "Adicionar ao calendário", provider: "google" }, width: 440, height: 64 },
+  { type: "qr_code", label: "QR Code", description: "Código para link ou acesso", category: "Interação", icon: "qr", defaults: { value: "invite", label: "Escaneie para acessar" }, width: 220, height: 260 },
+  { type: "gallery", label: "Galeria", description: "Fotos em grade ou carrossel", category: "Conteúdo", icon: "gallery", defaults: { title: "Momentos especiais", columns: "3", mode: "grid" }, width: 560, height: 260 },
+  { type: "gift_list", label: "Lista de presentes", description: "Links para presentes", category: "Interação", icon: "gift", defaults: { title: "Lista de presentes", label: "Ver lista", url: "https://" }, width: 480, height: 130 },
+  { type: "dress_code", label: "Dress code", description: "Orientação de traje", category: "Informação", icon: "shirt", defaults: { title: "Dress code", value: "Passeio completo" }, width: 420, height: 110 },
+  { type: "timeline", label: "Timeline", description: "Programação do evento", category: "Evento", icon: "timeline", defaults: { title: "Programação", items: "Cerimônia|Recepção|Festa" }, width: 520, height: 220 },
+  { type: "hosts", label: "Anfitriões", description: "Nomes dos anfitriões", category: "Informação", icon: "hosts", defaults: { title: "Com carinho", names: "Nome 1|Nome 2" }, width: 460, height: 130 },
+  { type: "social", label: "Redes sociais", description: "Links sociais do evento", category: "Interação", icon: "social", defaults: { title: "Siga nossos momentos", instagram: "", facebook: "", tiktok: "" }, width: 480, height: 100 },
+  { type: "special_text", label: "Texto especial", description: "Mensagem com destaque visual", category: "Conteúdo", icon: "sparkles", defaults: { text: "Uma celebração para guardar no coração", style: "quote" }, width: 560, height: 120 },
+  { type: "custom_link", label: "Link personalizado", description: "Atalho configurável", category: "Interação", icon: "external", defaults: { label: "Acessar página", url: "https://", description: "Configure um destino personalizado" }, width: 460, height: 100 },
+];
+
+export function createSmartElement(type: SmartElementType, x = 48, y = 48): EditorElement {
+  const definition = SMART_ELEMENT_DEFINITIONS.find((item) => item.type === type) ?? SMART_ELEMENT_DEFINITIONS[0];
+  const block = {
+    id: id("smart"), type, props: { ...definition.defaults },
+  } as Block;
+  return {
+    id: id("element"), type, x, y, width: definition.width, height: definition.height, rotation: 0, zIndex: 1,
+    visible: true, locked: false, opacity: 1,
+    styles: { color: "#172033", background: "#ffffff", borderColor: "#e5e7eb", borderWidth: 1, borderRadius: 16, accentColor: "#7c3aed" },
+    content: { block }, groupId: null,
   };
 }
 
