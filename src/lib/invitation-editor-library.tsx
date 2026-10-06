@@ -6,6 +6,84 @@ import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import type { EditorElementType, InvitationEditorDocument, SmartElementType } from "@/lib/invitation-editor-foundation";
 
+export type ExperimentalTextPreset = {
+  id: string;
+  name: string;
+  description: string;
+  category: string;
+  text: string;
+  styles: Record<string, string | number | boolean>;
+};
+
+export type ExperimentalTextInsert = (preset: ExperimentalTextPreset) => void;
+
+export const EXPERIMENTAL_TEXT_PRESETS: ExperimentalTextPreset[] = [
+  {
+    id: "hero-title",
+    name: "Título principal",
+    description: "Título de abertura com alto impacto visual.",
+    category: "Hierarquia",
+    text: "Um momento para recordar",
+    styles: { fontFamily: "Sora", fontSize: 42, fontWeight: 700, lineHeight: 1.08, letterSpacing: -0.8, textAlign: "center", color: "#172033", background: "transparent" },
+  },
+  {
+    id: "section-title",
+    name: "Título de seção",
+    description: "Título equilibrado para dividir o convite.",
+    category: "Hierarquia",
+    text: "Será uma alegria ter você conosco",
+    styles: { fontFamily: "Sora", fontSize: 30, fontWeight: 650, lineHeight: 1.16, letterSpacing: -0.3, textAlign: "center", color: "#172033", background: "transparent" },
+  },
+  {
+    id: "subtitle",
+    name: "Subtítulo",
+    description: "Complemento curto para o título principal.",
+    category: "Hierarquia",
+    text: "Celebre este dia especial ao nosso lado",
+    styles: { fontFamily: "Manrope", fontSize: 22, fontWeight: 600, lineHeight: 1.3, letterSpacing: 0, textAlign: "center", color: "#475569", background: "transparent" },
+  },
+  {
+    id: "body",
+    name: "Texto corrido",
+    description: "Mensagem confortável para leitura em qualquer tela.",
+    category: "Conteúdo",
+    text: "Preparamos cada detalhe com carinho para compartilhar este momento com você.",
+    styles: { fontFamily: "Manrope", fontSize: 17, fontWeight: 400, lineHeight: 1.6, letterSpacing: 0, textAlign: "left", color: "#334155", background: "transparent" },
+  },
+  {
+    id: "highlight",
+    name: "Destaque",
+    description: "Mensagem curta para chamar atenção.",
+    category: "Conteúdo",
+    text: "Reserve esta data",
+    styles: { fontFamily: "Sora", fontSize: 26, fontWeight: 700, lineHeight: 1.2, letterSpacing: 0.2, textAlign: "center", color: "#7c3aed", background: "transparent" },
+  },
+  {
+    id: "quote",
+    name: "Citação",
+    description: "Texto afetivo com aparência editorial.",
+    category: "Estilo",
+    text: "Os melhores momentos ficam ainda mais especiais quando compartilhados.",
+    styles: { fontFamily: "Georgia", fontSize: 23, fontWeight: 400, lineHeight: 1.45, letterSpacing: 0, textAlign: "center", color: "#475569", background: "transparent", fontStyle: "italic" },
+  },
+  {
+    id: "caption",
+    name: "Legenda",
+    description: "Texto auxiliar para fotos e informações secundárias.",
+    category: "Acessibilidade",
+    text: "Uma lembrança para guardar",
+    styles: { fontFamily: "Manrope", fontSize: 14, fontWeight: 500, lineHeight: 1.4, letterSpacing: 0.2, textAlign: "center", color: "#64748b", background: "transparent" },
+  },
+  {
+    id: "text-button",
+    name: "Chamada textual",
+    description: "Texto curto para orientar uma ação.",
+    category: "Ação",
+    text: "Confirmar presença",
+    styles: { fontFamily: "Manrope", fontSize: 16, fontWeight: 700, lineHeight: 1.2, letterSpacing: 0.2, textAlign: "center", color: "#ffffff", background: "#7c3aed", borderRadius: 14, padding: 14 },
+  },
+];
+
 export type LibraryMode = "add" | "replace";
 export type LibraryItemType = "text" | "shape" | "smart" | "image";
 export type PreviewDevice = "desktop" | "tablet" | "mobile";
@@ -164,6 +242,66 @@ function copyWithFreshIds(item: ExperimentalLibraryItem): ExperimentalLibraryIte
   copy.elements = copy.elements.map((element) => ({ ...element, id: elementMap.get(element.id), sectionId: sectionMap.get(element.sectionId), componentId: element.componentId ? componentMap.get(element.componentId) : undefined }));
   copy.components = copy.components.map((component) => ({ ...component, id: componentMap.get(component.id), sectionId: sectionMap.get(component.sectionId), elementId: elementMap.get(component.elementId) }));
   return copy;
+}
+
+const TEXT_FAVORITES_KEY = "vellune:experimental-editor:text-favorites";
+const TEXT_RECENTS_KEY = "vellune:experimental-editor:text-recents";
+
+function readTextList(key: string): string[] {
+  try {
+    const value = JSON.parse(localStorage.getItem(key) || "[]");
+    return Array.isArray(value) ? value.filter((item): item is string => typeof item === "string") : [];
+  } catch {
+    return [];
+  }
+}
+
+function writeTextList(key: string, value: string[]) {
+  try { localStorage.setItem(key, JSON.stringify(value.slice(0, 30))); } catch { /* armazenamento local opcional */ }
+}
+
+export function ExperimentalTextLibrary({ onInsert }: { onInsert: ExperimentalTextInsert }) {
+  const [search, setSearch] = useState("");
+  const [category, setCategory] = useState("Todos");
+  const [favorites, setFavorites] = useState<string[]>([]);
+  const [recents, setRecents] = useState<string[]>([]);
+  const categories = ["Todos", ...new Set(EXPERIMENTAL_TEXT_PRESETS.map((preset) => preset.category))];
+  const filtered = EXPERIMENTAL_TEXT_PRESETS.filter((preset) => {
+    const haystack = `${preset.name} ${preset.description} ${preset.category} ${preset.text}`.toLowerCase();
+    return (!search || haystack.includes(search.toLowerCase())) && (category === "Todos" || preset.category === category);
+  });
+
+  useEffect(() => {
+    setFavorites(readTextList(TEXT_FAVORITES_KEY));
+    setRecents(readTextList(TEXT_RECENTS_KEY));
+  }, []);
+
+  const insert = (preset: ExperimentalTextPreset) => {
+    const next = [preset.id, ...recents.filter((item) => item !== preset.id)];
+    setRecents(next);
+    writeTextList(TEXT_RECENTS_KEY, next);
+    onInsert(preset);
+  };
+
+  const toggleFavorite = (idValue: string) => {
+    const next = favorites.includes(idValue) ? favorites.filter((item) => item !== idValue) : [idValue, ...favorites];
+    setFavorites(next);
+    writeTextList(TEXT_FAVORITES_KEY, next);
+  };
+
+  return <div className="space-y-3" aria-label="Biblioteca experimental de textos">
+    <div className="flex flex-wrap gap-2">
+      <div className="relative min-w-[180px] flex-1"><Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" /><Input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Buscar textos e presets" className="pl-9" aria-label="Buscar textos" /></div>
+      <div className="flex gap-1 overflow-x-auto">{categories.map((item) => <button key={item} type="button" onClick={() => setCategory(item)} className={cn("whitespace-nowrap rounded-md border px-2 py-1.5 text-xs", category === item ? "border-primary bg-primary/10 text-primary" : "text-muted-foreground hover:bg-muted")}>{item}</button>)}</div>
+    </div>
+    <div className="grid gap-2 sm:grid-cols-2">
+      {filtered.map((preset) => <div key={preset.id} className="rounded-lg border bg-background p-3 transition-colors hover:border-primary/50">
+        <div className="flex items-start gap-2"><button type="button" onClick={() => insert(preset)} className="min-w-0 flex-1 text-left" aria-label={`Inserir preset ${preset.name}`}><span className="block truncate text-sm font-medium">{preset.name}</span><span className="mt-1 block line-clamp-2 text-xs text-muted-foreground">{preset.description}</span><span className="mt-2 block truncate rounded-md bg-muted/50 px-2 py-1 text-xs" style={{ fontFamily: String(preset.styles.fontFamily), fontSize: `${Math.min(Number(preset.styles.fontSize) || 16, 22)}px`, fontWeight: Number(preset.styles.fontWeight) || 400, color: String(preset.styles.color) }}>{preset.text}</span></button><button type="button" className="rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-primary" aria-label={favorites.includes(preset.id) ? `Remover ${preset.name} dos favoritos` : `Favoritar ${preset.name}`} onClick={() => toggleFavorite(preset.id)}>{favorites.includes(preset.id) ? <Heart className="h-4 w-4 fill-current text-primary" /> : <Heart className="h-4 w-4" />}</button></div>
+        {recents.includes(preset.id) && <p className="mt-2 flex items-center gap-1 text-[10px] text-muted-foreground"><Clock3 className="h-3 w-3" />Usado recentemente</p>}
+      </div>)}
+    </div>
+    {filtered.length === 0 && <div className="rounded-lg border border-dashed p-6 text-center text-xs text-muted-foreground">Nenhum preset de texto encontrado.</div>}
+  </div>;
 }
 
 export function ExperimentalTemplateLibrary({ open, document, onClose, onApply }: { open: boolean; document: InvitationEditorDocument; onClose: () => void; onApply: (item: ExperimentalLibraryItem, mode: LibraryMode) => void }) {
