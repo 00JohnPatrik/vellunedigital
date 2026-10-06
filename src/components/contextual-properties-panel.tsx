@@ -62,6 +62,7 @@ export function BackgroundPropertiesPanel({ background = {}, assets, onChange }:
   const image = typeof bg.image === "string" ? bg.image : "";
   const color = typeof bg.color === "string" && /^#[0-9a-f]{6}$/i.test(bg.color) ? bg.color : "#ffffff";
   const overlay = Math.max(0, Math.min(80, Number(bg.overlay) || 0));
+  const overlayColor = typeof bg.overlayColor === "string" && /^#[0-9a-f]{6}$/i.test(bg.overlayColor) ? bg.overlayColor : "#000000";
   const scale = Math.max(25, Math.min(300, Number(bg.imageScale) || 100));
   const opacity = Math.max(0, Math.min(1, Number(bg.imageOpacity ?? 1)));
   const preset = (value: typeof backgroundPresets[number]) => update({ color: value.color, gradient: value.gradient });
@@ -84,7 +85,7 @@ export function BackgroundPropertiesPanel({ background = {}, assets, onChange }:
       <label className="block space-y-1 text-[11px] text-muted-foreground">Zoom: {scale}%<input type="range" min="25" max="300" step="5" value={scale} onChange={(event) => update({ imageScale: Number(event.target.value) })} className="w-full accent-primary" /></label>
       <label className="block space-y-1 text-[11px] text-muted-foreground">Opacidade: {Math.round(opacity * 100)}%<input type="range" min="0" max="1" step="0.05" value={opacity} onChange={(event) => update({ imageOpacity: Number(event.target.value) })} className="w-full accent-primary" /></label>
     </div>
-    <div className="space-y-2 rounded-lg border bg-background/40 p-2"><BackgroundSelect label="Sobreposição" value={overlay > 0 ? "on" : "off"} options={[["off", "Nenhuma"], ["on", "Ativada"]]} onChange={(value) => update({ overlay: value === "on" ? Math.max(overlay, 20) : 0 })} />{overlay > 0 && <label className="block space-y-1 text-[11px] text-muted-foreground">Intensidade: {overlay}%<input type="range" min="1" max="80" value={overlay} onChange={(event) => update({ overlay: Number(event.target.value) })} className="w-full accent-primary" /></label>}</div>
+    <div className="space-y-2 rounded-lg border bg-background/40 p-2"><BackgroundSelect label="Sobreposição" value={overlay > 0 ? "on" : "off"} options={[["off", "Nenhuma"], ["on", "Ativada"]]} onChange={(value) => update({ overlay: value === "on" ? Math.max(overlay, 20) : 0 })} />{overlay > 0 && <><label className="block space-y-1 text-[11px] text-muted-foreground">Intensidade: {overlay}%<input type="range" min="1" max="80" value={overlay} onChange={(event) => update({ overlay: Number(event.target.value) })} className="w-full accent-primary" /></label><div className="space-y-1"><Label className="text-[11px] text-muted-foreground">Cor da sobreposição</Label><div className="flex gap-1.5"><input type="color" aria-label="Selecionar cor da sobreposição" value={overlayColor} onChange={(event) => update({ overlayColor: event.target.value })} className="h-8 w-10 cursor-pointer rounded border bg-transparent p-1" /><Input value={typeof bg.overlayColor === "string" ? bg.overlayColor : ""} maxLength={7} placeholder="#000000" onChange={(event) => update({ overlayColor: event.target.value })} className="h-8 text-xs" /></div></div></>}</div>
     <Button type="button" size="sm" variant="ghost" className="w-full text-xs" onClick={() => onChange({})}>Restaurar fundo</Button>
   </section>;
 }

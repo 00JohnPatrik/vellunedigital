@@ -248,7 +248,8 @@ export const bgColorStyle = (bg?: Background) => {
 /** Background layers are painted independently behind the content (parent needs `relative isolate`). */
 export function BackgroundLayers({ bg }: { bg?: Background | undefined }) {
   const src = useAssetUrl(bg?.image);
-  const overlay = Math.min(40, Math.max(0, Number(bg?.overlay) || 0));
+  const overlay = Math.min(80, Math.max(0, Number(bg?.overlay) || 0));
+  const overlayColor = typeof bg?.overlayColor === "string" && /^#[0-9a-f]{6}$/i.test(bg.overlayColor) ? bg.overlayColor : "hsl(var(--foreground))";
   const scale = Math.min(300, Math.max(10, Number(bg?.imageScale) || 100));
   const imageOpacity = Math.min(1, Math.max(0, Number.isFinite(Number(bg?.imageOpacity)) ? Number(bg?.imageOpacity) : 1));
   const offsetX = Number(bg?.imageOffsetX) || 0;
@@ -292,7 +293,7 @@ export function BackgroundLayers({ bg }: { bg?: Background | undefined }) {
         <div
           aria-hidden
           className="pointer-events-none absolute inset-0 z-0"
-          style={{ backgroundColor: bg?.overlayColor || "hsl(var(--foreground))", opacity: overlay / 100 }}
+          style={{ backgroundColor: overlayColor, opacity: overlay / 100 }}
         />
       )}
     </>
