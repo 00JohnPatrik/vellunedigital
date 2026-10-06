@@ -52,7 +52,14 @@ export type EditorSaveState = "saved" | "dirty" | "saving" | "error";
 const DEFAULT_CANVAS = { width: 768, minHeight: 640 };
 
 function id(prefix: string) {
-  return `${prefix}-${crypto.randomUUID()}`;
+  try {
+    if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+      return `${prefix}-${crypto.randomUUID()}`;
+    }
+  } catch {
+    // Usa o fallback quando a API de criptografia não estiver disponível.
+  }
+  return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2)}`;
 }
 
 function numberValue(value: unknown, fallback: number) {

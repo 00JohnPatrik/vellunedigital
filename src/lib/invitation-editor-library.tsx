@@ -151,7 +151,16 @@ export type ExperimentalLibraryItem = {
 const FAVORITES_KEY = "vellune:experimental-editor:template-favorites";
 const RECENTS_KEY = "vellune:experimental-editor:template-recents";
 
-const id = (prefix: string) => `${prefix}-${crypto.randomUUID()}`;
+const id = (prefix: string) => {
+  try {
+    if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+      return `${prefix}-${crypto.randomUUID()}`;
+    }
+  } catch {
+    // Usa o fallback quando a API de criptografia não estiver disponível.
+  }
+  return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+};
 
 function createTemplate(config: Omit<ExperimentalLibraryItem, "sections" | "elements" | "components"> & {
   sections: Array<Omit<ExperimentalTemplateSection, "id" | "elementIds" | "componentIds"> & { elements: Array<Omit<ExperimentalTemplateElement, "id" | "sectionId" | "componentId"> & { componentType?: SmartElementType; functionalConfig?: Record<string, unknown>; visualConfig?: Record<string, unknown> }> }>;

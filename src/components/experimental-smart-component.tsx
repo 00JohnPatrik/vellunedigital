@@ -19,6 +19,7 @@ export type SmartComponentType =
   | "dress_code"
   | "hosts"
   | "story"
+  | "special_text"
   | "social"
   | "custom_link";
 
@@ -73,6 +74,7 @@ export const SMART_COMPONENT_CATALOG: SmartComponentDefinition[] = [
   { type: "dress_code", label: "Dress code", category: "Informação", tags: ["traje", "vestimenta", "estilo"], description: "Orientação de vestimenta", icon: "shirt" },
   { type: "hosts", label: "Anfitriões", category: "Pessoas", tags: ["família", "casal", "organizadores"], description: "Pessoas responsáveis pelo evento", icon: "hosts" },
   { type: "story", label: "Nossa história", category: "Conteúdo", tags: ["história", "texto", "memórias"], description: "Texto narrativo editável", icon: "sparkles" },
+  { type: "special_text", label: "Texto especial", category: "Conteúdo", tags: ["destaque", "mensagem", "texto"], description: "Mensagem especial editável", icon: "sparkles" },
   { type: "social", label: "Redes sociais", category: "Ações", tags: ["instagram", "social", "perfil"], description: "Links para redes sociais", icon: "social" },
   { type: "custom_link", label: "Link personalizado", category: "Ações", tags: ["url", "personalizado", "externo"], description: "Destino externo configurável", icon: "external" },
 ];
@@ -142,6 +144,7 @@ export function SmartComponentPreview({ element }: { element: any }): React.Reac
       case "gift_list": return <div className="space-y-2 text-left">{(f.gifts || []).map((gift) => <a key={gift.name} href={gift.url} target="_blank" rel="noreferrer" className="flex items-center gap-2 rounded-lg border p-2 hover:bg-muted"><Gift className="h-4 w-4 text-primary" />{gift.name}<ExternalLink className="ml-auto h-3.5 w-3.5" /></a>)}</div>;
       case "dress_code": return <><Shirt className="mx-auto mb-2 h-6 w-6 text-primary" /><p>{f.story || "Traje sugerido: esporte fino"}</p></>;
       case "hosts": return <div className="grid gap-3 sm:grid-cols-2">{(f.hosts || []).map((host) => <div key={host.name} className="flex items-center gap-2 text-left">{host.image ? <img src={host.image} alt="" className="h-10 w-10 rounded-full object-cover" /> : <UsersRound className="h-8 w-8 text-primary" />}<span><strong className="block text-sm">{host.name}</strong><small className="text-muted-foreground">{host.role}</small></span></div>)}</div>;
+      case "special_text":
       case "story": return <p className="whitespace-pre-wrap text-left leading-relaxed">{f.story || "Escreva aqui a história do evento."}</p>;
       case "social": return <div className="flex flex-wrap justify-center gap-2">{(f.socialLinks || []).map((link) => <ActionLink key={link.label} href={link.url} className="variant-outline"><ExternalLink className="mr-2 h-4 w-4" />{link.label}</ActionLink>)}</div>;
       default: return null;

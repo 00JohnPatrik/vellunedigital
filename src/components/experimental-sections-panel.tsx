@@ -14,12 +14,23 @@ type Props = {
 
 const clone = <T,>(value: T): T => structuredClone(value);
 
+function createLocalId(prefix: string) {
+  try {
+    if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+      return `${prefix}-${crypto.randomUUID()}`;
+    }
+  } catch {
+    // Usa o fallback quando a API de criptografia não estiver disponível.
+  }
+  return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+}
+
 function createSectionId() {
-  return `section-${crypto.randomUUID()}`;
+  return createLocalId("section");
 }
 
 function createElementId() {
-  return `element-${crypto.randomUUID()}`;
+  return createLocalId("element");
 }
 
 export function ExperimentalSectionsPanel({ document, onChange, selectedSectionId, onSelectSection }: Props) {
