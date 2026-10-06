@@ -13,6 +13,10 @@ export type AppUser = {
 
 /** Loads the signed-in user's profile, company and role (RLS-scoped). */
 export async function loadAppUser(authUserId: string): Promise<AppUser | null> {
+  if (typeof window !== "undefined") {
+    const { isDemoMode, getDemoUser } = await import("@/lib/demo-mode");
+    if (isDemoMode()) return getDemoUser();
+  }
   const { data, error } = await supabase
     .from("users")
     .select("id, name, email, role, status, deleted_at, theme, company:companies!users_company_id_fkey(id, name, status, deleted_at)")

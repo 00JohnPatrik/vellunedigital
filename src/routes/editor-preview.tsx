@@ -149,13 +149,11 @@ const PUBLISHED_PREVIEW_HOST = "vellunedigital.lovable.app";
 
 function isLovablePreviewHost() {
   if (typeof window === "undefined") return false;
-
-  const hostname = window.location.hostname.toLowerCase();
-  return hostname === PUBLISHED_PREVIEW_HOST || hostname.endsWith(".lovable.app");
+  return window.location.hostname.toLowerCase() === PUBLISHED_PREVIEW_HOST;
 }
 
 function EditorPreviewPage() {
-  const isPreviewEnvironment = import.meta.env.DEV || isLovablePreviewHost();
+  const isPreviewEnvironment = isLovablePreviewHost();
 
   if (!isPreviewEnvironment) {
     return (

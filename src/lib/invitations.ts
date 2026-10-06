@@ -23,12 +23,16 @@ export const invitationsKey = ["invitations"] as const;
 const cols = "*, customer:customers(id, name)";
 
 export async function listInvitations(): Promise<Invitation[]> {
+  const { isDemoMode, listDemoInvitations } = await import("@/lib/demo-mode");
+  if (isDemoMode()) return listDemoInvitations();
   const { data, error } = await supabase.from("invitations").select(cols).neq("status", "deleted").order("updated_at", { ascending: false });
   if (error) throw error;
   return data as unknown as Invitation[];
 }
 
 export async function getInvitation(id: string): Promise<Invitation | null> {
+  const { isDemoMode, getDemoInvitation } = await import("@/lib/demo-mode");
+  if (isDemoMode()) return getDemoInvitation(id);
   const { data, error } = await supabase.from("invitations").select(cols).eq("id", id).neq("status", "deleted").maybeSingle();
   if (error) throw error;
   return data as unknown as Invitation | null;
@@ -56,12 +60,22 @@ export async function createInvitation(customerId: string, templateId: string | 
 }
 
 export async function updateInvitation(id: string, customerId: string, v: EventValues, content: TemplateContent) {
+  const { isDemoMode, updateDemoInvitation } = await import("@/lib/demo-mode");
+  if (isDemoMode()) {
+    updateDemoInvitation(id, customerId, eventRow(v), content);
+    return;
+  }
   const { error } = await supabase.from("invitations").update({ ...eventRow(v), customer_id: customerId, content: content as never }).eq("id", id);
   if (error) throw error;
 }
 
 /** Publishes (status=published). published_at and minimum-data checks are enforced by the DB trigger; slug never changes. */
 export async function publishInvitation(id: string) {
+  const { isDemoMode, publishDemoInvitation } = await import("@/lib/demo-mode");
+  if (isDemoMode()) {
+    publishDemoInvitation(id);
+    return;
+  }
   const { error } = await supabase.from("invitations").update({ status: "published" }).eq("id", id);
   if (error) throw error;
 }
@@ -70,6 +84,11 @@ export const whatsappShareUrl = (slug: string) => `https://wa.me/?text=${encodeU
 
 /** Logical delete. */
 export async function deleteInvitation(id: string) {
+  const { isDemoMode, deleteDemoInvitation } = await import("@/lib/demo-mode");
+  if (isDemoMode()) {
+    deleteDemoInvitation(id);
+    return;
+  }
   const { error } = await supabase.from("invitations").update({ status: "deleted" }).eq("id", id);
   if (error) throw error;
 }

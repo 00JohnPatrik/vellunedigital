@@ -14,12 +14,16 @@ export const customersKey = ["customers"] as const;
 const cols = "id, company_id, name, phone, email, observation, status, created_at, updated_at, company:companies(id, name)";
 
 export async function listCustomers(): Promise<Customer[]> {
+  const { isDemoMode, listDemoCustomers } = await import("@/lib/demo-mode");
+  if (isDemoMode()) return listDemoCustomers();
   const { data, error } = await supabase.from("customers").select(cols).is("deleted_at", null).order("name");
   if (error) throw error;
   return data as unknown as Customer[];
 }
 
 export async function getCustomer(id: string): Promise<Customer | null> {
+  const { isDemoMode, getDemoCustomer } = await import("@/lib/demo-mode");
+  if (isDemoMode()) return getDemoCustomer(id);
   const { data, error } = await supabase.from("customers").select(cols).eq("id", id).maybeSingle();
   if (error) throw error;
   return data as unknown as Customer | null;
