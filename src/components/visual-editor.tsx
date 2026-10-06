@@ -136,16 +136,29 @@ export function VisualEditor({ h, ctx, assets, bg, onBg }: { h: BlocksHistory; c
   const clipboard = useRef<any[]>([]);
   const blocks = Array.isArray(h?.blocks) ? h.blocks : [];
   const selected = blocks.filter((block: any) => selectedIds.includes(block.id));
-  const categoryGroups: Record<string, BlockType[]> = {
+  const editorCategories: Record<string, BlockType[]> = {
     Elementos: ["date", "time", "location", "countdown", "divider"],
     Texto: ["text"],
     Imagens: ["image", "gallery"],
     Botões: ["button", "whatsapp"],
     RSVP: ["rsvp"],
     "QR Code": ["qr_code"],
+    Camadas: [],
+    Fundo: [],
+    Exibir: [],
   };
+  const categoryGroups = editorCategories;
   const addBlockByType = (type: BlockType) => {
+    if (type === "rsvp" && blocks.some((block: any) => block.type === "rsvp")) {
+      window.alert(RSVP_DUP);
+      return;
+    }
     const block = newBlock(type);
+    if (type === "text") {
+      const textCount = blocks.filter((current: any) => current.type === "text").length;
+      const textPresets = ["Título", "Subtítulo", "Texto"];
+      block.props = { ...(block.props || {}), text: textPresets[Math.min(textCount, textPresets.length - 1)] };
+    }
     h.set((current) => [...current, block]);
     setSelectedIds([block.id]);
   };
