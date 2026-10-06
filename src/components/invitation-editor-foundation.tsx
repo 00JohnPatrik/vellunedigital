@@ -96,6 +96,7 @@ export function InvitationEditorFoundation({ invitationId, content, onSave }: Pr
   const selected = h.document.elements.filter((element) => selectedIds.includes(element.id));
   const primary = selected[0];
   const [sectionSelected, setSectionSelected] = useState(false);
+  const mark = useCallback((next: any, key?: string) => { h.change(next, key); setState("dirty"); }, [h.change]);
   const section = h.document.sections[0];
   const sectionBackground = section?.background ?? h.document.canvas.background ?? {};
   const updateSectionBackground = useCallback((background: Record<string, unknown>) => {
@@ -109,7 +110,6 @@ export function InvitationEditorFoundation({ invitationId, content, onSave }: Pr
   const qualityErrors = qualityAlerts.filter((alert) => alert.severity === "error").length;
   const qualityWarnings = qualityAlerts.filter((alert) => alert.severity === "warning").length;
   const qualityScore = getQualityScore(qualityAlerts);
-  const mark = useCallback((next: any, key?: string) => { h.change(next, key); setState("dirty"); }, [h.change]);
   const applyLibraryItem = useCallback((item: ExperimentalLibraryItem, mode: LibraryMode) => {
     const created = item.elements.map((definition, index) => {
       const x = 48 + (index % 2) * 24;
