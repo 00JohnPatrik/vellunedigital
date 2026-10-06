@@ -276,8 +276,8 @@ export function BackgroundLayers({ bg }: { bg?: Background | undefined }) {
       {overlay > 0 && (
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-0 z-0 bg-foreground dark:bg-background"
-          style={{ opacity: overlay / 100 }}
+          className="pointer-events-none absolute inset-0 z-0"
+          style={{ backgroundColor: bg?.overlayColor || "hsl(var(--foreground))", opacity: overlay / 100 }}
         />
       )}
     </>

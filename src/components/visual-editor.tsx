@@ -3,7 +3,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { BackgroundLayers, BlockView } from "@/components/block-render";
 import { VisualTransformCanvas } from "@/components/visual-transform-canvas";
 import { ImageUpload } from "@/components/image-upload";
-import { ContextualPropertiesPanel } from "@/components/contextual-properties-panel";
+import { BackgroundPropertiesPanel, ContextualPropertiesPanel } from "@/components/contextual-properties-panel";
 import { BLOCKS, newBlock, type Block, type BlockType } from "@/lib/templates";
 import { ElementsLibrary } from "@/components/elements-library";
 
@@ -450,7 +450,7 @@ export function VisualEditor({ h, ctx, assets, bg, onBg }: { h: BlocksHistory; c
             }}>{category}</button>;
           })}
         </div>
-        {["Fundo", "Exibir"].includes(toolCategory) ? <p className="rounded-lg border border-dashed p-3 text-xs text-muted-foreground">Os controles de {toolCategory.toLowerCase()} estão disponíveis no painel contextual.</p> : toolCategory === "Camadas" ? <div className="space-y-2">
+        {toolCategory === "Fundo" ? <BackgroundPropertiesPanel background={(bg as Record<string, unknown>) || {}} assets={assets as any} onChange={(value) => onBg?.(value)} /> : toolCategory === "Exibir" ? <p className="rounded-lg border border-dashed p-3 text-xs text-muted-foreground">Os controles de exibição estão disponíveis no canvas.</p> : toolCategory === "Camadas" ? <div className="space-y-2">
           <div className="flex flex-wrap gap-2">
             <button type="button" disabled={!selectedIds.length} className="rounded-md border px-2 py-1 text-xs text-foreground disabled:opacity-50" onClick={() => duplicateByIds(selectedIds)}>Duplicar seleção</button>
             <button type="button" disabled={!selectedIds.length} className="rounded-md border border-destructive/40 px-2 py-1 text-xs text-destructive disabled:opacity-50" onClick={() => removeByIds(selectedIds)}>Excluir seleção</button>
