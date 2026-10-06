@@ -199,22 +199,9 @@ export function VisualTransformCanvas({ blocks, selectedIds, zoom, canvasRef, ct
       const movable = blocks.filter((block: any) => selectedIds.includes(block.id) && !block.locked);
       if (!movable.length) return;
       if (event.key === "Escape") { finish(); return; }
-      if (event.key === "Delete" || event.key === "Backspace") {
-        event.preventDefault();
-        onChange((items: any[]) => items.filter((item) => !selectedIds.includes(item.id) || item.locked), "keyboard:delete");
-        return;
-      }
       if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "a") {
         event.preventDefault();
         blocks.forEach((block: any) => onSelect(block.id, true));
-        return;
-      }
-      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "d") {
-        event.preventDefault();
-        const source = blocks.filter((block: any) => selectedIds.includes(block.id) && block.type !== "rsvp");
-        if (!source.length) return;
-        const copies = source.map((block: any) => ({ ...structuredClone(block), id: crypto.randomUUID(), x: number(block.x, 24) + 16, y: number(block.y, 24) + 16 }));
-        onChange((items: any[]) => [...items, ...copies], "keyboard:duplicate");
         return;
       }
       const step = event.shiftKey ? 10 : 1;
