@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { AlignCenter, AlignHorizontalDistributeCenter, AlignHorizontalJustifyCenter, AlignLeft, AlignRight, AlignVerticalDistributeCenter, ArrowDown, ArrowUp, Copy, Eye, EyeOff, Layers3, Lock, Move, RotateCcw, Trash2, Type, Unlock } from "lucide-react";
+import { AlignCenter, AlignHorizontalDistributeCenter, AlignHorizontalJustifyCenter, AlignLeft, AlignRight, AlignVerticalDistributeCenter, ArrowDown, ArrowUp, Check, Copy, Eye, EyeOff, Layers3, Lock, Move, RotateCcw, Trash2, Type, Unlock } from "lucide-react";
 import type { Block } from "@/lib/templates";
 import { FONTS } from "@/lib/blocks";
 import { Button } from "@/components/ui/button";
@@ -153,8 +153,32 @@ export function ContextualPropertiesPanel({ blocks, selectedIds, onChange, onDup
   const primary = selected[0] as BlockWithLayout | undefined;
   const multiple = selected.length > 1;
   const textSelected = selected.length > 0 && selected.every((block) => block.type === "text");
+  const [copiedStyle, setCopiedStyle] = useState<Record<string, string> | null>(null);
 
   const apply = (patch: Partial<BlockWithLayout>, group = "properties:update") => onChange((items) => items.map((item) => selectedIds.includes(item.id) ? { ...item, ...patch } : item), group);
+
+  const typographyPresets: Record<string, { label: string; props: Record<string, string> }> = {
+    title: { label: "Título", props: { font: "display", fontSize: "34", fontWeight: "bold", fontStyle: "normal", textDecoration: "none", align: "center", letterSpacing: "0", lineHeight: "1.15" } },
+    subtitle: { label: "Subtítulo", props: { font: "display", fontSize: "22", fontWeight: "600", fontStyle: "normal", textDecoration: "none", align: "center", letterSpacing: "0.2", lineHeight: "1.25" } },
+    body: { label: "Texto", props: { font: "sans", fontSize: "16", fontWeight: "normal", fontStyle: "normal", textDecoration: "none", align: "left", letterSpacing: "0", lineHeight: "1.5" } },
+    caption: { label: "Legenda", props: { font: "sans", fontSize: "12", fontWeight: "normal", fontStyle: "normal", textDecoration: "none", align: "center", letterSpacing: "0.4", lineHeight: "1.35" } },
+  };
+
+  const applyTypography = (patch: Record<string, string>, group: string) => {
+    onChange((items) => items.map((item) => selectedIds.includes(item.id) && item.type === "text"
+      ? { ...item, props: { ...item.props, ...patch } }
+      : item), group);
+  };
+
+  const copyTypography = () => {
+    if (!primary || primary.type !== "text") return;
+    setCopiedStyle(Object.fromEntries(Object.entries(primary.props ?? {}).filter(([key]) => ["font", "fontSize", "fontWeight", "fontStyle", "textDecoration", "align", "color", "letterSpacing", "lineHeight"].includes(key))));
+  };
+
+  const pasteTypography = () => {
+    if (!copiedStyle || !textSelected) return;
+    applyTypography(copiedStyle, "typography:paste-style");
+  };
   const applyLayout = (key: "x" | "y" | "width" | "height" | "rotation" | "opacity" | "zIndex" | "scale", value: number) => {
     if (!Number.isFinite(value)) return;
     if (key === "opacity") value = clamp(value, 0, 1);
