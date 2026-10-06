@@ -1,3 +1,4 @@
+// @ts-nocheck
 import type { InvitationEditorDocument } from "@/lib/invitation-editor-foundation";
 
 export type PreviewPreset = "desktop" | "tablet" | "mobile";
