@@ -12,6 +12,7 @@ import { localRecoveryKey, normalizeInvitationContent, createMediaElement, creat
 import { ANIMATION_FEATURE_FLAG, ANIMATION_PRESETS, DEFAULT_ANIMATION, animationStyle, normalizeAnimation, parallaxStyle, type EditorAnimation } from "@/lib/invitation-editor-animation";
 import { ExperimentalTemplateLibrary, ExperimentalElementLibrary, type ExperimentalLibraryItem, type ElementLibraryItem, type LibraryMode } from "@/lib/invitation-editor-library";
 import { ExperimentalSectionsPanel } from "@/components/experimental-sections-panel";
+import { SmartComponentPreview } from "@/components/experimental-smart-component";
 import { PREVIEW_PRESETS, getQualityScore, validateInvitationEditorDocument, validateResponsivePreset, type PreviewPreset, type QualityAlert } from "@/lib/invitation-editor-quality";
 
 type Props = { invitationId: string; content: unknown; onSave?: (document: InvitationEditorDocument) => void };
@@ -257,6 +258,8 @@ export function InvitationEditorFoundation({ invitationId, content, onSave }: Pr
 }
 
 function SmartPreview({ element }: { element: EditorElement }) {
+  const experimentalPreview = SmartComponentPreview({ element });
+  if (experimentalPreview) return experimentalPreview;
   const block = element.content.block as any;
   const props = block?.props ?? {};
   const type = element.type as SmartElementType;
