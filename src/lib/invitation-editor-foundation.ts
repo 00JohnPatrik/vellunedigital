@@ -37,6 +37,7 @@ export type EditorSection = {
   background?: Record<string, unknown>;
   elementIds: string[];
   locked?: boolean;
+  hidden?: boolean;
 };
 
 export type InvitationEditorDocument = {

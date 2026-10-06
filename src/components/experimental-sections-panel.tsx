@@ -41,6 +41,7 @@ export function ExperimentalSectionsPanel({ document, onChange, selectedSectionI
       background: {},
       elementIds: [],
       locked: false,
+      hidden: false,
     };
     updateDocument((current) => ({ ...current, sections: [...current.sections, section] }));
     onSelectSection?.(section);
@@ -106,25 +107,25 @@ export function ExperimentalSectionsPanel({ document, onChange, selectedSectionI
   if (!selected) return null;
 
   return (
-    <section className="space-y-4 rounded-xl border bg-card/80 p-3 shadow-sm" aria-label="Gerenciador de seções experimentais">
+    <section className="space-y-3 rounded-xl border bg-card/80 p-3 shadow-sm" aria-label="Gerenciador de seções experimentais">
       <div className="flex flex-wrap items-center gap-2">
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-semibold">Seções do documento local</p>
-          <p className="text-xs text-muted-foreground">Cada seção mantém seus próprios elementos, dimensões e fundo.</p>
+          <p className="text-sm font-semibold">Navegação do documento</p>
+          <p className="text-xs text-muted-foreground">Organize seções, fundos e camadas sem sair do editor.</p>
         </div>
         <Button type="button" size="sm" onClick={addSection}><Plus className="mr-1 h-4 w-4" />Adicionar seção</Button>
       </div>
 
-      <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="flex gap-2 overflow-x-auto pb-1">
         {sections.map((section, index) => {
           const active = section.id === selected.id;
           return (
-            <div key={section.id} className={cn("rounded-lg border bg-background p-2", active && "border-primary bg-primary/5 ring-1 ring-primary/20")}>
+            <div key={section.id} className={cn("min-w-44 shrink-0 rounded-lg border bg-background p-2", active && "border-primary bg-primary/5 ring-1 ring-primary/20", section.hidden && "opacity-60")}>
               <button type="button" onClick={() => select(section)} className="flex w-full items-start gap-2 text-left">
                 {section.locked ? <Lock className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" /> : <span className="mt-1 h-2.5 w-2.5 shrink-0 rounded-full bg-primary" />}
                 <span className="min-w-0 flex-1">
-                  <span className="block truncate text-sm font-medium">{section.name}</span>
-                  <span className="text-[11px] text-muted-foreground">{index + 1} · {section.elementIds.length} elemento(s)</span>
+                  <span className="block truncate text-sm font-medium">{index + 1}. {section.name}</span>
+                  <span className="text-[11px] text-muted-foreground">{section.elementIds.length} elemento(s){section.hidden ? " · oculta" : ""}</span>
                 </span>
               </button>
               <div className="mt-2 flex items-center gap-1 border-t pt-2">
@@ -132,7 +133,7 @@ export function ExperimentalSectionsPanel({ document, onChange, selectedSectionI
                 <Button type="button" size="icon" variant="ghost" className="h-7 w-7" aria-label="Mover seção para baixo" disabled={index === sections.length - 1} onClick={() => moveSection(section.id, 1)}><ArrowDown className="h-3.5 w-3.5" /></Button>
                 <Button type="button" size="icon" variant="ghost" className="h-7 w-7" aria-label="Duplicar seção" onClick={() => duplicateSection(section.id)}><Copy className="h-3.5 w-3.5" /></Button>
                 <Button type="button" size="icon" variant="ghost" className="h-7 w-7" aria-label={section.locked ? "Desbloquear seção" : "Bloquear seção"} onClick={() => updateSection(section.id, { locked: !section.locked })}>{section.locked ? <Unlock className="h-3.5 w-3.5" /> : <Lock className="h-3.5 w-3.5" />}</Button>
-                <Button type="button" size="icon" variant="ghost" className="h-7 w-7" aria-label={section.locked ? "Mostrar seção" : "Ocultar seção"} onClick={() => updateSection(section.id, { locked: !section.locked })}>{section.locked ? <Eye className="h-3.5 w-3.5" /> : <EyeOff className="h-3.5 w-3.5" />}</Button>
+                <Button type="button" size="icon" variant="ghost" className="h-7 w-7" aria-label={section.hidden ? "Mostrar seção" : "Ocultar seção"} onClick={() => updateSection(section.id, { hidden: !section.hidden })}>{section.hidden ? <Eye className="h-3.5 w-3.5" /> : <EyeOff className="h-3.5 w-3.5" />}</Button>
                 <Button type="button" size="icon" variant="ghost" className="h-7 w-7 text-destructive" aria-label="Excluir seção" disabled={sections.length <= 1} onClick={() => removeSection(section.id)}><Trash2 className="h-3.5 w-3.5" /></Button>
               </div>
             </div>
