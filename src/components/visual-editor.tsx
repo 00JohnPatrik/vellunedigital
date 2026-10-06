@@ -129,12 +129,43 @@ export function VisualEditor({ h, ctx, assets, bg, onBg }: { h: BlocksHistory; c
   const [showGrid, setShowGrid] = useState(true);
   const [contextPanel, setContextPanel] = useState<"elements" | "layers" | "background" | "view" | null>("elements");
   const [mobileSheet, setMobileSheet] = useState<"elements" | "layers" | "properties" | "background" | "view" | null>(null);
+  const [toolCategory, setToolCategory] = useState("Elementos");
   const compact = useIsCompact();
   const [marquee, setMarquee] = useState<{ x: number; y: number; width: number; height: number } | null>(null);
   const interaction = useRef<{ mode: "drag" | "resize" | "marquee"; id?: string; startX: number; startY: number; originX?: number; originY?: number; originWidth?: number; originHeight?: number; selected?: string[] } | null>(null);
   const clipboard = useRef<any[]>([]);
   const blocks = Array.isArray(h?.blocks) ? h.blocks : [];
   const selected = blocks.filter((block: any) => selectedIds.includes(block.id));
+  const categoryGroups: Record<string, BlockType[]> = {
+    Elementos: ["date", "time", "location", "countdown", "divider"],
+    Texto: ["text"],
+    Imagens: ["image", "gallery"],
+    Botões: ["button", "whatsapp"],
+    RSVP: ["rsvp"],
+    "QR Code": ["qr_code"],
+  };
+  const addBlockByType = (type: BlockType) => {
+    const block = newBlock(type);
+    h.set((current) => [...current, block]);
+    setSelectedIds([block.id]);
+  };
+  const duplicateByIds = (ids: string[]) => {
+    if (!ids.length) return;
+    const copies = blocks.filter((block: any) => ids.includes(block.id)).map((block: any) => ({
+      ...structuredClone(block),
+      id: crypto.randomUUID(),
+      x: typeof block.x === "number" ? block.x + 24 : block.x,
+      y: typeof block.y === "number" ? block.y + 24 : block.y,
+      props: { ...(block.props || {}) },
+    }));
+    h.set((current) => [...current, ...copies]);
+    setSelectedIds(copies.map((block: any) => block.id));
+  };
+  const removeByIds = (ids: string[]) => {
+    if (!ids.length) return;
+    h.set((current) => current.filter((block: any) => !ids.includes(block.id)));
+    setSelectedIds((current) => current.filter((id) => !ids.includes(id)));
+  };
 
   const getPosition = (block: any, index: number) => ({
     x: typeof block.x === "number" ? block.x : Number.isFinite(Number(block.props?.x)) ? Number(block.props.x) : 24,
@@ -380,7 +411,35 @@ export function VisualEditor({ h, ctx, assets, bg, onBg }: { h: BlocksHistory; c
           </div>
         </aside>
         <div className="overflow-auto rounded-2xl border bg-muted/40 p-3 shadow-inner sm:p-6"><div className="mx-auto origin-top transition-transform" style={{ width: `${100 / (zoom / 100)}%`, minHeight: canvasHeight / (zoom / 100) }}><div ref={canvasRef} className={`relative isolate mx-auto w-full max-w-[768px] overflow-hidden rounded-2xl border bg-card shadow-sm ${showGrid ? "[background-image:linear-gradient(to_right,hsl(var(--border)/.25)_1px,transparent_1px),linear-gradient(to_bottom,hsl(var(--border)/.25)_1px,transparent_1px)] [background-size:16px_16px]" : ""}`} style={{ minHeight: canvasHeight, backgroundColor: bg && (bg as any).color ? (bg as any).color : undefined, transform: `scale(${zoom / 100})`, transformOrigin: "top center" }} onPointerDown={(event) => { if (event.target === event.currentTarget) { const p = canvasPoint(event); interaction.current = { mode: "marquee", startX: p.x, startY: p.y }; setSelectedIds([]); } }} onPointerMove={moveInteraction} onPointerUp={stopInteraction} onPointerCancel={stopInteraction} aria-label="Área de edição do convite"><BackgroundLayers bg={bg as any} />{blocks.length === 0 && <div className="absolute inset-0 flex items-center justify-center text-center text-sm text-muted-foreground">Adicione elementos pela biblioteca acima.</div>}{marquee && <div className="pointer-events-none absolute z-50 border border-primary bg-primary/10" style={{ left: marquee.x, top: marquee.y, width: marquee.width, height: marquee.height }} />}{blocks.map((block: any, index: number) => { const position = getPosition(block, index); const size = getSize(block); const isSelected = selectedIds.includes(block.id); return <div key={block.id || index} className={`group absolute left-0 top-0 rounded-xl ${isSelected ? "border-2 border-primary ring-2 ring-primary/30" : "border border-transparent hover:border-primary/40"} ${block.hidden ? "opacity-50" : ""}`} style={{ width: size.width, minHeight: size.height, transform: `translate(${position.x}px, ${position.y}px) rotate(${block.rotation ?? 0}deg) scale(${block.scale ?? 1})`, transformOrigin: "center", opacity: block.opacity ?? 1, zIndex: block.zIndex ?? index + 1 }} onPointerDown={(event) => startDrag(event, block, index)} onClick={(event) => { event.stopPropagation(); select(block.id, event.shiftKey || event.ctrlKey || event.metaKey); }}><div className="pointer-events-none h-full w-full"><BlockView block={block} ctx={ctx as any} interactive={false} /></div>{isSelected && <><div className="absolute -top-7 left-0 max-w-full truncate rounded bg-primary px-2 py-1 text-[10px] text-primary-foreground">{getBlockLabel(block)}</div><button type="button" aria-label="Redimensionar bloco" className="absolute -bottom-2 -right-2 h-4 w-4 cursor-se-resize rounded-full border-2 border-background bg-primary" onPointerDown={(event) => startResize(event, block, index)} /></>}</div>; })}</div></div></div><aside className="rounded-2xl border border-border/70 bg-card p-4 shadow-sm" aria-label="Propriedades do elemento selecionado"><div className="mb-4"><p className="text-sm font-semibold text-foreground">Propriedades</p><p className="mt-1 text-xs text-muted-foreground">Controles principais do elemento selecionado.</p></div>{selected.length === 0 ? <div className="flex min-h-32 items-center justify-center rounded-xl border border-dashed p-4 text-center text-xs text-muted-foreground">Selecione um elemento no canvas para editar suas propriedades.</div> : <div className="space-y-4">{selected.length > 1 ? <p className="rounded-lg border border-primary/30 bg-primary/5 p-3 text-xs text-primary">{selected.length} elementos selecionados. Os controles abaixo serão aplicados a todos.</p> : null}{selected.length === 1 && ["text", "button", "rsvp", "whatsapp"].includes(selected[0]!.type) ? <div className="space-y-1.5"><label htmlFor="selected-block-content" className="text-xs font-medium text-foreground">Conteúdo principal</label><input id="selected-block-content" value={String(selected[0]!.props?.[selected[0]!.type === "text" ? "text" : "label"] ?? "")} onChange={(event) => updateSelectedProp(selected[0]!.type === "text" ? "text" : "label", event.target.value)} className="h-9 w-full rounded-md border bg-background px-3 text-xs text-foreground outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-ring" /></div> : null}<div className="grid grid-cols-2 gap-2"><label className="space-y-1 text-xs text-muted-foreground">Rotação<input type="number" value={Number(selected[0]!.rotation ?? 0)} onChange={(event) => updateSelectedBlock({ rotation: Number(event.target.value) || 0 })} className="h-9 w-full rounded-md border bg-background px-2 text-foreground" /></label><label className="space-y-1 text-xs text-muted-foreground">Opacidade<input type="number" min="0" max="1" step="0.1" value={Number(selected[0]!.opacity ?? 1)} onChange={(event) => updateSelectedBlock({ opacity: Math.min(1, Math.max(0, Number(event.target.value))) })} className="h-9 w-full rounded-md border bg-background px-2 text-foreground" /></label></div><button type="button" className="flex w-full items-center justify-between rounded-lg border px-3 py-2 text-xs text-foreground hover:bg-accent" onClick={() => updateSelectedBlock({ locked: !selected.some((item: any) => item.locked) })}>{selected.some((item: any) => item.locked) ? "Desbloquear elementos" : "Bloquear elementos"}<span className="text-muted-foreground">{selected.some((item: any) => item.locked) ? "Bloqueados" : "Livres"}</span></button></div>}</aside></div>
-      <div className="rounded-xl border bg-card p-3"><p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Camadas</p><div className="flex flex-wrap gap-2">{blocks.map((block: any, index: number) => <button key={block.id} type="button" className={`rounded-md border px-2 py-1 text-xs ${selectedIds.includes(block.id) ? "border-primary bg-primary/10 text-primary" : "text-muted-foreground"}`} onClick={() => select(block.id, false)}>{index + 1}. {getBlockLabel(block)}</button>)}</div></div>
+      <section className="rounded-xl border bg-card p-3" aria-label="Ferramentas do editor">
+        <div className="flex gap-1 overflow-x-auto pb-2" role="tablist" aria-label="Categorias do editor">
+          {["Elementos", "Texto", "Imagens", "Botões", "RSVP", "QR Code", "Camadas", "Fundo", "Exibir"].map((category) => {
+            const active = toolCategory === category;
+            return <button key={category} type="button" role="tab" aria-selected={active} className={`shrink-0 rounded-md border px-2.5 py-1.5 text-xs transition-colors ${active ? "border-primary bg-primary/10 text-primary" : "text-muted-foreground hover:bg-accent hover:text-foreground"}`} onClick={() => {
+              setToolCategory(category);
+              if (category === "Camadas") { setContextPanel("layers"); setMobileSheet("layers"); }
+              else if (category === "Fundo") { setContextPanel("background"); setMobileSheet("background"); }
+              else if (category === "Exibir") { setContextPanel("view"); setMobileSheet("view"); }
+              else { setContextPanel("elements"); setMobileSheet("elements"); }
+            }}>{category}</button>;
+          })}
+        </div>
+        {["Fundo", "Exibir"].includes(toolCategory) ? <p className="rounded-lg border border-dashed p-3 text-xs text-muted-foreground">Os controles de {toolCategory.toLowerCase()} estão disponíveis no painel contextual.</p> : toolCategory === "Camadas" ? <div className="space-y-2">
+          <div className="flex flex-wrap gap-2">
+            <button type="button" disabled={!selectedIds.length} className="rounded-md border px-2 py-1 text-xs text-foreground disabled:opacity-50" onClick={() => duplicateByIds(selectedIds)}>Duplicar seleção</button>
+            <button type="button" disabled={!selectedIds.length} className="rounded-md border border-destructive/40 px-2 py-1 text-xs text-destructive disabled:opacity-50" onClick={() => removeByIds(selectedIds)}>Excluir seleção</button>
+          </div>
+          <div className="space-y-1">
+            {blocks.map((block: any, index: number) => <div key={block.id} className={`flex items-center gap-2 rounded-md border px-2 py-1.5 ${selectedIds.includes(block.id) ? "border-primary bg-primary/10" : "border-transparent"}`}>
+              <button type="button" className="min-w-0 flex-1 truncate text-left text-xs text-foreground" onClick={() => select(block.id, false)}>{index + 1}. {getBlockLabel(block)}</button>
+              <button type="button" className="rounded px-1.5 py-1 text-[11px] text-muted-foreground hover:bg-accent" aria-label={`Duplicar ${getBlockLabel(block)}`} onClick={() => duplicateByIds([block.id])}>Copiar</button>
+              <button type="button" className="rounded px-1.5 py-1 text-[11px] text-destructive hover:bg-destructive/10" aria-label={`Excluir ${getBlockLabel(block)}`} onClick={() => removeByIds([block.id])}>Excluir</button>
+            </div>)}
+          </div>
+        </div> : <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+          {(categoryGroups[toolCategory] || []).map((type) => <button key={type} type="button" className="rounded-lg border bg-background px-2 py-2 text-left text-xs text-foreground transition-colors hover:border-primary hover:bg-primary/5" onClick={() => addBlockByType(type)}>{BLOCKS[type].label}</button>)}
+        </div>}
+      </section>
       <p className="text-xs text-muted-foreground">Arraste com mouse ou toque, use Shift para snap, Shift/Ctrl para múltipla seleção, Ctrl/Cmd+C para copiar, Ctrl/Cmd+V para colar e arraste o fundo para selecionar uma área. Alterações são persistidas pelo autosave existente.</p>
     </div>
   );
