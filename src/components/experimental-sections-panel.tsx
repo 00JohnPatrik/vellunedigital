@@ -154,9 +154,6 @@ export function ExperimentalSectionsPanel({ document, onChange, selectedSectionI
         <label className="space-y-1 text-xs text-muted-foreground">Altura
           <Input type="number" min={240} value={selected.height} onChange={(event) => updateSection(selected.id, { height: Math.max(240, Number(event.target.value) || 240) })} className="h-8 text-foreground" />
         </label>
-        <div className="flex items-end rounded-md border border-dashed bg-background/60 px-3 py-2 text-xs text-muted-foreground sm:col-span-1">
-          O fundo é editado no painel contextual ao selecionar esta seção.
-        </div>
       </div>
     </section>
   );
