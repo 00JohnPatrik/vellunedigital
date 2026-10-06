@@ -41,7 +41,7 @@ export const EXPERIMENTAL_LIBRARY: ExperimentalLibraryItem[] = [
     elements: [
       { type: "text", text: "Você está convidado" },
       { type: "smart", smartType: "special_text", text: "Uma celebração para guardar no coração" },
-      { type: "smart", smartType: "date" },
+      { type: "smart", smartType: "countdown" },
       { type: "smart", smartType: "location" },
       { type: "smart", smartType: "rsvp" },
     ],
