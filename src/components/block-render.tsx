@@ -7,7 +7,7 @@ import { BLOCKS, getBlockGeometry, type Background, type Block } from "@/lib/tem
 import { fontCss, formatDate, formatTime, isKnownType, pick, type EventCtx } from "@/lib/blocks";
 import { cn } from "@/lib/utils";
 import { useAssetUrl } from "@/lib/assets";
-import { animationStyle, normalizeAnimation, parallaxStyle } from "@/lib/invitation-editor-animation";
+import { animationStyle, normalizeAnimation, parallaxStyle, requestMotionPermission, useMotionOffset } from "@/lib/invitation-editor-animation";
 
 const ALIGN: Record<string, string> = { left: "justify-start text-left", center: "justify-center text-center", right: "justify-end text-right" };
 const WIDTH: Record<string, string> = { auto: "w-auto max-w-full", partial: "w-full sm:w-2/3", full: "w-full" };
@@ -76,32 +76,23 @@ function useBlockAnimation(animationValue: unknown, selected: boolean) {
   const animation = normalizeAnimation(animationValue);
   const reducedMotion = useReducedMotion();
   const [playing, setPlaying] = useState(animation.trigger === "on_load");
-  const [parallax, setParallax] = useState({ x: 0, y: 0 });
   const ref = useRef<HTMLDivElement | null>(null);
+  const motion = useMotionOffset(Boolean(animation.parallax || animation.sensor) && !reducedMotion);
 
   useEffect(() => {
     setPlaying(animation.trigger === "on_load");
-  }, [animation.trigger, animation.enabled]);
+  }, [animation.trigger, animation.enabled, animation.preset, animation.direction]);
 
   useEffect(() => {
-    if (animation.trigger !== "on_scroll" || !ref.current) return;
+    if (animation.trigger !== "on_scroll" || !ref.current || typeof IntersectionObserver === "undefined") return;
     const observer = new IntersectionObserver(([entry]) => setPlaying(Boolean(entry?.isIntersecting)), { threshold: 0.15 });
     observer.observe(ref.current);
     return () => observer.disconnect();
   }, [animation.trigger]);
 
-  useEffect(() => {
-    if (!animation.parallax || reducedMotion || typeof window === "undefined") return;
-    const onPointer = (event: PointerEvent) => {
-      setParallax({ x: (event.clientX / Math.max(1, window.innerWidth) - 0.5) * 2, y: (event.clientY / Math.max(1, window.innerHeight) - 0.5) * 2 });
-    };
-    window.addEventListener("pointermove", onPointer, { passive: true });
-    return () => window.removeEventListener("pointermove", onPointer);
-  }, [animation.parallax, reducedMotion]);
-
   const style = {
     ...animationStyle(animation, { playing, selected, reducedMotion }),
-    ...parallaxStyle(animation, parallax, !reducedMotion),
+    ...parallaxStyle(animation, motion, !reducedMotion),
   } as CSSProperties;
   return { ref, style, playing, setPlaying, animation };
 }
@@ -247,6 +238,7 @@ export function BlockView({ block, ctx, interactive = false, selected = false, i
   const animationState = useBlockAnimation(block.animation, selected);
   const animation = animationState.animation;
   const handleInteraction = () => {
+    if (animation.sensor) void requestMotionPermission();
     if (animation.trigger === "on_click") animationState.setPlaying(true);
   };
   const fill = p["fill"] ?? "none";
@@ -278,9 +270,15 @@ export function BlockView({ block, ctx, interactive = false, selected = false, i
       onMouseEnter={() => { if (animation.trigger === "on_hover") animationState.setPlaying(true); }}
       onMouseLeave={() => { if (animation.trigger === "on_hover") animationState.setPlaying(false); }}
       onClick={handleInteraction}
-      role={animation.trigger === "on_click" ? "button" : undefined}
-      tabIndex={animation.trigger === "on_click" ? 0 : undefined}
-      aria-label={animation.trigger === "on_click" ? "Ativar animação do elemento" : undefined}
+      onKeyDown={(event) => {
+        if (animation.trigger === "on_click" && (event.key === "Enter" || event.key === " ")) {
+          event.preventDefault();
+          handleInteraction();
+        }
+      }}
+      role={animation.trigger === "on_click" || animation.sensor ? "button" : undefined}
+      tabIndex={animation.trigger === "on_click" || animation.sensor ? 0 : undefined}
+      aria-label={animation.sensor ? "Ativar animação e sensores de movimento" : animation.trigger === "on_click" ? "Ativar animação do elemento" : undefined}
     >
       <BlockContent block={block} ctx={ctx} interactive={interactive} />
     </div>
@@ -307,6 +305,9 @@ export const bgColorStyle = (bg?: Background) => {
 /** Background layers are painted independently behind the content (parent needs `relative isolate`). */
 export function BackgroundLayers({ bg }: { bg?: Background | undefined }) {
   const src = useAssetUrl(bg?.image);
+  const backgroundAnimation = bg as Background & { parallax?: number; depth?: number; sensor?: boolean };
+  const reducedMotion = useReducedMotion();
+  const motion = useMotionOffset(Boolean(backgroundAnimation.parallax || backgroundAnimation.sensor) && !reducedMotion);
   const overlay = Math.min(80, Math.max(0, Number(bg?.overlay) || 0));
   const overlayColor = typeof bg?.overlayColor === "string" && /^#[0-9a-f]{6}$/i.test(bg.overlayColor) ? bg.overlayColor : "hsl(var(--foreground))";
   const scale = Math.min(300, Math.max(10, Number(bg?.imageScale) || 100));
@@ -333,8 +334,9 @@ export function BackgroundLayers({ bg }: { bg?: Background | undefined }) {
           aria-hidden
           className="pointer-events-none absolute inset-0 z-0 overflow-hidden"
           style={{
-            transform: `scale(${coverZoom})`,
-            transformOrigin: "center center",
+            transform: `scale(${coverZoom}) translate3d(${motion.x * (Number(backgroundAnimation.parallax) || 0)}px, ${motion.y * (Number(backgroundAnimation.parallax) || 0)}px, ${Number(backgroundAnimation.depth) || 0}px)`,
+              transformOrigin: "center center",
+              willChange: backgroundAnimation.parallax || backgroundAnimation.sensor ? "transform" : "auto",
           }}
         >
           <div
