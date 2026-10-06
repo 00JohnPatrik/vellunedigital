@@ -145,8 +145,15 @@ const demoContent = {
   ],
 };
 
+function isLovablePreviewHost() {
+  if (typeof window === "undefined") return false;
+
+  const hostname = window.location.hostname.toLowerCase();
+  return hostname.endsWith(".lovable.app");
+}
+
 function EditorPreviewPage() {
-  const isPreviewEnvironment = import.meta.env.DEV || import.meta.env.VITE_EDITOR_PREVIEW === "true";
+  const isPreviewEnvironment = import.meta.env.DEV || isLovablePreviewHost();
 
   if (!isPreviewEnvironment) {
     return (
