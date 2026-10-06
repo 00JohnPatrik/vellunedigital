@@ -383,7 +383,7 @@ export function VisualTransformCanvas({ blocks, selectedIds: selectedIdsProp, zo
         }}
       >
         <div className="pointer-events-none h-full w-full rounded-lg">
-          <BlockView block={block} ctx={ctx as any} interactive={false} />
+          <BlockView block={block} ctx={ctx as any} interactive={false} index={index} />
         </div>
         {isSelected && <div className="pointer-events-none absolute -top-7 left-0 max-w-full truncate rounded bg-primary px-2 py-1 text-[10px] text-primary-foreground">{String(block.type)}</div>}
       </div>;

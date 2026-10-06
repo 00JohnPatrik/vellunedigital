@@ -91,7 +91,7 @@ function useBlockAnimation(animationValue: unknown, selected: boolean) {
   }, [animation.trigger]);
 
   const style = {
-    ...animationStyle(animation, { playing, selected, reducedMotion }),
+    ...animationStyle(animation, { playing, selected, reducedMotion, index: 0 }),
     ...parallaxStyle(animation, motion, !reducedMotion),
   } as CSSProperties;
   return { ref, style, playing, setPlaying, animation };
