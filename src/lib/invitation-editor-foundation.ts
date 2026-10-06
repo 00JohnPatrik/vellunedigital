@@ -121,7 +121,17 @@ export function toPersistedInvitationContent(document: InvitationEditorDocument,
     block.visibility = element.visible;
     return block;
   });
-  return { ...base, version: 1, blocks } as TemplateContent;
+  const sourceSettings = base.settings && typeof base.settings === "object" ? base.settings as Record<string, unknown> : {};
+  const background = document.sections[0]?.background ?? document.canvas.background;
+  return {
+    ...base,
+    version: 1,
+    blocks,
+    settings: {
+      ...sourceSettings,
+      ...(background ? { background: structuredClone(background) } : {}),
+    },
+  } as TemplateContent;
 }
 
 export function createTextElement(x = 48, y = 48): EditorElement {
