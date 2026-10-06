@@ -115,6 +115,18 @@ const blockLabel = (b: Block) => (isKnownType(b.type) ? BLOCKS[b.type].label : `
 type Device = "mobile" | "tablet" | "desktop";
 const DEVICE_W: Record<Device, string> = { mobile: "max-w-[390px]", tablet: "max-w-[768px]", desktop: "max-w-[1024px]" };
 
+const EDITOR_CATEGORIES: Record<string, BlockType[]> = {
+  Elementos: ["date", "time", "location", "countdown", "divider"],
+  Texto: ["text"],
+  Imagens: ["image", "gallery"],
+  Botões: ["button", "whatsapp"],
+  RSVP: ["rsvp"],
+  "QR Code": ["qr_code"],
+  Camadas: [],
+  Fundo: [],
+  Exibir: [],
+};
+
 const RSVP_DUP = "Este convite já possui confirmação de presença.";
 const GRID_UNIT = 16;
 
@@ -136,16 +148,7 @@ export function VisualEditor({ h, ctx, assets, bg, onBg }: { h: BlocksHistory; c
   const clipboard = useRef<any[]>([]);
   const blocks = Array.isArray(h?.blocks) ? h.blocks : [];
   const selected = blocks.filter((block: any) => selectedIds.includes(block.id));
-  const editorCategories: Record<string, BlockType[]> = {
-    Elementos: ["date", "time", "location", "countdown", "divider"],
-    Texto: ["text"],
-    Imagens: ["image", "gallery"],
-    Botões: ["button", "whatsapp"],
-    RSVP: ["rsvp"],
-    "QR Code": ["qr_code"],
-    Camadas: [],
-    Fundo: [],
-    Exibir: [],
+  const editorCategories = EDITOR_CATEGORIES;
   };
   const categoryGroups = editorCategories;
   const addBlockByType = (type: BlockType) => {
