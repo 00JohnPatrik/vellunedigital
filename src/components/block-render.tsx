@@ -168,14 +168,20 @@ export function BlockView({ block, ctx, interactive = false }: { block: Block; c
   const p = block.props ?? {};
   const fill = p["fill"] ?? "none";
   const borderWidth = Math.min(20, Math.max(0, Number(p["borderWidth"]) || 0));
+  const radius = Math.max(0, Math.min(160, Number(p["borderRadius"]) || 0));
+  const independentRadius = p["radiusIndependent"] === "1";
+  const shadowPreset = p["shadow"] || "none";
+  const shadowColor = /^#[0-9a-f]{6}$/i.test(p["shadowColor"] || "") ? p["shadowColor"] : "#000000";
+  const shadow = shadowPreset === "soft" ? `0 4px 14px 0 ${shadowColor}33` : shadowPreset === "medium" ? `0 8px 24px 0 ${shadowColor}40` : shadowPreset === "strong" ? `0 14px 36px 0 ${shadowColor}55` : shadowPreset === "custom" ? `${Number(p["shadowX"]) || 0}px ${Number(p["shadowY"]) || 0}px ${Math.max(0, Number(p["shadowBlur"]) || 0)}px ${Number(p["shadowSpread"]) || 0}px ${shadowColor}66` : undefined;
+  const blur = Math.max(0, Math.min(20, Number(p["filterBlur"]) || 0));
+  const brightness = Math.max(0, Math.min(200, Number(p["filterBrightness"] ?? 100) || 100));
   const appearance: CSSProperties = {
     ...(fill === "solid" && p["fillColor"] ? { backgroundColor: p["fillColor"] } : {}),
     ...(fill === "gradient" && p["fillGradient"] ? { backgroundImage: p["fillGradient"] } : {}),
-    ...(borderWidth > 0 ? {
-      borderWidth,
-      borderStyle: (p["borderStyle"] as CSSProperties["borderStyle"]) || "solid",
-      borderColor: p["borderColor"] || "currentColor",
-    } : {}),
+    ...(borderWidth > 0 ? { borderWidth, borderStyle: (p["borderStyle"] as CSSProperties["borderStyle"]) || "solid", borderColor: p["borderColor"] || "currentColor" } : {}),
+    ...(independentRadius ? { borderTopLeftRadius: Math.max(0, Number(p["radiusTopLeft"]) || radius), borderTopRightRadius: Math.max(0, Number(p["radiusTopRight"]) || radius), borderBottomRightRadius: Math.max(0, Number(p["radiusBottomRight"]) || radius), borderBottomLeftRadius: Math.max(0, Number(p["radiusBottomLeft"]) || radius) } : radius > 0 ? { borderRadius: radius } : {}),
+    ...(shadow ? { boxShadow: shadow } : {}),
+    ...(blur > 0 || brightness !== 100 ? { filter: `blur(${blur}px) brightness(${brightness}%)` } : {}),
   };
   return (
     <div
