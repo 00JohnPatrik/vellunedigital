@@ -148,7 +148,7 @@ export function createMediaElement(src: string, type: "image" | "gif" = "image",
   return {
     id: id("element"), type, x, y, width: 300, height: 220, rotation: 0, zIndex: 1,
     visible: true, locked: false, opacity: 1,
-    styles: { objectFit: "cover", objectPosition: "center", borderRadius: 16, borderColor: "transparent", borderWidth: 0 },
+    styles: { objectFit: "cover", objectPosition: "center", borderRadius: 16, borderColor: "transparent", borderWidth: 0, borderStyle: "solid", boxShadow: "none", filter: "none", cropMode: "free", mask: "none", temperature: 0, exposure: 0, blur: 0, grayscale: 0, sepia: 0 },
     content: { src, alt: type === "gif" ? "GIF decorativo" : "Imagem do convite" }, groupId: null,
   };
 }
