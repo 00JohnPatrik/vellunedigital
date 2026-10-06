@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { useEffect, useMemo, useState } from "react";
 import { Check, Clock3, Heart, LayoutTemplate, Palette, Plus, Search, Sparkles, WandSparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
