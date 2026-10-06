@@ -300,12 +300,24 @@ export function InvitationCanvas({ blocks, ctx, className, background }: { block
 function ImageBlock({ p }: { p: Record<string, string> }) {
   const src = useAssetUrl(p["url"]);
   const w = p["width"] === "auto" ? "w-full sm:w-1/2" : WIDTH[p["width"] ?? "full"];
+  const fit = p["objectFit"] || "cover";
+  const position = p["objectPosition"] || p["position"] || "center";
+  const zoom = Math.min(300, Math.max(100, Number(p["imageZoom"]) || 100));
+  const brightness = Math.min(200, Math.max(0, Number(p["imageBrightness"] ?? 100)));
+  const contrast = Math.min(200, Math.max(0, Number(p["imageContrast"] ?? 100)));
+  const saturate = Math.min(200, Math.max(0, Number(p["imageSaturate"] ?? 100)));
+  const imageStyle: CSSProperties = {
+    objectFit: fit === "original" ? "contain" : fit as CSSProperties["objectFit"],
+    objectPosition: position,
+    transform: `scale(${zoom / 100})`,
+    transformOrigin: position,
+    filter: `brightness(${brightness}%) contrast(${contrast}%) saturate(${saturate}%)`,
+  };
+  const frameClass = cn("overflow-hidden rounded-lg", w, p["height"] === "auto" ? "" : IMG_HEIGHT[p["height"] ?? "wide"] || "aspect-video");
   return (
     <Row align={p["align"]}>
-      <div className={cn("overflow-hidden rounded-lg", w)}>
-        {p["height"] === "auto" && src
-          ? <img src={src} alt={p["alt"] ?? ""} className="h-auto w-full" loading="lazy" />
-          : <PreviewImage src={src} name={p["alt"] ?? ""} className={cn(IMG_HEIGHT[p["height"] ?? "wide"] || "aspect-video", IMG_POS[p["position"] ?? "center"])} />}
+      <div className={frameClass}>
+        {src ? <img src={src} alt={p["alt"] ?? ""} className={cn("h-full w-full", p["height"] === "auto" && "h-auto")} loading="lazy" style={imageStyle} /> : <PreviewImage src={src} name={p["alt"] ?? ""} className={cn(IMG_HEIGHT[p["height"] ?? "wide"] || "aspect-video", IMG_POS[p["position"] ?? "center"])} />}
       </div>
     </Row>
   );
