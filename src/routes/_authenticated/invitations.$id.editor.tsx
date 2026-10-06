@@ -158,9 +158,9 @@ function EditorForm({ inv }: { inv: Invitation }) {
   </>;
 
   return (
-    <div className="dark min-h-[calc(100vh-2rem)] rounded-[1.5rem] bg-background p-2 pb-20 text-foreground sm:p-3 sm:pb-3 lg:p-4">
+    <div className="dark min-h-[calc(100vh-2rem)] rounded-[1.5rem] border border-border/60 bg-[radial-gradient(circle_at_top_right,hsl(var(--primary)/.1),transparent_32%),linear-gradient(145deg,hsl(var(--background)),hsl(var(--muted)/.35))] p-2 pb-20 text-foreground shadow-2xl shadow-black/20 sm:p-3 sm:pb-3 lg:p-4">
       <div className="mx-auto max-w-[1800px] space-y-3">
-        <header className="sticky top-2 z-30 rounded-2xl border border-border/70 bg-card/95 p-3 shadow-2xl shadow-black/20 backdrop-blur-xl sm:top-3 sm:p-4">
+        <header className="sticky top-2 z-30 rounded-2xl border border-primary/15 bg-card/90 p-3 shadow-2xl shadow-black/25 backdrop-blur-2xl sm:top-3 sm:p-4">
           <div className="flex min-h-9 items-center gap-2.5 sm:gap-3">
             <Button variant="ghost" size="icon" className="shrink-0 sm:hidden" asChild><Link to="/invitations" aria-label="Voltar para convites"><ArrowLeft className="h-4 w-4" /></Link></Button>
             <Button variant="ghost" size="sm" className="hidden shrink-0 sm:inline-flex" asChild><Link to="/invitations"><ArrowLeft className="h-4 w-4" />Voltar</Link></Button>
