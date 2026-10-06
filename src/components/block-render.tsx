@@ -79,10 +79,22 @@ function BlockContent({ block, ctx, interactive = false }: { block: Block; ctx?:
   }
   switch (block.type) {
     case "text": {
-      const style: CSSProperties = { fontFamily: fontCss(p["font"]), color: p["color"] || undefined };
+      const numericFontSize = Number(p["fontSize"]);
+      const numericLetterSpacing = Number(p["letterSpacing"]);
+      const numericLineHeight = Number(p["lineHeight"]);
+      const style: CSSProperties = {
+        fontFamily: fontCss(p["font"]),
+        color: p["color"] || undefined,
+        fontSize: Number.isFinite(numericFontSize) && numericFontSize > 0 ? `${numericFontSize}px` : undefined,
+        fontWeight: p["fontWeight"] || (p["bold"] === "1" ? "700" : undefined),
+        fontStyle: p["fontStyle"] || undefined,
+        textDecoration: p["textDecoration"] || undefined,
+        letterSpacing: Number.isFinite(numericLetterSpacing) ? `${numericLetterSpacing}px` : undefined,
+        lineHeight: Number.isFinite(numericLineHeight) && numericLineHeight > 0 ? numericLineHeight : undefined,
+      };
       return (
         <Row align={p["align"]}>
-          <p style={style} className={cn("whitespace-pre-line break-words", TEXT_SIZE[p["size"] ?? "lg"], p["bold"] === "1" && "font-bold", WIDTH[p["width"] ?? "full"])}>{p["text"]}</p>
+          <p style={style} className={cn("whitespace-pre-line break-words", !p["fontSize"] && TEXT_SIZE[p["size"] ?? "lg"], WIDTH[p["width"] ?? "full"])}>{p["text"]}</p>
         </Row>
       );
     }
