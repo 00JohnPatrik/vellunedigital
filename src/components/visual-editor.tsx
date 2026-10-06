@@ -1110,4 +1110,3 @@ function BackgroundPanel({ bg, onBg, assets }: { bg: Background; onBg: (b: Backg
   );
 }
 */
-}
