@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { cn } from "@/lib/utils";
 import { BlockView } from "@/components/block-render";
 import { listFiles, useAssetUrl, type AssetScope } from "@/lib/assets";
@@ -260,7 +261,7 @@ export function InvitationEditorFoundation({ invitationId, content, onSave }: Pr
         </div></div>
         <ExperimentalMobileBar previewPreset={previewPreset} onPreviewPresetChange={setPreviewPreset} zoom={zoom} onZoomChange={setZoom} viewMode={viewMode} onViewModeChange={setViewMode} panel={panel} onPanelChange={setPanel} sections={h.document.sections} selectedSectionId={h.document.sections[0]?.id} onSelectSection={(section) => { setSelectedIds([...section.elementIds]); setSectionSelected(true); setPanel("properties"); }} />
       </main>
-      {viewMode === "edit" && <aside className="hidden border-l bg-card/80 p-3 xl:block"><div className="sticky top-0"><div className="mb-4 flex items-center gap-2 border-b pb-3"><MousePointer2 className="h-4 w-4 text-primary" /><div><p className="text-sm font-semibold">Propriedades</p><p className="text-[11px] text-muted-foreground">Ajustes do elemento selecionado</p></div></div>{sectionSelected ? <SectionBackgroundProperties background={sectionBackground} onChange={updateSectionBackground} /> : <Properties selected={primary} count={selected.length} update={updateSelected} remove={remove} duplicate={duplicate} group={group} ungroup={ungroup} />}</div></aside>}
+      {viewMode === "edit" && <aside className="hidden border-l bg-card/80 p-3 xl:block"><div className="sticky top-0"><div className="mb-4 flex items-center gap-2 border-b pb-3"><MousePointer2 className="h-4 w-4 text-primary" /><div><p className="text-sm font-semibold">{primary ? (primary.type === "text" ? "Texto" : primary.type === "image" || primary.type === "gif" ? "Mídia" : SMART_ELEMENT_DEFINITIONS.find((definition) => definition.type === primary.type)?.label || "Elemento") : "Propriedades"}</p><p className="text-[11px] text-muted-foreground">Painel contextual do elemento selecionado</p></div></div>{sectionSelected ? <SectionBackgroundProperties background={sectionBackground} onChange={updateSectionBackground} /> : <Properties selected={primary} count={selected.length} update={updateSelected} remove={remove} duplicate={duplicate} group={group} ungroup={ungroup} />}</div></aside>}
     </div>
     <div className="border-t bg-card p-3 sm:p-4"><ExperimentalSectionsPanel document={h.document} onChange={(next) => { h.change(next, "sections"); setState("dirty"); }} selectedSectionId={h.document.sections[0]?.id} onSelectSection={(section) => { setSelectedIds([...section.elementIds]); setSectionSelected(true); setPanel("properties"); }} /><div className="mt-3 flex justify-end"><Button size="sm" variant="outline" className="shrink-0" onClick={() => { localStorage.removeItem(localRecoveryKey(invitationId)); setState("saved"); }}>Limpar recuperação</Button></div></div>
     <Sheet open={panel !== null} onOpenChange={(open) => !open && setPanel(null)}><SheetContent side="bottom" className="max-h-[84vh] overflow-y-auto"><SheetHeader><SheetTitle>{panel === "library" ? "Biblioteca de mídia e elementos" : panel === "layers" ? "Camadas" : "Propriedades"}</SheetTitle></SheetHeader><div className="mt-4">{panel === "library" ? <div className="space-y-5"><ExperimentalMediaLibrary onInsert={(item) => add(createMediaElement(item.src, item.type, 48, 48 + h.document.elements.length * 24))} /><ExperimentalTextLibrary onInsert={(preset: ExperimentalTextPreset) => { const element = createTextElement(48, 48 + h.document.elements.length * 80); add({ ...element, content: { ...element.content, text: preset.text }, styles: { ...element.styles, ...preset.styles } }); }} /><ExperimentalElementLibrary onInsert={(item: ElementLibraryItem) => { const y = 48 + h.document.elements.length * 24; if (item.kind === "text") add(createTextElement(48, y)); else if (item.kind === "shape") add(createShapeElement(item.shape || "rectangle", 80, y)); else if (item.kind === "decoration") add(createShapeElement("line", 80, y)); else if (item.kind === "image" && item.src) add(createMediaElement(item.src, "image", 48, y)); else if (item.kind === "smart" && item.smartType) add(createSmartElement(item.smartType as SmartElementType, 48, y)); }} /></div> : panel === "layers" ? <LayersPanel elements={h.document.elements} selectedIds={selectedIds} select={select} /> : sectionSelected ? <SectionBackgroundProperties background={sectionBackground} onChange={updateSectionBackground} /> : <Properties selected={primary} count={selected.length} update={updateSelected} remove={remove} duplicate={duplicate} group={group} ungroup={ungroup} />}</div></SheetContent></Sheet>
@@ -347,6 +348,86 @@ function SectionBackgroundProperties({ background, onChange }: { background: Rec
       <details><summary className="cursor-pointer text-xs font-medium text-foreground">Mais opções</summary><label className="mt-3 block space-y-1 text-xs text-muted-foreground">Rotação: {Number(background.rotation ?? 0)}°<input type="range" min="-180" max="180" step="1" value={Number(background.rotation ?? 0)} onChange={(event) => update({ rotation: Number(event.target.value) })} className="w-full accent-primary" /></label></details>
     </div>}
     <Button type="button" size="sm" variant="outline" onClick={() => onChange({})}>Limpar fundo</Button>
+  </div>;
+}
+
+function ContextualProperties({ selected, count, update, remove, duplicate, group, ungroup }: any) {
+  if (!selected) return <div className="flex min-h-40 items-center justify-center text-center text-xs text-muted-foreground">Selecione um elemento ou clique em uma área vazia do convite para editar o fundo.</div>;
+
+  const number = (key: string, fallback = 0) => Number(selected[key] ?? fallback);
+  const styles = selected.styles || {};
+  const block = selected.content?.block as any;
+  const props = block?.props || {};
+  const typeLabels: Record<string, string> = {
+    text: "Texto",
+    image: "Imagem",
+    gif: "GIF animado",
+    shape: "Forma",
+    decoration: "Decoração",
+    group: "Grupo",
+    block: "Bloco",
+  };
+  const label = typeLabels[selected.type] || SMART_ELEMENT_DEFINITIONS.find((definition) => definition.type === selected.type)?.label || "Elemento";
+  const style = (key: string, value: any) => update({ styles: { ...styles, [key]: value } });
+  const updateSmartProp = (key: string, value: string) => update({ content: { ...selected.content, block: { ...block, props: { ...props, [key]: value } } } });
+  const align = (value: string) => style("textAlign", value);
+  const smartDefinition = SMART_ELEMENT_DEFINITIONS.find((definition) => definition.type === selected.type);
+  const isText = selected.type === "text";
+  const isMedia = selected.type === "image" || selected.type === "gif";
+  const smartProps = Object.entries(props).filter(([key]) => key !== "style").slice(0, 6);
+
+  return <div className="space-y-3">
+    <div className="rounded-xl border border-primary/20 bg-primary/5 p-3">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="text-sm font-semibold">{label}</p>
+          <p className="text-xs text-muted-foreground">{count > 1 ? `${count} elementos selecionados` : "Elemento selecionado"}</p>
+        </div>
+        <span className="rounded-full border bg-background px-2 py-1 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">{selected.type}</span>
+      </div>
+    </div>
+
+    <Accordion type="multiple" defaultValue={["content", "transform", "style", "actions"]} className="rounded-xl border bg-background px-3">
+      <AccordionItem value="content">
+        <AccordionTrigger>Conteúdo</AccordionTrigger>
+        <AccordionContent>
+          <div className="space-y-3">
+            {isText && <label className="block space-y-1 text-xs text-muted-foreground">Texto<Input value={selected.content?.text || ""} onChange={(event) => update({ content: { ...selected.content, text: event.target.value } })} /></label>}
+            {smartDefinition && <div className="space-y-2"><p className="text-xs text-muted-foreground">Configuração de {smartDefinition.label}</p>{smartProps.map(([key, value]) => <label key={key} className="block space-y-1 text-xs text-muted-foreground"><span>{key === "url" ? "Link" : key === "phone" ? "Telefone" : key}</span><Input value={String(value ?? "")} onChange={(event) => updateSmartProp(key, event.target.value)} className="h-8 text-foreground" /></label>)}</div>}
+            {!isText && !smartDefinition && !isMedia && <p className="text-xs text-muted-foreground">Este elemento não possui campos de conteúdo adicionais.</p>}
+          </div>
+        </AccordionContent>
+      </AccordionItem>
+
+      <AccordionItem value="transform">
+        <AccordionTrigger>Transformação</AccordionTrigger>
+        <AccordionContent>
+          <div className="grid grid-cols-2 gap-2">
+            {["x", "y", "width", "height", "rotation", "zIndex"].map((key) => <label key={key} className="space-y-1 text-xs text-muted-foreground">{key}<Input type="number" value={number(key)} onChange={(event) => update({ [key]: Number(event.target.value) })} className="h-8 text-foreground" /></label>)}
+          </div>
+          <div className="mt-3 flex flex-wrap gap-1"><Button type="button" size="sm" variant="outline" onClick={() => update({ rotation: number("rotation") - 15 })}>−15°</Button><Button type="button" size="sm" variant="outline" onClick={() => update({ rotation: number("rotation") + 15 })}>+15°</Button><Button type="button" size="sm" variant="outline" onClick={() => update({ rotation: 0 })}>Zerar rotação</Button></div>
+        </AccordionContent>
+      </AccordionItem>
+
+      <AccordionItem value="style">
+        <AccordionTrigger>Estilo e alinhamento</AccordionTrigger>
+        <AccordionContent>
+          <div className="space-y-3">
+            {isText && <div className="grid grid-cols-2 gap-2"><label className="space-y-1 text-xs text-muted-foreground">Fonte<select value={styles.fontFamily || "Manrope"} onChange={(event) => style("fontFamily", event.target.value)} className="h-9 w-full rounded-md border bg-background px-2 text-foreground"><option>Manrope</option><option>Sora</option><option>Georgia</option><option>Arial</option></select></label><label className="space-y-1 text-xs text-muted-foreground">Tamanho<Input type="number" min={8} max={160} value={styles.fontSize || 28} onChange={(event) => style("fontSize", Number(event.target.value))} /></label></div>}
+            {isMedia && <><label className="space-y-1 text-xs text-muted-foreground">Enquadramento<select value={styles.objectFit || "cover"} onChange={(event) => style("objectFit", event.target.value)} className="h-9 w-full rounded-md border bg-background px-2 text-foreground"><option value="cover">Crop livre · cobrir</option><option value="contain">Proporcional · conter</option><option value="fill">Preencher</option></select></label><label className="space-y-1 text-xs text-muted-foreground">Máscara<select value={styles.mask || "none"} onChange={(event) => style("mask", event.target.value)} className="h-9 w-full rounded-md border bg-background px-2 text-foreground"><option value="none">Sem máscara</option><option value="circle">Círculo</option><option value="rounded">Arredondada</option><option value="diamond">Losango</option></select></label><label className="space-y-1 text-xs text-muted-foreground">Opacidade<input type="range" min="0" max="1" step="0.05" value={Number(selected.opacity ?? 1)} onChange={(event) => update({ opacity: Number(event.target.value) })} className="w-full accent-primary" /></label></>}
+            <div><p className="mb-2 text-xs text-muted-foreground">Alinhamento</p><div className="flex gap-1"><Button type="button" size="icon" variant={styles.textAlign === "left" ? "secondary" : "outline"} onClick={() => align("left")} aria-label="Alinhar à esquerda"><AlignLeft className="h-4 w-4" /></Button><Button type="button" size="icon" variant={styles.textAlign === "center" ? "secondary" : "outline"} onClick={() => align("center")} aria-label="Centralizar"><AlignCenter className="h-4 w-4" /></Button><Button type="button" size="icon" variant={styles.textAlign === "right" ? "secondary" : "outline"} onClick={() => align("right")} aria-label="Alinhar à direita"><AlignRight className="h-4 w-4" /></Button></div></div>
+            {selected.type !== "block" && <label className="space-y-1 text-xs text-muted-foreground">Cor ou fundo<Input value={styles.background || styles.color || ""} placeholder="#7c3aed ou linear-gradient(...)" onChange={(event) => update({ styles: { ...styles, background: event.target.value, color: event.target.value } })} /></label>}
+          </div>
+        </AccordionContent>
+      </AccordionItem>
+
+      <AccordionItem value="actions">
+        <AccordionTrigger>Camadas e ações</AccordionTrigger>
+        <AccordionContent>
+          <div className="flex flex-wrap gap-1"><Button size="sm" variant="outline" onClick={() => update({ visible: !selected.visible })}>{selected.visible ? <EyeOff className="mr-1 h-3.5 w-3.5" /> : <Eye className="mr-1 h-3.5 w-3.5" />}{selected.visible ? "Ocultar" : "Mostrar"}</Button><Button size="sm" variant="outline" onClick={() => update({ locked: !selected.locked })}>{selected.locked ? <Unlock className="mr-1 h-3.5 w-3.5" /> : <Lock className="mr-1 h-3.5 w-3.5" />}{selected.locked ? "Desbloquear" : "Bloquear"}</Button><Button size="sm" variant="outline" onClick={() => update({ zIndex: number("zIndex") + 1 })}><ArrowUp className="mr-1 h-3.5 w-3.5" />Subir</Button><Button size="sm" variant="outline" onClick={() => update({ zIndex: Math.max(0, number("zIndex") - 1) })}><ArrowDown className="mr-1 h-3.5 w-3.5" />Descer</Button></div><div className="mt-2 grid grid-cols-2 gap-2"><Button size="sm" variant="outline" onClick={duplicate}><Copy className="mr-1 h-3.5 w-3.5" />Duplicar</Button><Button size="sm" variant="outline" onClick={group}>Agrupar</Button><Button size="sm" variant="outline" onClick={ungroup}>Desagrupar</Button><Button size="sm" variant="outline" className="text-destructive" onClick={remove}><Trash2 className="mr-1 h-3.5 w-3.5" />Excluir</Button></div>
+        </AccordionContent>
+      </AccordionItem>
+    </Accordion>
   </div>;
 }
 
