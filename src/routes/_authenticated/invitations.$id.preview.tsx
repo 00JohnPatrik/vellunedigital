@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Pencil, Share2 } from "lucide-react";
 import { ShareDialog } from "@/components/share-dialog";
 import { Button } from "@/components/ui/button";
@@ -49,7 +49,13 @@ function PreviewPage() {
   const q = useQuery({ queryKey: [...invitationsKey, id], queryFn: () => getInvitation(id) });
   const inv = q.data;
   const [share, setShare] = useState(false);
-  const [snapshot] = useState<EditorPreviewSnapshot | null>(() => readEditorSnapshot(id));
+  const [snapshot, setSnapshot] = useState<EditorPreviewSnapshot | null>(null);
+
+  // sessionStorage only exists in the browser. Do not read it during SSR,
+  // otherwise the server-rendered preview would permanently fall back to stale DB content.
+  useEffect(() => {
+    setSnapshot(readEditorSnapshot(id));
+  }, [id]);
 
   const activeBlocks = snapshot?.blocks ?? inv?.content?.blocks ?? [];
   const activeBackground = snapshot?.background ?? inv?.content?.settings?.background;
