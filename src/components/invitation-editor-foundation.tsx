@@ -47,6 +47,23 @@ const isCanvasBackgroundElement = (element: EditorElement) => {
   return candidate.type === "background" || candidate.role === "background" || candidate.content?.background === true;
 };
 
+function canvasBackgroundStyle(background?: Record<string, unknown>) {
+  const image = typeof background?.image === "string" ? background.image : "";
+  const gradient = typeof background?.gradient === "string" ? background.gradient : "";
+  const color = typeof background?.color === "string" ? background.color : "";
+  const scale = Number(background?.imageScale || 100);
+  const opacity = Number(background?.imageOpacity ?? 1);
+  const positionX = typeof background?.x === "string" ? background.x : "center";
+  const positionY = typeof background?.y === "string" ? background.y : "center";
+  return {
+    backgroundColor: color || undefined,
+    backgroundImage: image ? `linear-gradient(rgb(255 255 255 / ${Math.max(0, Math.min(1, 1 - opacity))}), rgb(255 255 255 / ${Math.max(0, Math.min(1, 1 - opacity))})), url(\"${image}\")` : gradient || undefined,
+    backgroundSize: image ? `${Math.max(25, Math.min(200, scale))}% auto` : undefined,
+    backgroundPosition: image ? `${positionX} ${positionY}` : undefined,
+    backgroundRepeat: image ? "no-repeat" : undefined,
+  } as React.CSSProperties;
+}
+
 export function InvitationEditorFoundation({ invitationId, content, onSave }: Props) {
   const initial = useMemo(() => normalizeInvitationContent(content), [content]);
   const h = useDocumentHistory(initial);
@@ -78,6 +95,16 @@ export function InvitationEditorFoundation({ invitationId, content, onSave }: Pr
   const drag = useRef<{ x: number; y: number; ids: string[]; origins: Record<string, { x: number; y: number }> } | null>(null);
   const selected = h.document.elements.filter((element) => selectedIds.includes(element.id));
   const primary = selected[0];
+  const [sectionSelected, setSectionSelected] = useState(false);
+  const section = h.document.sections[0];
+  const sectionBackground = section?.background ?? h.document.canvas.background ?? {};
+  const updateSectionBackground = useCallback((background: Record<string, unknown>) => {
+    mark((document) => ({
+      ...document,
+      canvas: { ...document.canvas, background },
+      sections: document.sections.map((item, index) => index === 0 ? { ...item, background } : item),
+    }), "section-background");
+  }, [mark]);
   const qualityAlerts = useMemo<QualityAlert[]>(() => [...validateInvitationEditorDocument(h.document), ...validateResponsivePreset(h.document, previewPreset)], [h.document, previewPreset]);
   const qualityErrors = qualityAlerts.filter((alert) => alert.severity === "error").length;
   const qualityWarnings = qualityAlerts.filter((alert) => alert.severity === "warning").length;
@@ -208,14 +235,14 @@ export function InvitationEditorFoundation({ invitationId, content, onSave }: Pr
       <aside className="hidden border-r bg-card/80 p-4 md:block"><div className="sticky top-0"><div className="mb-4 flex items-center gap-2 border-b pb-3"><Grid2X2 className="h-4 w-4 text-primary" /><div><p className="text-sm font-semibold">Biblioteca criativa</p><p className="text-[11px] text-muted-foreground">Elementos, componentes e mídia</p></div></div><LibraryPanel library={library} search={search} setSearch={setSearch} category={category} setCategory={setCategory} favorite={favorite} setFavorite={setFavorite} error={assetError} /></div></aside>
       <main className="relative min-w-0 overflow-auto bg-muted/40 p-3 sm:p-6 lg:p-8" onPointerUp={endDrag} onPointerCancel={endDrag} onPointerMove={(event) => { if (!drag.current && (previewing || viewMode === "preview") && !reducedMotion) { const rect = event.currentTarget.getBoundingClientRect(); setParallaxOffset({ x: Math.max(-1, Math.min(1, (event.clientX - rect.left - rect.width / 2) / (rect.width / 2))), y: Math.max(-1, Math.min(1, (event.clientY - rect.top - rect.height / 2) / (rect.height / 2))) }); } moveDrag(event); }} onWheel={(event) => { if (event.ctrlKey) { event.preventDefault(); setZoom((value) => Math.max(50, Math.min(180, value + (event.deltaY > 0 ? -5 : 5)))); } }}>
         <div className="mb-3 flex flex-wrap items-center justify-center gap-1"><ActionButton label="Diminuir zoom" onClick={() => setZoom((value) => Math.max(50, value - 10))}><Minus className="h-4 w-4" /></ActionButton><span className="min-w-14 text-center text-xs">{zoom}%</span><ActionButton label="Aumentar zoom" onClick={() => setZoom((value) => Math.min(180, value + 10))}><Plus className="h-4 w-4" /></ActionButton><Button size="sm" variant="outline" onClick={() => setZoom(100)}><MousePointer2 className="mr-1 h-4 w-4" />Centralizar</Button></div>
-        <div className="mx-auto origin-top" style={{ width: `${100 / (zoom / 100)}%` }}><div className={cn("relative mx-auto min-h-[640px] overflow-hidden border bg-card shadow-lg", preset.frame && "rounded-[2.5rem] border-[10px] border-foreground/80 p-2", !preset.frame && "rounded-xl", viewMode === "preview" && "cursor-default")} style={{ width: `${Math.min(preset.width, 768)}px`, minHeight: `${preset.height}px`, maxWidth: "100%" }} onPointerDown={(event) => { if (event.target === event.currentTarget && viewMode === "edit") setSelectedIds([]); }}>
+        <div className="mx-auto origin-top" style={{ width: `${100 / (zoom / 100)}%` }}><div className={cn("relative mx-auto min-h-[640px] overflow-hidden border bg-card shadow-lg", preset.frame && "rounded-[2.5rem] border-[10px] border-foreground/80 p-2", !preset.frame && "rounded-xl", viewMode === "preview" && "cursor-default")} style={{ width: `${Math.min(preset.width, 768)}px`, minHeight: `${preset.height}px`, maxWidth: "100%", ...canvasBackgroundStyle(sectionBackground) }} onPointerDown={(event) => { if (event.target === event.currentTarget && viewMode === "edit") { setSelectedIds([]); setSectionSelected(true); setPanel("properties"); } }}>
           <div className="pointer-events-none absolute inset-0 [background-image:linear-gradient(to_right,hsl(var(--border)/.2)_1px,transparent_1px),linear-gradient(to_bottom,hsl(var(--border)/.2)_1px,transparent_1px)] [background-size:16px_16px]" />
           {safeArea && <div className="pointer-events-none absolute inset-6 z-20 rounded-lg border border-dashed border-primary/40 bg-primary/[0.02]" aria-label="Área segura do preview" />}
-          {h.document.elements.filter((element) => !isCanvasBackgroundElement(element)).map((element, index) => <CanvasElement key={`${element.id}-${previewKey}`} element={element} index={index} selected={viewMode === "edit" && selectedIds.includes(element.id)} previewing={previewing || viewMode === "preview"} reducedMotion={reducedMotion} parallaxOffset={parallaxOffset} onPointerDown={viewMode === "edit" ? startDrag : undefined} onClick={(event: any) => { event.stopPropagation(); if (viewMode === "edit") select(element.id, event.shiftKey || event.metaKey || event.ctrlKey); }} />)}
+          {h.document.elements.filter((element) => !isCanvasBackgroundElement(element)).map((element, index) => <CanvasElement key={`${element.id}-${previewKey}`} element={element} index={index} selected={viewMode === "edit" && selectedIds.includes(element.id)} previewing={previewing || viewMode === "preview"} reducedMotion={reducedMotion} parallaxOffset={parallaxOffset} onPointerDown={viewMode === "edit" ? startDrag : undefined} onClick={(event: any) => { event.stopPropagation(); setSectionSelected(false); if (viewMode === "edit") select(element.id, event.shiftKey || event.metaKey || event.ctrlKey); }} />)}
         </div></div>
         <div className="fixed inset-x-3 bottom-3 z-40 flex items-center justify-around gap-1 rounded-2xl border bg-card/95 p-2 shadow-xl backdrop-blur lg:hidden"><Button size="sm" variant="ghost" className="flex-1 flex-col gap-1 px-2 py-1.5 text-[10px]" onClick={() => setPanel("library")}><Grid2X2 className="h-4 w-4" />Criar</Button><Button size="sm" variant="ghost" className="flex-1 flex-col gap-1 px-2 py-1.5 text-[10px]" onClick={() => setPanel("properties")}><MousePointer2 className="h-4 w-4" />Editar</Button><Button size="sm" variant="ghost" className="flex-1 flex-col gap-1 px-2 py-1.5 text-[10px]" onClick={() => setViewMode("preview")}><Eye className="h-4 w-4" />Preview</Button><Button size="sm" variant="ghost" className="flex-1 flex-col gap-1 px-2 py-1.5 text-[10px]" onClick={() => setPanel("layers")}><Layers3 className="h-4 w-4" />Camadas</Button></div>
       </main>
-      {viewMode === "edit" && <aside className="hidden border-l bg-card/80 p-4 xl:block"><div className="sticky top-0"><div className="mb-4 flex items-center gap-2 border-b pb-3"><MousePointer2 className="h-4 w-4 text-primary" /><div><p className="text-sm font-semibold">Propriedades</p><p className="text-[11px] text-muted-foreground">Ajustes do elemento selecionado</p></div></div><Properties selected={primary} count={selected.length} update={updateSelected} remove={remove} duplicate={duplicate} group={group} ungroup={ungroup} /></div></aside>}
+      {viewMode === "edit" && <aside className="hidden border-l bg-card/80 p-4 xl:block"><div className="sticky top-0"><div className="mb-4 flex items-center gap-2 border-b pb-3"><MousePointer2 className="h-4 w-4 text-primary" /><div><p className="text-sm font-semibold">Propriedades</p><p className="text-[11px] text-muted-foreground">Ajustes do elemento selecionado</p></div></div>{sectionSelected ? <SectionBackgroundProperties background={sectionBackground} onChange={updateSectionBackground} /> : <Properties selected={primary} count={selected.length} update={updateSelected} remove={remove} duplicate={duplicate} group={group} ungroup={ungroup} />}</div></aside>}
     </div>
     <div className="flex flex-wrap items-center gap-3 border-t bg-card p-3 sm:p-4"><div className="flex items-center gap-2"><Layers3 className="h-4 w-4 text-primary" /><span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Seções</span></div><div className="flex min-w-0 flex-1 gap-2 overflow-x-auto pb-1">{h.document.sections.map((section, index) => <button key={section.id} type="button" className={cn("whitespace-nowrap rounded-lg border bg-background px-3 py-1.5 text-xs transition-colors hover:border-primary hover:bg-primary/5", index === 0 && "border-primary/40 bg-primary/5 text-primary")}><span className="mr-1.5 text-[10px] text-muted-foreground">{String(index + 1).padStart(2, "0")}</span>{section.name}</button>)}</div><Button size="sm" variant="outline" className="shrink-0" onClick={() => { localStorage.removeItem(localRecoveryKey(invitationId)); setState("saved"); }}>Limpar recuperação</Button></div>
     <Sheet open={panel !== null} onOpenChange={(open) => !open && setPanel(null)}><SheetContent side="bottom" className="max-h-[84vh] overflow-y-auto"><SheetHeader><SheetTitle>{panel === "library" ? "Biblioteca de mídia e elementos" : panel === "layers" ? "Camadas" : "Propriedades"}</SheetTitle></SheetHeader><div className="mt-4">{panel === "library" ? <LibraryPanel library={library} search={search} setSearch={setSearch} category={category} setCategory={setCategory} favorite={favorite} setFavorite={setFavorite} error={assetError} /> : panel === "layers" ? <LayersPanel elements={h.document.elements} selectedIds={selectedIds} select={select} /> : <Properties selected={primary} count={selected.length} update={updateSelected} remove={remove} duplicate={duplicate} group={group} ungroup={ungroup} />}</div></SheetContent></Sheet>
@@ -265,8 +292,21 @@ function LibraryPanel({ library, search, setSearch, category, setCategory, favor
 
 function LayersPanel({ elements, selectedIds, select }: any) { return <div className="space-y-2">{[...elements].sort((a, b) => b.zIndex - a.zIndex).map((element) => <button key={element.id} type="button" onClick={() => select(element.id)} className={cn("flex w-full items-center gap-2 rounded-md border p-2 text-left text-xs", selectedIds.includes(element.id) && "border-primary bg-primary/10")}>{element.visible ? <Eye className="h-3.5 w-3.5" /> : <EyeOff className="h-3.5 w-3.5" />}{element.type}<span className="ml-auto text-muted-foreground">z{element.zIndex}</span></button>)}</div>; }
 
+function SectionBackgroundProperties({ background, onChange }: { background: Record<string, unknown>; onChange: (background: Record<string, unknown>) => void }) {
+  const value = (key: string, fallback = "") => String(background[key] ?? fallback);
+  const update = (patch: Record<string, unknown>) => onChange({ ...background, ...patch });
+  return <div className="space-y-4 rounded-xl border border-primary/20 bg-primary/5 p-3">
+    <div><p className="text-sm font-semibold">Fundo da seção</p><p className="text-xs text-muted-foreground">Aplicado diretamente no canvas do convite.</p></div>
+    <label className="block space-y-1 text-xs text-muted-foreground">Cor<input type="color" value={value("color", "#ffffff")} onChange={(event) => update({ color: event.target.value })} className="h-9 w-full cursor-pointer rounded-md border bg-background p-1" /></label>
+    <label className="block space-y-1 text-xs text-muted-foreground">Gradiente CSS<Input value={value("gradient")} onChange={(event) => update({ gradient: event.target.value })} placeholder="linear-gradient(135deg, #fff, #e8d8ff)" /></label>
+    <label className="block space-y-1 text-xs text-muted-foreground">Imagem ou textura<Input value={value("image")} onChange={(event) => update({ image: event.target.value })} placeholder="https://..." /></label>
+    {value("image") && <><label className="block space-y-1 text-xs text-muted-foreground">Escala: {Math.round(Number(background.imageScale ?? 100))}%<input type="range" min="25" max="200" step="5" value={Number(background.imageScale ?? 100)} onChange={(event) => update({ imageScale: Number(event.target.value) })} className="w-full accent-primary" /></label><label className="block space-y-1 text-xs text-muted-foreground">Opacidade: {Math.round(Number(background.imageOpacity ?? 1) * 100)}%<input type="range" min="0" max="1" step="0.05" value={Number(background.imageOpacity ?? 1)} onChange={(event) => update({ imageOpacity: Number(event.target.value) })} className="w-full accent-primary" /></label></>}
+    <Button type="button" size="sm" variant="outline" onClick={() => onChange({})}>Limpar fundo</Button>
+  </div>;
+}
+
 function Properties({ selected, count, update, remove, duplicate, group, ungroup }: any) {
-  if (!selected) return <div className="flex min-h-40 items-center justify-center text-center text-xs text-muted-foreground">Selecione um elemento para editar suas propriedades.</div>;
+  if (!selected) return <div className="flex min-h-40 items-center justify-center text-center text-xs text-muted-foreground">Selecione um elemento ou clique em uma área vazia do convite para editar o fundo.</div>;
   const number = (key: string, fallback = 0) => Number(selected[key] ?? fallback);
   const styles = selected.styles || {};
   const block = selected.content?.block as any;
