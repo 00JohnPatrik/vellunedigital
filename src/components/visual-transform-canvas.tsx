@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { BlockView } from "@/components/block-render";
 import type { Block } from "@/lib/templates";
 
@@ -16,13 +16,22 @@ type Props = {
   onChange: (update: (blocks: Block[]) => Block[], group?: string) => void;
 };
 
+type Bounds = {
+  left: number;
+  top: number;
+  right: number;
+  bottom: number;
+  width: number;
+  height: number;
+};
+
 type Interaction = {
   mode: "move" | "resize" | "rotate";
   ids: string[];
   pointerId: number;
   start: Point;
   originals: Record<string, any>;
-  bounds: { left: number; top: number; right: number; bottom: number; width: number; height: number };
+  bounds: Bounds;
   handle?: string;
   aspect: number;
   center: Point;
@@ -68,12 +77,16 @@ function pointerPoint(event: PointerEvent | React.PointerEvent, canvas: HTMLDivE
   return { x: (event.clientX - rect.left) / scale, y: (event.clientY - rect.top) / scale };
 }
 
+function clamp(value: number, min: number, max: number) {
+  return Math.min(max, Math.max(min, value));
+}
+
 function snap(value: number, candidates: number[], threshold = 8) {
   const candidate = candidates.find((item) => Math.abs(item - value) <= threshold);
   return candidate === undefined ? value : candidate;
 }
 
-function resizeBounds(start: Interaction, point: Point, shift: boolean) {
+function resizeBounds(start: Interaction, point: Point, proportional: boolean, canvasWidth: number, canvasHeight: number) {
   const original = start.bounds;
   let left = original.left;
   let top = original.top;
@@ -90,7 +103,8 @@ function resizeBounds(start: Interaction, point: Point, shift: boolean) {
 
   let width = Math.max(MIN_SIZE, Math.min(MAX_SIZE, right - left));
   let height = Math.max(MIN_SIZE, Math.min(MAX_SIZE, bottom - top));
-  if (shift) {
+
+  if (proportional) {
     const ratio = start.aspect || 1;
     if (Math.abs(dx) >= Math.abs(dy)) height = Math.max(MIN_SIZE, Math.min(MAX_SIZE, width / ratio));
     else width = Math.max(MIN_SIZE, Math.min(MAX_SIZE, height * ratio));
@@ -99,6 +113,14 @@ function resizeBounds(start: Interaction, point: Point, shift: boolean) {
     if (handle.includes("n")) top = bottom - height;
     else bottom = top + height;
   }
+
+  if (handle.includes("w")) left = clamp(left, 0, Math.max(0, right - MIN_SIZE));
+  if (handle.includes("e")) right = clamp(right, Math.min(canvasWidth, left + MIN_SIZE), canvasWidth);
+  if (handle.includes("n")) top = clamp(top, 0, Math.max(0, bottom - MIN_SIZE));
+  if (handle.includes("s")) bottom = clamp(bottom, Math.min(canvasHeight, top + MIN_SIZE), canvasHeight);
+
+  width = Math.max(MIN_SIZE, Math.min(MAX_SIZE, right - left));
+  height = Math.max(MIN_SIZE, Math.min(MAX_SIZE, bottom - top));
   return { left, top, width, height };
 }
 
@@ -110,22 +132,88 @@ function cursorFor(handle: string) {
   return "nwse-resize";
 }
 
+function isTextInput(target: EventTarget | null) {
+  const element = target as HTMLElement | null;
+  if (!element) return false;
+  return element.tagName === "INPUT" || element.tagName === "TEXTAREA" || element.tagName === "SELECT" || element.isContentEditable;
+}
+
 export function VisualTransformCanvas({ blocks, selectedIds, zoom, canvasRef, ctx, onSelect, onChange }: Props) {
   const interaction = useRef<Interaction | null>(null);
   const [guides, setGuides] = useState<Guide[]>([]);
   const selectedBounds = useMemo(() => boundsOf(blocks, selectedIds), [blocks, selectedIds]);
   const selected = blocks.filter((block: any) => selectedIds.includes(block.id));
 
+  const canvasSize = () => ({
+    width: canvasRef.current?.clientWidth || 768,
+    height: canvasRef.current?.clientHeight || 640,
+  });
+
+  const finish = () => {
+    interaction.current = null;
+    setGuides([]);
+  };
+
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (!selectedIds.length || isTextInput(event.target)) return;
+      const movable = blocks.filter((block: any) => selectedIds.includes(block.id) && !block.locked);
+      if (!movable.length) return;
+
+      if (event.key === "Escape") {
+        finish();
+        return;
+      }
+
+      if (event.key === "Delete" || event.key === "Backspace") {
+        event.preventDefault();
+        onChange((items: any[]) => items.filter((item) => !selectedIds.includes(item.id) || item.locked), "keyboard:delete");
+        return;
+      }
+
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "a") {
+        event.preventDefault();
+        blocks.forEach((block: any) => onSelect(block.id, true));
+        return;
+      }
+
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "d") {
+        event.preventDefault();
+        const source = blocks.filter((block: any) => selectedIds.includes(block.id) && block.type !== "rsvp");
+        if (!source.length) return;
+        const copies = source.map((block: any) => ({ ...structuredClone(block), id: crypto.randomUUID(), x: number(block.x, 24) + 16, y: number(block.y, 24) + 16 }));
+        onChange((items: any[]) => [...items, ...copies], "keyboard:duplicate");
+        return;
+      }
+
+      const step = event.shiftKey ? 10 : 1;
+      const delta = event.key === "ArrowLeft" ? { x: -step, y: 0 } : event.key === "ArrowRight" ? { x: step, y: 0 } : event.key === "ArrowUp" ? { x: 0, y: -step } : event.key === "ArrowDown" ? { x: 0, y: step } : null;
+      if (!delta) return;
+      event.preventDefault();
+      const size = canvasSize();
+      onChange((items: any[]) => items.map((item: any) => {
+        if (!selectedIds.includes(item.id) || item.locked) return item;
+        const value = geometry(item, blocks.indexOf(item));
+        return { ...item, x: Math.round(clamp(value.x + delta.x, 0, Math.max(0, size.width - value.width))), y: Math.round(clamp(value.y + delta.y, 0, Math.max(0, size.height - value.height))) };
+      }), "keyboard:move");
+    };
+
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [blocks, selectedIds, onChange, onSelect]);
+
   const begin = (event: React.PointerEvent, mode: Interaction["mode"], handle?: string, block?: any) => {
     event.stopPropagation();
     const additive = event.shiftKey || event.ctrlKey || event.metaKey;
-    const ids = block?.id
-      ? (selectedIds.includes(block.id) ? selectedIds : additive ? [...selectedIds, block.id] : [block.id])
+    const requestedIds = block?.id
+      ? selectedIds.includes(block.id) ? selectedIds : additive ? [...selectedIds, block.id] : [block.id]
       : selectedIds;
+    const ids = requestedIds.filter((id) => !blocks.find((item: any) => item.id === id)?.locked);
     const activeBlocks = blocks.filter((item: any) => ids.includes(item.id));
-    if (!ids.length || !activeBlocks.length || activeBlocks.some((item: any) => item.locked)) return;
+    if (!ids.length || !activeBlocks.length) return;
     const bounds = boundsOf(blocks, ids);
     if (!bounds) return;
+
     const originals = Object.fromEntries(activeBlocks.map((item: any) => [item.id, geometry(item, blocks.indexOf(item))]));
     const point = pointerPoint(event, canvasRef.current, zoom);
     interaction.current = {
@@ -150,21 +238,23 @@ export function VisualTransformCanvas({ blocks, selectedIds, zoom, canvasRef, ct
     const point = pointerPoint(event, canvasRef.current, zoom);
     const dx = point.x - current.start.x;
     const dy = point.y - current.start.y;
+    const size = canvasSize();
 
     if (current.mode === "move") {
       let offsetX = dx;
       let offsetY = dy;
-      const canvasWidth = canvasRef.current?.clientWidth || 768;
-      const canvasHeight = canvasRef.current?.clientHeight || 640;
-      const nextGuides: Guide[] = [];
       const movedCenterX = current.bounds.left + current.bounds.width / 2 + offsetX;
       const movedCenterY = current.bounds.top + current.bounds.height / 2 + offsetY;
-      const xCandidates = [canvasWidth / 2, ...blocks.filter((block: any) => !current.ids.includes(block.id)).map((block: any, index: number) => geometry(block, index).x + geometry(block, index).width / 2)];
-      const yCandidates = [canvasHeight / 2, ...blocks.filter((block: any) => !current.ids.includes(block.id)).map((block: any, index: number) => geometry(block, index).y + geometry(block, index).height / 2)];
+      const others = blocks.filter((block: any) => !current.ids.includes(block.id));
+      const xCandidates = [size.width / 2, ...others.map((block: any, index: number) => { const value = geometry(block, index); return value.x + value.width / 2; })];
+      const yCandidates = [size.height / 2, ...others.map((block: any, index: number) => { const value = geometry(block, index); return value.y + value.height / 2; })];
       const snappedX = snap(movedCenterX, xCandidates);
       const snappedY = snap(movedCenterY, yCandidates);
+      const nextGuides: Guide[] = [];
       if (snappedX !== movedCenterX) { offsetX += snappedX - movedCenterX; nextGuides.push({ axis: "x", value: snappedX }); }
       if (snappedY !== movedCenterY) { offsetY += snappedY - movedCenterY; nextGuides.push({ axis: "y", value: snappedY }); }
+      offsetX = clamp(offsetX, -current.bounds.left, size.width - current.bounds.right);
+      offsetY = clamp(offsetY, -current.bounds.top, size.height - current.bounds.bottom);
       setGuides(nextGuides);
       onChange((items: any[]) => items.map((item: any) => {
         const original = current.originals[item.id];
@@ -180,8 +270,9 @@ export function VisualTransformCanvas({ blocks, selectedIds, zoom, canvasRef, ct
       if (delta > 180) delta -= 360;
       if (delta < -180) delta += 360;
       if (event.shiftKey) delta = Math.round(delta / 15) * 15;
-      const cos = Math.cos(delta * Math.PI / 180);
-      const sin = Math.sin(delta * Math.PI / 180);
+      const radians = delta * Math.PI / 180;
+      const cos = Math.cos(radians);
+      const sin = Math.sin(radians);
       onChange((items: any[]) => items.map((item: any) => {
         const original = current.originals[item.id];
         if (!original) return item;
@@ -194,7 +285,8 @@ export function VisualTransformCanvas({ blocks, selectedIds, zoom, canvasRef, ct
       return;
     }
 
-    const resized = resizeBounds(current, point, event.shiftKey);
+    const proportional = event.shiftKey || (current.ids.length === 1 && ["image", "gallery"].includes(blocks.find((block: any) => block.id === current.ids[0])?.type));
+    const resized = resizeBounds(current, point, proportional, size.width, size.height);
     const sx = resized.width / Math.max(MIN_SIZE, current.bounds.width);
     const sy = resized.height / Math.max(MIN_SIZE, current.bounds.height);
     onChange((items: any[]) => items.map((item: any) => {
@@ -212,8 +304,7 @@ export function VisualTransformCanvas({ blocks, selectedIds, zoom, canvasRef, ct
 
   const end = (event?: React.PointerEvent) => {
     event?.stopPropagation();
-    interaction.current = null;
-    setGuides([]);
+    finish();
   };
 
   return <>
