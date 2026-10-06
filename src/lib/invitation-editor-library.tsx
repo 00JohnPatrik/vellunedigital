@@ -336,3 +336,33 @@ export function ExperimentalTemplateLibrary({ open, document, onClose, onApply }
     </div>{confirmReplace && <div className="border-t bg-amber-50 p-4 dark:bg-amber-950/30"><div className="flex flex-wrap items-center gap-3"><div className="min-w-0 flex-1"><p className="text-sm font-medium">Substituir o conteúdo experimental?</p><p className="text-xs text-muted-foreground">A nova base substituirá o canvas experimental atual e poderá ser desfeita pelo undo.</p></div><Button variant="outline" size="sm" onClick={() => setConfirmReplace(false)}>Cancelar</Button><Button size="sm" onClick={() => apply("replace")}><Check className="mr-1 h-4 w-4" />Confirmar substituição</Button></div></div>}
   </div></div>;
 }
+
+export function ExperimentalElementLibrary({
+  library = [],
+  search = "",
+  setSearch,
+  category = "Todos",
+  setCategory,
+  favorite = [],
+  setFavorite,
+  error = "",
+}: any) {
+  const items = Array.isArray(library) ? library : [];
+  const categories = ["Todos", "Elementos", "Componentes inteligentes", "Formas", "Decorações", "Mídia do convite", "Assets Vellune", "Assets da empresa"];
+  const filtered = items.filter((item: any) => {
+    const haystack = `${item?.label ?? ""} ${item?.description ?? ""} ${item?.category ?? ""} ${item?.type ?? ""}`.toLowerCase();
+    return (!search || haystack.includes(String(search).toLowerCase())) && (!category || category === "Todos" || item?.category === category);
+  });
+  const updateFavorite = (idValue: string) => {
+    if (typeof setFavorite !== "function") return;
+    setFavorite((current: string[]) => current.includes(idValue) ? current.filter((value) => value !== idValue) : [...current, idValue]);
+  };
+
+  return <div className="space-y-3" aria-label="Biblioteca experimental de elementos">
+    <div className="relative"><Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" /><Input value={search} onChange={(event) => setSearch?.(event.target.value)} placeholder="Buscar elementos" className="pl-9" aria-label="Buscar elementos" /></div>
+    <div className="flex gap-1 overflow-x-auto pb-1">{categories.map((item) => <button key={item} type="button" onClick={() => setCategory?.(item)} className={cn("whitespace-nowrap rounded-md border px-2 py-1 text-xs", category === item ? "border-primary bg-primary/10 text-primary" : "text-muted-foreground hover:bg-muted")}>{item}</button>)}</div>
+    {error && <p className="text-xs text-destructive">{error}</p>}
+    <div className="grid grid-cols-2 gap-2">{filtered.map((item: any) => <div key={item.id} className="relative"><Button type="button" variant="outline" className="h-auto min-h-16 w-full flex-col gap-1 p-2 text-xs" onClick={item.action}>{item.icon}<span>{item.label}</span></Button><button type="button" className="absolute right-1 top-1 text-muted-foreground" aria-label={favorite.includes(item.id) ? "Remover dos favoritos" : "Favoritar elemento"} onClick={() => updateFavorite(item.id)}>{favorite.includes(item.id) ? "★" : "☆"}</button></div>)}</div>
+    {filtered.length === 0 && <div className="rounded-lg border border-dashed p-5 text-center text-xs text-muted-foreground">Nenhum elemento encontrado.</div>}
+  </div>;
+}

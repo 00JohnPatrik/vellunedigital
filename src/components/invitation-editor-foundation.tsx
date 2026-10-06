@@ -120,23 +120,32 @@ export function InvitationEditorFoundation({ invitationId, content, onSave }: Pr
   const qualityScore = getQualityScore(qualityAlerts);
   const applyLibraryItem = useCallback((item: ExperimentalLibraryItem, mode: LibraryMode) => {
     const created = item.elements.map((definition, index) => {
-      const x = 48 + (index % 2) * 24;
-      const y = 48 + index * 88;
-      if (definition.type === "text") return createTextElement(x, y);
-      if (definition.type === "shape") return createShapeElement(definition.shape ?? "rectangle", x, y);
-      return createSmartElement((definition.smartType ?? "special_text") as SmartElementType, x, y);
-    }).map((element, index) => {
-      const definition = item.elements[index];
-      if (definition.type === "text" && definition.text) return { ...element, content: { ...element.content, text: definition.text } };
-      if (definition.type === "smart" && definition.text && element.content.block) return { ...element, content: { ...element.content, block: { ...element.content.block, props: { ...(element.content.block.props ?? {}), text: definition.text } } } };
-      return element;
+      const x = definition.x ?? 48 + (index % 2) * 24;
+      const y = definition.y ?? 48 + index * 88;
+      const base = definition.type === "text"
+        ? createTextElement(x, y)
+        : definition.type === "shape"
+          ? createShapeElement(definition.shape ?? "rectangle", x, y)
+          : createSmartElement((definition.smartType ?? "special_text") as SmartElementType, x, y);
+      const content = definition.type === "text" && definition.text
+        ? { ...base.content, text: definition.text }
+        : definition.type === "smart" && definition.text && base.content.block
+          ? { ...base.content, block: { ...base.content.block, props: { ...(base.content.block.props ?? {}), text: definition.text } } }
+          : base.content;
+      return {
+        ...base,
+        content,
+        width: definition.width ?? base.width,
+        height: definition.height ?? base.height,
+        styles: { ...base.styles, ...(definition.styles ?? {}) },
+      };
     });
     mark((document) => {
       const base = mode === "replace" ? [] : document.elements;
       const offset = mode === "replace" ? 0 : base.length * 24;
-      const elements = [...base, ...created.map((element, index) => ({ ...element, id: crypto.randomUUID(), x: element.x + offset, y: element.y + offset, zIndex: base.length + index + 1 }))];
-      const section = { id: crypto.randomUUID(), name: item.name, height: Math.max(640, 520 + created.length * 88), elementIds: elements.slice(base.length).map((element) => element.id) };
-      return { ...document, elements, sections: mode === "replace" ? [section] : [...document.sections, section] };
+      const inserted = created.map((element, index) => ({ ...element, id: crypto.randomUUID(), x: element.x + offset, y: element.y + offset, zIndex: base.length + index + 1 }));
+      const section = { id: crypto.randomUUID(), name: item.name, height: Math.max(640, 520 + inserted.length * 88), background: {}, elementIds: inserted.map((element) => element.id) };
+      return { ...document, elements: [...base, ...inserted], sections: mode === "replace" ? [section] : [...document.sections, section] };
     }, "library");
     setSelectedIds(created.map((element) => element.id));
   }, [mark]);
