@@ -149,7 +149,6 @@ export function VisualEditor({ h, ctx, assets, bg, onBg }: { h: BlocksHistory; c
   const blocks = Array.isArray(h?.blocks) ? h.blocks : [];
   const selected = blocks.filter((block: any) => selectedIds.includes(block.id));
   const editorCategories = EDITOR_CATEGORIES;
-  };
   const categoryGroups = editorCategories;
   const addBlockByType = (type: BlockType) => {
     if (type === "rsvp" && blocks.some((block: any) => block.type === "rsvp")) {
