@@ -4,7 +4,7 @@ import { BackgroundLayers, BlockView } from "@/components/block-render";
 import { VisualTransformCanvas } from "@/components/visual-transform-canvas";
 import { ImageUpload } from "@/components/image-upload";
 import { BackgroundPropertiesPanel, ContextualPropertiesPanel } from "@/components/contextual-properties-panel";
-import { BLOCKS, getBlockDefaultSize, getNextBlockZIndex, moveBlockLayer, newBlock, type Block, type BlockType } from "@/lib/templates";
+import { BLOCKS, getBlockDefaultSize, getNextBlockZIndex, moveBlockLayer, newBlock, resolveBlockGeometry, type Block, type BlockType } from "@/lib/templates";
 import { ElementsLibrary } from "@/components/elements-library";
 
 function useIsCompact() {
@@ -161,7 +161,7 @@ export function VisualEditor({ h, ctx, assets, bg, onBg }: { h: BlocksHistory; c
     const size = getBlockDefaultSize(type);
     const lastY = blocks.reduce((maxY: number, item: any, index: number) => {
       const pos = getPosition(item, index);
-      const itemSize = getSize(item);
+      const itemSize = getSize(item, index);
       return Math.max(maxY, pos.y + itemSize.height);
     }, 24);
     block.x = 24;
@@ -195,16 +195,16 @@ export function VisualEditor({ h, ctx, assets, bg, onBg }: { h: BlocksHistory; c
     setSelectedIds((current) => current.filter((id) => !ids.includes(id)));
   };
 
-  const getPosition = (block: any, index: number) => ({
-    x: typeof block.x === "number" ? block.x : Number.isFinite(Number(block.props?.x)) ? Number(block.props.x) : 24,
-    y: typeof block.y === "number" ? block.y : Number.isFinite(Number(block.props?.y)) ? Number(block.props.y) : 24 + index * 96,
-  });
-  const getSize = (block: any) => {
-    const fallback = getBlockDefaultSize(block.type as BlockType);
-    return {
-      width: typeof block.width === "number" ? block.width : Number.isFinite(Number(block.props?.width)) ? Number(block.props.width) : fallback.width,
-      height: typeof block.height === "number" ? block.height : Number.isFinite(Number(block.props?.height)) ? Number(block.props.height) : fallback.height,
-    };
+  // Geometry is resolved exclusively through the canonical resolver used by the
+  // interactive canvas and the read-only invitation renderer. This prevents the
+  // editor's placement/height calculations from disagreeing with what is rendered.
+  const getPosition = (block: any, index: number) => {
+    const resolved = resolveBlockGeometry(block as Block, index);
+    return { x: resolved.x, y: resolved.y };
+  };
+  const getSize = (block: any, index = 0) => {
+    const resolved = resolveBlockGeometry(block as Block, index);
+    return { width: resolved.width, height: resolved.height };
   };
   const getBlockLabel = (block: any) => {
     const props = block.props ?? {};
@@ -244,7 +244,7 @@ export function VisualEditor({ h, ctx, assets, bg, onBg }: { h: BlocksHistory; c
   };
   const startResize = (event: React.PointerEvent<HTMLButtonElement>, block: any, index: number) => {
     if (block.locked || block.visibility === false || block.hidden) return;
-    const point = canvasPoint(event); const position = getPosition(block, index); const size = getSize(block);
+    const point = canvasPoint(event); const position = getPosition(block, index); const size = getSize(block, index);
     interaction.current = {
       mode: "resize",
       id: block.id,
@@ -302,7 +302,7 @@ export function VisualEditor({ h, ctx, assets, bg, onBg }: { h: BlocksHistory; c
   const stopInteraction = () => {
     const current = interaction.current;
     if (current?.mode === "marquee" && marquee) {
-      const next = blocks.filter((block: any, index: number) => { const p = getPosition(block, index); const s = getSize(block); return p.x < marquee.x + marquee.width && p.x + s.width > marquee.x && p.y < marquee.y + marquee.height && p.y + s.height > marquee.y; }).map((block: any) => block.id);
+      const next = blocks.filter((block: any, index: number) => { const p = getPosition(block, index); const s = getSize(block, index); return p.x < marquee.x + marquee.width && p.x + s.width > marquee.x && p.y < marquee.y + marquee.height && p.y + s.height > marquee.y; }).map((block: any) => block.id);
       setSelectedIds(next);
     }
     interaction.current = null; setMarquee(null);
@@ -311,7 +311,7 @@ export function VisualEditor({ h, ctx, assets, bg, onBg }: { h: BlocksHistory; c
     const block = newBlock(type);
     const size = getBlockDefaultSize(type);
     h.set((items) => {
-      const y = Math.min(1200, Math.max(24, ...items.map((item: any, index: number) => getPosition(item, index).y + getSize(item).height + 24)));
+      const y = Math.min(1200, Math.max(24, ...items.map((item: any, index: number) => getPosition(item, index).y + getSize(item, index).height + 24)));
       return [...items, { ...block, x: 32, y, width: size.width, height: size.height, zIndex: getNextBlockZIndex(items) }];
     });
     setSelectedIds([block.id]);
@@ -340,7 +340,7 @@ export function VisualEditor({ h, ctx, assets, bg, onBg }: { h: BlocksHistory; c
     };
     window.addEventListener("keydown", onKey); return () => window.removeEventListener("keydown", onKey);
   }, [selectedIds, blocks, h]);
-  const canvasHeight = Math.max(640, ...blocks.map((block: any, index: number) => getPosition(block, index).y + getSize(block).height + 32));
+  const canvasHeight = Math.max(640, ...blocks.map((block: any, index: number) => getPosition(block, index).y + getSize(block, index).height + 32));
   const updateSelectedBlock = (patch: Record<string, unknown>) => {
     if (!selected.length) return;
     h.set((items) => items.map((item: any) => selectedIds.includes(item.id) ? { ...item, ...patch } : item), "selection:properties");
