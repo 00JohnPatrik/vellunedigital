@@ -348,7 +348,6 @@ export function VisualTransformCanvas({ blocks, selectedIds, zoom, canvasRef, ct
           height: value.height + hit * 2,
           transform: `translate(${value.x - hit}px, ${value.y - hit}px) rotate(${value.rotation}deg) scale(${value.scale})`,
           transformOrigin: "center",
-          opacity: block.opacity ?? 1,
           zIndex: block.zIndex ?? index + 1,
           touchAction: "none",
           pointerEvents: hidden ? "none" : "auto",
