@@ -5,6 +5,7 @@ import { VisualTransformCanvas } from "@/components/visual-transform-canvas";
 import { ImageUpload } from "@/components/image-upload";
 import { ContextualPropertiesPanel } from "@/components/contextual-properties-panel";
 import { BLOCKS, newBlock, type Block, type BlockType } from "@/lib/templates";
+import { ElementsLibrary } from "@/components/elements-library";
 
 function useIsCompact() {
   const [compact, setCompact] = useState(false);
@@ -461,9 +462,7 @@ export function VisualEditor({ h, ctx, assets, bg, onBg }: { h: BlocksHistory; c
               <button type="button" className="rounded px-1.5 py-1 text-[11px] text-destructive hover:bg-destructive/10" aria-label={`Excluir ${getBlockLabel(block)}`} onClick={() => removeByIds([block.id])}>Excluir</button>
             </div>)}
           </div>
-        </div> : <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-          {(categoryGroups[toolCategory] || []).map((type) => <button key={type} type="button" className="rounded-lg border bg-background px-2 py-2 text-left text-xs text-foreground transition-colors hover:border-primary hover:bg-primary/5" onClick={() => addBlockByType(type)}>{BLOCKS[type].label}</button>)}
-        </div>}
+        </div> : <ElementsLibrary availableTypes={(categoryGroups[toolCategory] || []) as BlockType[]} onAdd={addBlockByType} />}
       </section>
       <p className="text-xs text-muted-foreground">Arraste com mouse ou toque, use Shift para snap, Shift/Ctrl para múltipla seleção, Ctrl/Cmd+C para copiar, Ctrl/Cmd+V para colar e arraste o fundo para selecionar uma área. Alterações são persistidas pelo autosave existente.</p>
     </div>
