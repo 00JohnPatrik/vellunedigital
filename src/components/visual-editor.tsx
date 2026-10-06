@@ -132,6 +132,23 @@ const EDITOR_CATEGORIES: Record<string, BlockType[]> = {
 
 const RSVP_DUP = "Este convite já possui confirmação de presença.";
 const GRID_UNIT = 16;
+const BLOCK_START_SIZE: Record<BlockType, { width: number; height: number }> = {
+  text: { width: 520, height: 96 },
+  image: { width: 360, height: 240 },
+  gallery: { width: 360, height: 260 },
+  date: { width: 360, height: 72 },
+  time: { width: 360, height: 72 },
+  location: { width: 420, height: 96 },
+  countdown: { width: 420, height: 96 },
+  rsvp: { width: 420, height: 300 },
+  whatsapp: { width: 300, height: 64 },
+  button: { width: 300, height: 64 },
+  qr_code: { width: 180, height: 220 },
+  divider: { width: 420, height: 32 },
+};
+function startSize(type: BlockType) {
+  return BLOCK_START_SIZE[type] ?? { width: 360, height: 96 };
+}
 
 type EditorPointer = { clientX: number; clientY: number };
 
@@ -159,6 +176,16 @@ export function VisualEditor({ h, ctx, assets, bg, onBg }: { h: BlocksHistory; c
       return;
     }
     const block = newBlock(type);
+    const size = startSize(type);
+    const lastY = blocks.reduce((maxY: number, item: any, index: number) => {
+      const pos = getPosition(item, index);
+      const itemSize = getSize(item);
+      return Math.max(maxY, pos.y + itemSize.height);
+    }, 24);
+    block.x = 24;
+    block.y = Math.min(Math.max(24, lastY + 24), 1200);
+    block.width = size.width;
+    block.height = size.height;
     if (type === "text") {
       const textCount = blocks.filter((current: any) => current.type === "text").length;
       const textPresets = ["Título", "Subtítulo", "Texto"];
@@ -189,10 +216,13 @@ export function VisualEditor({ h, ctx, assets, bg, onBg }: { h: BlocksHistory; c
     x: typeof block.x === "number" ? block.x : Number.isFinite(Number(block.props?.x)) ? Number(block.props.x) : 24,
     y: typeof block.y === "number" ? block.y : Number.isFinite(Number(block.props?.y)) ? Number(block.props.y) : 24 + index * 96,
   });
-  const getSize = (block: any) => ({
-    width: typeof block.width === "number" ? block.width : Number.isFinite(Number(block.props?.width)) ? Number(block.props.width) : 320,
-    height: typeof block.height === "number" ? block.height : Number.isFinite(Number(block.props?.height)) ? Number(block.props.height) : 92,
-  });
+  const getSize = (block: any) => {
+    const fallback = startSize(block.type as BlockType);
+    return {
+      width: typeof block.width === "number" ? block.width : Number.isFinite(Number(block.props?.width)) ? Number(block.props.width) : fallback.width,
+      height: typeof block.height === "number" ? block.height : Number.isFinite(Number(block.props?.height)) ? Number(block.props.height) : fallback.height,
+    };
+  };
   const getBlockLabel = (block: any) => {
     const props = block.props ?? {};
     if (block.type === "text") return props.text || "Texto";
@@ -294,7 +324,15 @@ export function VisualEditor({ h, ctx, assets, bg, onBg }: { h: BlocksHistory; c
     }
     interaction.current = null; setMarquee(null);
   };
-  const addElement = (type: BlockType) => { const block = newBlock(type); h.set((items) => [...items, { ...block, x: 32, y: Math.max(24, ...items.map((item: any, index: number) => getPosition(item, index).y + 110)) }]); setSelectedIds([block.id]); };
+  const addElement = (type: BlockType) => {
+    const block = newBlock(type);
+    const size = startSize(type);
+    h.set((items) => {
+      const y = Math.min(1200, Math.max(24, ...items.map((item: any, index: number) => getPosition(item, index).y + getSize(item).height + 24)));
+      return [...items, { ...block, x: 32, y, width: size.width, height: size.height }];
+    });
+    setSelectedIds([block.id]);
+  };
   const duplicate = () => { if (!selected.length) return; const copies = selected.filter((block: any) => block.type !== "rsvp" || !blocks.some((item: any) => item.type === "rsvp" && !selectedIds.includes(item.id))).map((block: any) => ({ ...structuredClone(block), id: crypto.randomUUID(), x: (block.x ?? 24) + 24, y: (block.y ?? 24) + 24 })); h.set((items) => [...items, ...copies]); setSelectedIds(copies.map((block: any) => block.id)); };
   const remove = () => { if (!selected.length) return; h.set((items) => items.filter((block: any) => !selectedIds.includes(block.id) || block.locked)); setSelectedIds([]); };
   const rotate = (amount: number) => h.set((items) => items.map((block: any) => selectedIds.includes(block.id) && !block.locked ? { ...block, rotation: (block.rotation ?? 0) + amount } : block), "selection:rotation");
