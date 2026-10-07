@@ -100,11 +100,11 @@ export function CompanyDashboardEnhancements({ companyId }: { companyId: string 
   const toggleFavorite = (id: string) => {
     const next = favorites.includes(id) ? favorites.filter((value) => value !== id) : [...favorites, id];
     setFavorites(next);
-    window.localStorage.setItem(`${storagePrefix}-favorite-invitations`, JSON.stringify(next));
+    try { window.localStorage.setItem(`${storagePrefix}-favorite-invitations`, JSON.stringify(next)); } catch { /* preferências locais são opcionais */ }
   };
   const completeOnboarding = () => {
     setOnboardingDone(true);
-    window.localStorage.setItem(`${storagePrefix}-onboarding-complete`, "true");
+    try { window.localStorage.setItem(`${storagePrefix}-onboarding-complete`, "true"); } catch { /* armazenamento local indisponível não impede o uso */ }
   };
 
   return <div className="mt-6 grid gap-6 xl:grid-cols-[1.35fr_1fr]">
