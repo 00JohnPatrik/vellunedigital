@@ -177,7 +177,7 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra }: { h: Bl
     setContextPanel("elements");
     setToolCategory("Elementos");
   };
-  const addBlockByType = (type: BlockType, initialProps?: Record<string, unknown>) => {
+  const addBlockByType = (type: BlockType, initialProps?: Record<string, unknown>, dropPoint?: { x: number; y: number }) => {
     if (type === "rsvp" && blocks.some((block: any) => block.type === "rsvp")) {
       window.alert(RSVP_DUP);
       return;
@@ -189,8 +189,14 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra }: { h: Bl
       const itemSize = getSize(item, index);
       return Math.max(maxY, pos.y + itemSize.height);
     }, 24);
-    block.x = 24;
-    block.y = Math.min(Math.max(24, lastY + 24), 1200);
+    const canvasWidth = canvasRef.current?.clientWidth || 390;
+    if (dropPoint) {
+      block.x = Math.round(Math.max(24, Math.min(dropPoint.x - size.width / 2, canvasWidth - size.width - 24)));
+      block.y = Math.round(Math.max(24, Math.min(dropPoint.y - size.height / 2, canvasHeight - size.height - 24)));
+    } else {
+      block.x = 24;
+      block.y = Math.min(Math.max(24, lastY + 24), 1200);
+    }
     block.width = size.width;
     block.height = size.height;
     block.zIndex = getNextBlockZIndex(blocks);
@@ -627,7 +633,21 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra }: { h: Bl
         </aside>
         <main className="relative min-w-0 flex-1 overflow-hidden rounded-2xl border border-primary/10 bg-[radial-gradient(circle_at_top,hsl(var(--primary)/.1),transparent_36%),linear-gradient(145deg,hsl(var(--muted)/.5),hsl(var(--background)/.9))] p-2 shadow-inner sm:p-4 lg:p-5">
           <div className="mb-3 flex items-center justify-between gap-2 rounded-xl border border-primary/15 bg-card/85 px-3 py-2.5 shadow-lg shadow-black/10 backdrop-blur-xl lg:hidden"><div className="flex min-w-0 items-center gap-2"><div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary"><Sparkles className="h-3.5 w-3.5" /></div><div className="min-w-0"><p className="truncate text-xs font-semibold">Editor visual</p><p className="truncate text-[10px] text-muted-foreground">Composição livre e responsiva</p></div></div><span className="rounded-md bg-muted/70 px-2 py-1 text-xs font-medium text-muted-foreground">{zoom}%</span></div>
-          <div className="h-full overflow-auto rounded-2xl border border-primary/10 bg-background/35 p-2 shadow-inner sm:p-4 lg:p-6"><div className="mx-auto origin-top transition-transform" style={{ width: `${100 / (zoom / 100)}%`, minHeight: canvasHeight / (zoom / 100) }}><div ref={canvasRef} className={`relative isolate mx-auto w-full ${DEVICE_W[device]} overflow-hidden rounded-2xl border bg-card shadow-sm ${showGrid ? "[background-image:linear-gradient(to_right,hsl(var(--border)/.25)_1px,transparent_1px),linear-gradient(to_bottom,hsl(var(--border)/.25)_1px,transparent_1px)] [background-size:16px_16px]" : ""}`} style={{ minHeight: canvasHeight, backgroundColor: bg && (bg as any).color ? (bg as any).color : undefined, transform: `scale(${zoom / 100})`, transformOrigin: "top center" }} onPointerDown={(event) => { if (event.target === event.currentTarget) { const p = canvasPoint(event); interaction.current = { mode: "marquee", startX: p.x, startY: p.y }; setSelectedIds([]); } }} onPointerMove={moveInteraction} onPointerUp={stopInteraction} onPointerCancel={stopInteraction} aria-label="Área de edição do convite"><BackgroundLayers bg={bg as any} />
+          <div className="h-full overflow-auto rounded-2xl border border-primary/10 bg-background/35 p-2 shadow-inner sm:p-4 lg:p-6"><div className="mx-auto origin-top transition-transform" style={{ width: `${100 / (zoom / 100)}%`, minHeight: canvasHeight / (zoom / 100) }}><div ref={canvasRef} className={`relative isolate mx-auto w-full ${DEVICE_W[device]} overflow-hidden rounded-2xl border bg-card shadow-sm ${showGrid ? "[background-image:linear-gradient(to_right,hsl(var(--border)/.25)_1px,transparent_1px),linear-gradient(to_bottom,hsl(var(--border)/.25)_1px,transparent_1px)] [background-size:16px_16px]" : ""}`} style={{ minHeight: canvasHeight, backgroundColor: bg && (bg as any).color ? (bg as any).color : undefined, transform: `scale(${zoom / 100})`, transformOrigin: "top center" }} onPointerDown={(event) => { if (event.target === event.currentTarget) { const p = canvasPoint(event); interaction.current = { mode: "marquee", startX: p.x, startY: p.y }; setSelectedIds([]); } }} onPointerMove={moveInteraction} onPointerUp={stopInteraction} onPointerCancel={stopInteraction}
+              onDragOver={(event) => {
+                if (event.dataTransfer.types.includes("application/x-vellune-block-type")) {
+                  event.preventDefault();
+                  event.dataTransfer.dropEffect = "copy";
+                }
+              }}
+              onDrop={(event) => {
+                const type = event.dataTransfer.getData("application/x-vellune-block-type") as BlockType;
+                if (!type || !(Object.keys(BLOCKS) as string[]).includes(type)) return;
+                event.preventDefault();
+                const point = canvasPoint(event as unknown as React.PointerEvent);
+                addBlockByType(type, undefined, point);
+              }}
+              aria-label="Área de edição do convite"><BackgroundLayers bg={bg as any} />
               {(bg as any)?.image && (
                 <div
                   className="absolute inset-0 z-[1] cursor-grab active:cursor-grabbing"
