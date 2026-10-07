@@ -191,12 +191,12 @@ export function AppShell({ base, nav, appUser, children }: Props) {
   );
 
   const brand = (compact: boolean) => (
-    <div className={cn("flex h-[4.5rem] items-center border-b border-sidebar-border/70 px-4 text-sidebar-foreground", compact && "justify-center px-0")}>
+    <div className={cn("flex h-[5.5rem] items-center border-b border-sidebar-border/70 px-4 text-sidebar-foreground", compact && "justify-center px-0")}>
       <Logo
         markOnly={compact}
         className={cn(
           "shrink-0",
-          compact ? "h-9 w-9" : "h-10 w-[180px] max-w-full",
+          compact ? "h-10 w-10" : "h-14 w-[255px] max-w-full",
         )}
       />
     </div>
