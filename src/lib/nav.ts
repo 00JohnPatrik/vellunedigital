@@ -12,7 +12,7 @@ export const adminNav: NavItem[] = [
   { slug: "templates", label: "Modelos Oficiais", icon: LayoutTemplate },
   { slug: "reports", label: "Relatórios", icon: BarChart3 },
   { slug: "trash", label: "Lixeira", icon: Trash2 },
-  { slug: "configuracoes", label: "Configurações", icon: Settings },
+  { slug: "configuracoes", label: "Minha conta", icon: Settings },
 ];
 
 export const companyNav: NavItem[] = [
@@ -20,9 +20,9 @@ export const companyNav: NavItem[] = [
   { slug: "convites", label: "Convites", icon: Mail, to: "/invitations" },
   { slug: "customers", label: "Clientes", icon: Users, to: "/customers" },
   { slug: "templates", label: "Modelos", icon: FileText, to: "/templates" },
-  { slug: "reports", label: "Relatórios", icon: BarChart3, to: "/reports" },
-  { slug: "assinatura", label: "Assinatura", icon: CreditCard },
-  { slug: "marca", label: "Marca e identidade", icon: Palette, to: "/settings/brand" },
+  { slug: "reports", label: "Resultados", icon: BarChart3, to: "/reports" },
+  { slug: "assinatura", label: "Plano", icon: CreditCard },
+  { slug: "marca", label: "Sua marca", icon: Palette, to: "/settings/brand" },
   { slug: "configuracoes", label: "Configurações", icon: Settings },
 ];
 
