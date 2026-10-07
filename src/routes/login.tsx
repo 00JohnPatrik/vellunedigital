@@ -8,10 +8,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { signInWithPhone, requestPasswordReset } from "@/lib/auth.functions";
-import { canUseAdminArea, friendlyAuthError, homeFor, loadAppUser } from "@/lib/app-user";
+import { canUseAdminArea, friendlyAuthError, homeFor, isAuthServiceUnavailable, loadAppUser } from "@/lib/app-user";
 import Logo from "@/components/Logo";
 import { AuthPremiumVisual } from "@/components/auth-premium-visual";
 import { AuthSuccessTransition } from "@/components/auth-success-transition";
+import { AuthJourneySteps } from "@/components/auth-journey";
+import { AuthUnavailableState } from "@/components/auth-unavailable-state";
 
 export const Route = createFileRoute("/login")({
   validateSearch: z.object({ error: z.enum(["inactive"]).optional(), mode: z.enum(["recovery"]).optional() }),
@@ -48,6 +50,8 @@ function LoginPage() {
   const [focusedField, setFocusedField] = useState<string | null>(null);
   const [capsLockOn, setCapsLockOn] = useState(false);
   const [loginCooldown, setLoginCooldown] = useState(0);
+  const [recoveryCooldown, setRecoveryCooldown] = useState(0);
+  const [authUnavailable, setAuthUnavailable] = useState(false);
   const identifierRef = useRef<HTMLInputElement | null>(null);
   const passwordRef = useRef<HTMLInputElement | null>(null);
   const recoveryEmailRef = useRef<HTMLInputElement | null>(null);
@@ -69,6 +73,12 @@ function LoginPage() {
     const timer = window.setTimeout(() => setLoginCooldown((value) => Math.max(0, value - 1)), 1000);
     return () => window.clearTimeout(timer);
   }, [loginCooldown]);
+
+  useEffect(() => {
+    if (recoveryCooldown <= 0) return;
+    const timer = window.setTimeout(() => setRecoveryCooldown((value) => Math.max(0, value - 1)), 1000);
+    return () => window.clearTimeout(timer);
+  }, [recoveryCooldown]);
 
   function formatBrazilianPhone(value: string) {
     const digits = value.replace(/\D/g, "").slice(0, 11);
@@ -126,12 +136,18 @@ function LoginPage() {
     try {
       if (id.includes("@")) {
         const { error: authError } = await supabase.auth.signInWithPassword({ email: id.toLowerCase(), password });
-        if (authError) throw new Error(friendlyAuthError(authError.message));
+        if (authError) {
+          if (isAuthServiceUnavailable(authError)) setAuthUnavailable(true);
+          throw new Error(friendlyAuthError(authError.message));
+        }
       } else {
         const res = await phoneSignIn({ data: { phone: id, password } });
         if (!res.ok) throw new Error(res.error);
         const { error: sessionError } = await supabase.auth.setSession(res);
-        if (sessionError) throw new Error(friendlyAuthError(sessionError.message));
+        if (sessionError) {
+          if (isAuthServiceUnavailable(sessionError)) setAuthUnavailable(true);
+          throw new Error(friendlyAuthError(sessionError.message));
+        }
       }
 
       const { data } = await supabase.auth.getUser();
@@ -154,6 +170,9 @@ function LoginPage() {
       await new Promise((resolve) => window.setTimeout(resolve, prefersReducedMotion ? 420 : 1250));
       navigate({ to: homeFor(appUser), replace: true });
     } catch (err) {
+      if (isAuthServiceUnavailable(err)) {
+        setAuthUnavailable(true);
+      }
       const message = err instanceof Error && err.message ? err.message : friendlyAuthError();
       setLoginCooldown(/muitas|rate|too many/i.test(message) ? 15 : 2);
       setError(message);
@@ -164,6 +183,7 @@ function LoginPage() {
 
   async function onRecovery(e: React.FormEvent) {
     e.preventDefault();
+    if (recoveryCooldown > 0) return;
     setTouched(true);
     setError(null);
     const parsed = z.string().trim().toLowerCase().email().max(255).safeParse(recoveryEmail);
@@ -173,9 +193,21 @@ function LoginPage() {
     }
 
     setLoading(true);
-    await resetPassword({ data: { email: parsed.data } }).catch(() => null);
-    setLoading(false);
-    setRecoverySent(true);
+    try {
+      await resetPassword({ data: { email: parsed.data } });
+      setRecoverySent(true);
+      setRecoveryCooldown(30);
+    } catch (err) {
+      if (isAuthServiceUnavailable(err)) {
+        setAuthUnavailable(true);
+        return;
+      }
+      // Preserve account-enumeration resistance: non-service errors still use the same neutral confirmation.
+      setRecoverySent(true);
+      setRecoveryCooldown(30);
+    } finally {
+      setLoading(false);
+    }
   }
 
   function showLogin() {
@@ -183,8 +215,43 @@ function LoginPage() {
     setError(null);
     setTouched(false);
     setRecoverySent(false);
+    setRecoveryCooldown(0);
+    setAuthUnavailable(false);
     setLoginSuccess(false);
     navigate({ to: "/login", replace: true });
+  }
+
+  function maskEmail(value: string) {
+    const [local, domain] = value.split("@");
+    if (!local || !domain) return value;
+    const visible = local.length <= 2 ? local.slice(0, 1) : local.slice(0, 2);
+    return visible + "•••@" + domain;
+  }
+
+  async function resendRecovery() {
+    if (loading || recoveryCooldown > 0) return;
+    const parsed = z.string().trim().toLowerCase().email().max(255).safeParse(recoveryEmail);
+    if (!parsed.success) return;
+    setLoading(true);
+    try {
+      await resetPassword({ data: { email: parsed.data } });
+      setRecoveryCooldown(30);
+    } catch (err) {
+      if (isAuthServiceUnavailable(err)) setAuthUnavailable(true);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  if (authUnavailable) {
+    return (
+      <main className="vellune-login-root fixed inset-0 h-[100dvh] w-full overflow-hidden bg-[#08090d] text-white">
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_18%_18%,rgba(212,175,55,0.10),transparent_34%),radial-gradient(ellipse_at_82%_78%,rgba(74,64,43,0.16),transparent_38%),linear-gradient(135deg,#08090d_0%,#0d0f15_52%,#08090d_100%)]" />
+        <div className="relative z-10 h-full w-full">
+          <AuthUnavailableState onRetry={() => { setAuthUnavailable(false); window.location.reload(); }} />
+        </div>
+      </main>
+    );
   }
 
   return (
@@ -237,11 +304,13 @@ function LoginPage() {
               <div key={`${mode}-${recoverySent ? "sent" : "form"}`} className="vellune-auth-panel-motion">
               {mode === "recovery" ? (
                 <div>
-                  <button type="button" onClick={showLogin} className="mb-9 text-xs font-medium text-white/40 transition-colors hover:text-[#e5c66b]">
+                  <button type="button" onClick={showLogin} className="mb-5 text-xs font-medium text-white/40 transition-colors hover:text-[#e5c66b]">
                     ← Voltar ao login
                   </button>
                   {recoverySent ? (
-                    <div className="space-y-6">
+                    <div>
+                      <AuthJourneySteps activeStep={2} />
+                      <div className="space-y-5">
                       <div className="flex h-11 w-11 items-center justify-center rounded-full border border-[#d4af37]/25 bg-[#d4af37]/10 text-[#e5c66b]">
                         <MailCheck className="h-5 w-5" />
                       </div>
@@ -250,10 +319,24 @@ function LoginPage() {
                         <h1 className="font-display text-[30px] font-medium tracking-[-0.035em]">Verifique seu e-mail</h1>
                         <p className="mt-3 text-sm leading-6 text-white/45">Se o endereço estiver cadastrado, você receberá um link seguro para redefinir sua senha.</p>
                       </div>
-                      <p className="flex items-center gap-2 text-xs text-white/35"><CheckCircle2 className="h-4 w-4 text-[#d4af37]" /> O link é válido por tempo limitado.</p>
+                        <div className="rounded-2xl border border-white/[0.06] bg-white/[0.025] px-4 py-3 text-left">
+                          <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-white/25">Enviamos para</p>
+                          <p className="mt-1 truncate text-sm font-medium text-white/70">{maskEmail(recoveryEmail)}</p>
+                        </div>
+                        <p className="flex items-center gap-2 text-xs text-white/35"><CheckCircle2 className="h-4 w-4 shrink-0 text-[#d4af37]" /> O link é válido por tempo limitado.</p>
+                        <div className="flex flex-col gap-2 sm:flex-row">
+                          <button type="button" disabled={loading || recoveryCooldown > 0} onClick={resendRecovery} className="inline-flex h-11 flex-1 items-center justify-center gap-2 rounded-xl border border-[#d4af37]/18 bg-[#d4af37]/[0.045] px-4 text-xs font-semibold text-[#e5c66b] transition-colors hover:bg-[#d4af37]/[0.08] disabled:cursor-default disabled:opacity-45">
+                            {loading ? <LoaderCircle className="h-4 w-4 animate-spin" /> : null}
+                            {recoveryCooldown > 0 ? `Reenviar em ${recoveryCooldown}s` : "Reenviar e-mail"}
+                          </button>
+                          <button type="button" onClick={() => { setRecoverySent(false); setRecoveryCooldown(0); setError(null); setTouched(false); }} className="inline-flex h-11 flex-1 items-center justify-center rounded-xl border border-white/[0.07] bg-white/[0.02] px-4 text-xs font-semibold text-white/50 transition-colors hover:border-white/[0.12] hover:text-white/75">Usar outro e-mail</button>
+                        </div>
+                      </div>
                     </div>
                   ) : (
-                    <form onSubmit={onRecovery} className="space-y-6" noValidate>
+                    <div>
+                    <AuthJourneySteps activeStep={2} />
+                    <form onSubmit={onRecovery} className="space-y-5" noValidate>
                       <div>
                         <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.25em] text-[#d4af37]">Recuperação</p>
                         <h1 className="font-display text-[30px] font-medium tracking-[-0.035em]">Recupere seu acesso</h1>
@@ -288,9 +371,11 @@ function LoginPage() {
                         ) : "Enviar link de recuperação"}
                       </Button>
                     </form>
+                    </div>
                   )}
                 </div>
               ) : (
+                <AuthJourneySteps activeStep={1} />
                 <form onSubmit={onLogin} className="space-y-5" noValidate>
                   <div className="mb-8">
                     <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.25em] text-[#d4af37]">Área exclusiva</p>
@@ -347,7 +432,7 @@ function LoginPage() {
                   <div className="space-y-2">
                     <div className="flex items-center justify-between gap-3">
                       <Label htmlFor="password" className="text-xs font-medium text-white/65">Senha</Label>
-                      <button type="button" onClick={() => { setMode("recovery"); setRecoveryEmail(identifier.includes("@") ? identifier.trim() : ""); setError(null); setTouched(false); }} className="rounded-md px-1.5 py-1 text-xs font-medium text-[#d4af37] transition-[color,background-color] duration-200 hover:bg-[#d4af37]/[0.06] hover:text-[#e5c66b] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d4af37]/20">Esqueci minha senha</button>
+                      <button type="button" onClick={() => { setMode("recovery"); setRecoveryEmail(identifier.includes("@") ? identifier.trim() : ""); setError(null); setTouched(false); setAuthUnavailable(false); }} className="rounded-md px-1.5 py-1 text-xs font-medium text-[#d4af37] transition-[color,background-color] duration-200 hover:bg-[#d4af37]/[0.06] hover:text-[#e5c66b] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d4af37]/20">Esqueci minha senha</button>
                     </div>
                     <div className="relative">
                       <span className={`pointer-events-none absolute -inset-1 rounded-2xl bg-[radial-gradient(circle_at_18%_50%,rgba(212,175,55,0.12),transparent_58%)] blur-md transition-opacity duration-300 ${focusedField === "password" ? "opacity-100" : "opacity-0"}`} />
@@ -439,8 +524,8 @@ function LoginPage() {
 
                   <div className="space-y-3">
                     <p className="flex items-center justify-center gap-2 text-center text-[10px] uppercase tracking-[0.16em] text-white/25">
-                      <LockKeyhole className="h-3.5 w-3.5 text-[#d4af37]/60" />
-                      Acesso protegido
+                      <ShieldCheck className="h-3.5 w-3.5 text-[#d4af37]/60" />
+                      Vellune Secure · Acesso protegido
                     </p>
                     <p className="text-center text-xs text-white/35">Primeira vez aqui? <a href="/first-access" className="font-semibold text-white/65 transition-colors hover:text-[#e5c66b]">Faça seu primeiro acesso</a></p>
                   </div>
