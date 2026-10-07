@@ -141,10 +141,13 @@
   }
 
   html,
-  body {
-    margin: 0;
+  body,
+  #root {
+    box-sizing: border-box;
+    width: 100%;
     min-width: 320px;
     min-height: 100%;
+    margin: 0;
   }
 
   body {
