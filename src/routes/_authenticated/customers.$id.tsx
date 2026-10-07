@@ -25,7 +25,7 @@ const fmtDateTime = (s: string) => new Date(s).toLocaleString("pt-BR", { dateSty
 function CustomerDetail() {
   const { id } = Route.useParams();
   const { edit } = Route.useSearch();
-  const { appUser! } = Route.useRouteContext();
+  const { appUser } = Route.useRouteContext();
   const navigate = useNavigate({ from: Route.fullPath });
   const qc = useQueryClient();
   const valid = isUuid(id);
