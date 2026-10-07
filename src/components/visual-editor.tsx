@@ -4,7 +4,7 @@ import { BackgroundLayers, BlockView } from "@/components/block-render";
 import { VisualTransformCanvas } from "@/components/visual-transform-canvas";
 
 import { BackgroundPropertiesPanel, ContextualPropertiesPanel } from "@/components/contextual-properties-panel";
-import { BLOCKS, getBlockDefaultSize, getNextBlockZIndex , newBlock, resolveBlockGeometry, type Block, type BlockType } from "@/lib/templates";
+import { BLOCKS, getBlockDefaultSize, getNextBlockZIndex, newBlock, resolveBlockGeometry, type Block, type BlockType } from "@/lib/templates";
 import { ElementsLibrary } from "@/components/elements-library";
 import { TemplateGallery } from "@/components/template-gallery";
 import { Grid3X3, Minus, Plus, Redo2, Undo2, PanelLeft, PanelRight, Sparkles, Smartphone, Tablet, Monitor, BringToFront, SendToBack } from "lucide-react";
@@ -692,6 +692,7 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra }: { h: Bl
               onChange={(update, group) => h.set(update, group)}
               onDuplicate={duplicateByIds}
               onDelete={removeByIds}
+              onLayer={(direction, ids) => reorderSelectedLayers(direction, ids)}
               onGroup={(ids) => {
                 if (ids.length < 2) return;
                 const groupId = `group-${crypto.randomUUID()}`;
