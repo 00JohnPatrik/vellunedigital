@@ -25,7 +25,9 @@ function ResetPage() {
   useEffect(() => {
     const isRecovery = window.location.hash.includes("type=recovery");
     const { data: sub } = supabase.auth.onAuthStateChange((event) => { if (event === "PASSWORD_RECOVERY") setReady(true); });
-    supabase.auth.getSession().then(({ data }) => { if (data.session && isRecovery) setReady(true); else if (data.session) setReady(true); });
+    supabase.auth.getSession().then(({ data }) => {
+      if (data.session && isRecovery) setReady(true);
+    });
     return () => sub.subscription.unsubscribe();
   }, []);
 
