@@ -961,6 +961,4 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra }: { h: Bl
       )}
     </div>
   );
-    </div>
-  );
 }
