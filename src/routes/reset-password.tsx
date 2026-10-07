@@ -77,6 +77,7 @@ function ResetPage() {
   const [passwordUpdated, setPasswordUpdated] = useState(false);
   const passwordRef = useRef<HTMLInputElement | null>(null);
   const confirmRef = useRef<HTMLInputElement | null>(null);
+  const requestLockRef = useRef(false);
 
   useEffect(() => {
     const isRecovery = window.location.hash.includes("type=recovery");
@@ -101,6 +102,7 @@ function ResetPage() {
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (requestLockRef.current) return;
     setError(null);
 
     if (password.length < 8) {
@@ -110,9 +112,11 @@ function ResetPage() {
     }
     if (password !== confirm) {
       setError("As senhas não coincidem.");
+      window.setTimeout(() => confirmRef.current?.focus(), 0);
       return;
     }
 
+    requestLockRef.current = true;
     setLoading(true);
     const { error: updateError } = await supabase.auth.updateUser({ password });
     setLoading(false);
