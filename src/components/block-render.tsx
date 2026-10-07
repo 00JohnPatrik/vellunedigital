@@ -213,7 +213,12 @@ function BlockContent({ block, ctx, interactive = false }: { block: Block; ctx?:
           <Btn p={p} fallback={BLOCKS.rsvp.label} interactive={false} />
         </div>
       );
-    case "whatsapp": return <Btn p={p} fallback="WhatsApp" interactive={false} icon={<MessageCircle className="h-4 w-4" />} />;
+    case "whatsapp": {
+      const phone = (p["phone"] ?? "").replace(/\D/g, "");
+      const message = p["message"]?.trim() || "Olá! Gostaria de falar com vocês.";
+      const href = phone ? `https://wa.me/${phone}?text=${encodeURIComponent(message)}` : null;
+      return <Btn p={p} fallback="WhatsApp" href={href} interactive={interactive} icon={<MessageCircle className="h-4 w-4" />} />;
+    }
     case "button": return <Btn p={p} fallback="Botão" href={/^https?:\/\//i.test(p["url"] ?? "") ? p["url"] : null} interactive={interactive} />;
     case "qr_code": {
       const size = p["size"] === "sm" ? 96 : p["size"] === "lg" ? 176 : p["size"] === "xl" ? 224 : 128;
