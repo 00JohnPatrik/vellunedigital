@@ -748,7 +748,41 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra }: { h: Bl
             ))}
           </div>
           <div className="min-h-0 flex-1 overflow-y-auto p-3">
-            {contextPanel === "elements" && <div className="space-y-3"><div><p className="text-xs font-medium text-foreground">Adicionar elemento</p><p className="mt-1 text-[11px] leading-relaxed text-muted-foreground">Escolha um bloco para inserir no canvas. Os elementos existentes continuam editáveis diretamente.</p></div><div className="grid grid-cols-1 gap-1.5">{(Object.keys(BLOCKS) as BlockType[]).map((type) => <button key={type} type="button" onClick={() => addElement(type)} className="flex items-center justify-between rounded-lg border border-border/70 px-3 py-2 text-left text-xs text-foreground transition hover:border-primary/50 hover:bg-primary/5"><span>{BLOCKS[type].label}</span><span className="text-primary">+</span></button>)}</div></div>}
+            {contextPanel === "elements" && <div className="space-y-4">
+  <div>
+    <p className="text-xs font-medium text-foreground">Comece seu convite</p>
+    <p className="mt-1 text-[11px] leading-relaxed text-muted-foreground">Escolha um modelo pronto ou adicione só o que precisa.</p>
+  </div>
+  <button type="button" onClick={() => setTemplateOpen(true)} className="group flex w-full items-center gap-3 rounded-xl border border-primary/20 bg-primary/8 p-3 text-left shadow-sm transition hover:border-primary/40 hover:bg-primary/10 active:scale-[.99]">
+    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/15 text-primary"><Sparkles className="h-4 w-4" /></span>
+    <span className="min-w-0 flex-1"><span className="block text-xs font-semibold text-foreground">Começar com um modelo</span><span className="mt-0.5 block text-[10px] leading-4 text-muted-foreground">Casamento, aniversário, chá de bebê e mais.</span></span>
+    <span className="text-[10px] font-semibold text-primary">Ver modelos</span>
+  </button>
+  <div>
+    <p className="mb-2 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Mais usados</p>
+    <div className="grid grid-cols-2 gap-2">
+      {(["text", "image", "date", "location", "button", "rsvp"] as BlockType[]).map((type) => (
+        <button key={type} type="button" onClick={() => addElement(type)} className="group flex items-center gap-2 rounded-xl border border-border/70 bg-background/45 px-3 py-2.5 text-left text-xs text-foreground transition hover:border-primary/35 hover:bg-primary/5 active:scale-[.99]">
+          <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-primary/8 text-primary">+</span>
+          <span className="min-w-0 truncate">{BLOCKS[type].label}</span>
+        </button>
+      ))}
+    </div>
+  </div>
+  <details className="group rounded-xl border border-primary/10 bg-background/30">
+    <summary className="flex cursor-pointer list-none items-center justify-between px-3 py-2.5 text-xs font-medium text-foreground [&::-webkit-details-marker]:hidden">
+      Mais elementos
+      <span className="text-muted-foreground transition-transform group-open:rotate-180">⌄</span>
+    </summary>
+    <div className="grid grid-cols-1 gap-1.5 border-t border-border/60 p-2">
+      {(Object.keys(BLOCKS) as BlockType[]).filter((type) => !["text", "image", "date", "location", "button", "rsvp"].includes(type)).map((type) => (
+        <button key={type} type="button" onClick={() => addElement(type)} className="flex items-center justify-between rounded-lg border border-border/70 px-3 py-2 text-left text-xs text-foreground transition hover:border-primary/50 hover:bg-primary/5">
+          <span>{BLOCKS[type].label}</span><span className="text-primary">+</span>
+        </button>
+      ))}
+    </div>
+  </details>
+</div>}
             {contextPanel === "layers" && <div className="space-y-2"><div className="mb-2 flex items-center justify-between gap-2"><div><p className="text-xs font-medium text-foreground">Camadas</p><span className="text-[10px] text-muted-foreground">{blocks.length} elemento(s)</span></div><div className="flex items-center gap-1"><button type="button" disabled={!selectedIds.length} onClick={() => reorderSelectedLayers("back")} className="rounded-md border p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground disabled:cursor-not-allowed disabled:opacity-40" title="Enviar seleção para trás" aria-label="Enviar seleção para trás"><SendToBack className="h-3.5 w-3.5" /></button><button type="button" disabled={!selectedIds.length} onClick={() => reorderSelectedLayers("front")} className="rounded-md border p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground disabled:cursor-not-allowed disabled:opacity-40" title="Trazer seleção para frente" aria-label="Trazer seleção para frente"><BringToFront className="h-3.5 w-3.5" /></button></div></div>{orderedLayerBlocks.map(({ block, layerIndex }) => { const selectedLayer = selectedIds.includes(block.id); const moveLayer = (direction: number) => { select(block.id, false); reorderSelectedLayers(direction === 1 ? "up" : "down", [block.id]); }; const toggleLayer = (key: "hidden" | "locked") => h.set((items) => items.map((item: any) => item.id === block.id ? { ...item, [key]: !item[key], ...(key === "hidden" ? { visibility: item[key] } : {}) } : item), `layers:${key}`); return <div key={block.id} className={`rounded-lg border px-2 py-2 transition ${selectedLayer ? "border-primary bg-primary/10" : "border-border/70"}`}><div className="flex items-center gap-2"><button type="button" onClick={() => select(block.id, false)} className="min-w-0 flex-1 truncate text-left text-xs text-foreground"><span className="mr-1.5 text-[10px] text-muted-foreground">{layerIndex + 1}</span>{getBlockLabel(block)}{block.groupId && <span className="ml-1 rounded bg-muted px-1 py-0.5 text-[9px]">grupo</span>}</button><button type="button" aria-label={block.hidden ? "Mostrar camada" : "Ocultar camada"} onClick={() => toggleLayer("hidden")} className={`rounded px-1.5 py-1 text-[10px] ${block.hidden ? "bg-muted text-muted-foreground" : "text-foreground hover:bg-muted"}`}>{block.hidden ? "○" : "●"}</button><button type="button" aria-label={block.locked ? "Desbloquear camada" : "Bloquear camada"} onClick={() => toggleLayer("locked")} className={`rounded px-1.5 py-1 text-[10px] ${block.locked ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-muted"}`}>{block.locked ? "🔒" : "🔓"}</button></div><div className="mt-1.5 flex items-center justify-end gap-1"><button type="button" disabled={layerIndex === 0} onClick={() => moveLayer(1)} className="rounded border px-1.5 py-1 text-[10px] disabled:cursor-not-allowed disabled:opacity-40">↑</button><button type="button" disabled={layerIndex === orderedLayerBlocks.length - 1} onClick={() => moveLayer(-1)} className="rounded border px-1.5 py-1 text-[10px] disabled:cursor-not-allowed disabled:opacity-40">↓</button><button type="button" onClick={() => { select(block.id, false); duplicate(); }} className="rounded border px-1.5 py-1 text-[10px]">Duplicar</button><button type="button" onClick={() => { select(block.id, false); remove(); }} className="rounded border border-destructive/30 px-1.5 py-1 text-[10px] text-destructive">Excluir</button></div></div>; })}{blocks.length === 0 && <p className="rounded-lg border border-dashed p-4 text-center text-[11px] text-muted-foreground">Nenhuma camada adicionada.</p>}</div>}
             {contextPanel === "background" && <BackgroundPropertiesPanel background={(bg as Record<string, unknown>) || {}} assets={assets as any} onChange={(value) => onBg?.(value)} />}{contextPanel === "view" && <div className="space-y-3"><p className="text-xs font-medium text-foreground">Exibição</p><div className="flex items-center justify-between rounded-lg border border-border/70 px-3 py-2 text-xs"><span>Guias</span><button type="button" onClick={() => setShowGrid((value) => !value)} className={`rounded-md px-2 py-1 ${showGrid ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"}`}>{showGrid ? "Ativas" : "Desativadas"}</button></div><div className="flex items-center gap-2"><button type="button" onClick={() => setZoom((value) => Math.max(50, value - 10))} className="h-8 w-8 rounded-md border">−</button><span className="flex-1 text-center text-xs">{zoom}%</span><button type="button" onClick={() => setZoom((value) => Math.min(150, value + 10))} className="h-8 w-8 rounded-md border">+</button></div></div>}
           </div>
