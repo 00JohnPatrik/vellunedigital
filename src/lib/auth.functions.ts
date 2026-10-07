@@ -2,6 +2,25 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
 // Opaque sb_ keys must not be sent as bearer tokens.
+
+// Password-reset links must always return to the trusted application origin.
+// The environment variable is optional; production falls back to the known Vellune URL.
+function trustedAppOrigin(): string {
+  const configured = process.env["APP_ORIGIN"] ?? "https://vellunedigital.lovable.app";
+  const url = new URL(configured);
+  if (url.username || url.password || url.search || url.hash) {
+    throw new Error("Invalid APP_ORIGIN configuration.");
+  }
+  if (url.protocol !== "https:" && process.env["NODE_ENV"] === "production") {
+    throw new Error("APP_ORIGIN must use HTTPS in production.");
+  }
+  return url.origin;
+}
+
+function passwordResetRedirect(): string {
+  return `${trustedAppOrigin()}/reset-password`;
+}
+
 function publicAuthClient() {
   return import("@supabase/supabase-js").then(({ createClient }) => {
     const key = process.env["SUPABASE_PUBLISHABLE_KEY"] ?? process.env["SUPABASE_ANON_KEY"]!;
@@ -55,7 +74,7 @@ export const signInWithPhone = createServerFn({ method: "POST" })
 /** First access: activates a pre-registered user and emails a link to set the password. */
 export const requestFirstAccess = createServerFn({ method: "POST" })
   .validator((d) =>
-    z.object({ email: z.string().trim().toLowerCase().email().max(255), origin: z.string().url() }).parse(d),
+    z.object({ email: z.string().trim().toLowerCase().email().max(255) }).parse(d),
   )
   .handler(async ({ data }) => {
     const done = { ok: true as const };
@@ -94,7 +113,7 @@ export const requestFirstAccess = createServerFn({ method: "POST" })
 
     const client = await publicAuthClient();
     const { error } = await client.auth.resetPasswordForEmail(data.email, {
-      redirectTo: `${new URL(data.origin).origin}/reset-password`,
+      redirectTo: passwordResetRedirect(),
     });
     if (error) console.error("first-access reset email", error.message);
     return done;
