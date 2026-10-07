@@ -700,10 +700,10 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra }: { h: Bl
     h.set((items) => items.map((item: any) => selectedIds.includes(item.id) ? { ...item, props: { ...(item.props ?? {}), [key]: value } } : item), "selection:properties");
   };
   return (
-    <div className="flex min-h-[calc(100dvh-7rem)] flex-col overflow-hidden rounded-2xl border border-border/70 bg-background pb-20 shadow-2xl shadow-black/10 lg:min-h-[680px] lg:pb-0">
-      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border/70 bg-card/95 px-3 py-2.5" role="toolbar" aria-label="Barra principal do editor">
+    <div className="flex min-h-[calc(100dvh-7rem)] flex-col overflow-hidden rounded-[1.25rem] border border-primary/10 bg-background/95 pb-20 shadow-2xl shadow-black/15 ring-1 ring-black/5 lg:min-h-[680px] lg:pb-0">
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-primary/10 bg-card/90 px-3 py-2.5 shadow-sm backdrop-blur-xl" role="toolbar" aria-label="Barra principal do editor">
         <div className="flex min-w-0 items-center gap-2">
-          <div className="hidden items-center gap-0.5 rounded-lg border border-border/70 bg-background p-0.5 sm:flex" role="group" aria-label="Tamanho da tela do convite">
+          <div className="hidden items-center gap-0.5 rounded-xl border border-primary/10 bg-background/80 p-1 shadow-sm sm:flex" role="group" aria-label="Tamanho da tela do convite">
             {([["mobile", Smartphone, "Celular"], ["tablet", Tablet, "Tablet"], ["desktop", Monitor, "Desktop"]] as const).map(([value, Icon, label]) => (
               <button key={value} type="button" aria-pressed={device === value} aria-label={label} title={`Visualizar em ${label.toLowerCase()}`} onClick={() => setDevice(value)} className={`inline-flex h-7 items-center gap-1 rounded-md px-2 text-[10px] transition-colors ${device === value ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-muted hover:text-foreground"}`}>
                 <Icon className="h-3.5 w-3.5" /><span className="hidden md:inline">{label}</span>
@@ -717,7 +717,7 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra }: { h: Bl
           </div>
           <span className="hidden rounded-full border border-primary/20 bg-primary/5 px-2 py-1 text-[10px] font-medium text-primary sm:inline-flex">{selectedIds.length ? `${selectedIds.length} selecionado(s)` : `${blocks.length} elemento(s)`}</span>
         </div>
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1 rounded-xl border border-primary/10 bg-background/60 p-1 shadow-sm">
           <button type="button" aria-label="Desfazer" title="Desfazer (Ctrl/Cmd+Z)" disabled={!h.canUndo} onClick={h.undo} className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-border/70 text-muted-foreground transition hover:bg-accent hover:text-foreground disabled:cursor-not-allowed disabled:opacity-40"><Undo2 className="h-3.5 w-3.5" /></button>
           <button type="button" aria-label="Refazer" title="Refazer (Ctrl/Cmd+Shift+Z)" disabled={!h.canRedo} onClick={h.redo} className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-border/70 text-muted-foreground transition hover:bg-accent hover:text-foreground disabled:cursor-not-allowed disabled:opacity-40"><Redo2 className="h-3.5 w-3.5" /></button>
           <span className="mx-0.5 h-5 w-px bg-border/70" />
@@ -728,8 +728,8 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra }: { h: Bl
         </div>
       </div>
       <div className="flex min-h-0 flex-1 flex-col lg:flex-row">
-        <aside className="hidden w-[236px] shrink-0 flex-col border-r border-border/70 bg-card/95 lg:flex" aria-label="Ferramentas do editor">
-          <div className="border-b border-border/70 p-3">
+        <aside className="hidden w-[244px] shrink-0 flex-col border-r border-primary/10 bg-card/80 backdrop-blur-xl lg:flex" aria-label="Ferramentas do editor">
+          <div className="border-b border-primary/10 p-3.5">
             <div className="flex items-center justify-between gap-2">
               <div>
                 <p className="text-sm font-semibold text-foreground">Ferramentas</p>
@@ -740,14 +740,14 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra }: { h: Bl
               </button>
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-1.5 border-b border-border/70 p-3">
+          <div className="grid grid-cols-2 gap-1.5 border-b border-primary/10 bg-background/25 p-3">
             {(["text", "image", "gallery", "date", "time", "location", "button", "divider", "shape", "decoration"] as BlockType[]).map((type) => (
               <button key={type} type="button" className="rounded-lg border border-border/70 bg-background px-2 py-2 text-left text-[11px] text-muted-foreground transition hover:border-primary/50 hover:bg-primary/5 hover:text-foreground" onClick={() => addElement(type)}>
                 + {BLOCKS[type].label}
               </button>
             ))}
           </div>
-          <div className="flex gap-1 border-b border-border/70 p-2">
+          <div className="flex gap-1 border-b border-primary/10 bg-background/20 p-2">
             {[['elements', 'Elementos'], ['layers', 'Camadas'], ['background', 'Fundo'], ['view', 'Exibir']].map(([key, label]) => (
               <button key={key} type="button" onClick={() => setContextPanel(key as any)} className={`flex-1 rounded-md px-1 py-2 text-[10px] ${contextPanel === key ? "bg-primary/10 font-medium text-primary" : "text-muted-foreground hover:bg-muted"}`}>
                 {label}
@@ -760,7 +760,7 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra }: { h: Bl
             {contextPanel === "background" && <BackgroundPropertiesPanel background={(bg as Record<string, unknown>) || {}} assets={assets as any} onChange={(value) => onBg?.(value)} />}{contextPanel === "view" && <div className="space-y-3"><p className="text-xs font-medium text-foreground">Exibição</p><div className="flex items-center justify-between rounded-lg border border-border/70 px-3 py-2 text-xs"><span>Guias</span><button type="button" onClick={() => setShowGrid((value) => !value)} className={`rounded-md px-2 py-1 ${showGrid ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"}`}>{showGrid ? "Ativas" : "Desativadas"}</button></div><div className="flex items-center gap-2"><button type="button" onClick={() => setZoom((value) => Math.max(50, value - 10))} className="h-8 w-8 rounded-md border">−</button><span className="flex-1 text-center text-xs">{zoom}%</span><button type="button" onClick={() => setZoom((value) => Math.min(150, value + 10))} className="h-8 w-8 rounded-md border">+</button></div></div>}
           </div>
         </aside>
-        <main className="relative min-w-0 flex-1 overflow-hidden rounded-2xl border border-primary/10 bg-[radial-gradient(circle_at_top,hsl(var(--primary)/.1),transparent_36%),linear-gradient(145deg,hsl(var(--muted)/.5),hsl(var(--background)/.9))] p-2 shadow-inner sm:p-4 lg:p-5">
+        <main className="relative min-w-0 flex-1 overflow-hidden rounded-2xl border border-primary/10 bg-[radial-gradient(circle_at_top,hsl(var(--primary)/.12),transparent_38%),linear-gradient(145deg,hsl(var(--muted)/.45),hsl(var(--background)/.95))] p-2 shadow-inner sm:p-4 lg:p-5">
           <div className="mb-3 flex items-center justify-between gap-2 rounded-xl border border-primary/15 bg-card/85 px-3 py-2.5 shadow-lg shadow-black/10 backdrop-blur-xl lg:hidden">
             <div className="flex min-w-0 items-center gap-2">
               <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary"><Sparkles className="h-3.5 w-3.5" /></div>
@@ -772,7 +772,7 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra }: { h: Bl
               <span className="rounded-lg bg-muted/70 px-2 py-1.5 text-[11px] font-medium tabular-nums text-foreground">{zoom}%</span>
             </div>
           </div>
-          <div ref={viewportRef} className="h-full overflow-auto overscroll-contain rounded-2xl border border-primary/10 bg-background/35 p-2 shadow-inner sm:p-4 lg:p-6"><div className="mx-auto origin-top transition-transform" style={{ width: `${100 / (zoom / 100)}%`, minHeight: canvasHeight / (zoom / 100) }}><div ref={canvasRef} className={`relative isolate mx-auto w-full ${DEVICE_W[device]} overflow-hidden rounded-2xl border bg-card shadow-sm ${showGrid ? "[background-image:linear-gradient(to_right,hsl(var(--border)/.25)_1px,transparent_1px),linear-gradient(to_bottom,hsl(var(--border)/.25)_1px,transparent_1px)] [background-size:16px_16px]" : ""}`} style={{ minHeight: canvasHeight, backgroundColor: bg && (bg as any).color ? (bg as any).color : undefined, transform: `scale(${zoom / 100})`, transformOrigin: "top center" }} onPointerDown={(event) => { if (event.target === event.currentTarget) { const p = canvasPoint(event); interaction.current = { mode: "marquee", startX: p.x, startY: p.y }; setSelectedIds([]); } }} onPointerMove={moveInteraction} onPointerUp={stopInteraction} onPointerCancel={stopInteraction}
+          <div ref={viewportRef} className="h-full overflow-auto overscroll-contain rounded-2xl border border-primary/10 bg-background/25 p-2 shadow-inner backdrop-blur-[2px] sm:p-4 lg:p-6"><div className="mx-auto origin-top transition-transform" style={{ width: `${100 / (zoom / 100)}%`, minHeight: canvasHeight / (zoom / 100) }}><div ref={canvasRef} className={`relative isolate mx-auto w-full ${DEVICE_W[device]} overflow-hidden rounded-2xl border bg-card shadow-sm ${showGrid ? "[background-image:linear-gradient(to_right,hsl(var(--border)/.25)_1px,transparent_1px),linear-gradient(to_bottom,hsl(var(--border)/.25)_1px,transparent_1px)] [background-size:16px_16px]" : ""}`} style={{ minHeight: canvasHeight, backgroundColor: bg && (bg as any).color ? (bg as any).color : undefined, transform: `scale(${zoom / 100})`, transformOrigin: "top center" }} onPointerDown={(event) => { if (event.target === event.currentTarget) { const p = canvasPoint(event); interaction.current = { mode: "marquee", startX: p.x, startY: p.y }; setSelectedIds([]); } }} onPointerMove={moveInteraction} onPointerUp={stopInteraction} onPointerCancel={stopInteraction}
               onDragEnter={(event) => {
                 if (event.dataTransfer.types.includes("application/x-vellune-block-type")) {
                   canvasDragDepth.current += 1;
@@ -851,7 +851,7 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra }: { h: Bl
               }}
             /></div></div></div>
         </main>
-        <aside id="editor-contextual-properties" className="hidden w-[320px] shrink-0 overflow-y-auto rounded-2xl border border-primary/15 bg-card/90 p-3 shadow-xl shadow-black/10 backdrop-blur-xl lg:block" aria-label="Painel contextual de propriedades"><div className="mb-3 flex items-center gap-2 border-b border-border/70 pb-3"><div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary/10 text-primary"><PanelRight className="h-3.5 w-3.5" /></div><div className="min-w-0"><p className="text-xs font-semibold text-foreground">Painel contextual</p><p className="text-[10px] text-muted-foreground">Ajustes do elemento selecionado</p></div></div><ContextualPropertiesPanel blocks={blocks} selectedIds={selectedIds} assets={assets as any} onChange={(update, group) => h.set(update, group)} onDuplicate={duplicateByIds} onDelete={removeByIds} /></aside>
+        <aside id="editor-contextual-properties" className="hidden w-[328px] shrink-0 overflow-y-auto rounded-2xl border border-primary/10 bg-card/80 p-3.5 shadow-xl shadow-black/10 backdrop-blur-xl lg:block" aria-label="Painel contextual de propriedades"><div className="mb-3 flex items-center gap-2 border-b border-border/70 pb-3"><div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary/10 text-primary"><PanelRight className="h-3.5 w-3.5" /></div><div className="min-w-0"><p className="text-xs font-semibold text-foreground">Painel contextual</p><p className="text-[10px] text-muted-foreground">Ajustes do elemento selecionado</p></div></div><ContextualPropertiesPanel blocks={blocks} selectedIds={selectedIds} assets={assets as any} onChange={(update, group) => h.set(update, group)} onDuplicate={duplicateByIds} onDelete={removeByIds} /></aside>
       </div>
       <div className="fixed inset-x-2 z-[70] lg:hidden" style={{ bottom: "max(0.5rem, env(safe-area-inset-bottom))" }}>
         {selectedIds.length > 0 && (
