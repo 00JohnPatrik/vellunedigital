@@ -15,7 +15,7 @@ export function EditorQuickToolbar({ selected, onProp, onDuplicate, onDelete, on
   onImage: (action: ImageAction) => void;
   onLock: () => void;
   onLayer?: (direction: "front" | "back") => void;
-  onAlign?: (mode: "left" | "center" | "right" | "top" | "middle" | "bottom") => void;
+  onAlign?: (mode: "left" | "center" | "right" | "top" | "middle" | "bottom" | "distributeX" | "distributeY") => void;
 }) {
   const primary = selected[0];
   if (!primary) return null;
@@ -107,8 +107,8 @@ export function EditorQuickToolbar({ selected, onProp, onDuplicate, onDelete, on
       <Button variant="ghost" size="icon" className="h-8 w-8 rounded-l-none border-l" aria-label="Alinhar à base" title="Alinhar à base" onClick={() => onAlign("bottom")}><AlignEndVertical /></Button>
     </div>}
     {selected.length > 2 && !text && onAlign && <div className="flex items-center rounded-md border border-input bg-background" role="group" aria-label="Distribuição da seleção">
-      <Button variant="ghost" size="sm" className="h-8 px-2 text-[10px]" title="Distribuir horizontalmente" onClick={() => onAlign("center")} aria-label="Distribuir horizontalmente">Distribuir X</Button>
-      <Button variant="ghost" size="sm" className="h-8 rounded-l-none border-l px-2 text-[10px]" title="Distribuir verticalmente" onClick={() => onAlign("middle")} aria-label="Distribuir verticalmente">Distribuir Y</Button>
+      <Button variant="ghost" size="sm" className="h-8 px-2 text-[10px]" title="Distribuir horizontalmente" onClick={() => onAlign("distributeX")} aria-label="Distribuir horizontalmente">Distribuir X</Button>
+      <Button variant="ghost" size="sm" className="h-8 rounded-l-none border-l px-2 text-[10px]" title="Distribuir verticalmente" onClick={() => onAlign("distributeY")} aria-label="Distribuir verticalmente">Distribuir Y</Button>
     </div>}
     <span className="mx-1 h-5 w-px bg-border" />
     {onLayer && <div className="flex items-center rounded-md border border-input bg-background" role="group" aria-label="Ordem das camadas">
