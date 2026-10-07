@@ -199,7 +199,7 @@ export function ContextualPropertiesPanel({ blocks, selectedIds, assets, onChang
   const apply = (patch: Partial<BlockWithLayout>, group = "properties:update") => onChange((items) => items.map((item) => {
     if (!selectedIds.includes(item.id)) return item;
     // A locked element may still be unlocked, but no other property can be changed while locked.
-    if (item.locked && !Object.prototype.hasOwn(patch, "locked")) return item;
+    if (item.locked && !Object.prototype.hasOwnProperty.call(patch, "locked")) return item;
     return { ...item, ...patch };
   }), group);
   const onChangeUnlocked = (update: (blocks: Block[]) => Block[], group?: string) => onChange((items) => {
