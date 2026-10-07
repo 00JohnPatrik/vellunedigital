@@ -1,4 +1,4 @@
-import { AlignCenter, AlignLeft, AlignRight, AlignStartVertical, AlignCenterVertical, AlignEndVertical, Bold, BringToFront, Copy, Crop, Italic, MoreHorizontal, SendToBack, SlidersHorizontal, Trash2, Image as ImageIcon, Lock, Unlock, Underline, Strikethrough } from "lucide-react";
+import { AlignCenter, AlignLeft, AlignRight, AlignStartVertical, AlignCenterVertical, AlignEndVertical, Bold, BringToFront, Copy, Crop, Italic, MoreHorizontal, RotateCcw, RotateCw, SendToBack, SlidersHorizontal, Trash2, Image as ImageIcon, Lock, Unlock, Underline, Strikethrough } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { FONTS } from "@/lib/blocks";
@@ -16,6 +16,8 @@ export function EditorQuickToolbar({ selected, onProp, onDuplicate, onDelete, on
   onLock: () => void;
   onLayer?: (direction: "front" | "back") => void;
   onAlign?: (mode: "left" | "center" | "right" | "top" | "middle" | "bottom" | "distributeX" | "distributeY") => void;
+  onOpacity?: (value: number) => void;
+  onRotate?: (amount: number) => void;
 }) {
   const primary = selected[0];
   if (!primary) return null;
@@ -116,6 +118,15 @@ export function EditorQuickToolbar({ selected, onProp, onDuplicate, onDelete, on
       <Button variant="ghost" size="icon" className="h-8 w-8 rounded-l-none border-l" disabled={locked} aria-label="Trazer seleção para frente" title="Trazer para frente" onClick={() => onLayer("front")}><BringToFront /></Button>
     </div>}
     <Button variant="ghost" size="icon" className="h-8 w-8" disabled={locked || selected.every((block) => block.type === "rsvp")} aria-label="Duplicar seleção" title="Duplicar" onClick={onDuplicate}><Copy /></Button>
+    {onRotate && <div className="flex items-center rounded-md border border-input bg-background" role="group" aria-label="Rotação rápida">
+      <Button variant="ghost" size="icon" className="h-8 w-8 rounded-r-none" disabled={locked} aria-label="Girar 15 graus para a esquerda" title="Girar -15°" onClick={() => onRotate(-15)}><RotateCcw /></Button>
+      <Button variant="ghost" size="icon" className="h-8 w-8 rounded-l-none border-l" disabled={locked} aria-label="Girar 15 graus para a direita" title="Girar +15°" onClick={() => onRotate(15)}><RotateCw /></Button>
+    </div>}
+    {onOpacity && <div className="flex h-8 items-center gap-1 rounded-md border border-input bg-background px-2" title="Opacidade da seleção" role="group" aria-label="Opacidade da seleção">
+      <span className="text-[10px] text-muted-foreground">Opacidade</span>
+      <input type="range" min="0" max="100" step="5" value={Math.round((Number(primary.opacity) || 1) * 100)} disabled={locked} aria-label="Opacidade" onChange={(event) => onOpacity(Number(event.target.value) / 100)} className="w-16 accent-primary sm:w-20" />
+      <span className="min-w-8 text-right text-[10px] tabular-nums text-muted-foreground">{Math.round((Number(primary.opacity) || 1) * 100)}%</span>
+    </div>}
     <Button variant="ghost" size="icon" className="h-8 w-8" aria-label={locked ? "Desbloquear seleção" : "Bloquear seleção"} title={locked ? "Desbloquear" : "Bloquear"} onClick={onLock}>{locked ? <Unlock /> : <Lock />}</Button>
     <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" disabled={locked} aria-label="Excluir seleção" title="Excluir" onClick={onDelete}><Trash2 /></Button>
     <Button variant="ghost" size="icon" className="h-8 w-8" aria-label="Mais ajustes" title="Mais ajustes" onClick={onAdvanced}><MoreHorizontal /></Button>
