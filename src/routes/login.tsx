@@ -42,6 +42,7 @@ function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [touched, setTouched] = useState(false);
   const [rememberAccess, setRememberAccess] = useState(false);
+  const [loginSuccess, setLoginSuccess] = useState(false);
 
   useEffect(() => {
     try {
@@ -94,6 +95,8 @@ function LoginPage() {
       } catch {
         // Login must continue even if browser storage is unavailable.
       }
+      setLoginSuccess(true);
+      await new Promise((resolve) => window.setTimeout(resolve, 480));
       navigate({ to: homeFor(appUser), replace: true });
     } catch (err) {
       setError(err instanceof Error && err.message ? err.message : friendlyAuthError());
@@ -120,6 +123,7 @@ function LoginPage() {
     setError(null);
     setTouched(false);
     setRecoverySent(false);
+    setLoginSuccess(false);
     navigate({ to: "/login", replace: true });
   }
 
@@ -133,6 +137,10 @@ function LoginPage() {
         @keyframes velluneGlow {
           0%, 100% { opacity: .55; transform: scale(1); }
           50% { opacity: .85; transform: scale(1.02); }
+        }
+        @keyframes velluneSuccess {
+          from { opacity: 0; transform: scale(.86); }
+          to { opacity: 1; transform: scale(1); }
         }
         @media (prefers-reduced-motion: reduce) {
           .vellune-motion { animation: none !important; transition: none !important; }
@@ -211,7 +219,7 @@ function LoginPage() {
                         <Label htmlFor="recovery-email" className="text-xs font-medium text-white/65">E-mail cadastrado</Label>
                         <div className="relative">
                           <Mail className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-white/25" />
-                          <Input id="recovery-email" type="email" inputMode="email" autoComplete="email" value={recoveryEmail} onChange={(e) => setRecoveryEmail(e.target.value)} onBlur={() => setTouched(true)} placeholder="voce@empresa.com" aria-invalid={recoveryInvalid} className="h-12 rounded-xl border-white/[0.08] bg-white/[0.035] pl-10 text-white placeholder:text-white/20 focus-visible:border-[#d4af37]/50 focus-visible:ring-[#d4af37]/10" />
+                          <Input id="recovery-email" type="email" inputMode="email" autoComplete="email" value={recoveryEmail} onChange={(e) => setRecoveryEmail(e.target.value)} onBlur={() => setTouched(true)} placeholder="voce@empresa.com" aria-invalid={recoveryInvalid} className="h-12 rounded-xl border-white/[0.08] bg-white/[0.035] pl-10 text-white placeholder:text-white/20 focus-visible:border-[#d4af37]/55 focus-visible:ring-2 focus-visible:ring-[#d4af37]/12 focus-visible:shadow-[0_0_0_1px_rgba(212,175,55,0.14),0_10px_35px_rgba(212,175,55,0.05)]" />
                         </div>
                       </div>
                   {error && <div role="alert" className="rounded-xl border border-red-300/15 bg-red-400/[0.07] px-4 py-3 text-sm leading-6 text-red-200">{error}</div>}
@@ -250,7 +258,7 @@ function LoginPage() {
                     </div>
                   </div>
 
-                      <label className="flex cursor-pointer items-center gap-3 py-1 text-xs text-white/40 select-none">
+                      <label className="flex min-h-8 cursor-pointer items-center gap-3 py-1 text-xs text-white/40 select-none transition-colors hover:text-white/55">
                     <span className="relative flex h-4 w-4 shrink-0 items-center justify-center">
                       <input
                         type="checkbox"
@@ -270,8 +278,13 @@ function LoginPage() {
 
                   {error && <div role="alert" className="rounded-xl border border-red-300/15 bg-red-400/[0.07] px-4 py-3 text-sm leading-6 text-red-200">{error}</div>}
 
-                  <Button type="submit" disabled={loading} className="group mt-2 h-12 w-full rounded-xl bg-[#d4af37] font-semibold text-[#16130b] shadow-[0_12px_34px_rgba(212,175,55,0.10)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#e5c66b] hover:shadow-[0_16px_38px_rgba(212,175,55,0.16)] active:translate-y-0">
-                    {loading ? "Entrando..." : <span className="flex items-center justify-center gap-2">Entrar na conta <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" /></span>}
+                  <Button type="submit" disabled={loading} className="group mt-2 h-12 w-full rounded-xl bg-[#d4af37] font-semibold text-[#16130b] shadow-[0_12px_34px_rgba(212,175,55,0.10)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#e5c66b] hover:shadow-[0_16px_38px_rgba(212,175,55,0.16)] active:translate-y-0 disabled:cursor-default disabled:opacity-100">
+                    {loginSuccess ? (
+                      <span className="flex items-center justify-center gap-2">
+                        <CheckCircle2 className="h-4 w-4" style={{ animation: "velluneSuccess 260ms cubic-bezier(.22,1,.36,1)" }} />
+                        Acesso confirmado
+                      </span>
+                    ) : loading ? "Entrando..." : <span className="flex items-center justify-center gap-2">Entrar na conta <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" /></span>}
                   </Button>
 
                   <div className="flex items-center gap-3 pt-1 text-[9px] font-medium tracking-[0.25em] text-white/20"><span className="h-px flex-1 bg-white/[0.07]" /><span>ACESSO PRIVADO</span><span className="h-px flex-1 bg-white/[0.07]" /></div>
