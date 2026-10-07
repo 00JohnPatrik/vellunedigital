@@ -1,4 +1,4 @@
-import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
+import { createFileRoute, Outlet, redirect, useRouteContext } from "@tanstack/react-router";
 import { AppShell } from "@/components/app-shell";
 import { adminNav, companyNav } from "@/lib/nav";
 
@@ -13,8 +13,11 @@ export const Route = createFileRoute("/_authenticated/invitations")({
 });
 
 function InvitationsLayout() {
-  const { appUser: routeAppUser } = Route.useRouteContext();
-  const appUser = routeAppUser!;
+  // Read the authenticated parent context explicitly. This avoids relying on the
+  // child route's generated Route API while the invitations branch is mounting.
+  const { appUser } = useRouteContext({ from: "/_authenticated" });
+  if (!appUser) return null;
+
   const isSuper = appUser.role === "super_admin";
   return (
     <AppShell base={isSuper ? "/admin" : "/dashboard"} nav={isSuper ? adminNav : companyNav} appUser={appUser}>
