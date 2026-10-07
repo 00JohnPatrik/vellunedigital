@@ -260,7 +260,7 @@ export const STARTERS: Record<string, { label: string; build: () => TemplateCont
           x: 42, y: 804, width: 336, height: 34, zIndex: 10,
           props: { text: "Esperamos você.", size: "md", font: "display", bold: "", align: "center", color: "#6f6258", width: "full", fontSize: "19", lineHeight: "1.2" },
         },
-      ],
+      ], as Block[],
     }),
   },
   blank: { label: "Em branco", build: () => ({ version: 1, blocks: [] }) },
