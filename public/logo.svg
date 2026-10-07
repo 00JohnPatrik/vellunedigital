@@ -1,32 +1,31 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 330 80" role="img" aria-labelledby="title desc">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 330 80" role="img" aria-labelledby="title desc" preserveAspectRatio="xMinYMid meet">
   <title id="title">Vellune Digital</title>
   <desc id="desc">Logotipo Vellune Digital com monograma V geométrico tridimensional em dourado.</desc>
   <defs>
-    <linearGradient id="gold" x1="10" y1="8" x2="70" y2="68" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#D4AF37"/>
-      <stop offset=".46" stop-color="#C49725"/>
-      <stop offset="1" stop-color="#AA771C"/>
+    <linearGradient id="gold" x1="8" y1="8" x2="72" y2="72" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#F0CF67"/>
+      <stop offset=".42" stop-color="#D4AF37"/>
+      <stop offset="1" stop-color="#A96F18"/>
     </linearGradient>
-    <linearGradient id="goldLight" x1="25" y1="10" x2="52" y2="58" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#F4D77A"/>
-      <stop offset="1" stop-color="#B9851D"/>
+    <linearGradient id="goldHighlight" x1="20" y1="8" x2="40" y2="58" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FFE59A"/>
+      <stop offset="1" stop-color="#C99628"/>
     </linearGradient>
-    <linearGradient id="goldDeep" x1="24" y1="16" x2="48" y2="60" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#AA771C"/>
-      <stop offset="1" stop-color="#7D5413"/>
+    <linearGradient id="goldShadow" x1="54" y1="8" x2="40" y2="72" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#B47A1D"/>
+      <stop offset="1" stop-color="#77500F"/>
     </linearGradient>
     <filter id="shadow" x="-25%" y="-25%" width="150%" height="160%">
-      <feDropShadow dx="0" dy="5" stdDeviation="4" flood-color="#000" flood-opacity=".24"/>
+      <feDropShadow dx="0" dy="5" stdDeviation="4" flood-color="#000" flood-opacity=".22"/>
     </filter>
   </defs>
   <g filter="url(#shadow)">
-    <path d="M10 10H29L40 43L33.5 57L10 10Z" fill="url(#gold)"/>
-    <path d="M70 10H51L40 43L46.5 57L70 10Z" fill="url(#goldDeep)"/>
-    <path d="M29 10L40 43L34 35L23.5 16L29 10Z" fill="url(#goldLight)" opacity=".95"/>
-    <path d="M51 10L40 43L46 35L56.5 16L51 10Z" fill="#E2BE4D" opacity=".9"/>
-    <path d="M33.5 57L40 43L46.5 57L40 69L33.5 57Z" fill="url(#goldDeep)"/>
-    <path d="M40 43L46.5 57L40 69V43Z" fill="#D0A12D" opacity=".75"/>
+    <path d="M7 8H28L40 44L52 8H73L47 72H33L7 8Z" fill="url(#gold)"/>
+    <path d="M7 8H28L40 44L33 72L19 8H7Z" fill="url(#goldHighlight)" opacity=".96"/>
+    <path d="M52 8H73L47 72L40 44L52 8Z" fill="url(#goldShadow)" opacity=".96"/>
+    <path d="M40 44L47 72H33L40 44Z" fill="#D8AC35" opacity=".72"/>
+    <path d="M28 8H34L40 26L34 18L28 8Z" fill="#FFF0B5" opacity=".42"/>
   </g>
   <text x="84" y="35" fill="#0B1220" font-family="Sora,Manrope,Arial,sans-serif" font-size="22" font-weight="600" letter-spacing="3.2">VELLUNE</text>
-  <text x="86" y="56" fill="#0B1220" font-family="Manrope,Arial,sans-serif" font-size="9.5" font-weight="600" letter-spacing="5.6" opacity=".62">DIGITAL</text>
+  <text x="86" y="56" fill="#0B1220" font-family="Manrope,Arial,sans-serif" font-size="9.5" font-weight="600" letter-spacing="5.6">DIGITAL</text>
 </svg>
