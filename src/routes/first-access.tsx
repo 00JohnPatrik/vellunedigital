@@ -43,7 +43,6 @@ function FirstAccessPage() {
 
   async function resendLink() {
     if (loading || resendCooldown > 0 || requestLockRef.current) return;
-    requestLockRef.current = true;
     const normalizedEmail = email.trim().toLowerCase();
     const parsed = z.string().email().max(255).safeParse(normalizedEmail);
     if (!parsed.success) {
@@ -52,6 +51,7 @@ function FirstAccessPage() {
       return;
     }
     setEmail(parsed.data);
+    requestLockRef.current = true;
     setLoading(true);
     setError(null);
     setErrorIsValidation(false);
