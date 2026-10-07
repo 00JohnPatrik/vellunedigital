@@ -26,7 +26,7 @@ function FirstAccessPage() {
     const parsed = z.string().trim().toLowerCase().email().max(255).safeParse(email);
     if (!parsed.success) return setError("Informe um e-mail válido.");
     setLoading(true); setError(null);
-    try { await request({ data: { email: parsed.data, origin: window.location.origin } }); setSent(true); }
+    try { await request({ data: { email: parsed.data } }); setSent(true); }
     catch { setError("Não foi possível processar agora. Tente novamente."); }
     finally { setLoading(false); }
   }
