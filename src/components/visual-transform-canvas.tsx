@@ -19,6 +19,8 @@ type Props = {
   onDuplicate?: (ids: string[]) => void;
   onDelete?: (ids: string[]) => void;
   onAdvanced?: () => void;
+  onGroup?: (ids: string[]) => void;
+  onUngroup?: (ids: string[]) => void;
   onImageAction?: (id: string, action: ImageAction) => void;
   startEditingId?: string | null;
   onStartEditingHandled?: () => void;
@@ -251,7 +253,7 @@ function isTextInput(target: EventTarget | null) {
   return element.tagName === "INPUT" || element.tagName === "TEXTAREA" || element.tagName === "SELECT" || element.isContentEditable;
 }
 
-export function VisualTransformCanvas({ blocks, selectedIds: selectedIdsProp, zoom, canvasRef, ctx, onSelect, onChange, onDuplicate, onDelete, onAdvanced, onImageAction, startEditingId, onStartEditingHandled }: Props) {
+export function VisualTransformCanvas({ blocks, selectedIds: selectedIdsProp, zoom, canvasRef, ctx, onSelect, onChange, onDuplicate, onDelete, onAdvanced, onGroup, onUngroup, onImageAction, startEditingId, onStartEditingHandled }: Props) {
   const interaction = useRef<Interaction | null>(null);
   const [guides, setGuides] = useState<Guide[]>([]);
   const [editingTextId, setEditingTextId] = useState<string | null>(null);
@@ -349,9 +351,24 @@ export function VisualTransformCanvas({ blocks, selectedIds: selectedIdsProp, zo
       const movable = blocks.filter((block: any) => selectedIds.includes(block.id) && !block.locked);
       if (!movable.length) return;
       if (event.key === "Escape") { finish(); return; }
-      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "a") {
+      const groupCommand = event.ctrlKey || event.metaKey;
+      if (groupCommand && event.key.toLowerCase() === "g" && !event.shiftKey) {
         event.preventDefault();
-        blocks.forEach((block: any) => onSelect(block.id, true));
+        if (selectedIds.length > 1) onGroup?.(selectedIds);
+        return;
+      }
+      if (groupCommand && event.key.toLowerCase() === "g" && event.shiftKey) {
+        event.preventDefault();
+        if (selectedIds.length > 1) onUngroup?.(selectedIds);
+        return;
+      }
+      if (groupCommand && event.key.toLowerCase() === "a") {
+        event.preventDefault();
+        const allIds = blocks.map((block: any) => block.id);
+        if (allIds.length && !allIds.every((id) => selectedIds.includes(id))) {
+          onSelect(allIds[0], false);
+          allIds.slice(1).forEach((id) => onSelect(id, true));
+        }
         return;
       }
       const step = event.shiftKey ? 10 : 1;
