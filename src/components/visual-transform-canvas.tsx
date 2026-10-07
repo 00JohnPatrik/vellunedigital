@@ -11,7 +11,7 @@ type Props = {
   blocks: Block[];
   selectedIds: string[];
   zoom: number;
-  canvasRef: React.RefObject<HTMLDivElement>;
+  canvasRef: React.RefObject<HTMLDivElement | null>;
   ctx?: unknown;
   onSelect: (id: string, additive: boolean) => void;
   onChange: (update: (blocks: Block[]) => Block[], group?: string) => void;
