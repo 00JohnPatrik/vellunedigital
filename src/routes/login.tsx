@@ -173,7 +173,7 @@ function LoginPage() {
   }
 
   return (
-    <main className="fixed inset-0 overflow-y-auto overscroll-contain bg-[#08090d] text-white selection:bg-[#d4af37]/25 lg:overflow-hidden">
+    <main className="fixed inset-0 h-[100dvh] w-full overflow-hidden overscroll-none bg-[#08090d] text-white selection:bg-[#d4af37]/25">
       <style>{`
         @keyframes velluneFadeUp {
           from { opacity: 0; transform: translateY(10px); }
@@ -235,13 +235,13 @@ function LoginPage() {
         </section>
 
         {/* Authentication side */}
-        <section className="flex min-h-full items-center justify-center px-3.5 py-5 sm:px-8 lg:h-full lg:min-h-0 lg:border-l lg:border-white/[0.045] lg:bg-white/[0.012] xl:px-16">
+        <section className="flex h-full min-h-0 items-center justify-center overflow-hidden px-3 py-3 sm:px-8 sm:py-5 lg:h-full lg:min-h-0 lg:border-l lg:border-white/[0.045] lg:bg-white/[0.012] xl:px-16">
           <div className="w-full max-w-[430px] py-1 sm:py-2">
-            <div className="mb-7 flex w-full justify-center lg:hidden sm:mb-9">
-              <Logo className="h-14 w-auto max-w-[82vw] text-white transition-opacity duration-500 hover:opacity-90 sm:h-16" />
+            <div className="mb-4 flex w-full shrink-0 justify-center lg:hidden sm:mb-9">
+              <Logo className="h-12 w-auto max-w-[78vw] text-white transition-opacity duration-500 hover:opacity-90 sm:h-16" />
             </div>
 
-            <div className="relative overflow-hidden rounded-[24px] border border-white/[0.075] bg-[#111318]/94 p-5 shadow-[0_30px_100px_rgba(0,0,0,0.46),inset_0_1px_0_rgba(255,255,255,0.035)] ring-1 ring-white/[0.018] backdrop-blur-xl sm:rounded-[28px] sm:p-9 vellune-motion" style={{ animation: "velluneFadeUp 800ms cubic-bezier(.22,1,.36,1)" }}>
+            <div className="relative max-h-full w-full overflow-hidden rounded-[20px] border border-white/[0.075] bg-[#111318]/94 p-4 shadow-[0_30px_100px_rgba(0,0,0,0.46),inset_0_1px_0_rgba(255,255,255,0.035)] ring-1 ring-white/[0.018] backdrop-blur-xl sm:rounded-[28px] sm:p-9 vellune-motion" style={{ animation: "velluneFadeUp 800ms cubic-bezier(.22,1,.36,1)" }}>
               <div className="pointer-events-none absolute inset-x-10 top-0 h-px bg-gradient-to-r from-transparent via-[#d4af37]/35 to-transparent" />
               <div className="pointer-events-none absolute -right-24 -top-24 h-48 w-48 rounded-full bg-[#d4af37]/[0.035] blur-3xl" style={{ animation: "velluneGlow 7s ease-in-out infinite" }} />
               <div key={`${mode}-${recoverySent ? "sent" : "form"}`} className="vellune-auth-panel-motion">
@@ -300,7 +300,10 @@ function LoginPage() {
                       <Input
                         id="identifier"
                         autoComplete="username"
-                        inputMode={trimmedIdentifier.includes("@") ? "email" : "tel"}
+                        inputMode="text"
+                        autoCapitalize="none"
+                        autoCorrect="off"
+                        spellCheck={false}
                         value={identifier}
                         maxLength={255}
                         onChange={(e) => {
@@ -396,7 +399,7 @@ function LoginPage() {
               </div>
             </div>
 
-            <p className="mt-5 text-center text-[9px] font-medium uppercase tracking-[0.24em] text-white/20">Vellune Digital · v1.7</p>
+            <p className="mt-2 shrink-0 text-center text-[9px] font-medium uppercase tracking-[0.24em] text-white/20">Vellune Digital · v1.7</p>
           </div>
         </section>
       </div>
