@@ -291,8 +291,8 @@ function LoginPage() {
         <AuthPremiumVisual />
 
         {/* Authentication side */}
-        <section className="flex h-full min-h-0 items-start justify-start overflow-y-auto overflow-x-clip overscroll-contain bg-[#08090d] px-3 pt-[max(1rem,env(safe-area-inset-top))] pb-[max(1rem,env(safe-area-inset-bottom))] sm:px-8 sm:py-5 lg:h-full lg:min-h-0 lg:items-center lg:justify-center lg:overflow-visible lg:border-l lg:border-white/[0.045] lg:bg-white/[0.012] xl:px-16">
-          <div className="w-full max-w-[430px] py-1 sm:py-2">
+        <section className="flex h-full min-h-0 items-stretch justify-start overflow-y-auto overflow-x-clip overscroll-contain bg-[#08090d] px-3 pt-[max(1rem,env(safe-area-inset-top))] pb-[max(1rem,env(safe-area-inset-bottom))] sm:px-8 sm:py-5 lg:h-full lg:min-h-0 lg:items-stretch lg:justify-start lg:overflow-y-auto lg:border-l lg:border-white/[0.045] lg:bg-white/[0.012] xl:px-16">
+          <div className="my-auto mx-auto w-full max-w-[430px] shrink-0 py-1 sm:py-2">
             <div className="mb-4 flex w-full shrink-0 flex-col items-center justify-center lg:hidden sm:mb-9">
               <Logo className="h-12 w-auto max-w-[78vw] text-white transition-opacity duration-500 hover:opacity-90 sm:h-16" />
               <span className="mt-2 text-[8px] font-semibold uppercase tracking-[0.28em] text-white/25">Seu espaço de criação</span>
@@ -352,7 +352,7 @@ function LoginPage() {
                         {recoveryError && <p id="recovery-email-error" role="alert" className="flex items-center gap-1.5 text-[11px] text-red-300/90"><AlertCircle className="h-3.5 w-3.5 shrink-0" />{recoveryError}</p>}
                       </div>
                   {error && (
-                    <div role="alert" aria-live="assertive" className="flex items-start gap-3 rounded-xl border border-red-300/15 bg-red-400/[0.07] px-4 py-3 text-sm leading-6 text-red-200">
+                    <div role="alert" aria-live="assertive" className="flex items-start gap-3 rounded-xl border border-red-300/15 bg-red-400/[0.07] px-3.5 py-2.5 text-[13px] leading-5 text-red-200">
                       <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-red-200/10 bg-red-200/[0.06]">
                         <AlertCircle className="h-3.5 w-3.5" />
                       </span>
