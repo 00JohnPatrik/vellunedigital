@@ -1,4 +1,4 @@
-import { AlignCenter, AlignLeft, AlignRight, Bold, Copy, Crop, Italic, MoreHorizontal, SlidersHorizontal, Trash2, Image as ImageIcon, Lock, Unlock, Underline, Strikethrough } from "lucide-react";
+import { AlignCenter, AlignLeft, AlignRight, Bold, BringToFront, Copy, Crop, Italic, MoreHorizontal, SendToBack, SlidersHorizontal, Trash2, Image as ImageIcon, Lock, Unlock, Underline, Strikethrough } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { FONTS } from "@/lib/blocks";
@@ -14,6 +14,7 @@ export function EditorQuickToolbar({ selected, onProp, onDuplicate, onDelete, on
   onAdvanced: () => void;
   onImage: (action: ImageAction) => void;
   onLock: () => void;
+  onLayer?: (direction: "front" | "back") => void;
 }) {
   const primary = selected[0];
   if (!primary) return null;
@@ -84,6 +85,10 @@ export function EditorQuickToolbar({ selected, onProp, onDuplicate, onDelete, on
     </>}
     {selected.length > 1 && !text && <span className="px-2 text-xs text-muted-foreground">{selected.length} elementos</span>}
     <span className="mx-1 h-5 w-px bg-border" />
+    {onLayer && <div className="flex items-center rounded-md border border-input bg-background" role="group" aria-label="Ordem das camadas">
+      <Button variant="ghost" size="icon" className="h-8 w-8 rounded-r-none" disabled={locked} aria-label="Enviar seleção para trás" title="Enviar para trás" onClick={() => onLayer("back")}><SendToBack /></Button>
+      <Button variant="ghost" size="icon" className="h-8 w-8 rounded-l-none border-l" disabled={locked} aria-label="Trazer seleção para frente" title="Trazer para frente" onClick={() => onLayer("front")}><BringToFront /></Button>
+    </div>}
     <Button variant="ghost" size="icon" className="h-8 w-8" disabled={locked || selected.every((block) => block.type === "rsvp")} aria-label="Duplicar seleção" title="Duplicar" onClick={onDuplicate}><Copy /></Button>
     <Button variant="ghost" size="icon" className="h-8 w-8" aria-label={locked ? "Desbloquear seleção" : "Bloquear seleção"} title={locked ? "Desbloquear" : "Bloquear"} onClick={onLock}>{locked ? <Unlock /> : <Lock />}</Button>
     <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" disabled={locked} aria-label="Excluir seleção" title="Excluir" onClick={onDelete}><Trash2 /></Button>
