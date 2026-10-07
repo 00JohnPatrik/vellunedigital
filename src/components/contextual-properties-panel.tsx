@@ -113,7 +113,6 @@ export function BackgroundPropertiesPanel({ background = {}, assets, onChange }:
 export function ContextualPropertiesPanel({ blocks, selectedIds, assets, onChange, onDuplicate, onDelete }: PanelProps) {
   const [keepRatio, setKeepRatio] = useState(true); const selected = useMemo(() => blocks.filter((block) => selectedIds.includes(block.id)), [blocks, selectedIds]); const primary = selected[0] as BlockWithLayout | undefined; const multiple = selected.length > 1; const textSelected = selected.length > 0 && selected.every((block) => block.type === "text"); const [copiedStyle, setCopiedStyle] = useState<Record<string, string> | null>(null);
   const [layoutDrafts, setLayoutDrafts] = useState<Record<string, string>>({});
-  const [advancedOpen, setAdvancedOpen] = useState(false);
   useEffect(() => {
     if (!primary) { setLayoutDrafts({}); return; }
     setLayoutDrafts({
@@ -161,7 +160,7 @@ export function ContextualPropertiesPanel({ blocks, selectedIds, assets, onChang
     onChange((items) => items.map((item) => selectedIds.includes(item.id) ? { ...item, groupId: undefined } : item), "properties:ungroup");
   };
   return <div className="space-y-4" aria-label="Painel de propriedades contextual"><div className="flex items-start justify-between gap-3"><div><p className="text-sm font-semibold text-foreground">Editar elemento</p><p className="mt-1 text-xs text-muted-foreground">{multiple ? `${selected.length} elementos selecionados` : `Elemento: ${friendlyTypeLabel(String(primary?.type ?? ""))}`}</p></div><div className="rounded-md bg-primary/10 px-2 py-1 text-[10px] font-medium text-primary">{multiple ? "MÚLTIPLA" : "INDIVIDUAL"}</div></div>{multiple && <p className="rounded-lg border border-primary/20 bg-primary/5 p-2.5 text-xs leading-5 text-primary">Os controles compatíveis serão aplicados a todos os elementos selecionados.</p>}{textSelected && <TextTypography selected={selected} onChange={onChange} />}<Appearance selected={selected} primary={primary} onChange={onChange} apply={apply} /><AnimationProperties selected={selected} onChange={onChange} /><ImagePropertiesPanel selected={selected} assets={assets} onChange={onChange} /><details className="group rounded-xl border border-primary/10 bg-muted/10">
-  <summary className="flex cursor-pointer list-none items-center justify-between gap-2 p-3 text-sm font-medium text-foreground [&::-webkit-details-marker]:hidden" onClick={() => setAdvancedOpen((value) => !value)}>
+  <summary className="flex cursor-pointer list-none items-center justify-between gap-2 p-3 text-sm font-medium text-foreground [&::-webkit-details-marker]:hidden">
     <span>Mais ajustes</span>
     <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform group-open:rotate-180" />
   </summary>
