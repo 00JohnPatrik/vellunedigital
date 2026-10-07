@@ -186,7 +186,7 @@ export function TemplateGallery({ open, onClose, onApply, hasContent }: Template
             )}
           </main>
 
-          <aside className="border-t border-border/70 bg-card/60 p-4 lg:border-l lg:border-t-0">
+          <aside className="hidden border-t border-border/70 bg-card/60 p-4 lg:block lg:border-l lg:border-t-0">
             {selected ? (
               <div className="space-y-4">
                 <div className="flex items-center gap-2">
@@ -217,6 +217,31 @@ export function TemplateGallery({ open, onClose, onApply, hasContent }: Template
             )}
           </aside>
         </div>
+        <div className="flex items-center gap-3 border-t border-border/70 bg-card/95 p-3 shadow-[0_-10px_30px_-20px_hsl(var(--foreground)/.35)] backdrop-blur-xl lg:hidden" style={{ paddingBottom: "max(0.75rem, env(safe-area-inset-bottom))" }}>
+          <div className="min-w-0 flex-1">
+            {selected ? (
+              <>
+                <p className="truncate text-xs font-semibold text-foreground">{selected.label}</p>
+                <p className="mt-0.5 text-[10px] text-muted-foreground">{selected.content.blocks.length} elementos editáveis</p>
+              </>
+            ) : (
+              <p className="text-xs text-muted-foreground">Selecione um modelo</p>
+            )}
+          </div>
+          <Button type="button" size="sm" disabled={!selected} onClick={apply} className="shrink-0 rounded-xl px-4">
+            <LayoutTemplate className="mr-1.5 h-4 w-4" />
+            {selected?.id === "blank" ? "Em branco" : "Aplicar"}
+          </Button>
+        </div>
+        {confirmReplace && selected && (
+          <div className="absolute inset-x-3 bottom-[4.75rem] z-10 rounded-2xl border border-amber-500/30 bg-background p-3 shadow-2xl lg:hidden">
+            <p className="text-xs leading-5 text-foreground">Este convite já possui conteúdo. Aplicar o modelo substituirá os blocos atuais.</p>
+            <div className="mt-3 grid grid-cols-2 gap-2">
+              <Button type="button" size="sm" variant="outline" onClick={() => setConfirmReplace(false)}>Cancelar</Button>
+              <Button type="button" size="sm" onClick={() => { onApply(cloneContent(selected.content)); setConfirmReplace(false); onClose(); }}><Check className="mr-1 h-3.5 w-3.5" />Confirmar</Button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
