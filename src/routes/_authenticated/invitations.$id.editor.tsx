@@ -2,7 +2,7 @@ import { buildContent, type Background } from "@/lib/templates";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { AlertCircle, ArrowLeft, Check, Eye, Loader2, QrCode, Send, Settings2, Share2, SlidersHorizontal, UserCheck, Users } from "lucide-react";
+import { AlertCircle, ArrowLeft, Check, Eye, Loader2, MoreHorizontal, QrCode, Send, Settings2, Share2, SlidersHorizontal, UserCheck, Users } from "lucide-react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { ShareDialog } from "@/components/share-dialog";
 import { RsvpPanel } from "@/components/rsvp-panel";
@@ -151,13 +151,20 @@ function EditorForm({ inv }: { inv: Invitation }) {
   const options = (customers.data ?? []).filter((c) => c.company_id === inv.company_id && (c.status === "active" || c.id === inv.customer_id));
 
   const toolbar = <>
-    <Button type="button" size="sm" variant="outline" onClick={() => setEventOpen(true)}><Settings2 className="h-4 w-4" /><span className="hidden sm:inline">Dados do evento</span></Button>
-    <Button type="button" size="sm" variant="outline" onClick={() => setRsvpOpen(true)}><UserCheck className="h-4 w-4" /><span className="hidden sm:inline">RSVP</span></Button>
-    <Button type="button" size="sm" variant="outline" asChild><Link to="/invitations/$id/guests" params={{ id: inv.id }}><Users className="h-4 w-4" /><span className="hidden sm:inline">Convidados</span></Link></Button>
-    <Button type="button" size="sm" variant="outline" asChild><Link to="/invitations/$id/checkin" params={{ id: inv.id }}><QrCode className="h-4 w-4" /><span className="hidden sm:inline">Check-in</span></Link></Button>
-    <Button type="button" size="sm" variant="outline" onClick={openEditorPreview}><Eye className="h-4 w-4" /><span className="hidden sm:inline">Visualizar</span></Button>
+    <Button type="button" size="sm" variant="outline" onClick={openEditorPreview}><Eye className="h-4 w-4" />Visualizar</Button>
     <Button type="button" size="sm" onClick={() => void save(true)} disabled={state === "saving"}>{state === "saving" && <Loader2 className="h-4 w-4 animate-spin" />}Salvar</Button>
-    {isPublic ? <Button type="button" size="sm" variant="secondary" onClick={() => setShareOpen(true)}><Share2 className="h-4 w-4" /><span className="hidden sm:inline">Compartilhar</span></Button> : <Button type="button" size="sm" variant="secondary" onClick={() => void publish()} disabled={publishing}>{publishing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}<span className="hidden sm:inline">Publicar convite</span></Button>}
+    {isPublic ? <Button type="button" size="sm" variant="secondary" onClick={() => setShareOpen(true)}><Share2 className="h-4 w-4" />Compartilhar</Button> : <Button type="button" size="sm" variant="secondary" onClick={() => void publish()} disabled={publishing}>{publishing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}Publicar convite</Button>}
+    <details className="relative">
+      <summary className="inline-flex h-9 cursor-pointer list-none items-center gap-1.5 rounded-md border border-border bg-background px-3 text-sm font-medium text-foreground transition hover:bg-accent [&::-webkit-details-marker]:hidden">
+        <MoreHorizontal className="h-4 w-4" />Mais
+      </summary>
+      <div className="absolute right-0 top-11 z-50 grid min-w-[190px] gap-1 rounded-xl border border-border/80 bg-popover p-1.5 text-popover-foreground shadow-2xl">
+        <Button type="button" variant="ghost" size="sm" className="justify-start" onClick={() => setEventOpen(true)}><Settings2 className="h-4 w-4" />Dados do evento</Button>
+        <Button type="button" variant="ghost" size="sm" className="justify-start" onClick={() => setRsvpOpen(true)}><UserCheck className="h-4 w-4" />RSVP</Button>
+        <Button type="button" variant="ghost" size="sm" className="justify-start" asChild><Link to="/invitations/$id/guests" params={{ id: inv.id }}><Users className="h-4 w-4" />Convidados</Link></Button>
+        <Button type="button" variant="ghost" size="sm" className="justify-start" asChild><Link to="/invitations/$id/checkin" params={{ id: inv.id }}><QrCode className="h-4 w-4" />Check-in</Link></Button>
+      </div>
+    </details>
   </>;
 
   return (
