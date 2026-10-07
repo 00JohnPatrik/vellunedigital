@@ -657,7 +657,7 @@ export function VisualTransformCanvas({ blocks, selectedIds: selectedIdsProp, zo
       const hit = isSelected ? 10 : 6;
       return <div
         key={block.id || index}
-        className={`group absolute left-0 top-0 rounded-xl ${isSelected ? "border-2 border-primary ring-2 ring-primary/30" : "border border-transparent hover:border-primary/40"} ${hidden ? "opacity-35" : ""}`}
+        className={`group absolute left-0 top-0 rounded-xl transition-[border-color,box-shadow] duration-150 ${isSelected ? "border-2 border-primary ring-2 ring-primary/25 shadow-[0_0_0_1px_hsl(var(--primary)/.10)]" : "border border-transparent hover:border-primary/40"} ${hidden ? "opacity-35" : ""}`}
         style={{
           width: value.width + hit * 2,
           height: value.height + hit * 2,
@@ -781,7 +781,7 @@ export function VisualTransformCanvas({ blocks, selectedIds: selectedIdsProp, zo
         {isSelected && !isEditingText && <div className="pointer-events-none absolute -top-7 left-0 max-w-full truncate rounded bg-primary px-2 py-1 text-[10px] text-primary-foreground">{block.type === "text" ? "Duplo clique ou segure para editar" : String(block.type)}</div>}
       </div>;
     })}
-    {selectedBounds && <div className="pointer-events-none absolute z-[80] border-2 border-primary" style={{ left: selectedBounds.left, top: selectedBounds.top, width: selectedBounds.width, height: selectedBounds.height }}>
+    {selectedBounds && <div className="pointer-events-none absolute z-[80] rounded-[2px] border-2 border-primary shadow-[0_0_0_1px_hsl(var(--primary)/.12),0_4px_14px_hsl(var(--primary)/.08)]" style={{ left: selectedBounds.left, top: selectedBounds.top, width: selectedBounds.width, height: selectedBounds.height }}>
       <div className="pointer-events-none absolute -bottom-8 left-1/2 hidden -translate-x-1/2 items-center gap-1.5 whitespace-nowrap rounded-full border border-primary/20 bg-card/95 px-2.5 py-1 text-[9px] font-medium text-foreground shadow-lg backdrop-blur-sm sm:flex">
         <span>{Math.round(selectedBounds.width)} × {Math.round(selectedBounds.height)} px</span>
         {selected.length === 1 && <><span className="text-muted-foreground">·</span><span>{Math.round(selected[0]?.rotation ?? 0)}°</span></>}
