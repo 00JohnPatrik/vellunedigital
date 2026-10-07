@@ -19,6 +19,8 @@ type Props = {
   onDuplicate?: (ids: string[]) => void;
   onDelete?: (ids: string[]) => void;
   onAdvanced?: () => void;
+  startEditingId?: string | null;
+  onStartEditingHandled?: () => void;
 };
 
 type Bounds = {
@@ -182,7 +184,7 @@ function isTextInput(target: EventTarget | null) {
   return element.tagName === "INPUT" || element.tagName === "TEXTAREA" || element.tagName === "SELECT" || element.isContentEditable;
 }
 
-export function VisualTransformCanvas({ blocks, selectedIds: selectedIdsProp, zoom, canvasRef, ctx, onSelect, onChange, onDuplicate, onDelete, onAdvanced }: Props) {
+export function VisualTransformCanvas({ blocks, selectedIds: selectedIdsProp, zoom, canvasRef, ctx, onSelect, onChange, onDuplicate, onDelete, onAdvanced, startEditingId, onStartEditingHandled }: Props) {
   const interaction = useRef<Interaction | null>(null);
   const [guides, setGuides] = useState<Guide[]>([]);
   const [editingTextId, setEditingTextId] = useState<string | null>(null);
@@ -247,6 +249,13 @@ export function VisualTransformCanvas({ blocks, selectedIds: selectedIdsProp, zo
       stopTextEditing();
     }
   }, [blocks, editingTextId]);
+
+  useEffect(() => {
+    if (!startEditingId) return;
+    const block = blocks.find((item) => item.id === startEditingId);
+    if (block?.type === "text") startTextEditing(block);
+    onStartEditingHandled?.();
+  }, [startEditingId, blocks, onStartEditingHandled]);
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
