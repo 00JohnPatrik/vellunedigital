@@ -150,3 +150,359 @@
   background-color: var(--color-background);
   background-image: radial-gradient(ellipse at top, color-mix(in oklch, var(--color-primary) 12%, transparent), transparent 60%);
 }
+
+/* -------------------------------------------------------------------------- */
+/* Vellune Editor — premium studio chrome                                      */
+/* Scoped to the editor so the rest of the platform keeps its existing UI.    */
+/* -------------------------------------------------------------------------- */
+
+.vellune-editor-root {
+  --vellune-editor-line: color-mix(in oklch, var(--color-foreground) 9%, transparent);
+  --vellune-editor-line-strong: color-mix(in oklch, var(--color-primary) 26%, transparent);
+  --vellune-editor-surface: color-mix(in oklch, var(--color-card) 94%, var(--color-background));
+  --vellune-editor-panel: color-mix(in oklch, var(--color-card) 88%, var(--color-background));
+  --vellune-editor-workspace: color-mix(in oklch, var(--color-background) 92%, var(--color-muted));
+  --vellune-editor-glow: color-mix(in oklch, var(--color-primary) 16%, transparent);
+  position: relative;
+  isolation: isolate;
+  border-color: var(--vellune-editor-line);
+  background:
+    radial-gradient(circle at 15% 0%, var(--vellune-editor-glow), transparent 28%),
+    var(--vellune-editor-surface);
+  box-shadow:
+    0 1px 1px oklch(0.18 0.03 250 / 5%),
+    0 18px 44px oklch(0.18 0.03 250 / 11%);
+}
+
+.dark .vellune-editor-root {
+  --vellune-editor-line: color-mix(in oklch, white 8%, transparent);
+  --vellune-editor-line-strong: color-mix(in oklch, var(--color-primary) 34%, transparent);
+  --vellune-editor-surface: oklch(0.155 0.035 254);
+  --vellune-editor-panel: oklch(0.175 0.035 254);
+  --vellune-editor-workspace: oklch(0.115 0.028 254);
+  --vellune-editor-glow: oklch(0.72 0.11 190 / 10%);
+  box-shadow:
+    0 1px 1px oklch(0 0 0 / 28%),
+    0 24px 60px oklch(0 0 0 / 34%);
+}
+
+.vellune-editor-topbar {
+  min-height: 4.1rem;
+  border-color: var(--vellune-editor-line);
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in oklch, var(--color-card) 96%, transparent),
+      color-mix(in oklch, var(--color-card) 82%, transparent)
+    );
+}
+
+.vellune-editor-topbar::after {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+  height: 1px;
+  pointer-events: none;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--vellune-editor-line-strong),
+    transparent
+  );
+  opacity: 0.9;
+}
+
+.vellune-editor-device-switcher,
+.vellune-editor-history-cluster {
+  border-color: var(--vellune-editor-line);
+  background: color-mix(in oklch, var(--color-background) 72%, transparent);
+  box-shadow: 0 6px 18px oklch(0.18 0.03 250 / 5%);
+  backdrop-filter: blur(16px);
+}
+
+.vellune-editor-device-switcher button[aria-pressed="true"] {
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in oklch, var(--color-primary) 16%, transparent),
+      color-mix(in oklch, var(--color-primary) 8%, transparent)
+    );
+  box-shadow:
+    inset 0 0 0 1px color-mix(in oklch, var(--color-primary) 18%, transparent),
+    0 4px 12px color-mix(in oklch, var(--color-primary) 10%, transparent);
+}
+
+.vellune-editor-history-cluster button {
+  border-color: transparent;
+  background: transparent;
+  transition:
+    background-color 180ms ease,
+    border-color 180ms ease,
+    color 180ms ease,
+    transform 180ms ease;
+}
+
+.vellune-editor-history-cluster button:hover:not(:disabled) {
+  border-color: var(--vellune-editor-line);
+  background: color-mix(in oklch, var(--color-muted) 68%, transparent);
+  transform: translateY(-1px);
+}
+
+.vellune-editor-sidebar,
+.vellune-editor-inspector {
+  border-color: var(--vellune-editor-line);
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in oklch, var(--color-card) 91%, transparent),
+      color-mix(in oklch, var(--color-background) 88%, transparent)
+    );
+  box-shadow: 0 12px 28px oklch(0.18 0.03 250 / 6%);
+  backdrop-filter: blur(18px);
+}
+
+.dark .vellune-editor-sidebar,
+.dark .vellune-editor-inspector {
+  background:
+    linear-gradient(
+      180deg,
+      oklch(0.19 0.034 254 / 92%),
+      oklch(0.145 0.03 254 / 94%)
+    );
+  box-shadow: 12px 0 36px oklch(0 0 0 / 18%);
+}
+
+.vellune-editor-sidebar > div:first-child,
+.vellune-editor-inspector > div:first-child {
+  border-color: var(--vellune-editor-line);
+}
+
+.vellune-editor-tabs {
+  border-color: var(--vellune-editor-line);
+  background: color-mix(in oklch, var(--color-background) 42%, transparent);
+}
+
+.vellune-editor-tabs button {
+  min-height: 2.15rem;
+  border: 1px solid transparent;
+  transition:
+    background-color 180ms ease,
+    border-color 180ms ease,
+    color 180ms ease,
+    transform 180ms ease;
+}
+
+.vellune-editor-tabs button:hover {
+  border-color: var(--vellune-editor-line);
+  background: color-mix(in oklch, var(--color-muted) 68%, transparent);
+}
+
+.vellune-editor-tabs button[class*="bg-primary"] {
+  border-color: var(--vellune-editor-line-strong);
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in oklch, var(--color-primary) 16%, transparent),
+      color-mix(in oklch, var(--color-primary) 7%, transparent)
+    );
+  box-shadow: inset 0 0 0 1px color-mix(in oklch, var(--color-primary) 8%, transparent);
+}
+
+.vellune-editor-start-card {
+  position: relative;
+  overflow: hidden;
+  border-color: var(--vellune-editor-line-strong);
+  background:
+    radial-gradient(circle at 0% 0%, color-mix(in oklch, var(--color-primary) 14%, transparent), transparent 54%),
+    linear-gradient(
+      135deg,
+      color-mix(in oklch, var(--color-primary) 7%, var(--color-background)),
+      color-mix(in oklch, var(--color-card) 88%, transparent)
+    );
+}
+
+.vellune-editor-start-card::after {
+  content: "";
+  position: absolute;
+  width: 7rem;
+  height: 7rem;
+  right: -2.8rem;
+  bottom: -3.6rem;
+  border-radius: 999px;
+  background: color-mix(in oklch, var(--color-primary) 11%, transparent);
+  filter: blur(4px);
+  pointer-events: none;
+}
+
+.vellune-editor-workspace {
+  border-color: var(--vellune-editor-line);
+  background:
+    radial-gradient(
+      circle at 50% 0%,
+      color-mix(in oklch, var(--color-primary) 11%, transparent),
+      transparent 34%
+    ),
+    linear-gradient(
+      145deg,
+      color-mix(in oklch, var(--color-muted) 46%, var(--color-background)),
+      color-mix(in oklch, var(--color-background) 96%, transparent)
+    );
+}
+
+.dark .vellune-editor-workspace {
+  background:
+    radial-gradient(
+      circle at 50% 0%,
+      oklch(0.72 0.11 190 / 9%),
+      transparent 34%
+    ),
+    linear-gradient(
+      145deg,
+      oklch(0.155 0.032 254),
+      oklch(0.11 0.027 254)
+    );
+}
+
+.vellune-editor-mobile-bar {
+  border-color: var(--vellune-editor-line-strong);
+  background: color-mix(in oklch, var(--color-card) 92%, transparent);
+  box-shadow: 0 12px 28px oklch(0.18 0.03 250 / 10%);
+}
+
+.vellune-editor-viewport {
+  border-color: var(--vellune-editor-line);
+  background:
+    radial-gradient(
+      circle at 50% 0%,
+      color-mix(in oklch, var(--color-primary) 7%, transparent),
+      transparent 32%
+    ),
+    color-mix(in oklch, var(--color-background) 76%, var(--color-muted));
+  box-shadow:
+    inset 0 1px 0 oklch(1 0 0 / 3%),
+    inset 0 -20px 40px oklch(0.18 0.03 250 / 5%);
+}
+
+.dark .vellune-editor-viewport {
+  background:
+    radial-gradient(
+      circle at 50% 0%,
+      oklch(0.72 0.11 190 / 6%),
+      transparent 32%
+    ),
+    oklch(0.095 0.022 254);
+}
+
+.vellune-editor-canvas {
+  border-color: color-mix(in oklch, var(--color-foreground) 11%, transparent) !important;
+  box-shadow:
+    0 1px 0 oklch(1 0 0 / 4%),
+    0 18px 48px oklch(0.18 0.03 250 / 13%),
+    0 0 0 1px color-mix(in oklch, var(--color-primary) 4%, transparent);
+  transition:
+    box-shadow 220ms ease,
+    border-color 220ms ease;
+}
+
+.dark .vellune-editor-canvas {
+  box-shadow:
+    0 1px 0 oklch(1 0 0 / 4%),
+    0 28px 65px oklch(0 0 0 / 35%),
+    0 0 0 1px oklch(0.72 0.11 190 / 4%);
+}
+
+.vellune-editor-canvas:focus-within {
+  border-color: var(--vellune-editor-line-strong) !important;
+  box-shadow:
+    0 0 0 1px color-mix(in oklch, var(--color-primary) 12%, transparent),
+    0 24px 58px color-mix(in oklch, var(--color-primary) 10%, transparent);
+}
+
+.editor-quick-toolbar {
+  border-color: var(--vellune-editor-line-strong) !important;
+  border-radius: 1rem !important;
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in oklch, var(--color-popover) 97%, transparent),
+      color-mix(in oklch, var(--color-card) 92%, var(--color-popover))
+    ) !important;
+  box-shadow:
+    0 1px 0 oklch(1 0 0 / 6%),
+    0 16px 40px oklch(0.18 0.03 250 / 18%) !important;
+  padding: 0.4rem !important;
+  backdrop-filter: blur(18px);
+}
+
+.dark .editor-quick-toolbar {
+  box-shadow:
+    0 1px 0 oklch(1 0 0 / 5%),
+    0 22px 54px oklch(0 0 0 / 36%) !important;
+}
+
+.editor-quick-toolbar > button,
+.editor-quick-toolbar fieldset > button {
+  border-color: transparent;
+  border-radius: 0.65rem;
+}
+
+.editor-quick-toolbar > button:hover:not(:disabled),
+.editor-quick-toolbar fieldset > button:hover:not(:disabled) {
+  background: color-mix(in oklch, var(--color-primary) 8%, transparent);
+}
+
+.editor-quick-toolbar input,
+.editor-quick-toolbar select {
+  border-color: var(--vellune-editor-line);
+  background: color-mix(in oklch, var(--color-background) 82%, transparent);
+}
+
+.editor-quick-toolbar input:focus-visible,
+.editor-quick-toolbar select:focus-visible {
+  border-color: color-mix(in oklch, var(--color-primary) 36%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in oklch, var(--color-primary) 10%, transparent);
+}
+
+.vellune-editor-inspector {
+  scrollbar-color: color-mix(in oklch, var(--color-foreground) 20%, transparent) transparent;
+}
+
+.vellune-editor-inspector::-webkit-scrollbar,
+.vellune-editor-sidebar::-webkit-scrollbar,
+.vellune-editor-viewport::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.vellune-editor-inspector::-webkit-scrollbar-thumb,
+.vellune-editor-sidebar::-webkit-scrollbar-thumb,
+.vellune-editor-viewport::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: color-mix(in oklch, var(--color-foreground) 16%, transparent);
+}
+
+@media (max-width: 1023px) {
+  .vellune-editor-root {
+    border-radius: 1rem;
+  }
+
+  .vellune-editor-workspace,
+  .vellune-editor-viewport {
+    border-radius: 1rem;
+  }
+
+  .vellune-editor-canvas {
+    box-shadow:
+      0 1px 0 oklch(1 0 0 / 4%),
+      0 12px 32px oklch(0.18 0.03 250 / 12%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .vellune-editor-history-cluster button,
+  .vellune-editor-tabs button,
+  .vellune-editor-canvas {
+    transition: none !important;
+  }
+}
