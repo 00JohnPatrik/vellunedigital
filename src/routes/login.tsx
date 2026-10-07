@@ -241,7 +241,7 @@ function LoginPage() {
                     <Label htmlFor="identifier" className="text-xs font-medium text-white/65">E-mail ou telefone</Label>
                     <div className="relative">
                       <UserRound className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-white/25" />
-                      <Input id="identifier" autoComplete="username" value={identifier} maxLength={255} onChange={(e) => setIdentifier(e.target.value)} onBlur={() => setTouched(true)} placeholder="voce@empresa.com" aria-invalid={identifierInvalid} aria-describedby="identifier-help" className="h-12 rounded-xl border-white/[0.08] bg-white/[0.035] pl-10 text-white placeholder:text-white/20 focus-visible:border-[#d4af37]/50 focus-visible:ring-[#d4af37]/10" />
+                      <Input id="identifier" autoComplete="username" value={identifier} maxLength={255} onChange={(e) => setIdentifier(e.target.value)} onBlur={() => setTouched(true)} placeholder="voce@empresa.com" aria-invalid={identifierInvalid} aria-describedby="identifier-help" className="h-12 rounded-xl border-white/[0.08] bg-white/[0.035] text-white placeholder:text-white/20 transition-[border-color,box-shadow,background-color] duration-300 focus-visible:border-[#d4af37]/55 focus-visible:ring-2 focus-visible:ring-[#d4af37]/12 focus-visible:shadow-[0_0_0_1px_rgba(212,175,55,0.14),0_10px_35px_rgba(212,175,55,0.05)] hover:border-white/[0.12] pl-10" />
                     </div>
                     <p id="identifier-help" className="text-[11px] text-white/25">Use os dados vinculados à sua conta.</p>
                   </div>
@@ -249,11 +249,11 @@ function LoginPage() {
                   <div className="space-y-2">
                     <div className="flex items-center justify-between gap-3">
                       <Label htmlFor="password" className="text-xs font-medium text-white/65">Senha</Label>
-                      <button type="button" onClick={() => { setMode("recovery"); setRecoveryEmail(identifier.includes("@") ? identifier.trim() : ""); setError(null); setTouched(false); }} className="text-xs font-medium text-[#d4af37] transition-colors hover:text-[#e5c66b] hover:underline">Esqueci minha senha</button>
+                      <button type="button" onClick={() => { setMode("recovery"); setRecoveryEmail(identifier.includes("@") ? identifier.trim() : ""); setError(null); setTouched(false); }} className="rounded-md px-1.5 py-1 text-xs font-medium text-[#d4af37] transition-[color,background-color] duration-200 hover:bg-[#d4af37]/[0.06] hover:text-[#e5c66b] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d4af37]/20">Esqueci minha senha</button>
                     </div>
                     <div className="relative">
                       <LockKeyhole className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-white/25" />
-                      <Input id="password" type={showPassword ? "text" : "password"} autoComplete="current-password" value={password} maxLength={200} onChange={(e) => setPassword(e.target.value)} onBlur={() => setTouched(true)} aria-invalid={passwordInvalid} className="h-12 rounded-xl border-white/[0.08] bg-white/[0.035] pl-10 pr-11 text-white placeholder:text-white/20 focus-visible:border-[#d4af37]/50 focus-visible:ring-[#d4af37]/10" />
+                      <Input id="password" type={showPassword ? "text" : "password"} autoComplete="current-password" value={password} maxLength={200} onChange={(e) => setPassword(e.target.value)} onBlur={() => setTouched(true)} aria-invalid={passwordInvalid} className="h-12 rounded-xl border-white/[0.08] bg-white/[0.035] text-white placeholder:text-white/20 transition-[border-color,box-shadow,background-color] duration-300 focus-visible:border-[#d4af37]/55 focus-visible:ring-2 focus-visible:ring-[#d4af37]/12 focus-visible:shadow-[0_0_0_1px_rgba(212,175,55,0.14),0_10px_35px_rgba(212,175,55,0.05)] hover:border-white/[0.12] pl-10 pr-11" />
                       <button type="button" onClick={() => setShowPassword((value) => !value)} aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"} className="absolute right-0 top-0 flex h-12 w-11 items-center justify-center text-white/30 transition-colors hover:text-[#e5c66b]">{showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}</button>
                     </div>
                   </div>
