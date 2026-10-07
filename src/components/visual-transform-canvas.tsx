@@ -262,6 +262,7 @@ export function VisualTransformCanvas({ blocks, selectedIds: selectedIdsProp, zo
   const [guides, setGuides] = useState<Guide[]>([]);
   const [editingTextId, setEditingTextId] = useState<string | null>(null);
   const [editingTextValue, setEditingTextValue] = useState("");
+  const [selectAllOnTextEdit, setSelectAllOnTextEdit] = useState(true);
   const editingTextRef = useRef<HTMLTextAreaElement | null>(null);
   const textLongPress = useRef<ReturnType<typeof setTimeout> | null>(null);
   const groupMembers = (ids: string[]) => {
@@ -308,8 +309,9 @@ export function VisualTransformCanvas({ blocks, selectedIds: selectedIdsProp, zo
     setGuides([]);
   };
 
-  const startTextEditing = (block: Block) => {
+  const startTextEditing = (block: Block, selectAll = true) => {
     if (block.type !== "text" || block.locked || block.hidden || block.visibility === false) return;
+    setSelectAllOnTextEdit(selectAll);
     setEditingTextId(block.id);
     setEditingTextValue(block.props?.text ?? "");
   };
@@ -333,7 +335,12 @@ export function VisualTransformCanvas({ blocks, selectedIds: selectedIdsProp, zo
     if (!editingTextId) return;
     const frame = requestAnimationFrame(() => {
       editingTextRef.current?.focus();
-      editingTextRef.current?.select();
+      if (selectAllOnTextEdit) {
+        editingTextRef.current?.select();
+      } else {
+        const length = editingTextRef.current?.value.length ?? 0;
+        editingTextRef.current?.setSelectionRange(length, length);
+      }
     });
     return () => cancelAnimationFrame(frame);
   }, [editingTextId]);
@@ -679,7 +686,7 @@ export function VisualTransformCanvas({ blocks, selectedIds: selectedIdsProp, zo
               if (currentBlock && !currentBlock.locked && !currentBlock.hidden && currentBlock.visibility !== false) {
                 interaction.current = null;
                 setGuides([]);
-                startTextEditing(currentBlock);
+                startTextEditing(currentBlock, false);
               }
               textLongPress.current = null;
             }, 520);
