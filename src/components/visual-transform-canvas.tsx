@@ -18,6 +18,9 @@ type Props = {
   onChange: (update: (blocks: Block[]) => Block[], group?: string) => void;
   onDuplicate?: (ids: string[]) => void;
   onDelete?: (ids: string[]) => void;
+  onUndo?: () => void;
+  onRedo?: () => void;
+  onClearSelection?: () => void;
   onAdvanced?: () => void;
   onLayer?: (direction: "front" | "back", ids: string[]) => void;
   onGroup?: (ids: string[]) => void;
@@ -342,7 +345,19 @@ export function VisualTransformCanvas({ blocks, selectedIds: selectedIdsProp, zo
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
-      if (!selectedIds.length || isTextInput(event.target)) return;
+      if (isTextInput(event.target)) return;
+      const groupCommand = event.ctrlKey || event.metaKey;
+      if (groupCommand && event.key.toLowerCase() === "z" && !event.shiftKey) {
+        event.preventDefault();
+        onUndo?.();
+        return;
+      }
+      if (groupCommand && ((event.key.toLowerCase() === "z" && event.shiftKey) || event.key.toLowerCase() === "y")) {
+        event.preventDefault();
+        onRedo?.();
+        return;
+      }
+      if (!selectedIds.length) return;
       const activeText = selectedIds.length === 1
         ? blocks.find((block: any) => block.id === selectedIds[0])
         : undefined;
@@ -352,8 +367,11 @@ export function VisualTransformCanvas({ blocks, selectedIds: selectedIdsProp, zo
         return;
       }
 
-      if (event.key === "Escape") { finish(); return; }
-      const groupCommand = event.ctrlKey || event.metaKey;
+      if (event.key === "Escape") {
+        finish();
+        onClearSelection?.();
+        return;
+      }
       if (groupCommand && event.key.toLowerCase() === "d") {
         event.preventDefault();
         onDuplicate?.(selectedIds);
@@ -404,7 +422,7 @@ export function VisualTransformCanvas({ blocks, selectedIds: selectedIdsProp, zo
     };
     document.addEventListener("keydown", onKeyDown);
     return () => document.removeEventListener("keydown", onKeyDown);
-  }, [blocks, selectedIds, onChange, onSelect]);
+  }, [blocks, selectedIds, onChange, onSelect, onUndo, onRedo, onClearSelection, onDelete, onDuplicate, onGroup, onUngroup]);
 
   const begin = (event: React.PointerEvent, mode: Interaction["mode"], handle?: string, block?: any) => {
     event.stopPropagation();
