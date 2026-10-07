@@ -7,7 +7,7 @@ import { BackgroundPropertiesPanel, ContextualPropertiesPanel } from "@/componen
 import { BLOCKS, getBlockDefaultSize, getNextBlockZIndex, newBlock, resolveBlockGeometry, type Block, type BlockType } from "@/lib/templates";
 import { ElementsLibrary } from "@/components/elements-library";
 import { TemplateGallery } from "@/components/template-gallery";
-import { Grid3X3, Minus, Plus, Redo2, Undo2, PanelLeft, PanelRight, Sparkles, Smartphone, Tablet, Monitor, BringToFront, SendToBack } from "lucide-react";
+import { Grid3X3, Minus, Plus, Redo2, Undo2, PanelLeft, PanelRight, Sparkles, Smartphone, Tablet, Monitor, BringToFront, SendToBack, Trash2, X, Eye } from "lucide-react";
 
 function useIsCompact() {
   const [compact, setCompact] = useState(false);
@@ -733,7 +733,17 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra }: { h: Bl
           </div>
         </aside>
         <main className="relative min-w-0 flex-1 overflow-hidden rounded-2xl border border-primary/10 bg-[radial-gradient(circle_at_top,hsl(var(--primary)/.1),transparent_36%),linear-gradient(145deg,hsl(var(--muted)/.5),hsl(var(--background)/.9))] p-2 shadow-inner sm:p-4 lg:p-5">
-          <div className="mb-3 flex items-center justify-between gap-2 rounded-xl border border-primary/15 bg-card/85 px-3 py-2.5 shadow-lg shadow-black/10 backdrop-blur-xl lg:hidden"><div className="flex min-w-0 items-center gap-2"><div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary"><Sparkles className="h-3.5 w-3.5" /></div><div className="min-w-0"><p className="truncate text-xs font-semibold">Editor visual</p><p className="truncate text-[10px] text-muted-foreground">Composição livre e responsiva</p></div></div><span className="rounded-md bg-muted/70 px-2 py-1 text-xs font-medium text-muted-foreground">{zoom}%</span></div>
+          <div className="mb-3 flex items-center justify-between gap-2 rounded-xl border border-primary/15 bg-card/85 px-3 py-2.5 shadow-lg shadow-black/10 backdrop-blur-xl lg:hidden">
+            <div className="flex min-w-0 items-center gap-2">
+              <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary"><Sparkles className="h-3.5 w-3.5" /></div>
+              <div className="min-w-0"><p className="truncate text-xs font-semibold">Editor visual</p><p className="truncate text-[10px] text-muted-foreground">{selectedIds.length ? `${selectedIds.length} selecionado(s)` : "Toque para selecionar e arraste para posicionar"}</p></div>
+            </div>
+            <div className="flex items-center gap-1">
+              <button type="button" aria-label="Desfazer" title="Desfazer" disabled={!h.canUndo} onClick={h.undo} className="inline-flex h-8 w-8 items-center justify-center rounded-lg border bg-background/80 text-muted-foreground disabled:opacity-35"><Undo2 className="h-3.5 w-3.5" /></button>
+              <button type="button" aria-label="Refazer" title="Refazer" disabled={!h.canRedo} onClick={h.redo} className="inline-flex h-8 w-8 items-center justify-center rounded-lg border bg-background/80 text-muted-foreground disabled:opacity-35"><Redo2 className="h-3.5 w-3.5" /></button>
+              <span className="rounded-lg bg-muted/70 px-2 py-1.5 text-[11px] font-medium tabular-nums text-foreground">{zoom}%</span>
+            </div>
+          </div>
           <div className="h-full overflow-auto rounded-2xl border border-primary/10 bg-background/35 p-2 shadow-inner sm:p-4 lg:p-6"><div className="mx-auto origin-top transition-transform" style={{ width: `${100 / (zoom / 100)}%`, minHeight: canvasHeight / (zoom / 100) }}><div ref={canvasRef} className={`relative isolate mx-auto w-full ${DEVICE_W[device]} overflow-hidden rounded-2xl border bg-card shadow-sm ${showGrid ? "[background-image:linear-gradient(to_right,hsl(var(--border)/.25)_1px,transparent_1px),linear-gradient(to_bottom,hsl(var(--border)/.25)_1px,transparent_1px)] [background-size:16px_16px]" : ""}`} style={{ minHeight: canvasHeight, backgroundColor: bg && (bg as any).color ? (bg as any).color : undefined, transform: `scale(${zoom / 100})`, transformOrigin: "top center" }} onPointerDown={(event) => { if (event.target === event.currentTarget) { const p = canvasPoint(event); interaction.current = { mode: "marquee", startX: p.x, startY: p.y }; setSelectedIds([]); } }} onPointerMove={moveInteraction} onPointerUp={stopInteraction} onPointerCancel={stopInteraction}
               onDragEnter={(event) => {
                 if (event.dataTransfer.types.includes("application/x-vellune-block-type")) {
@@ -827,8 +837,8 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra }: { h: Bl
             <button type="button" className="flex min-w-[64px] flex-col items-center gap-1 rounded-xl px-2 py-1.5 text-[10px] text-muted-foreground hover:bg-primary/10 hover:text-primary" onClick={duplicate}><Plus className="h-4 w-4" />Duplicar</button>
             <button type="button" className="flex min-w-[64px] flex-col items-center gap-1 rounded-xl px-2 py-1.5 text-[10px] text-muted-foreground hover:bg-primary/10 hover:text-primary" onClick={() => setMobileSheet("layers")}><Grid3X3 className="h-4 w-4" />Camadas</button>
             <button type="button" className="flex min-w-[64px] flex-col items-center gap-1 rounded-xl px-2 py-1.5 text-[10px] text-muted-foreground hover:bg-primary/10 hover:text-primary" onClick={() => setMobileSheet("elements")}><Plus className="h-4 w-4" />Adicionar</button>
-            <button type="button" className="flex min-w-[64px] flex-col items-center gap-1 rounded-xl px-2 py-1.5 text-[10px] text-destructive hover:bg-destructive/10" onClick={remove}><PanelLeft className="h-4 w-4" />Excluir</button>
-            <button type="button" className="flex min-w-[64px] flex-col items-center gap-1 rounded-xl px-2 py-1.5 text-[10px] text-muted-foreground hover:bg-primary/10 hover:text-primary" onClick={() => setSelectedIds([])}><Undo2 className="h-4 w-4" />Fechar</button>
+            <button type="button" className="flex min-w-[64px] flex-col items-center gap-1 rounded-xl px-2 py-1.5 text-[10px] text-destructive hover:bg-destructive/10" onClick={remove}><Trash2 className="h-4 w-4" />Excluir</button>
+            <button type="button" className="flex min-w-[64px] flex-col items-center gap-1 rounded-xl px-2 py-1.5 text-[10px] text-muted-foreground hover:bg-primary/10 hover:text-primary" onClick={() => setSelectedIds([])}><X className="h-4 w-4" />Fechar</button>
           </div>
         )}
         <div className="flex items-center justify-between gap-1 rounded-2xl border border-primary/15 bg-card/95 p-2 shadow-2xl shadow-black/25 backdrop-blur-xl" role="toolbar" aria-label="Ferramentas móveis do editor">
@@ -869,14 +879,22 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra }: { h: Bl
           )}
           {mobileSheet === "view" && (
             <div className="space-y-3">
-              <div className="flex items-center gap-2">
-                <button type="button" className="rounded border px-3 py-2" onClick={() => setZoom((value) => Math.max(50, value - 10))}>−</button>
-                <span className="flex-1 text-center">{zoom}%</span>
-                <button type="button" className="rounded border px-3 py-2" onClick={() => setZoom((value) => Math.min(150, value + 10))}>+</button>
+              <div className="grid grid-cols-2 gap-2">
+                <button type="button" className="flex items-center justify-center gap-2 rounded-xl border px-3 py-2.5 text-xs font-medium disabled:opacity-40" disabled={!h.canUndo} onClick={h.undo}><Undo2 className="h-4 w-4" />Desfazer</button>
+                <button type="button" className="flex items-center justify-center gap-2 rounded-xl border px-3 py-2.5 text-xs font-medium disabled:opacity-40" disabled={!h.canRedo} onClick={h.redo}><Redo2 className="h-4 w-4" />Refazer</button>
               </div>
-              <button type="button" className={`w-full rounded border px-3 py-2 ${showGrid ? "bg-primary/10 text-primary" : "text-muted-foreground"}`} onClick={() => setShowGrid((value) => !value)}>
-                {showGrid ? "Guias ativas" : "Ativar guias"}
+              <div className="rounded-xl border bg-muted/20 p-2.5">
+                <div className="flex items-center gap-2">
+                  <button type="button" aria-label="Diminuir zoom" className="h-10 w-10 rounded-xl border bg-background text-lg" onClick={() => setZoom((value) => Math.max(50, value - 10))}>−</button>
+                  <span className="flex-1 text-center text-sm font-semibold tabular-nums">{zoom}%</span>
+                  <button type="button" aria-label="Aumentar zoom" className="h-10 w-10 rounded-xl border bg-background text-lg" onClick={() => setZoom((value) => Math.min(150, value + 10))}>+</button>
+                </div>
+                <button type="button" className="mt-2 w-full rounded-lg border bg-background px-3 py-2 text-xs" onClick={() => setZoom(100)}>Restaurar 100%</button>
+              </div>
+              <button type="button" className={`flex w-full items-center justify-center gap-2 rounded-xl border px-3 py-2.5 text-xs font-medium ${showGrid ? "bg-primary/10 text-primary" : "text-muted-foreground"}`} onClick={() => setShowGrid((value) => !value)}>
+                <Grid3X3 className="h-4 w-4" />{showGrid ? "Guias ativas" : "Ativar guias"}
               </button>
+              <button type="button" className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-3 py-2.5 text-xs font-semibold text-primary-foreground" onClick={() => { setMobileSheet(null); setSelectedIds([]); }}><Eye className="h-4 w-4" />Visualizar convite</button>
             </div>
           )}
           {mobileSheet === "elements" && (
