@@ -301,7 +301,7 @@ function LoginPage() {
                         id="identifier"
                         type="text"
                         autoComplete="username"
-                        inputMode="email"
+                        inputMode={identifier.trim() && !/[A-Za-zÀ-ÿ@]/.test(identifier) ? "tel" : "email"}
                         enterKeyHint="next"
                         autoCapitalize="none"
                         autoCorrect="off"
