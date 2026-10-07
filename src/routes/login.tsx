@@ -135,7 +135,6 @@ function LoginPage() {
         <section className="w-full max-w-[470px] justify-self-center">
           <div className="mb-8 flex items-center justify-center lg:hidden">
             <Logo className="h-9 text-white" />
-            </div>
           </div>
 
           <div className="rounded-[2rem] border border-white/[0.14] bg-white/[0.075] p-6 shadow-[0_24px_90px_rgba(0,0,0,0.42)] backdrop-blur-2xl sm:p-9">
