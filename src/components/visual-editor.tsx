@@ -145,6 +145,14 @@ const EDITOR_CATEGORIES: Record<string, BlockType[]> = {
 };
 
 const RSVP_DUP = "Este convite já possui confirmação de presença.";
+const ELEMENT_ICONS: Partial<Record<BlockType, React.ComponentType<{ className?: string }>>> = {
+  text: Type,
+  image: ImageIcon,
+  date: CalendarDays,
+  location: MapPin,
+  button: Link2,
+  rsvp: CheckCircle2,
+};
 const GRID_UNIT = 16;
 type EditorPointer = { clientX: number; clientY: number };
 
@@ -763,7 +771,7 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra }: { h: Bl
     <div className="grid grid-cols-2 gap-2">
       {(["text", "image", "date", "location", "button", "rsvp"] as BlockType[]).map((type) => (
         <button key={type} type="button" onClick={() => addElement(type)} className="group flex items-center gap-2 rounded-xl border border-border/70 bg-background/45 px-3 py-2.5 text-left text-xs text-foreground transition hover:border-primary/35 hover:bg-primary/5 active:scale-[.99]">
-          <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-primary/8 text-primary">+</span>
+          <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-primary/8 text-primary">{(() => { const Icon = ELEMENT_ICONS[type]; return Icon ? <Icon className="h-3.5 w-3.5" /> : <Plus className="h-3.5 w-3.5" />; })()}</span>
           <span className="min-w-0 truncate">{BLOCKS[type].label}</span>
         </button>
       ))}
