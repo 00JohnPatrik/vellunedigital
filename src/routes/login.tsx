@@ -340,7 +340,7 @@ function LoginPage() {
                     </div>
                   ) : (
                     <div>
-                    <AuthJourneySteps activeStep={2} />
+                    <AuthJourneySteps activeStep={2} labels={["Solicitar", "Verificar", "Redefinir"]} />
                     <form onSubmit={onRecovery} className="space-y-5" noValidate>
                       <div>
                         <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.25em] text-[#d4af37]">Recuperação</p>
