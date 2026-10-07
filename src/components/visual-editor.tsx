@@ -7,7 +7,7 @@ import { BackgroundPropertiesPanel, ContextualPropertiesPanel } from "@/componen
 import { BLOCKS, getBlockDefaultSize, getNextBlockZIndex, newBlock, resolveBlockGeometry, type Block, type BlockType } from "@/lib/templates";
 import { ElementsLibrary } from "@/components/elements-library";
 import { TemplateGallery } from "@/components/template-gallery";
-import { Grid3X3, Minus, Plus, Redo2, Undo2, PanelLeft, PanelRight, Sparkles, Smartphone, Tablet, Monitor, BringToFront, SendToBack, Trash2, X, Pencil } from "lucide-react";
+import { Grid3X3, Minus, Plus, Redo2, Undo2, PanelLeft, PanelRight, Sparkles, Smartphone, Tablet, Monitor, BringToFront, SendToBack, Trash2, X, Pencil, RotateCcw, RotateCw, Lock, Unlock } from "lucide-react";
 
 function useIsCompact() {
   const [compact, setCompact] = useState(false);
@@ -847,9 +847,13 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra }: { h: Bl
               <button type="button" className="flex min-w-[64px] flex-col items-center gap-1 rounded-xl bg-primary/10 px-2 py-1.5 text-[10px] font-medium text-primary" onClick={() => setStartEditingTextId(selected[0].id)}><Pencil className="h-4 w-4" />Texto</button>
             )}
             <button type="button" className="flex min-w-[64px] flex-col items-center gap-1 rounded-xl px-2 py-1.5 text-[10px] text-muted-foreground hover:bg-primary/10 hover:text-primary" onClick={() => setMobileSheet("properties")}><PanelRight className="h-4 w-4" />Editar</button>
+            <button type="button" className="flex min-w-[64px] flex-col items-center gap-1 rounded-xl px-2 py-1.5 text-[10px] text-muted-foreground hover:bg-primary/10 hover:text-primary" onClick={() => rotate(-15)}><RotateCcw className="h-4 w-4" />−15°</button>
+            <button type="button" className="flex min-w-[64px] flex-col items-center gap-1 rounded-xl px-2 py-1.5 text-[10px] text-muted-foreground hover:bg-primary/10 hover:text-primary" onClick={() => rotate(15)}><RotateCw className="h-4 w-4" />+15°</button>
             <button type="button" className="flex min-w-[64px] flex-col items-center gap-1 rounded-xl px-2 py-1.5 text-[10px] text-muted-foreground hover:bg-primary/10 hover:text-primary" onClick={duplicate}><Plus className="h-4 w-4" />Duplicar</button>
+            <button type="button" className="flex min-w-[64px] flex-col items-center gap-1 rounded-xl px-2 py-1.5 text-[10px] text-muted-foreground hover:bg-primary/10 hover:text-primary" onClick={() => reorderSelectedLayers("front")}><BringToFront className="h-4 w-4" />Frente</button>
             <button type="button" className="flex min-w-[64px] flex-col items-center gap-1 rounded-xl px-2 py-1.5 text-[10px] text-muted-foreground hover:bg-primary/10 hover:text-primary" onClick={() => setMobileSheet("layers")}><Grid3X3 className="h-4 w-4" />Camadas</button>
             <button type="button" className="flex min-w-[64px] flex-col items-center gap-1 rounded-xl px-2 py-1.5 text-[10px] text-muted-foreground hover:bg-primary/10 hover:text-primary" onClick={() => setMobileSheet("elements")}><Plus className="h-4 w-4" />Adicionar</button>
+            <button type="button" className="flex min-w-[64px] flex-col items-center gap-1 rounded-xl px-2 py-1.5 text-[10px] text-muted-foreground hover:bg-primary/10 hover:text-primary" onClick={() => h.set((items) => items.map((item: any) => selectedIds.includes(item.id) ? { ...item, locked: !item.locked } : item), "mobile:lock")}>{selected.some((item: any) => item.locked) ? <Unlock className="h-4 w-4" /> : <Lock className="h-4 w-4" />}{selected.some((item: any) => item.locked) ? "Abrir" : "Travar"}</button>
             <button type="button" className="flex min-w-[64px] flex-col items-center gap-1 rounded-xl px-2 py-1.5 text-[10px] text-destructive hover:bg-destructive/10" onClick={remove}><Trash2 className="h-4 w-4" />Excluir</button>
             <button type="button" className="flex min-w-[64px] flex-col items-center gap-1 rounded-xl px-2 py-1.5 text-[10px] text-muted-foreground hover:bg-primary/10 hover:text-primary" onClick={() => setSelectedIds([])}><X className="h-4 w-4" />Fechar</button>
           </div>
