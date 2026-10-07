@@ -726,7 +726,7 @@ export function VisualTransformCanvas({ blocks, selectedIds: selectedIdsProp, zo
       </div>;
     })}
     {selectedBounds && <div className="pointer-events-none absolute z-[80] border-2 border-primary" style={{ left: selectedBounds.left, top: selectedBounds.top, width: selectedBounds.width, height: selectedBounds.height }}>
-      {selected.length === 1 && !selected[0]?.locked && <button type="button" aria-label="Girar seleção" className="pointer-events-auto absolute left-1/2 top-0 h-6 w-6 -translate-x-1/2 -translate-y-9 rounded-full border-2 border-background bg-primary shadow-sm" style={{ cursor: cursorFor("rotate"), touchAction: "none" }} onPointerDown={(event) => begin(event, "rotate")} onPointerMove={move} onPointerUp={end} onPointerCancel={end} />}
+      {selected.length === 1 && !selected[0]?.locked && <button type="button" aria-label="Girar seleção" className="pointer-events-auto absolute left-1/2 top-0 h-8 w-8 -translate-x-1/2 -translate-y-10 rounded-full sm:h-6 sm:w-6 sm:-translate-y-9" border-2 border-background bg-primary shadow-sm" style={{ cursor: cursorFor("rotate"), touchAction: "none" }} onPointerDown={(event) => begin(event, "rotate")} onPointerMove={move} onPointerUp={end} onPointerCancel={end} />}
       {HANDLES.map((handle) => {
         const position = {
           nw: "-left-3 -top-3", n: "left-1/2 -top-3 -translate-x-1/2",
@@ -735,7 +735,7 @@ export function VisualTransformCanvas({ blocks, selectedIds: selectedIdsProp, zo
           sw: "-bottom-3 -left-3", w: "-left-3 top-1/2 -translate-y-1/2"
         }[handle];
         return <button key={handle} type="button" aria-label={`Redimensionar ${handle}`} disabled={selected.some((item: any) => item.locked)}
-          className={`pointer-events-auto absolute h-6 w-6 rounded-full border-2 border-background bg-primary shadow-sm disabled:cursor-not-allowed disabled:opacity-50 ${position}`}
+          className={`pointer-events-auto absolute h-8 w-8 rounded-full border-2 border-background bg-primary shadow-sm disabled:cursor-not-allowed disabled:opacity-50 sm:h-6 sm:w-6 ${position}`}
           style={{ cursor: cursorFor(handle), touchAction: "none" }}
           onPointerDown={(event) => begin(event, "resize", handle)}
           onPointerMove={move}
