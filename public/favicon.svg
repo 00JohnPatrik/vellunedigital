@@ -2,27 +2,24 @@
   <title id="title">Vellune</title>
   <desc id="desc">Monograma V geométrico dourado da Vellune Digital.</desc>
   <defs>
-    <linearGradient id="gold" x1="8" y1="8" x2="72" y2="72" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#F6D77A"/>
-      <stop offset=".42" stop-color="#D4AF37"/>
-      <stop offset="1" stop-color="#9B6817"/>
+    <linearGradient id="gold" x1="8" y1="8" x2="72" y2="76" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#F7DB82"/>
+      <stop offset=".45" stop-color="#D4AF37"/>
+      <stop offset="1" stop-color="#A46C18"/>
     </linearGradient>
-    <linearGradient id="goldLight" x1="12" y1="8" x2="36" y2="70" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#FFF0B0"/>
-      <stop offset="1" stop-color="#C99628"/>
+    <linearGradient id="goldLeft" x1="10" y1="8" x2="38" y2="72" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FFF2B4"/>
+      <stop offset="1" stop-color="#C89527"/>
     </linearGradient>
-    <linearGradient id="goldDeep" x1="68" y1="8" x2="44" y2="70" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#B77C1D"/>
-      <stop offset="1" stop-color="#70480D"/>
+    <linearGradient id="goldRight" x1="70" y1="8" x2="42" y2="72" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#BC8222"/>
+      <stop offset="1" stop-color="#805311"/>
     </linearGradient>
-    <filter id="shadow" x="-20%" y="-20%" width="140%" height="150%">
-      <feDropShadow dx="0" dy="3" stdDeviation="2.8" flood-color="#000" flood-opacity=".2"/>
-    </filter>
   </defs>
-  <g filter="url(#shadow)">
-    <path d="M8 8H25L40 48L55 8H72L48 72H32L8 8Z" fill="url(#gold)"/>
-    <path d="M8 8H25L40 48L32 72L16 8H8Z" fill="url(#goldLight)"/>
-    <path d="M55 8H72L48 72L40 48L55 8Z" fill="url(#goldDeep)"/>
-    <path d="M32 72L40 48L48 72Z" fill="#D8AA31" opacity=".62"/>
+  <g>
+    <path d="M8 8H26L40 48L54 8H72L47 67L40 76L33 67L8 8Z" fill="url(#gold)"/>
+    <path d="M8 8H21L40 48L33 67L8 8Z" fill="url(#goldLeft)"/>
+    <path d="M59 8H72L47 67L40 48L59 8Z" fill="url(#goldRight)"/>
+    <path d="M33 67L40 48L47 67L40 76Z" fill="#D5A52F" opacity=".9"/>
   </g>
 </svg>
