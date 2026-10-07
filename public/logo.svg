@@ -2,28 +2,25 @@
   <title id="title">Vellune Digital</title>
   <desc id="desc">Logotipo Vellune Digital com monograma V geométrico tridimensional em dourado.</desc>
   <defs>
-    <linearGradient id="gold" x1="10" y1="8" x2="70" y2="72" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#F6D77A"/>
-      <stop offset=".42" stop-color="#D4AF37"/>
-      <stop offset="1" stop-color="#9B6817"/>
+    <linearGradient id="gold" x1="8" y1="8" x2="72" y2="76" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#F7DB82"/>
+      <stop offset=".45" stop-color="#D4AF37"/>
+      <stop offset="1" stop-color="#A46C18"/>
     </linearGradient>
-    <linearGradient id="goldLight" x1="18" y1="8" x2="37" y2="67" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#FFF0B0"/>
-      <stop offset="1" stop-color="#C99628"/>
+    <linearGradient id="goldLeft" x1="10" y1="8" x2="38" y2="72" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FFF2B4"/>
+      <stop offset="1" stop-color="#C89527"/>
     </linearGradient>
-    <linearGradient id="goldDeep" x1="58" y1="8" x2="43" y2="72" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#B77C1D"/>
-      <stop offset="1" stop-color="#70480D"/>
+    <linearGradient id="goldRight" x1="70" y1="8" x2="42" y2="72" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#BC8222"/>
+      <stop offset="1" stop-color="#805311"/>
     </linearGradient>
-    <filter id="shadow" x="-25%" y="-25%" width="150%" height="170%">
-      <feDropShadow dx="0" dy="4" stdDeviation="3.5" flood-color="#000" flood-opacity=".2"/>
-    </filter>
   </defs>
-  <g filter="url(#shadow)">
-    <path d="M8 8H25L40 49L55 8H72L48 72H32L8 8Z" fill="url(#gold)"/>
-    <path d="M8 8H25L40 49L32 72L17 8H8Z" fill="url(#goldLight)"/>
-    <path d="M55 8H72L48 72L40 49L55 8Z" fill="url(#goldDeep)"/>
-    <path d="M32 72L40 49L48 72Z" fill="#D8AA31" opacity=".78"/>
+  <g>
+    <path d="M8 8H26L40 48L54 8H72L47 67L40 76L33 67L8 8Z" fill="url(#gold)"/>
+    <path d="M8 8H21L40 48L33 67L8 8Z" fill="url(#goldLeft)"/>
+    <path d="M59 8H72L47 67L40 48L59 8Z" fill="url(#goldRight)"/>
+    <path d="M33 67L40 48L47 67L40 76Z" fill="#D5A52F" opacity=".9"/>
   </g>
   <text x="84" y="35" fill="#0B1220" font-family="Sora,Manrope,Arial,sans-serif" font-size="22" font-weight="600" letter-spacing="3.2">VELLUNE</text>
   <text x="86" y="56" fill="#0B1220" font-family="Manrope,Arial,sans-serif" font-size="9.5" font-weight="600" letter-spacing="5.6">DIGITAL</text>
