@@ -5,7 +5,7 @@ import { adminNav, companyNav } from "@/lib/nav";
 // PermissionGuard + CompanyScopeGuard: company_admin with active company, or super_admin (global).
 export const Route = createFileRoute("/_authenticated/customers")({
   beforeLoad: ({ context }) => {
-    const u = context.appUser;
+    const u = context.appUser!;
     if (u.role === "company_admin" && !u.company) throw redirect({ to: "/login", search: { error: "inactive" } });
   },
   head: () => ({ meta: [{ title: "Clientes — Vellune Digital" }, { name: "robots", content: "noindex" }] }),
@@ -13,7 +13,8 @@ export const Route = createFileRoute("/_authenticated/customers")({
 });
 
 function CustomersLayout() {
-  const { appUser } = Route.useRouteContext();
+  const { appUser: routeAppUser } = Route.useRouteContext();
+  const appUser = routeAppUser!;
   const isSuper = appUser.role === "super_admin";
   return (
     <AppShell base={isSuper ? "/admin" : "/dashboard"} nav={isSuper ? adminNav : companyNav} appUser={appUser}>
