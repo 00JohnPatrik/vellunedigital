@@ -165,7 +165,7 @@
   }
 
   .vellune-login-root {
-    contain: layout paint;
+    contain: layout;
   }
 
   /*
