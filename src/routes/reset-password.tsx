@@ -1,18 +1,67 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { CheckCircle2, ShieldCheck } from "lucide-react";
-import { useEffect, useState } from "react";
+import { AlertCircle, CheckCircle2, Eye, EyeOff, LoaderCircle, ShieldCheck } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { AuthCard } from "@/components/auth-card";
-import { PasswordInput } from "@/components/password-input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { friendlyAuthError } from "@/lib/app-user";
 
 export const Route = createFileRoute("/reset-password")({
   ssr: false,
-  head: () => ({ meta: [{ title: "Definir nova senha — Vellune Digital" }, { name: "description", content: "Crie uma nova senha para sua conta." }] }),
+  head: () => ({
+    meta: [
+      { title: "Definir nova senha — Vellune Digital" },
+      { name: "description", content: "Crie uma nova senha para sua conta." },
+      { name: "theme-color", content: "#08090d" },
+    ],
+  }),
   component: ResetPage,
 });
+
+function PasswordField({
+  id,
+  value,
+  onChange,
+  placeholder,
+  autoComplete,
+  error,
+  inputRef,
+}: {
+  id: string;
+  value: string;
+  onChange: (value: string) => void;
+  placeholder: string;
+  autoComplete: string;
+  error?: boolean;
+  inputRef?: React.RefObject<HTMLInputElement | null>;
+}) {
+  const [visible, setVisible] = useState(false);
+  return (
+    <div className="relative">
+      <input
+        ref={inputRef}
+        id={id}
+        type={visible ? "text" : "password"}
+        autoComplete={autoComplete}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        maxLength={200}
+        aria-invalid={error}
+        className="h-12 w-full rounded-xl border border-white/[0.08] bg-[#111318]/90 px-4 pr-11 text-sm text-white placeholder:text-white/20 outline-none transition-[border-color,box-shadow,background-color] duration-300 focus:border-[#d4af37]/55 focus:ring-2 focus:ring-[#d4af37]/12 focus:shadow-[0_0_0_1px_rgba(212,175,55,0.14),0_10px_35px_rgba(212,175,55,0.05)]"
+      />
+      <button
+        type="button"
+        onClick={() => setVisible((value) => !value)}
+        aria-label={visible ? "Ocultar senha" : "Mostrar senha"}
+        className="absolute right-0 top-0 flex h-12 w-11 items-center justify-center text-white/30 transition-colors hover:text-[#e5c66b]"
+      >
+        {visible ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+      </button>
+    </div>
+  );
+}
 
 function ResetPage() {
   const navigate = useNavigate();
@@ -21,24 +70,44 @@ function ResetPage() {
   const [confirm, setConfirm] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const passwordRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     const isRecovery = window.location.hash.includes("type=recovery");
-    const { data: sub } = supabase.auth.onAuthStateChange((event) => { if (event === "PASSWORD_RECOVERY") setReady(true); });
+    const { data: sub } = supabase.auth.onAuthStateChange((event) => {
+      if (event === "PASSWORD_RECOVERY") setReady(true);
+    });
     supabase.auth.getSession().then(({ data }) => {
       if (data.session && isRecovery) setReady(true);
     });
     return () => sub.subscription.unsubscribe();
   }, []);
 
+  const passwordTooShort = password.length > 0 && password.length < 8;
+  const confirmMismatch = confirm.length > 0 && password !== confirm;
+
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (password.length < 8) return setError("A senha deve ter pelo menos 8 caracteres.");
-    if (password !== confirm) return setError("As senhas não coincidem.");
-    setLoading(true); setError(null);
-    const { error } = await supabase.auth.updateUser({ password });
+    setError(null);
+
+    if (password.length < 8) {
+      setError("A senha deve ter pelo menos 8 caracteres.");
+      window.setTimeout(() => passwordRef.current?.focus(), 0);
+      return;
+    }
+    if (password !== confirm) {
+      setError("As senhas não coincidem.");
+      return;
+    }
+
+    setLoading(true);
+    const { error: updateError } = await supabase.auth.updateUser({ password });
     setLoading(false);
-    if (error) return setError(friendlyAuthError(error.message));
+    if (updateError) {
+      setError(friendlyAuthError(updateError.message));
+      return;
+    }
+
     await supabase.auth.signOut();
     navigate({ to: "/login", replace: true });
   }
@@ -46,14 +115,80 @@ function ResetPage() {
   return (
     <AuthCard title="Crie uma nova senha" subtitle="Escolha uma senha forte para manter sua conta protegida.">
       {!ready ? (
-        <div className="space-y-4 rounded-2xl border border-destructive/20 bg-destructive/5 p-5"><div className="flex h-11 w-11 items-center justify-center rounded-full bg-destructive/10 text-destructive"><ShieldCheck className="h-5 w-5" /></div><p className="text-sm leading-relaxed text-muted-foreground">Link inválido ou expirado. <Link to="/login" search={{ mode: "recovery" }} className="font-semibold text-primary hover:underline">Solicite um novo link</Link>.</p></div>
+        <div className="space-y-5 rounded-2xl border border-red-300/15 bg-red-400/[0.07] p-4 sm:p-5" role="alert">
+          <div className="flex h-11 w-11 items-center justify-center rounded-full border border-red-300/15 bg-red-400/[0.07] text-red-200">
+            <ShieldCheck className="h-5 w-5" />
+          </div>
+          <div>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.25em] text-red-200/80">Link indisponível</p>
+            <h2 className="mt-1 font-display text-[22px] font-medium tracking-[-0.025em] text-white">Este link não é mais válido</h2>
+            <p className="mt-2 text-[13px] leading-5 text-red-100/55">O link pode ter expirado ou não foi possível validar sua sessão de recuperação.</p>
+          </div>
+          <Link to="/login" search={{ mode: "recovery" }} className="inline-flex text-xs font-semibold text-[#e5c66b] transition-colors hover:text-white">
+            Solicitar novo link →
+          </Link>
+        </div>
       ) : (
         <form onSubmit={onSubmit} className="space-y-5" noValidate>
-          <div className="space-y-2"><Label htmlFor="pw">Nova senha</Label><PasswordInput id="pw" autoComplete="new-password" value={password} maxLength={200} onChange={(e) => setPassword(e.target.value)} placeholder="Mínimo de 8 caracteres" /></div>
-          <div className="space-y-2"><Label htmlFor="pw2">Confirmar nova senha</Label><PasswordInput id="pw2" autoComplete="new-password" value={confirm} maxLength={200} onChange={(e) => setConfirm(e.target.value)} placeholder="Digite novamente sua senha" /></div>
-          <p className="flex items-center gap-2 text-xs text-muted-foreground"><CheckCircle2 className="h-4 w-4 text-primary" /> Use pelo menos 8 caracteres.</p>
-          {error && <p role="alert" className="rounded-xl border border-destructive/30 bg-destructive/10 px-3.5 py-3 text-sm text-destructive">{error}</p>}
-          <Button type="submit" className="h-11 w-full rounded-xl" disabled={loading}>{loading ? "Salvando senha..." : "Salvar nova senha"}</Button>
+          <div className="rounded-2xl border border-white/[0.06] bg-white/[0.025] px-4 py-3.5">
+            <div className="flex items-center gap-2 text-xs font-medium text-white/75 sm:text-sm">
+              <ShieldCheck className="h-4 w-4 text-[#d4af37]" />
+              Sua nova senha será protegida pela Vellune.
+            </div>
+            <p className="mt-1.5 text-[11px] leading-5 text-white/35 sm:text-xs">Use pelo menos 8 caracteres e evite combinações fáceis de adivinhar.</p>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="pw" className="text-xs font-medium text-white/65">Nova senha</Label>
+            <PasswordField
+              id="pw"
+              inputRef={passwordRef}
+              autoComplete="new-password"
+              value={password}
+              onChange={setPassword}
+              placeholder="Mínimo de 8 caracteres"
+              error={passwordTooShort}
+            />
+            {passwordTooShort && <p className="flex items-center gap-1.5 text-[11px] text-red-300/90"><AlertCircle className="h-3.5 w-3.5" />A senha precisa ter pelo menos 8 caracteres.</p>}
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="pw2" className="text-xs font-medium text-white/65">Confirmar nova senha</Label>
+            <PasswordField
+              id="pw2"
+              autoComplete="new-password"
+              value={confirm}
+              onChange={setConfirm}
+              placeholder="Digite novamente sua senha"
+              error={confirmMismatch}
+            />
+            {confirmMismatch && <p className="flex items-center gap-1.5 text-[11px] text-red-300/90"><AlertCircle className="h-3.5 w-3.5" />As senhas ainda não coincidem.</p>}
+          </div>
+
+          <p className="flex items-center gap-2 text-xs text-white/35">
+            <CheckCircle2 className="h-4 w-4 shrink-0 text-[#d4af37]" />
+            Mínimo de 8 caracteres.
+          </p>
+
+          {error && (
+            <div role="alert" aria-live="assertive" className="flex items-start gap-3 rounded-xl border border-red-300/15 bg-red-400/[0.07] px-4 py-3 text-sm leading-6 text-red-200">
+              <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-red-200/10 bg-red-200/[0.06]">
+                <AlertCircle className="h-3.5 w-3.5" />
+              </span>
+              <div>
+                <p className="font-medium text-red-100/95">Não foi possível salvar</p>
+                <p className="mt-0.5 text-[12px] leading-5 text-red-200/75">{error}</p>
+              </div>
+            </div>
+          )}
+
+          <Button type="submit" className="group relative h-12 w-full overflow-hidden rounded-xl bg-[#d4af37] font-semibold text-[#16130b] shadow-[0_12px_34px_rgba(212,175,55,0.10)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#e5c66b] hover:shadow-[0_16px_38px_rgba(212,175,55,0.16)] active:translate-y-0 disabled:cursor-default disabled:opacity-100" disabled={loading}>
+            {loading ? (
+              <span className="flex items-center justify-center gap-2"><LoaderCircle className="h-4 w-4 animate-spin" />Salvando senha...</span>
+            ) : (
+              <span className="flex items-center justify-center gap-2">Salvar nova senha <span aria-hidden="true">→</span></span>
+            )}
+          </Button>
         </form>
       )}
     </AuthCard>
