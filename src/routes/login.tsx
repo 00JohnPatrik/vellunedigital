@@ -122,7 +122,7 @@ function LoginPage() {
   }
 
   return (
-    <main className="fixed inset-0 overflow-hidden bg-[#08090d] text-white selection:bg-[#d4af37]/25">
+    <main className="fixed inset-0 overflow-y-auto overscroll-contain bg-[#08090d] text-white selection:bg-[#d4af37]/25 lg:overflow-hidden">
       <style>{`
         @keyframes velluneFadeUp {
           from { opacity: 0; transform: translateY(10px); }
@@ -142,7 +142,7 @@ function LoginPage() {
       <div className="pointer-events-none absolute -right-40 -bottom-40 h-[34rem] w-[34rem] rounded-full border border-white/[0.035]" />
       <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(90deg,transparent_0%,rgba(255,255,255,0.018)_50%,transparent_100%)]" />
 
-      <div className="relative z-10 mx-auto grid h-full w-full max-w-[1440px] grid-cols-1 lg:grid-cols-[1.15fr_0.85fr] vellune-motion" style={{ animation: "velluneFadeUp 650ms cubic-bezier(.22,1,.36,1)" }}>
+      <div className="relative z-10 mx-auto grid min-h-full w-full max-w-[1440px] grid-cols-1 lg:h-full lg:grid-cols-[1.15fr_0.85fr] vellune-motion" style={{ animation: "velluneFadeUp 650ms cubic-bezier(.22,1,.36,1)" }}>
         {/* Brand side */}
         <section className="relative hidden min-h-0 flex-col justify-between overflow-hidden px-12 py-10 lg:flex xl:px-20 vellune-motion" style={{ animation: "velluneFadeUp 750ms cubic-bezier(.22,1,.36,1)" }}>
           <div>
@@ -172,13 +172,13 @@ function LoginPage() {
         </section>
 
         {/* Authentication side */}
-        <section className="flex h-full min-h-0 items-center justify-center px-4 py-5 sm:px-8 lg:border-l lg:border-white/[0.045] lg:bg-white/[0.012] xl:px-16">
-          <div className="w-full max-w-[430px]">
-            <div className="mb-8 flex justify-center lg:hidden">
+        <section className="flex min-h-full items-center justify-center px-4 py-5 sm:px-8 lg:h-full lg:min-h-0 lg:border-l lg:border-white/[0.045] lg:bg-white/[0.012] xl:px-16">
+          <div className="w-full max-w-[430px] py-1 sm:py-2">
+            <div className="mb-6 flex justify-center lg:hidden sm:mb-8">
               <Logo className="h-11 w-[225px] text-white transition-opacity duration-500 hover:opacity-90" />
             </div>
 
-            <div className="relative overflow-hidden rounded-[28px] border border-white/[0.075] bg-[#111318]/92 p-6 shadow-[0_30px_100px_rgba(0,0,0,0.46)] backdrop-blur-xl sm:p-9 vellune-motion" style={{ animation: "velluneFadeUp 800ms cubic-bezier(.22,1,.36,1)" }}>
+            <div className="relative overflow-hidden rounded-[28px] border border-white/[0.075] bg-[#111318]/92 p-6 shadow-[0_30px_100px_rgba(0,0,0,0.46)] backdrop-blur-xl sm:rounded-[28px] sm:p-9 vellune-motion" style={{ animation: "velluneFadeUp 800ms cubic-bezier(.22,1,.36,1)" }}>
               <div className="pointer-events-none absolute inset-x-10 top-0 h-px bg-gradient-to-r from-transparent via-[#d4af37]/35 to-transparent" />
               <div className="pointer-events-none absolute -right-24 -top-24 h-48 w-48 rounded-full bg-[#d4af37]/[0.035] blur-3xl" style={{ animation: "velluneGlow 7s ease-in-out infinite" }} />
               {mode === "recovery" ? (
