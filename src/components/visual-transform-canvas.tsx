@@ -19,6 +19,7 @@ type Props = {
   onDuplicate?: (ids: string[]) => void;
   onDelete?: (ids: string[]) => void;
   onAdvanced?: () => void;
+  onImageAction?: (id: string, action: ImageAction) => void;
   startEditingId?: string | null;
   onStartEditingHandled?: () => void;
 };
@@ -204,7 +205,7 @@ function isTextInput(target: EventTarget | null) {
   return element.tagName === "INPUT" || element.tagName === "TEXTAREA" || element.tagName === "SELECT" || element.isContentEditable;
 }
 
-export function VisualTransformCanvas({ blocks, selectedIds: selectedIdsProp, zoom, canvasRef, ctx, onSelect, onChange, onDuplicate, onDelete, onAdvanced, startEditingId, onStartEditingHandled }: Props) {
+export function VisualTransformCanvas({ blocks, selectedIds: selectedIdsProp, zoom, canvasRef, ctx, onSelect, onChange, onDuplicate, onDelete, onAdvanced, onImageAction, startEditingId, onStartEditingHandled }: Props) {
   const interaction = useRef<Interaction | null>(null);
   const [guides, setGuides] = useState<Guide[]>([]);
   const [editingTextId, setEditingTextId] = useState<string | null>(null);
@@ -503,9 +504,11 @@ export function VisualTransformCanvas({ blocks, selectedIds: selectedIdsProp, zo
   const imageAction = (action: ImageAction) => {
     const image = selectedBlocks.find((block: any) => block.type === "image");
     if (!image || selectedBlocks.length !== 1) return;
-    if (action === "replace" || action === "crop" || action === "adjust") {
-      onAdvanced?.();
+    if (onImageAction) {
+      onImageAction(image.id, action);
+      if (action === "replace") return;
     }
+    onAdvanced?.();
   };
 
   return <>
