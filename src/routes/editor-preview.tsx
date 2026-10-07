@@ -1,23 +1,9 @@
 import { useMemo, useState } from "react";
-import { createFileRoute } from "@tanstack/react-router";
 import { Eye, ShieldCheck } from "lucide-react";
 import { VisualEditor, useBlocksHistory } from "@/components/visual-editor";
 import { invitationCtx } from "@/components/invitation-ui";
 import { normalizeBlocks } from "@/lib/blocks";
 import type { Background } from "@/lib/templates";
-
-export const Route = createFileRoute("/editor-preview")({
-  head: () => ({
-    meta: [
-      { title: "Preview do Editor Visual — Vellune Digital" },
-      {
-        name: "description",
-        content: "Demonstração local e isolada do Editor Visual.",
-      },
-    ],
-  }),
-  component: EditorPreviewPage,
-});
 
 const demoInvitation = {
   id: "editor-preview-demo",
@@ -152,7 +138,7 @@ function isLovablePreviewHost() {
   return window.location.hostname.toLowerCase() === PUBLISHED_PREVIEW_HOST;
 }
 
-function EditorPreviewPage() {
+export function EditorPreviewPage() {
   const isPreviewEnvironment = isLovablePreviewHost();
 
   if (!isPreviewEnvironment) {
