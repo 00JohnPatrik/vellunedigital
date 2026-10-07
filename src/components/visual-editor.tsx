@@ -201,7 +201,7 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra }: { h: Bl
   };
   const duplicateByIds = (ids: string[]) => {
     if (!ids.length) return;
-    const copies = blocks.filter((block: any) => ids.includes(block.id)).map((block: any) => ({
+    const copies = blocks.filter((block: any) => ids.includes(block.id) && block.type !== "rsvp").map((block: any) => ({
       ...structuredClone(block),
       id: crypto.randomUUID(),
       x: typeof block.x === "number" ? block.x + 24 : block.x,
@@ -362,7 +362,7 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra }: { h: Bl
     });
     setSelectedIds([block.id]);
   };
-  const duplicate = () => { if (!selected.length) return; const copies = selected.filter((block: any) => block.type !== "rsvp" || !blocks.some((item: any) => item.type === "rsvp" && !selectedIds.includes(item.id))).map((block: any) => ({ ...structuredClone(block), id: crypto.randomUUID(), x: (block.x ?? 24) + 24, y: (block.y ?? 24) + 24 })); h.set((items) => [...items, ...copies]); setSelectedIds(copies.map((block: any) => block.id)); };
+  const duplicate = () => { if (!selected.length) return; const copies = selected.filter((block: any) => block.type !== "rsvp").map((block: any) => ({ ...structuredClone(block), id: crypto.randomUUID(), x: (block.x ?? 24) + 24, y: (block.y ?? 24) + 24 })); if (!copies.length) { window.alert(RSVP_DUP); return; } h.set((items) => [...items, ...copies]); setSelectedIds(copies.map((block: any) => block.id)); };
   const remove = () => { if (!selected.length) return; h.set((items) => items.filter((block: any) => !selectedIds.includes(block.id) || block.locked)); setSelectedIds([]); };
   const rotate = (amount: number) => h.set((items) => items.map((block: any) => selectedIds.includes(block.id) && !block.locked ? { ...block, rotation: (block.rotation ?? 0) + amount } : block), "selection:rotation");
   useEffect(() => {
@@ -376,7 +376,10 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra }: { h: Bl
       else if (command && key === "c" && selectedIds.length) { event.preventDefault(); clipboard.current = blocks.filter((block: any) => selectedIds.includes(block.id)).map((block: any) => structuredClone(block)); }
       else if (command && key === "v" && clipboard.current.length) {
         event.preventDefault();
-        const pasted = clipboard.current.map((block: any, index: number) => ({ ...structuredClone(block), id: crypto.randomUUID(), x: (block.x ?? 24) + 24 + index * 8, y: (block.y ?? 24) + 24 + index * 8 }));
+        const pasted = clipboard.current
+          .filter((block: any) => block.type !== "rsvp")
+          .map((block: any, index: number) => ({ ...structuredClone(block), id: crypto.randomUUID(), x: (block.x ?? 24) + 24 + index * 8, y: (block.y ?? 24) + 24 + index * 8 }));
+        if (!pasted.length) { window.alert(RSVP_DUP); return; }
         h.set((items) => [...items, ...pasted]);
         setSelectedIds(pasted.map((block: any) => block.id));
       }
