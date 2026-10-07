@@ -55,6 +55,7 @@ function LoginPage() {
   const identifierRef = useRef<HTMLInputElement | null>(null);
   const passwordRef = useRef<HTMLInputElement | null>(null);
   const recoveryEmailRef = useRef<HTMLInputElement | null>(null);
+  const authScrollRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
     try {
@@ -81,7 +82,11 @@ function LoginPage() {
   }, [recoveryCooldown]);
 
   function formatBrazilianPhone(value: string) {
-    const digits = value.replace(/\D/g, "").slice(0, 11);
+    let digits = value.replace(/\D/g, "");
+    if (digits.startsWith("55") && (digits.length === 12 || digits.length === 13)) {
+      digits = digits.slice(2);
+    }
+    digits = digits.slice(0, 11);
     if (!digits) return "";
     if (digits.length <= 2) return `(${digits}`;
     if (digits.length <= 6) return `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
@@ -291,7 +296,7 @@ function LoginPage() {
         <AuthPremiumVisual />
 
         {/* Authentication side */}
-        <section className="flex h-full min-h-0 items-stretch justify-start overflow-y-auto overflow-x-clip overscroll-contain bg-[#08090d] px-3 pt-[max(1rem,env(safe-area-inset-top))] pb-[max(1rem,env(safe-area-inset-bottom))] sm:px-8 sm:py-5 lg:h-full lg:min-h-0 lg:items-stretch lg:justify-start lg:overflow-y-auto lg:border-l lg:border-white/[0.045] lg:bg-white/[0.012] xl:px-16">
+        <section ref={authScrollRef} className="flex h-full min-h-0 items-stretch justify-start overflow-y-auto overflow-x-clip overscroll-contain bg-[#08090d] px-3 pt-[max(1rem,env(safe-area-inset-top))] pb-[max(1rem,env(safe-area-inset-bottom))] sm:px-8 sm:py-5 lg:h-full lg:min-h-0 lg:items-stretch lg:justify-start lg:overflow-y-auto lg:border-l lg:border-white/[0.045] lg:bg-white/[0.012] xl:px-16">
           <div className="my-auto mx-auto w-full max-w-[430px] shrink-0 py-1 sm:py-2">
             <div className="mb-4 flex w-full shrink-0 flex-col items-center justify-center lg:hidden sm:mb-9">
               <Logo className="h-12 w-auto max-w-[78vw] text-white transition-opacity duration-500 hover:opacity-90 sm:h-16" />
@@ -422,6 +427,7 @@ function LoginPage() {
                           }
                         }}
                         placeholder="E-mail ou (11) 99999-9999"
+                         enterKeyHint="next"
                         aria-invalid={identifierInvalid}
                         aria-describedby={identifierError ? "identifier-error" : undefined}
                         className="relative z-10 h-12 rounded-xl border-white/[0.08] bg-[#111318]/90 text-white placeholder:text-white/20 transition-[border-color,box-shadow,background-color] duration-300 focus-visible:border-[#d4af37]/55 focus-visible:ring-2 focus-visible:ring-[#d4af37]/12 focus-visible:shadow-[0_0_0_1px_rgba(212,175,55,0.14),0_10px_35px_rgba(212,175,55,0.05)] hover:border-white/[0.12] pl-10"
@@ -502,7 +508,7 @@ function LoginPage() {
                     </div>
                   )}
 
-                  <Button type="submit" disabled={loading || loginCooldown > 0} className="group mt-2 h-12 w-full rounded-xl bg-[#d4af37] font-semibold text-[#16130b] shadow-[0_12px_34px_rgba(212,175,55,0.10)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#e5c66b] hover:shadow-[0_16px_38px_rgba(212,175,55,0.16)] active:translate-y-0 disabled:cursor-default disabled:opacity-100">
+                  <Button type="submit" disabled={loading || loginCooldown > 0} className="group mt-2 flex h-12 w-full min-h-12 items-center justify-center rounded-xl bg-[#d4af37] font-semibold text-[#16130b] shadow-[0_12px_34px_rgba(212,175,55,0.10)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#e5c66b] hover:shadow-[0_16px_38px_rgba(212,175,55,0.16)] active:translate-y-0 disabled:cursor-default disabled:opacity-100">
                     {loginSuccess ? (
                       <span className="flex items-center justify-center gap-2">
                         <CheckCircle2 className="h-4 w-4" style={{ animation: "velluneSuccess 260ms cubic-bezier(.22,1,.36,1)" }} />
