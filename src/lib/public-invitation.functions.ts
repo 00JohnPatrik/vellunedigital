@@ -37,14 +37,15 @@ export const getPublicInvitation = createServerFn({ method: "GET" })
     const { data: res, error } = await supabaseAdmin.rpc("get_public_invitation" as never, { _slug: data.slug } as never);
     if (error) { console.error("get_public_invitation", error.message); throw new Error("Falha ao carregar o convite."); }
     const out = res as unknown as PublicInvitationResult;
-    // The public SQL function intentionally does not expose company_id.
-    // Resolve the tenant internally on the server so custom branding can still be applied.
+    let publicCompanyId: string | null = null;
+    let publicInvitationId: string | null = null;
+
+    // The public SQL function intentionally does not expose internal tenant identifiers.
+    // Resolve them only inside the server boundary for branding and private asset authorization.
     if (out.state === "ok") {
-      // The public SQL function intentionally does not expose company_id.
-      // Resolve the tenant internally on the server so custom branding can still be applied.
       const { data: tenant, error: tenantError } = await supabaseAdmin
         .from("invitations")
-        .select("company_id")
+        .select("id, company_id")
         .eq("slug", out.invitation.slug)
         .in("status", ["published", "closed"])
         .maybeSingle();
@@ -54,6 +55,8 @@ export const getPublicInvitation = createServerFn({ method: "GET" })
       }
 
       if (tenant?.company_id) {
+        publicCompanyId = tenant.company_id;
+        publicInvitationId = tenant.id;
         const { data: subscription } = await supabaseAdmin
           .from("company_subscriptions")
           .select("plan_id, status, expires_at")
@@ -132,9 +135,21 @@ export const getPublicInvitation = createServerFn({ method: "GET" })
 
       if (bgPath) rawRefs.push(bgPath);
 
-      const paths = [...new Set(rawRefs)].filter(
-        (p) => /^(companies|official)\/[\w\-/.]+$/.test(p) && !p.includes(".."),
-      );
+      const allowedInvitationPrefix = publicCompanyId && publicInvitationId
+        ? `companies/${publicCompanyId}/invitations/${publicInvitationId}/`
+        : null;
+      const allowedCompanyTemplatePrefix = publicCompanyId
+        ? `companies/${publicCompanyId}/templates/`
+        : null;
+
+      const paths = [...new Set(rawRefs)].filter((p) => {
+        if (!/^(companies|official)\/[\w\-/.]+$/.test(p) || p.includes("..")) return false;
+        return (
+          p.startsWith("official/templates/") ||
+          (!!allowedInvitationPrefix && p.startsWith(allowedInvitationPrefix)) ||
+          (!!allowedCompanyTemplatePrefix && p.startsWith(allowedCompanyTemplatePrefix))
+        );
+      });
 
       if (paths.length) {
         const { data: signed } = await supabaseAdmin
