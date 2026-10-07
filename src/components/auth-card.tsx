@@ -73,10 +73,11 @@ export function AuthCard({
               <div className="pt-4 sm:pt-6">{children}</div>
             </div>
 
-            <div className="mt-2 flex shrink-0 items-center justify-center gap-2 text-center text-[8px] font-medium uppercase tracking-[0.22em] text-white/20 sm:mt-5 sm:text-[9px]">
-              <LockKeyhole className="h-3 w-3 text-[#d4af37]/55 sm:h-3.5 sm:w-3.5" />
-              <span>Dados protegidos</span>
-              <Sparkles className="h-3 w-3 text-[#d4af37]/45 sm:h-3.5 sm:w-3.5" />
+            <div className="mt-2 flex shrink-0 items-center justify-center gap-2 text-center text-[8px] font-medium uppercase tracking-[0.2em] text-white/20 sm:mt-5 sm:text-[9px]">
+              <ShieldCheck className="h-3 w-3 text-[#d4af37]/60 sm:h-3.5 sm:w-3.5" />
+              <span className="text-white/30">Vellune Secure</span>
+              <span className="h-px w-3 bg-white/[0.09]" />
+              <span>Acesso protegido</span>
             </div>
 
             {footer}
