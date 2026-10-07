@@ -17,9 +17,9 @@ export const Route = createFileRoute("/_authenticated/customers/")({
 });
 
 function CustomersPage() {
-  const { appUser } = Route.useRouteContext();
-  const companyId = appUser.company?.id;
-  const isSuper = appUser.role === "super_admin";
+  const { appUser! } = Route.useRouteContext();
+  const companyId = appUser!.company?.id;
+  const isSuper = appUser!.role === "super_admin";
   const qc = useQueryClient();
   const navigate = useNavigate();
   const q = useQuery({ queryKey: customersKey, queryFn: listCustomers });
