@@ -390,15 +390,13 @@ function LoginPage() {
                     ) : loading ? "Entrando..." : phoneCooldown > 0 ? `Aguarde ${phoneCooldown}s...` : <span className="flex items-center justify-center gap-2">Entrar na conta <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" /></span>}
                   </Button>
 
-                  <div className="flex items-center gap-3 pt-1 text-[9px] font-medium tracking-[0.25em] text-white/20"><span className="h-px flex-1 bg-white/[0.07]" /><span>ACESSO PRIVADO</span><span className="h-px flex-1 bg-white/[0.07]" /></div>
-
                   <p className="text-center text-xs text-white/35">Primeira vez aqui? <a href="/first-access" className="font-semibold text-white/65 transition-colors hover:text-[#e5c66b]">Faça seu primeiro acesso</a></p>
                 </form>
               )}
               </div>
             </div>
 
-            <p className="mt-5 text-center text-[9px] font-medium uppercase tracking-[0.24em] text-white/20">Vellune Digital · v1.6</p>
+            <p className="mt-5 text-center text-[9px] font-medium uppercase tracking-[0.24em] text-white/20">Vellune Digital · v1.7</p>
           </div>
         </section>
       </div>
