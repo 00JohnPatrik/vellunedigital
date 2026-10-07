@@ -85,6 +85,13 @@ function ResetPage() {
 
   const passwordTooShort = password.length > 0 && password.length < 8;
   const confirmMismatch = confirm.length > 0 && password !== confirm;
+  const strengthScore = [
+    password.length >= 8,
+    /[A-ZÀ-Ý]/.test(password) && /[a-zà-ÿ]/.test(password),
+    /\d/.test(password),
+    /[^A-Za-zÀ-ÿ0-9]/.test(password),
+  ].filter(Boolean).length;
+  const strengthLabel = strengthScore <= 1 ? "Fraca" : strengthScore === 2 ? "Média" : "Forte";
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -150,6 +157,10 @@ function ResetPage() {
               error={passwordTooShort}
             />
             {passwordTooShort && <p className="flex items-center gap-1.5 text-[11px] text-red-300/90"><AlertCircle className="h-3.5 w-3.5" />A senha precisa ter pelo menos 8 caracteres.</p>}
+            <div className="pt-1">
+              <div className="mb-1.5 flex items-center justify-between text-[9px] font-semibold uppercase tracking-[0.14em]"><span className="text-white/25">Força da senha</span><span className={strengthScore >= 3 ? "text-[#e5c66b]" : "text-white/35"}>{password ? strengthLabel : "—"}</span></div>
+              <div className="grid grid-cols-4 gap-1">{[1,2,3,4].map((level)=><span key={level} className={`h-1 rounded-full transition-all duration-300 ${password && strengthScore >= level ? "bg-[#d4af37]" : "bg-white/[0.07]"}`} />)}</div>
+            </div>
           </div>
 
           <div className="space-y-2">
