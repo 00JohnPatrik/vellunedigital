@@ -42,6 +42,11 @@ export function applyTheme(theme: "light" | "dark" | null) {
   document.documentElement.classList.toggle("dark", theme === "dark");
 }
 
+export function isAuthServiceUnavailable(error: unknown) {
+  const message = error instanceof Error ? error.message : String(error ?? "");
+  return /failed to fetch|fetch failed|networkerror|network error|timeout|timed out|service unavailable|temporarily unavailable|bad gateway|gateway timeout|502|503|504/i.test(message);
+}
+
 export function friendlyAuthError(msg?: string) {
   if (!msg) return "Algo deu errado. Tente novamente.";
   if (/invalid login/i.test(msg)) return "E-mail ou senha inválidos.";
