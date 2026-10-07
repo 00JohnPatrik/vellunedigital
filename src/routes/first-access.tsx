@@ -28,6 +28,7 @@ function FirstAccessPage() {
   const [email, setEmail] = useState("");
   const [sent, setSent] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [errorIsValidation, setErrorIsValidation] = useState(false);
   const [loading, setLoading] = useState(false);
   const [resendCooldown, setResendCooldown] = useState(0);
   const [authUnavailable, setAuthUnavailable] = useState(false);
@@ -40,10 +41,17 @@ function FirstAccessPage() {
 
   async function resendLink() {
     if (loading || resendCooldown > 0) return;
-    const parsed = z.string().trim().toLowerCase().email().max(255).safeParse(email);
-    if (!parsed.success) return;
+    const normalizedEmail = email.trim().toLowerCase();
+    const parsed = z.string().email().max(255).safeParse(normalizedEmail);
+    if (!parsed.success) {
+      setError("Digite um e-mail válido, como voce@empresa.com.");
+      setErrorIsValidation(true);
+      return;
+    }
+    setEmail(parsed.data);
     setLoading(true);
     setError(null);
+    setErrorIsValidation(false);
     try {
       await request({ data: { email: parsed.data } });
       setResendCooldown(30);
@@ -56,15 +64,19 @@ function FirstAccessPage() {
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
-    const parsed = z.string().trim().toLowerCase().email().max(255).safeParse(email);
+    const normalizedEmail = email.trim().toLowerCase();
+    const parsed = z.string().email().max(255).safeParse(normalizedEmail);
     if (!parsed.success) {
-      setError("Informe um e-mail válido.");
+      setError("Digite um e-mail válido, como voce@empresa.com.");
+      setErrorIsValidation(true);
       return;
     }
+    setEmail(parsed.data);
 
     if (resendCooldown > 0) return;
     setLoading(true);
     setError(null);
+    setErrorIsValidation(false);
 
     try {
       await request({ data: { email: parsed.data } });
@@ -115,7 +127,7 @@ function FirstAccessPage() {
                 {loading ? <LoaderCircle className="h-4 w-4 animate-spin" /> : null}
                 {resendCooldown > 0 ? `Reenviar em ${resendCooldown}s` : "Reenviar link"}
               </button>
-              <button type="button" onClick={() => { setSent(false); setResendCooldown(0); setError(null); }} className="inline-flex h-11 flex-1 items-center justify-center rounded-xl border border-white/[0.07] bg-white/[0.02] px-4 text-xs font-semibold text-white/50 transition-colors hover:border-white/[0.12] hover:text-white/75">Usar outro e-mail</button>
+              <button type="button" onClick={() => { setSent(false); setResendCooldown(0); setError(null); setErrorIsValidation(false); }} className="inline-flex h-11 flex-1 items-center justify-center rounded-xl border border-white/[0.07] bg-white/[0.02] px-4 text-xs font-semibold text-white/50 transition-colors hover:border-white/[0.12] hover:text-white/75">Usar outro e-mail</button>
             </div>
           </div>
         </div>
@@ -146,8 +158,8 @@ function FirstAccessPage() {
                 autoCorrect="off"
                 spellCheck={false}
                 value={email}
-                onChange={(e) => { setEmail(e.target.value); if (error) setError(null); }}
-                onBlur={() => { if (email.trim() && !z.string().email().safeParse(email.trim()).success) setError("Informe um e-mail válido."); }}
+                onChange={(e) => { setEmail(e.target.value); if (error) setError(null); setErrorIsValidation(false); }}
+                onBlur={() => { if (email.trim() && !z.string().email().safeParse(email.trim()).success) { setError("Digite um e-mail válido, como voce@empresa.com."); setErrorIsValidation(true); } }}
                 maxLength={255}
                 placeholder="voce@empresa.com"
                 aria-invalid={Boolean(error)}
@@ -163,7 +175,7 @@ function FirstAccessPage() {
                 <AlertCircle className="h-3.5 w-3.5" />
               </span>
               <div>
-                <p className="font-medium text-red-100/95">Não foi possível enviar</p>
+                <p className="font-medium text-red-100/95">{errorIsValidation ? "Confira o e-mail" : "Não foi possível enviar"}</p>
                 <p className="mt-0.5 text-[12px] text-red-200/75">{error}</p>
               </div>
             </div>
