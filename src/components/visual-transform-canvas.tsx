@@ -675,13 +675,7 @@ export function VisualTransformCanvas({ blocks, selectedIds: selectedIdsProp, zo
           if (hidden || block.locked) return;
           cancelTextLongPress();
           const additive = event.shiftKey || event.ctrlKey || event.metaKey;
-          const memberIds = block.groupId
-            ? blocks.filter((item: any) => item.groupId === block.groupId).map((item: any) => item.id)
-            : [block.id];
           onSelect(block.id, additive);
-          if (!additive) {
-            memberIds.slice(1).forEach((id) => onSelect(id, true));
-          }
           begin(event, "move", undefined, block);
           if (event.pointerType === "touch" && block.type === "text") {
             textLongPress.current = setTimeout(() => {
