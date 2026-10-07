@@ -108,18 +108,27 @@ export function BackgroundPropertiesPanel({ background = {}, assets, onChange }:
   return <section className="space-y-3 rounded-xl border bg-muted/15 p-3" aria-label="Fundo do convite">
     <div className="flex items-start justify-between gap-2"><div><p className="text-sm font-semibold text-foreground">Fundo</p><p className="mt-0.5 text-[11px] text-muted-foreground">Ajuste o plano de fundo sem selecionar elementos.</p></div><Palette className="h-4 w-4 text-primary" /></div>
     <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-4">{backgroundPresets.map((item) => <Button key={item.id} type="button" size="sm" variant="outline" className="h-8 px-2 text-[11px]" onClick={() => preset(item)}>{item.label}</Button>)}</div>
-    <div className="grid grid-cols-2 gap-2"><div className="space-y-1"><Label className="text-[11px] text-muted-foreground">Cor</Label><div className="flex gap-1.5"><input type="color" value={color} onChange={(event) => update({ color: event.target.value })} className="h-8 w-10 cursor-pointer rounded border bg-transparent p-1" /><Input value={typeof bg.color === "string" ? bg.color : ""} maxLength={7} placeholder="#FFFFFF" onChange={(event) => update({ color: event.target.value })} className="h-8 text-xs" /></div></div><div className="space-y-1"><Label className="text-[11px] text-muted-foreground">Modo da imagem</Label><BackgroundSelect label="" value={String(bg.size || "cover")} options={[["cover", "Cobrir"], ["contain", "Conter"]]} onChange={(value) => update({ size: value })} /></div></div>
-    <div className="space-y-1"><Label className="text-[11px] text-muted-foreground">Gradiente</Label><Input value={typeof bg.gradient === "string" ? bg.gradient : ""} placeholder="linear-gradient(135deg, #fff, #eadcff)" onChange={(event) => update({ gradient: event.target.value })} className="h-8 text-xs" /></div>
+    <div className="grid grid-cols-2 gap-2">
+      <div className="space-y-1"><Label className="text-[11px] text-muted-foreground">Cor</Label><input type="color" value={color} onChange={(event) => update({ color: event.target.value })} className="h-9 w-full cursor-pointer rounded-lg border bg-background p-1.5" aria-label="Escolher cor do fundo" /></div>
+      <div className="space-y-1"><Label className="text-[11px] text-muted-foreground">Imagem de fundo</Label><Button type="button" size="sm" variant="outline" className="h-9 w-full text-[11px]" onClick={() => document.getElementById("background-image-upload")?.focus()}>Escolher imagem</Button></div>
+    </div>
+    <details className="group rounded-lg border border-primary/10 bg-background/35">
+      <summary className="flex cursor-pointer list-none items-center justify-between p-2.5 text-[11px] font-semibold text-foreground [&::-webkit-details-marker]:hidden">Personalizar<ChevronDown className="h-4 w-4 text-muted-foreground transition-transform group-open:rotate-180" /></summary>
+      <div className="space-y-3 border-t border-border/60 p-2">
+        <div className="space-y-1"><Label className="text-[11px] text-muted-foreground">Código da cor</Label><Input value={typeof bg.color === "string" ? bg.color : ""} maxLength={7} placeholder="#FFFFFF" onChange={(event) => update({ color: event.target.value })} className="h-8 text-xs" /></div>
+        <div className="space-y-1"><Label className="text-[11px] text-muted-foreground">Gradiente personalizado</Label><Input value={typeof bg.gradient === "string" ? bg.gradient : ""} placeholder="Ex.: degradê suave" onChange={(event) => update({ gradient: event.target.value })} className="h-8 text-xs" /></div>
+      </div>
+    </details>
     <div className="space-y-2 rounded-lg border bg-background/40 p-2">
       <p className="text-[11px] font-semibold text-foreground">Imagem e enquadramento</p>
-      <ImageUpload
+      <div id="background-image-upload" className="sr-only" tabIndex={-1} aria-hidden="true" /><ImageUpload
         scope={assets}
         value={image}
         onChange={(value) => update({ image: value })}
       />
       <Input type="url" value={image.startsWith("storage:") ? "" : image} placeholder="Ou cole uma URL https://..." onChange={(event) => update({ image: event.target.value })} className="h-8 text-xs" />
       {image && <Button type="button" size="sm" variant="ghost" className="h-7 px-2 text-[11px]" onClick={() => update({ image: "" })}>Remover imagem</Button>}
-      <div className="grid grid-cols-2 gap-2"><BackgroundSelect label="Horizontal / foco" value={String(bg.x || "center")} options={[["left", "Esquerda"], ["center", "Centro"], ["right", "Direita"]]} onChange={(value) => update({ x: value })} /><BackgroundSelect label="Vertical / foco" value={String(bg.y || "center")} options={[["top", "Topo"], ["center", "Centro"], ["bottom", "Base"]]} onChange={(value) => update({ y: value })} /></div>
+      <div className="grid grid-cols-2 gap-2"><BackgroundSelect label="Posição horizontal" value={String(bg.x || "center")} options={[["left", "Esquerda"], ["center", "Centro"], ["right", "Direita"]]} onChange={(value) => update({ x: value })} /><BackgroundSelect label="Posição vertical" value={String(bg.y || "center")} options={[["top", "Topo"], ["center", "Centro"], ["bottom", "Base"]]} onChange={(value) => update({ y: value })} /></div>
       <label className="block space-y-1 text-[11px] text-muted-foreground">Zoom: {scale}%<input type="range" min="25" max="300" step="5" value={scale} onChange={(event) => update({ imageScale: Number(event.target.value) })} className="w-full accent-primary" /></label>
       <label className="block space-y-1 text-[11px] text-muted-foreground">Opacidade: {Math.round(opacity * 100)}%<input type="range" min="0" max="1" step="0.05" value={opacity} onChange={(event) => update({ imageOpacity: Number(event.target.value) })} className="w-full accent-primary" /></label>
     </div>
