@@ -475,7 +475,6 @@ function LoginPage() {
                           }
                         }}
                         placeholder="E-mail ou (11) 99999-9999"
-                         enterKeyHint="next"
                         aria-invalid={identifierInvalid}
                         aria-describedby={identifierError ? "identifier-error" : undefined}
                         className="relative z-10 h-12 rounded-xl border-white/[0.08] bg-[#111318]/90 text-white placeholder:text-white/20 transition-[border-color,box-shadow,background-color] duration-300 focus-visible:border-[#d4af37]/55 focus-visible:ring-2 focus-visible:ring-[#d4af37]/12 focus-visible:shadow-[0_0_0_1px_rgba(212,175,55,0.14),0_10px_35px_rgba(212,175,55,0.05)] hover:border-white/[0.12] pl-10"
