@@ -702,9 +702,10 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra }: { h: Bl
             <p className="hidden text-[10px] text-muted-foreground sm:block">Crie, organize e refine o convite diretamente no canvas.</p>
           </div>
           <span className="hidden rounded-full border border-primary/20 bg-primary/5 px-2 py-1 text-[10px] font-medium text-primary sm:inline-flex">{selectedIds.length ? `${selectedIds.length} selecionado(s)` : `${blocks.length} elemento(s)`}</span>
-          {toolbarExtra && <div className="hidden items-center gap-1.5 md:flex">{toolbarExtra}</div>}
         </div>
-        <div className="vellune-editor-history-cluster flex items-center gap-1 rounded-xl border border-primary/10 bg-background/60 p-1 shadow-sm">
+        <div className="flex items-center gap-1.5">
+          {toolbarExtra && <div className="hidden items-center gap-1.5 md:flex">{toolbarExtra}</div>}
+          <div className="vellune-editor-history-cluster flex items-center gap-1 rounded-xl border border-primary/10 bg-background/60 p-1 shadow-sm">
           <button type="button" aria-label="Desfazer" title="Desfazer (Ctrl/Cmd+Z)" disabled={!h.canUndo} onClick={h.undo} className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-border/70 text-muted-foreground transition hover:bg-accent hover:text-foreground disabled:cursor-not-allowed disabled:opacity-40"><Undo2 className="h-3.5 w-3.5" /></button>
           <button type="button" aria-label="Refazer" title="Refazer (Ctrl/Cmd+Shift+Z)" disabled={!h.canRedo} onClick={h.redo} className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-border/70 text-muted-foreground transition hover:bg-accent hover:text-foreground disabled:cursor-not-allowed disabled:opacity-40"><Redo2 className="h-3.5 w-3.5" /></button>
           <span className="mx-0.5 h-5 w-px bg-border/70" />
@@ -712,7 +713,9 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra }: { h: Bl
           <span className="min-w-12 text-center text-[11px] font-medium tabular-nums text-foreground">{zoom}%</span>
           <button type="button" aria-label="Aumentar zoom" title="Aumentar zoom" onClick={() => setZoom((value) => Math.min(150, value + 10))} className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-border/70 text-muted-foreground transition hover:bg-accent hover:text-foreground"><Plus className="h-3.5 w-3.5" /></button>
           <button type="button" aria-pressed={showGrid} title={showGrid ? "Ocultar guias" : "Mostrar guias"} onClick={() => setShowGrid((value) => !value)} className={`inline-flex h-8 items-center gap-1.5 rounded-md border px-2.5 text-[11px] transition ${showGrid ? "border-primary/25 bg-primary/10 text-primary" : "border-border/70 text-muted-foreground hover:bg-accent hover:text-foreground"}`}><Grid3X3 className="h-3.5 w-3.5" /><span className="hidden sm:inline">Guias</span></button>
+          </div>
         </div>
+        {toolbarExtra && <div className="mt-2 flex items-center justify-end gap-1.5 border-t border-primary/10 pt-2 md:hidden">{toolbarExtra}</div>}
       </div>
       <div className="vellune-editor-body flex min-h-0 flex-1 flex-col lg:flex-row">
         <aside className="vellune-editor-sidebar hidden w-[270px] shrink-0 flex-col border-r border-primary/10 bg-card/80 backdrop-blur-xl lg:flex" aria-label="Ferramentas do editor">
