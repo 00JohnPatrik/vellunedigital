@@ -1,7 +1,7 @@
 import type { AppUser } from "@/lib/app-user";
 import type { Customer } from "@/lib/customers-data";
 import type { Invitation } from "@/lib/invitations";
-import type { Template } from "@/lib/templates";
+import type { Template, TemplateContent } from "@/lib/templates";
 
 export const DEMO_HOST = "vellunedigital.lovable.app";
 export const DEMO_COMPANY_ID = "demo-company-vellune";
