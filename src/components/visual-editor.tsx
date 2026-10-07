@@ -303,17 +303,23 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra }: { h: Bl
       } else if (mode === "back") {
         nextOrder = [...movable, ...ranked.filter((entry) => !isMovable(entry))];
       } else if (mode === "up") {
-        const highest = Math.max(...movable.map((entry) => entry.index));
+        const movableRanks = ranked
+          .map((entry, rank) => (isMovable(entry) ? rank : -1))
+          .filter((rank) => rank >= 0);
+        const highestRank = Math.max(...movableRanks);
         const stationary = ranked.filter((entry) => !isMovable(entry));
-        if (!stationary.some((entry) => entry.index > highest)) return items;
-        const insertAt = stationary.filter((entry) => entry.index <= highest).length;
+        if (highestRank >= ranked.length - 1) return items;
+        const insertAt = ranked.slice(0, highestRank + 1).filter((entry) => !isMovable(entry)).length;
         stationary.splice(insertAt, 0, ...movable);
         nextOrder = stationary;
       } else {
-        const lowest = Math.min(...movable.map((entry) => entry.index));
+        const movableRanks = ranked
+          .map((entry, rank) => (isMovable(entry) ? rank : -1))
+          .filter((rank) => rank >= 0);
+        const lowestRank = Math.min(...movableRanks);
         const stationary = ranked.filter((entry) => !isMovable(entry));
-        if (!stationary.some((entry) => entry.index < lowest)) return items;
-        const insertAt = Math.max(0, stationary.filter((entry) => entry.index < lowest).length - 1);
+        if (lowestRank <= 0) return items;
+        const insertAt = Math.max(0, ranked.slice(0, lowestRank).filter((entry) => !isMovable(entry)).length - 1);
         stationary.splice(insertAt, 0, ...movable);
         nextOrder = stationary;
       }
@@ -328,10 +334,11 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra }: { h: Bl
   const orderedLayerBlocks = blocks
     .map((block: any, index: number) => ({
       block,
-      index,
+      sourceIndex: index,
       zIndex: resolveBlockGeometry(block as Block, index).zIndex,
     }))
-    .sort((a, b) => b.zIndex - a.zIndex || b.index - a.index);
+    .sort((a, b) => b.zIndex - a.zIndex || b.sourceIndex - a.sourceIndex)
+    .map((entry, layerIndex) => ({ ...entry, layerIndex }));
 
   // Geometry is resolved exclusively through the canonical resolver used by the
   // interactive canvas and the read-only invitation renderer. This prevents the
@@ -628,7 +635,7 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra }: { h: Bl
           </div>
           <div className="min-h-0 flex-1 overflow-y-auto p-3">
             {contextPanel === "elements" && <div className="space-y-3"><div><p className="text-xs font-medium text-foreground">Adicionar elemento</p><p className="mt-1 text-[11px] leading-relaxed text-muted-foreground">Escolha um bloco para inserir no canvas. Os elementos existentes continuam editáveis diretamente.</p></div><div className="grid grid-cols-1 gap-1.5">{(Object.keys(BLOCKS) as BlockType[]).map((type) => <button key={type} type="button" onClick={() => addElement(type)} className="flex items-center justify-between rounded-lg border border-border/70 px-3 py-2 text-left text-xs text-foreground transition hover:border-primary/50 hover:bg-primary/5"><span>{BLOCKS[type].label}</span><span className="text-primary">+</span></button>)}</div></div>}
-            {contextPanel === "layers" && <div className="space-y-2"><div className="mb-2 flex items-center justify-between gap-2"><div><p className="text-xs font-medium text-foreground">Camadas</p><span className="text-[10px] text-muted-foreground">{blocks.length} elemento(s)</span></div><div className="flex items-center gap-1"><button type="button" disabled={!selectedIds.length} onClick={() => reorderSelectedLayers("back")} className="rounded-md border p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground disabled:cursor-not-allowed disabled:opacity-40" title="Enviar seleção para trás" aria-label="Enviar seleção para trás"><SendToBack className="h-3.5 w-3.5" /></button><button type="button" disabled={!selectedIds.length} onClick={() => reorderSelectedLayers("front")} className="rounded-md border p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground disabled:cursor-not-allowed disabled:opacity-40" title="Trazer seleção para frente" aria-label="Trazer seleção para frente"><BringToFront className="h-3.5 w-3.5" /></button></div></div>{orderedLayerBlocks.map(({ block, index }) => { const selectedLayer = selectedIds.includes(block.id); const moveLayer = (direction: number) => reorderSelectedLayers(direction === 1 ? "up" : "down"); const toggleLayer = (key: "hidden" | "locked") => h.set((items) => items.map((item: any) => item.id === block.id ? { ...item, [key]: !item[key], ...(key === "hidden" ? { visibility: item[key] } : {}) } : item), `layers:${key}`); return <div key={block.id} className={`rounded-lg border px-2 py-2 transition ${selectedLayer ? "border-primary bg-primary/10" : "border-border/70"}`}><div className="flex items-center gap-2"><button type="button" onClick={() => select(block.id, false)} className="min-w-0 flex-1 truncate text-left text-xs text-foreground"><span className="mr-1.5 text-[10px] text-muted-foreground">{index + 1}</span>{getBlockLabel(block)}{block.groupId && <span className="ml-1 rounded bg-muted px-1 py-0.5 text-[9px]">grupo</span>}</button><button type="button" aria-label={block.hidden ? "Mostrar camada" : "Ocultar camada"} onClick={() => toggleLayer("hidden")} className={`rounded px-1.5 py-1 text-[10px] ${block.hidden ? "bg-muted text-muted-foreground" : "text-foreground hover:bg-muted"}`}>{block.hidden ? "○" : "●"}</button><button type="button" aria-label={block.locked ? "Desbloquear camada" : "Bloquear camada"} onClick={() => toggleLayer("locked")} className={`rounded px-1.5 py-1 text-[10px] ${block.locked ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-muted"}`}>{block.locked ? "🔒" : "🔓"}</button></div><div className="mt-1.5 flex items-center justify-end gap-1"><button type="button" disabled={orderedLayerBlocks.findIndex(({ block: item }) => item.id === block.id) === 0} onClick={() => moveLayer(1)} className="rounded border px-1.5 py-1 text-[10px] disabled:cursor-not-allowed disabled:opacity-40">↑</button><button type="button" disabled={orderedLayerBlocks.findIndex(({ block: item }) => item.id === block.id) === orderedLayerBlocks.length - 1} onClick={() => moveLayer(-1)} className="rounded border px-1.5 py-1 text-[10px] disabled:cursor-not-allowed disabled:opacity-40">↓</button><button type="button" onClick={() => { select(block.id, false); duplicate(); }} className="rounded border px-1.5 py-1 text-[10px]">Duplicar</button><button type="button" onClick={() => { select(block.id, false); remove(); }} className="rounded border border-destructive/30 px-1.5 py-1 text-[10px] text-destructive">Excluir</button></div></div>; })}{blocks.length === 0 && <p className="rounded-lg border border-dashed p-4 text-center text-[11px] text-muted-foreground">Nenhuma camada adicionada.</p>}</div>}
+            {contextPanel === "layers" && <div className="space-y-2"><div className="mb-2 flex items-center justify-between gap-2"><div><p className="text-xs font-medium text-foreground">Camadas</p><span className="text-[10px] text-muted-foreground">{blocks.length} elemento(s)</span></div><div className="flex items-center gap-1"><button type="button" disabled={!selectedIds.length} onClick={() => reorderSelectedLayers("back")} className="rounded-md border p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground disabled:cursor-not-allowed disabled:opacity-40" title="Enviar seleção para trás" aria-label="Enviar seleção para trás"><SendToBack className="h-3.5 w-3.5" /></button><button type="button" disabled={!selectedIds.length} onClick={() => reorderSelectedLayers("front")} className="rounded-md border p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground disabled:cursor-not-allowed disabled:opacity-40" title="Trazer seleção para frente" aria-label="Trazer seleção para frente"><BringToFront className="h-3.5 w-3.5" /></button></div></div>{orderedLayerBlocks.map(({ block, layerIndex }) => { const selectedLayer = selectedIds.includes(block.id); const moveLayer = (direction: number) => reorderSelectedLayers(direction === 1 ? "up" : "down"); const toggleLayer = (key: "hidden" | "locked") => h.set((items) => items.map((item: any) => item.id === block.id ? { ...item, [key]: !item[key], ...(key === "hidden" ? { visibility: item[key] } : {}) } : item), `layers:${key}`); return <div key={block.id} className={`rounded-lg border px-2 py-2 transition ${selectedLayer ? "border-primary bg-primary/10" : "border-border/70"}`}><div className="flex items-center gap-2"><button type="button" onClick={() => select(block.id, false)} className="min-w-0 flex-1 truncate text-left text-xs text-foreground"><span className="mr-1.5 text-[10px] text-muted-foreground">{layerIndex + 1}</span>{getBlockLabel(block)}{block.groupId && <span className="ml-1 rounded bg-muted px-1 py-0.5 text-[9px]">grupo</span>}</button><button type="button" aria-label={block.hidden ? "Mostrar camada" : "Ocultar camada"} onClick={() => toggleLayer("hidden")} className={`rounded px-1.5 py-1 text-[10px] ${block.hidden ? "bg-muted text-muted-foreground" : "text-foreground hover:bg-muted"}`}>{block.hidden ? "○" : "●"}</button><button type="button" aria-label={block.locked ? "Desbloquear camada" : "Bloquear camada"} onClick={() => toggleLayer("locked")} className={`rounded px-1.5 py-1 text-[10px] ${block.locked ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-muted"}`}>{block.locked ? "🔒" : "🔓"}</button></div><div className="mt-1.5 flex items-center justify-end gap-1"><button type="button" disabled={layerIndex === 0} onClick={() => moveLayer(1)} className="rounded border px-1.5 py-1 text-[10px] disabled:cursor-not-allowed disabled:opacity-40">↑</button><button type="button" disabled={layerIndex === orderedLayerBlocks.length - 1} onClick={() => moveLayer(-1)} className="rounded border px-1.5 py-1 text-[10px] disabled:cursor-not-allowed disabled:opacity-40">↓</button><button type="button" onClick={() => { select(block.id, false); duplicate(); }} className="rounded border px-1.5 py-1 text-[10px]">Duplicar</button><button type="button" onClick={() => { select(block.id, false); remove(); }} className="rounded border border-destructive/30 px-1.5 py-1 text-[10px] text-destructive">Excluir</button></div></div>; })}{blocks.length === 0 && <p className="rounded-lg border border-dashed p-4 text-center text-[11px] text-muted-foreground">Nenhuma camada adicionada.</p>}</div>}
             {contextPanel === "background" && <BackgroundPropertiesPanel background={(bg as Record<string, unknown>) || {}} assets={assets as any} onChange={(value) => onBg?.(value)} />}{contextPanel === "view" && <div className="space-y-3"><p className="text-xs font-medium text-foreground">Exibição</p><div className="flex items-center justify-between rounded-lg border border-border/70 px-3 py-2 text-xs"><span>Guias</span><button type="button" onClick={() => setShowGrid((value) => !value)} className={`rounded-md px-2 py-1 ${showGrid ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"}`}>{showGrid ? "Ativas" : "Desativadas"}</button></div><div className="flex items-center gap-2"><button type="button" onClick={() => setZoom((value) => Math.max(50, value - 10))} className="h-8 w-8 rounded-md border">−</button><span className="flex-1 text-center text-xs">{zoom}%</span><button type="button" onClick={() => setZoom((value) => Math.min(150, value + 10))} className="h-8 w-8 rounded-md border">+</button></div></div>}
           </div>
         </aside>
@@ -750,11 +757,11 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra }: { h: Bl
           )}
           {mobileSheet === "layers" && (
             <div className="space-y-2">
-              {orderedLayerBlocks.map(({ block, index }) => {
+              {orderedLayerBlocks.map(({ block, layerIndex }) => {
                 return (
                   <div key={block.id} className="rounded-lg border p-2">
                     <button type="button" className="w-full truncate text-left text-xs font-medium" onClick={() => { select(block.id, false); setMobileSheet("properties"); }}>
-                      {index + 1}. {getBlockLabel(block)}
+                      {layerIndex + 1}. {getBlockLabel(block)}
                     </button>
                     <div className="mt-2 flex flex-wrap gap-1.5">
                       <button type="button" disabled={orderedLayerBlocks.findIndex(({ block: item }) => item.id === block.id) === 0} onClick={() => reorderSelectedLayers("up")} className="rounded border px-2 py-1 text-[10px] disabled:opacity-40">Subir</button>
