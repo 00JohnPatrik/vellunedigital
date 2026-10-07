@@ -263,6 +263,7 @@ export function VisualTransformCanvas({ blocks, selectedIds: selectedIdsProp, zo
   const [editingTextId, setEditingTextId] = useState<string | null>(null);
   const [editingTextValue, setEditingTextValue] = useState("");
   const editingTextRef = useRef<HTMLTextAreaElement | null>(null);
+  const textLongPress = useRef<ReturnType<typeof setTimeout> | null>(null);
   const groupMembers = (ids: string[]) => {
     const groups = new Set(
       blocks
@@ -295,7 +296,14 @@ export function VisualTransformCanvas({ blocks, selectedIds: selectedIdsProp, zo
     return { left, top, width: toolbarWidth };
   })() : null;
 
+  const cancelTextLongPress = () => {
+    if (textLongPress.current) {
+      clearTimeout(textLongPress.current);
+      textLongPress.current = null;
+    }
+  };
   const finish = () => {
+    cancelTextLongPress();
     interaction.current = null;
     setGuides([]);
   };
@@ -438,6 +446,9 @@ export function VisualTransformCanvas({ blocks, selectedIds: selectedIdsProp, zo
     const point = pointerPoint(event, canvasRef.current, zoom);
     const dx = point.x - current.start.x;
     const dy = point.y - current.start.y;
+    if ((Math.abs(dx) > 8 || Math.abs(dy) > 8) && textLongPress.current) {
+      cancelTextLongPress();
+    }
     const size = canvasSize();
 
     if (current.mode === "move") {
@@ -606,7 +617,7 @@ export function VisualTransformCanvas({ blocks, selectedIds: selectedIdsProp, zo
   return <>
     {selectedBounds && selectedBlocks.length > 0 && (
       <div
-        className="pointer-events-auto absolute z-[90] max-w-[calc(100%-1rem)] -translate-x-1/2 -translate-y-full pb-2"
+        className="pointer-events-auto absolute z-[90] hidden max-w-[calc(100%-1rem)] -translate-x-1/2 -translate-y-full pb-2 sm:block"
         style={{ left: toolbarPosition?.left ? toolbarPosition.left + (toolbarPosition.width / 2) : 8, top: toolbarPosition?.top ?? 76, width: toolbarPosition?.width ?? "auto" }}
         onPointerDown={(event) => {
           event.stopPropagation();
@@ -652,6 +663,7 @@ export function VisualTransformCanvas({ blocks, selectedIds: selectedIdsProp, zo
         }}
         onPointerDown={(event) => {
           if (hidden || block.locked) return;
+          cancelTextLongPress();
           const additive = event.shiftKey || event.ctrlKey || event.metaKey;
           const memberIds = block.groupId
             ? blocks.filter((item: any) => item.groupId === block.groupId).map((item: any) => item.id)
@@ -661,6 +673,15 @@ export function VisualTransformCanvas({ blocks, selectedIds: selectedIdsProp, zo
             memberIds.slice(1).forEach((id) => onSelect(id, true));
           }
           begin(event, "move", undefined, block);
+          if (event.pointerType === "touch" && block.type === "text") {
+            textLongPress.current = setTimeout(() => {
+              const currentBlock = blocks.find((item: any) => item.id === block.id);
+              if (currentBlock && !currentBlock.locked && !currentBlock.hidden && currentBlock.visibility !== false) {
+                startTextEditing(currentBlock);
+              }
+              textLongPress.current = null;
+            }, 520);
+          }
         }}
         onPointerMove={move}
         onPointerUp={end}
