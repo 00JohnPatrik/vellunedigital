@@ -174,17 +174,16 @@ function EditorForm({ inv }: { inv: Invitation }) {
             </div>
             <div className="shrink-0 rounded-lg border border-border/70 bg-background/70 px-2 py-1.5"><SaveIndicator state={state} msg={errMsg} onRetry={() => void save(true)} /></div>
           </div>
-          <div className="mt-3 hidden flex-wrap items-center justify-end gap-1.5 border-t border-border/60 pt-3 md:flex">{toolbar}</div>
+          <div className="mt-3 hidden flex-wrap items-center justify-end gap-1.5 border-t border-border/60 pt-3 md:flex">{toolbar}</div>          <div className="mt-3 flex gap-1 overflow-x-auto border-t border-border/60 pt-3 md:hidden" role="toolbar" aria-label="Ações principais do convite">
+            <Button type="button" size="sm" variant="outline" className="shrink-0 h-9 px-3 text-[11px]" onClick={() => setEventOpen(true)}><SlidersHorizontal className="mr-1.5 h-3.5 w-3.5" />Dados</Button>
+            <Button type="button" size="sm" variant="outline" className="shrink-0 h-9 px-3 text-[11px]" onClick={() => setRsvpOpen(true)}><UserCheck className="mr-1.5 h-3.5 w-3.5" />RSVP</Button>
+            <Button type="button" size="sm" variant="outline" className="shrink-0 h-9 px-3 text-[11px]" onClick={openEditorPreview}><Eye className="mr-1.5 h-3.5 w-3.5" />Preview</Button>
+            <Button type="button" size="sm" variant="default" className="shrink-0 h-9 px-3 text-[11px]" onClick={() => void save(true)} disabled={state === "saving"}>{state === "saving" && <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />}Salvar</Button>
+            {isPublic ? <Button type="button" size="sm" variant="secondary" className="shrink-0 h-9 px-3 text-[11px]" onClick={() => setShareOpen(true)}><Share2 className="mr-1.5 h-3.5 w-3.5" />Compartilhar</Button> : <Button type="button" size="sm" variant="secondary" className="shrink-0 h-9 px-3 text-[11px]" onClick={() => void publish()} disabled={publishing}>{publishing ? <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" /> : <Send className="mr-1.5 h-3.5 w-3.5" />}Publicar</Button>}
+          </div>
         </header>
 
         <VisualEditor h={h} bg={bg} onBg={setBg} ctx={ctx} assets={{ kind: "invitation", id: inv.id, companyId: inv.company_id }} />
-
-        <div className="fixed inset-x-2 bottom-2 z-40 grid grid-cols-4 gap-1 rounded-2xl border border-border/80 bg-card/95 p-1.5 shadow-2xl shadow-black/30 backdrop-blur-xl md:hidden" role="toolbar" aria-label="Ações rápidas do editor">
-          <Button type="button" size="sm" variant="ghost" className="h-11 flex-col gap-0.5 px-1 text-[10px]" onClick={() => setEventOpen(true)}><SlidersHorizontal className="h-4 w-4" />Dados</Button>
-          <Button type="button" size="sm" variant="ghost" className="h-11 flex-col gap-0.5 px-1 text-[10px]" onClick={() => setRsvpOpen(true)}><UserCheck className="h-4 w-4" />RSVP</Button>
-          <Button type="button" size="sm" variant="ghost" className="h-11 flex-col gap-0.5 px-1 text-[10px]" onClick={openEditorPreview}><Eye className="h-4 w-4" />Preview</Button>
-          <Button type="button" size="sm" variant="default" className="h-11 flex-col gap-0.5 px-1 text-[10px]" onClick={() => void save(true)} disabled={state === "saving"}><PanelBottom className="h-4 w-4" />Salvar</Button>
-        </div>
 
         <ShareDialog slug={inv.slug} open={shareOpen} onOpenChange={setShareOpen} />
         <RsvpPanel invitationId={inv.id} open={rsvpOpen} onOpenChange={setRsvpOpen} />
