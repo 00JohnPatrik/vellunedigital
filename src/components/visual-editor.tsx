@@ -7,6 +7,7 @@ import { BackgroundPropertiesPanel, ContextualPropertiesPanel } from "@/componen
 import { BLOCKS, getBlockDefaultSize, getNextBlockZIndex, newBlock, resolveBlockGeometry, type Block, type BlockType } from "@/lib/templates";
 import { ElementsLibrary } from "@/components/elements-library";
 import { TemplateGallery } from "@/components/template-gallery";
+import { cn } from "@/lib/utils";
 import { CalendarDays, CheckCircle2, Eye, EyeOff, Grid3X3, Minus, Plus, Redo2, Undo2, PanelLeft, PanelRight, Sparkles, Smartphone, Tablet, Monitor, BringToFront, SendToBack, Trash2, X, Pencil, RotateCcw, RotateCw, Lock, Unlock, AlignCenterHorizontal, AlignCenterVertical, Link2, Unlink2, MapPin, Type, Image as ImageIcon, Palette, MoreHorizontal, Maximize2 } from "lucide-react";
 
 function useIsCompact() {
