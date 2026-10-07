@@ -31,7 +31,7 @@ function CustomersPage() {
     const s = search.trim().toLowerCase();
     const digits = s.replace(/\D/g, "");
     return (q.data ?? []).filter((c) => (filter === "all" || c.status === filter) &&
-      (!s || c.name.toLowerCase().includes(s) || !!c.email?.includes(s) || (!!digits && !!c.phone?.includes(digits))));
+      (!s || c.name.toLowerCase().includes(s) || !!c.email?.includes(s) || (!!digits && !!c.phone && c.phone.replace(/\D/g, "").includes(digits))));
   }, [q.data, search, filter]);
 
   const refresh = () => qc.invalidateQueries({ queryKey: customersKey });
