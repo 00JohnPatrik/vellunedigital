@@ -194,8 +194,9 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra }: { h: Bl
       block.x = Math.round(Math.max(24, Math.min(dropPoint.x - size.width / 2, canvasWidth - size.width - 24)));
       block.y = Math.round(Math.max(24, Math.min(dropPoint.y - size.height / 2, canvasHeight - size.height - 24)));
     } else {
-      block.x = 24;
-      block.y = Math.min(Math.max(24, lastY + 24), 1200);
+      const safeMaxY = Math.max(24, canvasHeight - size.height - 24);
+      block.x = Math.round(Math.max(24, Math.min((canvasWidth - size.width) / 2, canvasWidth - size.width - 24)));
+      block.y = Math.round(Math.min(Math.max(24, lastY + 24), safeMaxY));
     }
     block.width = size.width;
     block.height = size.height;
