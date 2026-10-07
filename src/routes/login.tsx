@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { signInWithPhone, requestPasswordReset } from "@/lib/auth.functions";
 import { canUseAdminArea, friendlyAuthError, homeFor, loadAppUser } from "@/lib/app-user";
+import Logo from "@/components/Logo";
 
 export const Route = createFileRoute("/login")({
   validateSearch: z.object({ error: z.enum(["inactive"]).optional() }),
@@ -108,14 +109,8 @@ function LoginPage() {
 
       <div className="relative z-10 mx-auto grid min-h-screen w-full max-w-7xl items-center gap-12 px-5 py-8 sm:px-8 lg:grid-cols-[minmax(0,1fr)_minmax(390px,470px)] lg:gap-20 lg:px-12 lg:py-12">
         <section className="hidden max-w-xl lg:block" aria-label="Vellune Digital">
-          <div className="mb-20 flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-cyan-200/20 bg-white/[0.07] shadow-[0_0_30px_rgba(34,211,238,0.12)] backdrop-blur-xl">
-              <span className="font-display text-xl font-bold text-cyan-200">V</span>
-            </div>
-            <div>
-              <p className="font-display text-lg font-semibold tracking-[0.12em] text-white">VELLUNE</p>
-              <p className="text-[10px] font-medium tracking-[0.38em] text-cyan-200/70">DIGITAL</p>
-            </div>
+          <div className="mb-20 flex items-center">
+            <Logo className="h-12 text-white" />
           </div>
 
           <div className="space-y-7">
@@ -138,11 +133,8 @@ function LoginPage() {
         </section>
 
         <section className="w-full max-w-[470px] justify-self-center">
-          <div className="mb-8 flex items-center justify-center gap-3 lg:hidden">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-cyan-200/20 bg-white/[0.07] text-lg font-bold text-cyan-200">V</div>
-            <div>
-              <p className="font-display text-base font-semibold tracking-[0.12em]">VELLUNE</p>
-              <p className="text-[9px] tracking-[0.35em] text-cyan-200/70">DIGITAL</p>
+          <div className="mb-8 flex items-center justify-center lg:hidden">
+            <Logo className="h-9 text-white" />
             </div>
           </div>
 
