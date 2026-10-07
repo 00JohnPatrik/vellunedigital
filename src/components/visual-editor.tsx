@@ -7,7 +7,7 @@ import { BackgroundPropertiesPanel, ContextualPropertiesPanel } from "@/componen
 import { BLOCKS, getBlockDefaultSize, getNextBlockZIndex, newBlock, resolveBlockGeometry, type Block, type BlockType } from "@/lib/templates";
 import { ElementsLibrary } from "@/components/elements-library";
 import { TemplateGallery } from "@/components/template-gallery";
-import { Grid3X3, Minus, Plus, Redo2, Undo2, PanelLeft, PanelRight, Sparkles, Smartphone, Tablet, Monitor, BringToFront, SendToBack, Trash2, X, Eye } from "lucide-react";
+import { Grid3X3, Minus, Plus, Redo2, Undo2, PanelLeft, PanelRight, Sparkles, Smartphone, Tablet, Monitor, BringToFront, SendToBack, Trash2, X, Pencil } from "lucide-react";
 
 function useIsCompact() {
   const [compact, setCompact] = useState(false);
@@ -833,7 +833,10 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra }: { h: Bl
       <div className="fixed inset-x-2 z-[70] lg:hidden" style={{ bottom: "max(0.5rem, env(safe-area-inset-bottom))" }}>
         {selectedIds.length > 0 && (
           <div className="mb-2 flex items-center gap-1 overflow-x-auto rounded-2xl border border-primary/20 bg-card/95 p-2 shadow-2xl shadow-black/30 backdrop-blur-xl" role="toolbar" aria-label="Ações da seleção no mobile">
-            <button type="button" className="flex min-w-[64px] flex-col items-center gap-1 rounded-xl bg-primary/10 px-2 py-1.5 text-[10px] font-medium text-primary" onClick={() => setMobileSheet("properties")}><PanelRight className="h-4 w-4" />Editar</button>
+            {selected.length === 1 && selected[0]?.type === "text" && !selected[0]?.locked && (
+              <button type="button" className="flex min-w-[64px] flex-col items-center gap-1 rounded-xl bg-primary/10 px-2 py-1.5 text-[10px] font-medium text-primary" onClick={() => setStartEditingTextId(selected[0].id)}><Pencil className="h-4 w-4" />Texto</button>
+            )}
+            <button type="button" className="flex min-w-[64px] flex-col items-center gap-1 rounded-xl px-2 py-1.5 text-[10px] text-muted-foreground hover:bg-primary/10 hover:text-primary" onClick={() => setMobileSheet("properties")}><PanelRight className="h-4 w-4" />Editar</button>
             <button type="button" className="flex min-w-[64px] flex-col items-center gap-1 rounded-xl px-2 py-1.5 text-[10px] text-muted-foreground hover:bg-primary/10 hover:text-primary" onClick={duplicate}><Plus className="h-4 w-4" />Duplicar</button>
             <button type="button" className="flex min-w-[64px] flex-col items-center gap-1 rounded-xl px-2 py-1.5 text-[10px] text-muted-foreground hover:bg-primary/10 hover:text-primary" onClick={() => setMobileSheet("layers")}><Grid3X3 className="h-4 w-4" />Camadas</button>
             <button type="button" className="flex min-w-[64px] flex-col items-center gap-1 rounded-xl px-2 py-1.5 text-[10px] text-muted-foreground hover:bg-primary/10 hover:text-primary" onClick={() => setMobileSheet("elements")}><Plus className="h-4 w-4" />Adicionar</button>
@@ -894,7 +897,7 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra }: { h: Bl
               <button type="button" className={`flex w-full items-center justify-center gap-2 rounded-xl border px-3 py-2.5 text-xs font-medium ${showGrid ? "bg-primary/10 text-primary" : "text-muted-foreground"}`} onClick={() => setShowGrid((value) => !value)}>
                 <Grid3X3 className="h-4 w-4" />{showGrid ? "Guias ativas" : "Ativar guias"}
               </button>
-              <button type="button" className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-3 py-2.5 text-xs font-semibold text-primary-foreground" onClick={() => { setMobileSheet(null); setSelectedIds([]); }}><Eye className="h-4 w-4" />Visualizar convite</button>
+              <button type="button" className="flex w-full items-center justify-center gap-2 rounded-xl border px-3 py-2.5 text-xs font-semibold text-foreground" onClick={() => setMobileSheet(null)}><X className="h-4 w-4" />Fechar painel</button>
             </div>
           )}
           {mobileSheet === "elements" && (
