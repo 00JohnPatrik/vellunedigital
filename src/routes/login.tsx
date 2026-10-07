@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { ArrowRight, CheckCircle2, Eye, EyeOff, LockKeyhole, Mail, MailCheck, ShieldCheck, Sparkles, UserRound } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -39,7 +39,7 @@ function LoginPage() {
     reason === "inactive" ? "Sua conta está inativa. Fale com o administrador." : null,
   );
   const [loading, setLoading] = useState(false);
-  const [touched, setTouched] = useState(false);
+  const [touched, setTouched] = useState(false);\n  const [rememberAccess, setRememberAccess] = useState(false);\n\n  useEffect(() => {\n    try {\n      const savedIdentifier = window.localStorage.getItem("vellune-login-identifier");\n      if (savedIdentifier) {\n        setIdentifier(savedIdentifier);\n        setRememberAccess(true);\n      }\n    } catch {\n      // Ignore storage restrictions (private mode, blocked storage, etc.).\n    }\n  }, []);
 
   const identifierInvalid = touched && (!identifier.trim() || (identifier.includes("@") && !z.string().email().safeParse(identifier.trim()).success));
   const passwordInvalid = touched && !password;
@@ -71,7 +71,7 @@ function LoginPage() {
         await supabase.auth.signOut();
         throw new Error("Sua conta está inativa ou sem acesso. Fale com o administrador.");
       }
-      navigate({ to: homeFor(appUser), replace: true });
+      try {\n        if (rememberAccess) {\n          window.localStorage.setItem("vellune-login-identifier", id);\n        } else {\n          window.localStorage.removeItem("vellune-login-identifier");\n        }\n      } catch {\n        // Login must continue even if browser storage is unavailable.\n      }\n      navigate({ to: homeFor(appUser), replace: true });
     } catch (err) {
       setError(err instanceof Error && err.message ? err.message : friendlyAuthError());
     } finally {
@@ -175,7 +175,24 @@ function LoginPage() {
                           <Input id="recovery-email" type="email" inputMode="email" autoComplete="email" value={recoveryEmail} onChange={(e) => setRecoveryEmail(e.target.value)} onBlur={() => setTouched(true)} placeholder="voce@empresa.com" aria-invalid={recoveryInvalid} className="h-12 rounded-xl border-white/[0.08] bg-white/[0.035] pl-10 text-white placeholder:text-white/20 focus-visible:border-[#d4af37]/50 focus-visible:ring-[#d4af37]/10" />
                         </div>
                       </div>
-                      {error && <div role="alert" className="rounded-xl border border-red-300/15 bg-red-400/[0.07] px-4 py-3 text-sm leading-6 text-red-200">{error}</div>}
+                      <label className="flex cursor-pointer items-center gap-3 py-1 text-xs text-white/40 select-none">
+                    <span className="relative flex h-4 w-4 shrink-0 items-center justify-center">
+                      <input
+                        type="checkbox"
+                        checked={rememberAccess}
+                        onChange={(e) => setRememberAccess(e.target.checked)}
+                        className="peer absolute inset-0 z-10 h-4 w-4 cursor-pointer opacity-0"
+                      />
+                      <span className="flex h-4 w-4 items-center justify-center rounded-[5px] border border-white/[0.12] bg-white/[0.035] transition-all peer-checked:border-[#d4af37]/70 peer-checked:bg-[#d4af37] peer-focus-visible:ring-2 peer-focus-visible:ring-[#d4af37]/25">
+                        <svg viewBox="0 0 16 16" className="h-3 w-3 scale-0 text-[#16130b] transition-transform peer-checked:scale-100" aria-hidden="true">
+                          <path d="M3.2 8.2 6.6 11.3 12.8 4.8" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                      </span>
+                    </span>
+                    <span>Lembrar meu acesso neste dispositivo</span>
+                  </label>
+
+                  {error && <div role="alert" className="rounded-xl border border-red-300/15 bg-red-400/[0.07] px-4 py-3 text-sm leading-6 text-red-200">{error}</div>}
                       <Button type="submit" disabled={loading} className="h-12 w-full rounded-xl bg-[#d4af37] font-semibold text-[#16130b] shadow-[0_10px_30px_rgba(212,175,55,0.12)] transition-all hover:-translate-y-0.5 hover:bg-[#e5c66b]">
                         {loading ? "Enviando link..." : "Enviar link de recuperação"}
                       </Button>
