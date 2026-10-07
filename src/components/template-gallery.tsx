@@ -53,7 +53,7 @@ function PreviewCanvas({ content }: { content: TemplateContent }) {
             </div>
           ) : (
             blocks.map((block, index) => {
-              const geometry = geometries[index];
+              const geometry = geometries[index] ?? resolveBlockGeometry(block, index);
               return (
                 <div
                   key={block.id}
