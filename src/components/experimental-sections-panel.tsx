@@ -67,7 +67,7 @@ export function ExperimentalSectionsPanel({ document, onChange, selectedSectionI
       sections: remaining,
       elements: current.elements.filter((element) => !removedIds.has(element.id)),
     }));
-    if (selectedId === sectionId) onSelectSection?.(remaining[0]);
+    if (selectedId === sectionId) { const nextSelected = remaining[0]; if (nextSelected) onSelectSection?.(nextSelected); }
   };
 
   const duplicateSection = (sectionId: string) => {
