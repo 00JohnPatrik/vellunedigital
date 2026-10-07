@@ -36,6 +36,32 @@ export function EditorQuickToolbar({ selected, onProp, onDuplicate, onDelete, on
     {primary.type === "image" && selected.length === 1 && <>
       <Button size="sm" variant="ghost" disabled={locked} onClick={() => onImage("replace")}><ImageIcon />Trocar</Button>
       <Button size="sm" variant="ghost" disabled={locked} onClick={() => onImage("crop")}><Crop />Enquadrar</Button>
+      <select
+        aria-label="Modo de enquadramento"
+        title="Modo de enquadramento"
+        value={p.objectFit || "cover"}
+        onChange={(event) => onProp("objectFit", event.target.value)}
+        disabled={locked}
+        className="h-8 w-24 rounded-md border border-input bg-background px-1.5 text-[10px]"
+      >
+        <option value="cover">Cobrir</option>
+        <option value="contain">Conter</option>
+        <option value="original">Original</option>
+      </select>
+      <select
+        aria-label="Posição do enquadramento"
+        title="Posição do enquadramento"
+        value={p.objectPosition || p.position || "center"}
+        onChange={(event) => onProp("objectPosition", event.target.value)}
+        disabled={locked}
+        className="h-8 w-24 rounded-md border border-input bg-background px-1.5 text-[10px]"
+      >
+        <option value="center">Centro</option>
+        <option value="top">Topo</option>
+        <option value="bottom">Base</option>
+        <option value="left">Esquerda</option>
+        <option value="right">Direita</option>
+      </select>
       <div className="flex items-center gap-1 rounded-md border border-input bg-background px-1" role="group" aria-label="Zoom da imagem">
         <span className="px-1 text-[10px] text-muted-foreground">Zoom</span>
         <Input
