@@ -10,16 +10,10 @@
   "scope": "/",
   "icons": [
     {
-      "src": "/uploads/LogoClara.png",
-      "sizes": "192x192",
-      "type": "image/png",
+      "src": "/favicon.svg?v=3",
+      "sizes": "any",
+      "type": "image/svg+xml",
       "purpose": "any maskable"
-    },
-    {
-      "src": "/uploads/logoEscura.jpg",
-      "sizes": "1024x1024",
-      "type": "image/jpeg",
-      "purpose": "any"
     }
   ]
 }
