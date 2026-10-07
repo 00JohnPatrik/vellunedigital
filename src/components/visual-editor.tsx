@@ -733,22 +733,15 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra }: { h: Bl
             <div className="flex items-center justify-between gap-2">
               <div>
                 <p className="text-sm font-semibold text-foreground">Ferramentas</p>
-                <p className="mt-1 text-xs text-muted-foreground">Adicione e organize o convite.</p>
+                <p className="mt-1 text-xs text-muted-foreground">Monte o convite de forma simples e visual.</p>
               </div>
               <button type="button" onClick={() => setTemplateOpen(true)} className="inline-flex h-8 items-center gap-1.5 rounded-md border border-primary/30 bg-primary/10 px-2.5 text-[11px] font-medium text-primary transition hover:bg-primary/15" aria-label="Abrir modelos">
                 <Sparkles className="h-3.5 w-3.5" />Modelos
               </button>
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-1.5 border-b border-primary/10 bg-background/25 p-3">
-            {(["text", "image", "gallery", "date", "time", "location", "button", "divider", "shape", "decoration"] as BlockType[]).map((type) => (
-              <button key={type} type="button" className="rounded-lg border border-border/70 bg-background px-2 py-2 text-left text-[11px] text-muted-foreground transition hover:border-primary/50 hover:bg-primary/5 hover:text-foreground" onClick={() => addElement(type)}>
-                + {BLOCKS[type].label}
-              </button>
-            ))}
-          </div>
-          <div className="flex gap-1 border-b border-primary/10 bg-background/20 p-2">
-            {[['elements', 'Elementos'], ['layers', 'Camadas'], ['background', 'Fundo'], ['view', 'Exibir']].map(([key, label]) => (
+        <div className="flex gap-1 border-b border-primary/10 bg-background/20 p-2">
+            {[['elements', 'Adicionar'], ['layers', 'Organizar'], ['background', 'Fundo'], ['view', 'Visualizar']].map(([key, label]) => (
               <button key={key} type="button" onClick={() => setContextPanel(key as any)} className={`flex-1 rounded-md px-1 py-2 text-[10px] ${contextPanel === key ? "bg-primary/10 font-medium text-primary" : "text-muted-foreground hover:bg-muted"}`}>
                 {label}
               </button>
