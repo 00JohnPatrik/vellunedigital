@@ -1045,8 +1045,8 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra }: { h: Bl
                     <div className="mt-2 flex flex-wrap gap-1.5">
                       <button type="button" disabled={index === blocks.length - 1} onClick={() => reorderSelectedLayers("up", [block.id])} className="rounded border px-2 py-1 text-[10px] disabled:opacity-40">Subir</button>
                       <button type="button" disabled={index === 0} onClick={() => reorderSelectedLayers("down", [block.id])} className="rounded border px-2 py-1 text-[10px] disabled:opacity-40">Descer</button>
-                      <button type="button" onClick={() => { select(block.id, false); duplicate(); }} className="rounded border px-2 py-1 text-[10px]">Duplicar</button>
-                      <button type="button" onClick={() => { select(block.id, false); remove(); }} className="rounded border border-destructive/30 px-2 py-1 text-[10px] text-destructive">Excluir</button>
+                      <button type="button" onClick={() => duplicateByIds([block.id])} className="rounded border px-2 py-1 text-[10px]">Duplicar</button>
+                      <button type="button" onClick={() => removeByIds([block.id])} className="rounded border border-destructive/30 px-2 py-1 text-[10px] text-destructive">Excluir</button>
                     </div>
                   </div>
                 );
