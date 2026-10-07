@@ -152,6 +152,7 @@ export type EditorPoint = { x: number; y: number };
 
 export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra }: { h: BlocksHistory; ctx?: unknown; assets?: unknown; bg?: unknown; onBg?: (value: any) => void; toolbarExtra?: React.ReactNode }) {
   const canvasRef = useRef<HTMLDivElement>(null);
+  const viewportRef = useRef<HTMLDivElement>(null);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [zoom, setZoom] = useState(100);
   const [showGrid, setShowGrid] = useState(true);
@@ -164,9 +165,18 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra }: { h: Bl
   const [device, setDevice] = useState<"mobile" | "tablet" | "desktop">("tablet");
   const [canvasDragOver, setCanvasDragOver] = useState(false);
   const compact = useIsCompact();
-  useEffect(() => {
-    if (compact) setDevice("mobile");
+  const fitCanvasToViewport = useCallback(() => {
+    if (!compact) return;
+    const viewportWidth = viewportRef.current?.clientWidth || window.innerWidth;
+    const available = Math.max(280, viewportWidth - 28);
+    setZoom(Math.round(Math.min(100, Math.max(72, (available / 390) * 100))));
   }, [compact]);
+
+  useEffect(() => {
+    if (!compact) return;
+    setDevice("mobile");
+    requestAnimationFrame(fitCanvasToViewport);
+  }, [compact, fitCanvasToViewport]);
   const [marquee, setMarquee] = useState<{ x: number; y: number; width: number; height: number } | null>(null);
   const interaction = useRef<{ mode: "drag" | "resize" | "marquee" | "background"; id?: string; startX: number; startY: number; originX?: number; originY?: number; originWidth?: number; originHeight?: number; selected?: string[] } | null>(null);
   const clipboard = useRef<any[]>([]);
@@ -744,7 +754,7 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra }: { h: Bl
               <span className="rounded-lg bg-muted/70 px-2 py-1.5 text-[11px] font-medium tabular-nums text-foreground">{zoom}%</span>
             </div>
           </div>
-          <div className="h-full overflow-auto rounded-2xl border border-primary/10 bg-background/35 p-2 shadow-inner sm:p-4 lg:p-6"><div className="mx-auto origin-top transition-transform" style={{ width: `${100 / (zoom / 100)}%`, minHeight: canvasHeight / (zoom / 100) }}><div ref={canvasRef} className={`relative isolate mx-auto w-full ${DEVICE_W[device]} overflow-hidden rounded-2xl border bg-card shadow-sm ${showGrid ? "[background-image:linear-gradient(to_right,hsl(var(--border)/.25)_1px,transparent_1px),linear-gradient(to_bottom,hsl(var(--border)/.25)_1px,transparent_1px)] [background-size:16px_16px]" : ""}`} style={{ minHeight: canvasHeight, backgroundColor: bg && (bg as any).color ? (bg as any).color : undefined, transform: `scale(${zoom / 100})`, transformOrigin: "top center" }} onPointerDown={(event) => { if (event.target === event.currentTarget) { const p = canvasPoint(event); interaction.current = { mode: "marquee", startX: p.x, startY: p.y }; setSelectedIds([]); } }} onPointerMove={moveInteraction} onPointerUp={stopInteraction} onPointerCancel={stopInteraction}
+          <div ref={viewportRef} className="h-full overflow-auto overscroll-contain rounded-2xl border border-primary/10 bg-background/35 p-2 shadow-inner sm:p-4 lg:p-6"><div className="mx-auto origin-top transition-transform" style={{ width: `${100 / (zoom / 100)}%`, minHeight: canvasHeight / (zoom / 100) }}><div ref={canvasRef} className={`relative isolate mx-auto w-full ${DEVICE_W[device]} overflow-hidden rounded-2xl border bg-card shadow-sm ${showGrid ? "[background-image:linear-gradient(to_right,hsl(var(--border)/.25)_1px,transparent_1px),linear-gradient(to_bottom,hsl(var(--border)/.25)_1px,transparent_1px)] [background-size:16px_16px]" : ""}`} style={{ minHeight: canvasHeight, backgroundColor: bg && (bg as any).color ? (bg as any).color : undefined, transform: `scale(${zoom / 100})`, transformOrigin: "top center" }} onPointerDown={(event) => { if (event.target === event.currentTarget) { const p = canvasPoint(event); interaction.current = { mode: "marquee", startX: p.x, startY: p.y }; setSelectedIds([]); } }} onPointerMove={moveInteraction} onPointerUp={stopInteraction} onPointerCancel={stopInteraction}
               onDragEnter={(event) => {
                 if (event.dataTransfer.types.includes("application/x-vellune-block-type")) {
                   canvasDragDepth.current += 1;
@@ -892,7 +902,10 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra }: { h: Bl
                   <span className="flex-1 text-center text-sm font-semibold tabular-nums">{zoom}%</span>
                   <button type="button" aria-label="Aumentar zoom" className="h-10 w-10 rounded-xl border bg-background text-lg" onClick={() => setZoom((value) => Math.min(150, value + 10))}>+</button>
                 </div>
-                <button type="button" className="mt-2 w-full rounded-lg border bg-background px-3 py-2 text-xs" onClick={() => setZoom(100)}>Restaurar 100%</button>
+                <div className="mt-2 grid grid-cols-2 gap-2">
+                  <button type="button" className="rounded-lg border bg-background px-3 py-2 text-xs" onClick={fitCanvasToViewport}>Ajustar à tela</button>
+                  <button type="button" className="rounded-lg border bg-background px-3 py-2 text-xs" onClick={() => setZoom(100)}>100%</button>
+                </div>
               </div>
               <button type="button" className={`flex w-full items-center justify-center gap-2 rounded-xl border px-3 py-2.5 text-xs font-medium ${showGrid ? "bg-primary/10 text-primary" : "text-muted-foreground"}`} onClick={() => setShowGrid((value) => !value)}>
                 <Grid3X3 className="h-4 w-4" />{showGrid ? "Guias ativas" : "Ativar guias"}
