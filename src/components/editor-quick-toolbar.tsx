@@ -33,17 +33,17 @@ export function EditorQuickToolbar({ selected, onProp, onDuplicate, onDelete, on
         value={p.text ?? ""}
         onChange={(event) => onProp("text", event.target.value)}
         placeholder="Digite o texto..."
-        className="h-8 w-44 text-xs"
+        className="h-8 w-44 text-base sm:text-xs"
       />}
-      <select aria-label="Fonte do texto" value={p.font || "display"} onChange={(event) => onProp("font", event.target.value)} className="h-8 w-28 rounded-md border border-input bg-background px-2 text-xs">{FONTS.map((font) => <option key={font.value} value={font.value}>{font.label.replace(" (padrão)", "")}</option>)}</select>
-      <Input type="number" aria-label="Tamanho do texto" min={1} max={240} className="h-8 w-16 px-2 text-xs" value={p.fontSize ?? ({ sm: 14, md: 16, lg: 20, xl: 30, "2xl": 36 } as Record<string, number>)[p.size ?? "lg"] ?? 20} onChange={(event) => { const size = Number(event.target.value); if (size >= 1 && size <= 240) onProp("fontSize", String(size)); }} />
+      <select aria-label="Fonte do texto" value={p.font || "display"} onChange={(event) => onProp("font", event.target.value)} className="h-8 w-28 rounded-md border border-input bg-background px-2 text-base sm:text-xs">{FONTS.map((font) => <option key={font.value} value={font.value}>{font.label.replace(" (padrão)", "")}</option>)}</select>
+      <Input type="number" aria-label="Tamanho do texto" min={1} max={240} className="h-8 w-16 px-2 text-base sm:text-xs" value={p.fontSize ?? ({ sm: 14, md: 16, lg: 20, xl: 30, "2xl": 36 } as Record<string, number>)[p.size ?? "lg"] ?? 20} onChange={(event) => { const size = Number(event.target.value); if (size >= 1 && size <= 240) onProp("fontSize", String(size)); }} />
       <Button size="icon" variant={bold ? "secondary" : "ghost"} className="h-8 w-8" title="Negrito" aria-label="Negrito" aria-pressed={bold} onClick={() => onProp("fontWeight", bold ? "normal" : "bold")}><Bold /></Button>
       <Button size="icon" variant={p.fontStyle === "italic" ? "secondary" : "ghost"} className="h-8 w-8" title="Itálico" aria-label="Itálico" aria-pressed={p.fontStyle === "italic"} onClick={() => onProp("fontStyle", p.fontStyle === "italic" ? "normal" : "italic")}><Italic /></Button>
       <Button size="icon" variant={p.textDecoration === "underline" ? "secondary" : "ghost"} className="h-8 w-8" title="Sublinhado" aria-label="Sublinhado" aria-pressed={p.textDecoration === "underline"} onClick={() => onProp("textDecoration", p.textDecoration === "underline" ? "none" : "underline")}><Underline /></Button>
       <Button size="icon" variant={p.textDecoration === "line-through" ? "secondary" : "ghost"} className="h-8 w-8" title="Riscado" aria-label="Riscado" aria-pressed={p.textDecoration === "line-through"} onClick={() => onProp("textDecoration", p.textDecoration === "line-through" ? "none" : "line-through")}><Strikethrough /></Button>
-      <Input type="number" aria-label="Espaçamento entre letras" title="Espaçamento entre letras (px)" min={-20} max={40} step={0.1} className="h-8 w-16 px-2 text-xs" value={p.letterSpacing ?? 0} onChange={(event) => { const value = Number(event.target.value); if (Number.isFinite(value) && value >= -20 && value <= 40) onProp("letterSpacing", String(value)); }} />
-      <Input type="number" aria-label="Altura da linha" title="Altura da linha" min={0.5} max={4} step={0.1} className="h-8 w-14 px-2 text-xs" value={p.lineHeight ?? 1.2} onChange={(event) => { const value = Number(event.target.value); if (Number.isFinite(value) && value >= 0.5 && value <= 4) onProp("lineHeight", String(value)); }} />
-      <select aria-label="Transformação do texto" title="Transformação do texto" value={p.textTransform || "none"} onChange={(event) => onProp("textTransform", event.target.value)} className="h-8 w-24 rounded-md border border-input bg-background px-1.5 text-[10px]">
+      <Input type="number" aria-label="Espaçamento entre letras" title="Espaçamento entre letras (px)" min={-20} max={40} step={0.1} className="h-8 w-16 px-2 text-base sm:text-xs" value={p.letterSpacing ?? 0} onChange={(event) => { const value = Number(event.target.value); if (Number.isFinite(value) && value >= -20 && value <= 40) onProp("letterSpacing", String(value)); }} />
+      <Input type="number" aria-label="Altura da linha" title="Altura da linha" min={0.5} max={4} step={0.1} className="h-8 w-14 px-2 text-base sm:text-xs" value={p.lineHeight ?? 1.2} onChange={(event) => { const value = Number(event.target.value); if (Number.isFinite(value) && value >= 0.5 && value <= 4) onProp("lineHeight", String(value)); }} />
+      <select aria-label="Transformação do texto" title="Transformação do texto" value={p.textTransform || "none"} onChange={(event) => onProp("textTransform", event.target.value)} className="h-8 w-24 rounded-md border border-input bg-background px-1.5 text-sm sm:text-[10px]">
         <option value="none">Normal</option>
         <option value="uppercase">MAIÚSCULAS</option>
         <option value="capitalize">Inicial</option>
@@ -60,7 +60,7 @@ export function EditorQuickToolbar({ selected, onProp, onDuplicate, onDelete, on
         value={p.objectFit || "cover"}
         onChange={(event) => onProp("objectFit", event.target.value)}
         disabled={locked}
-        className="h-8 w-24 rounded-md border border-input bg-background px-1.5 text-[10px]"
+        className="h-8 w-24 rounded-md border border-input bg-background px-1.5 text-sm sm:text-[10px]"
       >
         <option value="cover">Cobrir</option>
         <option value="contain">Conter</option>
@@ -72,7 +72,7 @@ export function EditorQuickToolbar({ selected, onProp, onDuplicate, onDelete, on
         value={p.objectPosition || p.position || "center"}
         onChange={(event) => onProp("objectPosition", event.target.value)}
         disabled={locked}
-        className="h-8 w-24 rounded-md border border-input bg-background px-1.5 text-[10px]"
+        className="h-8 w-24 rounded-md border border-input bg-background px-1.5 text-sm sm:text-[10px]"
       >
         <option value="center">Centro</option>
         <option value="top">Topo</option>
@@ -88,7 +88,7 @@ export function EditorQuickToolbar({ selected, onProp, onDuplicate, onDelete, on
           min={100}
           max={300}
           step={5}
-          className="h-7 w-14 border-0 bg-transparent px-1 text-[11px] shadow-none focus-visible:ring-0"
+          className="h-7 w-14 border-0 bg-transparent px-1 text-sm sm:text-[11px] shadow-none focus-visible:ring-0"
           value={p.imageZoom ?? 100}
           onChange={(event) => {
             const value = Number(event.target.value);
