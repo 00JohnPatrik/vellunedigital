@@ -376,7 +376,7 @@ function LoginPage() {
                 </div>
               ) : (
                 <div>
-                <AuthJourneySteps activeStep={1} />
+                <AuthJourneySteps activeStep={1} compact />
                 <form onSubmit={onLogin} className="space-y-5" noValidate>
                   <div className="mb-8">
                     <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.25em] text-[#d4af37]">Área exclusiva</p>
