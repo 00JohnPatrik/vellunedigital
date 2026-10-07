@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { LockKeyhole, ShieldCheck, Sparkles } from "lucide-react";
+import { ShieldCheck } from "lucide-react";
 import Logo from "@/components/Logo";
 import { AuthPremiumVisual } from "@/components/auth-premium-visual";
 
