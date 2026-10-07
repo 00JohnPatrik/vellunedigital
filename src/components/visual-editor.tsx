@@ -346,12 +346,12 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra }: { h: Bl
   const cancelImageReplace = () => setImageReplaceId(null);
   const handleStartEditingHandled = useCallback(() => setStartEditingTextId(null), []);
   const groupSelected = useCallback(() => {
-    if (selectedIds.length < 2) return;
+    if (selectedIds.length < 2 || selected.some((item: any) => item.locked)) return;
     const groupId = `group-${crypto.randomUUID()}`;
     h.set((items) => items.map((item: any) =>
       selectedIds.includes(item.id) && !item.locked ? { ...item, groupId } : item
     ), "selection:group");
-  }, [h, selectedIds]);
+  }, [h, selected, selectedIds]);
   const ungroupSelected = useCallback(() => {
     if (!selectedIds.length) return;
     h.set((items) => items.map((item: any) =>
@@ -862,15 +862,18 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra }: { h: Bl
             <button type="button" className="flex min-w-[64px] flex-col items-center gap-1 rounded-xl px-2 py-1.5 text-[10px] text-muted-foreground hover:bg-primary/10 hover:text-primary" onClick={() => setMobileSheet("properties")}><PanelRight className="h-4 w-4" />Editar</button>
             <button type="button" className="flex min-w-[64px] flex-col items-center gap-1 rounded-xl px-2 py-1.5 text-[10px] text-muted-foreground hover:bg-primary/10 hover:text-primary" onClick={() => rotate(-15)}><RotateCcw className="h-4 w-4" />−15°</button>
             <button type="button" className="flex min-w-[64px] flex-col items-center gap-1 rounded-xl px-2 py-1.5 text-[10px] text-muted-foreground hover:bg-primary/10 hover:text-primary" onClick={() => rotate(15)}><RotateCw className="h-4 w-4" />+15°</button>
-            {selected.length === 1 && selected[0]?.type === "image" && (
+            {selected.length === 1 && selected[0]?.type === "image" && !selected[0]?.locked && (
               <button type="button" className="flex min-w-[64px] flex-col items-center gap-1 rounded-xl px-2 py-1.5 text-[10px] text-muted-foreground hover:bg-primary/10 hover:text-primary" onClick={() => openImageAction(selected[0].id, "replace")}><ImageIcon className="h-4 w-4" />Trocar</button>
             )}
-            {selected.length > 1 && (
-              <button type="button" className="flex min-w-[64px] flex-col items-center gap-1 rounded-xl px-2 py-1.5 text-[10px] text-muted-foreground hover:bg-primary/10 hover:text-primary" onClick={selected.every((item: any) => item.groupId) ? ungroupSelected : groupSelected}>
-                {selected.every((item: any) => item.groupId) ? <Unlink2 className="h-4 w-4" /> : <Link2 className="h-4 w-4" />}
-                {selected.every((item: any) => item.groupId) ? "Desagrupar" : "Agrupar"}
-              </button>
-            )}
+            {selected.length > 1 && (() => {
+              const sameGroup = Boolean(selected[0]?.groupId) && selected.every((item: any) => item.groupId === selected[0]?.groupId);
+              return (
+                <button type="button" disabled={!sameGroup && selected.some((item: any) => item.locked)} className="flex min-w-[64px] flex-col items-center gap-1 rounded-xl px-2 py-1.5 text-[10px] text-muted-foreground hover:bg-primary/10 hover:text-primary disabled:cursor-not-allowed disabled:opacity-40" onClick={sameGroup ? ungroupSelected : groupSelected}>
+                  {sameGroup ? <Unlink2 className="h-4 w-4" /> : <Link2 className="h-4 w-4" />}
+                  {sameGroup ? "Desagrupar" : "Agrupar"}
+                </button>
+              );
+            })()}
             <button type="button" className="flex min-w-[64px] flex-col items-center gap-1 rounded-xl px-2 py-1.5 text-[10px] text-muted-foreground hover:bg-primary/10 hover:text-primary" onClick={duplicate}><Plus className="h-4 w-4" />Duplicar</button>
                         <button type="button" className="flex min-w-[64px] flex-col items-center gap-1 rounded-xl px-2 py-1.5 text-[10px] text-muted-foreground hover:bg-primary/10 hover:text-primary" onClick={() => reorderSelectedLayers("front")}><BringToFront className="h-4 w-4" />Frente</button>
             <button type="button" className="flex min-w-[64px] flex-col items-center gap-1 rounded-xl px-2 py-1.5 text-[10px] text-muted-foreground hover:bg-primary/10 hover:text-primary" onClick={() => reorderSelectedLayers("back")}><SendToBack className="h-4 w-4" />Trás</button>
