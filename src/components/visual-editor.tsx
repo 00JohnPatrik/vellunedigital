@@ -841,13 +841,13 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra }: { h: Bl
             <button type="button" className="flex min-w-[64px] flex-col items-center gap-1 rounded-xl px-2 py-1.5 text-[10px] text-muted-foreground hover:bg-primary/10 hover:text-primary" onClick={() => setSelectedIds([])}><X className="h-4 w-4" />Fechar</button>
           </div>
         )}
-        <div className="flex items-center justify-between gap-1 rounded-2xl border border-primary/15 bg-card/95 p-2 shadow-2xl shadow-black/25 backdrop-blur-xl" role="toolbar" aria-label="Ferramentas móveis do editor">
+        {!selectedIds.length && <div className="flex items-center justify-between gap-1 rounded-2xl border border-primary/15 bg-card/95 p-2 shadow-2xl shadow-black/25 backdrop-blur-xl" role="toolbar" aria-label="Ferramentas móveis do editor">
           <button type="button" className="flex min-w-0 flex-1 flex-col items-center gap-0.5 rounded-xl px-1 py-1.5 text-[10px] text-muted-foreground transition hover:bg-primary/10 hover:text-primary" onClick={() => setMobileSheet("elements")}><PanelLeft className="h-4 w-4" />Elementos</button>
           <button type="button" className="flex min-w-0 flex-1 flex-col items-center gap-0.5 rounded-xl px-1 py-1.5 text-[10px] text-muted-foreground transition hover:bg-primary/10 hover:text-primary" onClick={() => setMobileSheet("layers")}><Grid3X3 className="h-4 w-4" />Camadas</button>
           <button type="button" className="flex min-w-0 flex-1 flex-col items-center gap-0.5 rounded-xl px-1 py-1.5 text-[10px] text-muted-foreground transition hover:bg-primary/10 hover:text-primary" onClick={() => setTemplateOpen(true)}><Sparkles className="h-4 w-4" />Modelos</button>
           <button type="button" className="flex min-w-0 flex-1 flex-col items-center gap-0.5 rounded-xl px-1 py-1.5 text-[10px] text-muted-foreground transition hover:bg-primary/10 hover:text-primary" onClick={() => setMobileSheet("view")}><Tablet className="h-4 w-4" />Zoom</button>
           <button type="button" className="flex min-w-0 flex-1 flex-col items-center gap-0.5 rounded-xl px-1 py-1.5 text-[10px] text-muted-foreground transition hover:bg-primary/10 hover:text-primary" onClick={() => setMobileSheet("background")}><Sparkles className="h-4 w-4" />Fundo</button>
-        </div>
+        </div>}
       </div>
       {compact && mobileSheet && (
         <div className="fixed inset-0 z-[80] lg:hidden">
