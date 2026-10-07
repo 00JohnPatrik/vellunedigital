@@ -22,7 +22,7 @@ export type PublicInvitationBranding = {
 export type PublicInvitation = {
   slug: string; name: string; status: "published" | "closed"; event_date: string; event_time: string;
   venue_name: string | null; address: string | null; city: string | null; state: string | null; message: string | null;
-  content: TemplateContent; rsvp?: PublicRsvp; company_id?: string; branding?: PublicInvitationBranding | null;
+  content: TemplateContent; rsvp?: PublicRsvp; branding?: PublicInvitationBranding | null;
 };
 export type PublicInvitationResult = { state: "ok"; invitation: PublicInvitation } | { state: "not_found" | "unavailable" };
 
