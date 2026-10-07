@@ -52,7 +52,7 @@ export function AuthPremiumVisual() {
           </div>
         </div>
       </div>
-      <div className="vellune-auth-visual-footer flex items-center gap-7 text-[10px] font-medium uppercase tracking-[0.2em] text-white/30"><span>Experiência Vellune</span><span className="h-px w-8 bg-white/10" /><span>Ambiente protegido</span></div>
+      <div className="vellune-auth-visual-footer flex shrink-0 items-center gap-7 text-[10px] font-medium uppercase tracking-[0.2em] text-white/30"><span>Experiência Vellune</span><span className="h-px w-8 bg-white/10" /><span>Ambiente protegido</span></div>
     </section>
   );
 }
