@@ -743,7 +743,7 @@ export function VisualTransformCanvas({ blocks, selectedIds: selectedIdsProp, zo
             onBlur={stopTextEditing}
           />
         )}
-        {isSelected && !isEditingText && <div className="pointer-events-none absolute -top-7 left-0 max-w-full truncate rounded bg-primary px-2 py-1 text-[10px] text-primary-foreground">{block.type === "text" ? "Duplo clique para editar" : String(block.type)}</div>}
+        {isSelected && !isEditingText && <div className="pointer-events-none absolute -top-7 left-0 max-w-full truncate rounded bg-primary px-2 py-1 text-[10px] text-primary-foreground">{block.type === "text" ? "Duplo clique ou segure para editar" : String(block.type)}</div>}
       </div>;
     })}
     {selectedBounds && <div className="pointer-events-none absolute z-[80] border-2 border-primary" style={{ left: selectedBounds.left, top: selectedBounds.top, width: selectedBounds.width, height: selectedBounds.height }}>
