@@ -30,6 +30,8 @@ type ElementsLibraryProps = {
   onAddImage?: (value: string) => void;
   imageMode?: "add" | "replace";
   onSelectImage?: (value: string) => void;
+  onCancelImageReplace?: () => void;
+  id?: string;
 };
 
 type LibraryCategory = "Todos" | "Recentes" | "Texto" | "Elementos" | "Mídia" | "Interações";
@@ -105,7 +107,7 @@ function typeLabel(type: BlockType) {
   return BLOCKS[type]?.label || type;
 }
 
-export function ElementsLibrary({ availableTypes, onAdd, assets, onAddImage, imageMode = "add", onSelectImage }: ElementsLibraryProps) {
+export function ElementsLibrary({ availableTypes, onAdd, assets, onAddImage, imageMode = "add", onSelectImage, onCancelImageReplace, id }: ElementsLibraryProps) {
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState<LibraryCategory>("Todos");
   const [recents, setRecents] = useState<string[]>([]);
@@ -194,13 +196,16 @@ export function ElementsLibrary({ availableTypes, onAdd, assets, onAddImage, ima
   ];
 
   return (
-    <section className="space-y-4" aria-label="Biblioteca criativa de elementos">
+    <section id={id} className="space-y-4" aria-label="Biblioteca criativa de elementos">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <div className="flex items-center gap-2"><Sparkles className="h-4 w-4 text-primary" aria-hidden="true" /><h2 className="text-sm font-semibold text-foreground">Biblioteca criativa</h2></div>
-          <p className="mt-1 text-xs leading-5 text-muted-foreground">Monte seu convite com elementos prontos e totalmente editáveis.</p>
+          <div className="flex items-center gap-2"><Sparkles className="h-4 w-4 text-primary" aria-hidden="true" /><h2 className="text-sm font-semibold text-foreground">{imageMode === "replace" ? "Substituir imagem" : "Biblioteca criativa"}</h2></div>
+          <p className="mt-1 text-xs leading-5 text-muted-foreground">{imageMode === "replace" ? "Escolha uma nova imagem sem perder o enquadramento e a posição do elemento atual." : "Monte seu convite com elementos prontos e totalmente editáveis."}</p>
         </div>
-        <span className="rounded-full border bg-primary/5 px-2 py-1 text-[10px] font-medium text-primary">{items.length} opções</span>
+        <div className="flex items-center gap-2">
+          <span className="rounded-full border bg-primary/5 px-2 py-1 text-[10px] font-medium text-primary">{items.length} opções</span>
+          {imageMode === "replace" && <Button type="button" size="sm" variant="ghost" className="h-7 px-2 text-[10px]" onClick={onCancelImageReplace}>Cancelar</Button>}
+        </div>
       </div>
 
       <div className="relative">
