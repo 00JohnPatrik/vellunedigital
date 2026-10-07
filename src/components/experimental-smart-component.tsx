@@ -24,6 +24,11 @@ export type SmartComponentType =
   | "social"
   | "custom_link";
 
+type SmartGalleryImage = { url: string; alt?: string; caption?: string };
+type SmartSocialLink = { label: string; url: string };
+type SmartGift = { name: string; url: string; claimed?: boolean };
+type SmartHost = { name: string; role?: string; image?: string };
+
 export type SmartFunctionalConfig = {
   target?: string;
   url?: string;
