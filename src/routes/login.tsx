@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { ArrowRight, CheckCircle2, Eye, EyeOff, LockKeyhole, Mail, MailCheck, UserRound } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -43,6 +43,9 @@ function LoginPage() {
   const [touched, setTouched] = useState(false);
   const [rememberAccess, setRememberAccess] = useState(false);
   const [loginSuccess, setLoginSuccess] = useState(false);
+  const [focusedField, setFocusedField] = useState<string | null>(null);
+  const [capsLockOn, setCapsLockOn] = useState(false);
+  const passwordRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     try {
@@ -56,17 +59,43 @@ function LoginPage() {
     }
   }, []);
 
-  const identifierInvalid = touched && (!identifier.trim() || (identifier.includes("@") && !z.string().email().safeParse(identifier.trim()).success));
+  function formatBrazilianPhone(value: string) {
+    const digits = value.replace(/\D/g, "").slice(0, 11);
+    if (!digits) return "";
+    if (digits.length <= 2) return `(${digits}`;
+    if (digits.length <= 6) return `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
+    if (digits.length <= 10) return `(${digits.slice(0, 2)}) ${digits.slice(2, 6)}-${digits.slice(6)}`;
+    return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
+  }
+
+  const trimmedIdentifier = identifier.trim();
+  const identifierDigits = trimmedIdentifier.replace(/\D/g, "");
+  const identifierInvalid =
+    touched &&
+    (!trimmedIdentifier ||
+      (trimmedIdentifier.includes("@") && !z.string().email().safeParse(trimmedIdentifier).success) ||
+      (!trimmedIdentifier.includes("@") && (identifierDigits.length < 10 || identifierDigits.length > 11)));
   const passwordInvalid = touched && !password;
   const recoveryInvalid = touched && !z.string().email().safeParse(recoveryEmail.trim()).success;
+
+  const identifierError = !touched
+    ? null
+    : !trimmedIdentifier
+      ? "Informe seu e-mail ou telefone."
+      : trimmedIdentifier.includes("@") && !z.string().email().safeParse(trimmedIdentifier).success
+        ? "Informe um e-mail válido."
+        : !trimmedIdentifier.includes("@") && (identifierDigits.length < 10 || identifierDigits.length > 11)
+          ? "Informe um telefone válido com DDD."
+          : null;
+  const passwordError = passwordInvalid ? "Informe sua senha." : null;
+  const recoveryError = recoveryInvalid ? "Informe um e-mail válido." : null;
 
   async function onLogin(e: React.FormEvent) {
     e.preventDefault();
     setTouched(true);
     setError(null);
     const id = identifier.trim();
-    if (!id || !password) return setError("Preencha seus dados para continuar.");
-    if (id.includes("@") && !z.string().email().safeParse(id).success) return setError("Informe um e-mail válido.");
+    if (identifierError || passwordError) return;
 
     setLoading(true);
     try {
@@ -110,7 +139,7 @@ function LoginPage() {
     setTouched(true);
     setError(null);
     const parsed = z.string().trim().toLowerCase().email().max(255).safeParse(recoveryEmail);
-    if (!parsed.success) return setError("Informe um e-mail válido.");
+    if (!parsed.success) return;
 
     setLoading(true);
     await resetPassword({ data: { email: parsed.data } }).catch(() => null);
@@ -142,7 +171,15 @@ function LoginPage() {
           from { opacity: 0; transform: scale(.86); }
           to { opacity: 1; transform: scale(1); }
         }
+        @keyframes velluneAuthPanel {
+          from { opacity: 0; transform: translateY(5px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        .vellune-auth-panel-motion {
+          animation: velluneAuthPanel 280ms cubic-bezier(.22,1,.36,1);
+        }
         @media (prefers-reduced-motion: reduce) {
+          .vellune-auth-panel-motion { animation: none !important; }
           .vellune-motion { animation: none !important; transition: none !important; }
         }
       `}</style>
@@ -188,9 +225,10 @@ function LoginPage() {
               <Logo className="h-14 w-auto max-w-[82vw] text-white transition-opacity duration-500 hover:opacity-90 sm:h-16" />
             </div>
 
-            <div className="relative overflow-hidden rounded-[24px] border border-white/[0.075] bg-[#111318]/92 p-5 shadow-[0_30px_100px_rgba(0,0,0,0.46)] backdrop-blur-xl sm:rounded-[28px] sm:p-9 vellune-motion" style={{ animation: "velluneFadeUp 800ms cubic-bezier(.22,1,.36,1)" }}>
+            <div className="relative overflow-hidden rounded-[24px] border border-white/[0.075] bg-[#111318]/94 p-5 shadow-[0_30px_100px_rgba(0,0,0,0.46),inset_0_1px_0_rgba(255,255,255,0.035)] ring-1 ring-white/[0.018] backdrop-blur-xl sm:rounded-[28px] sm:p-9 vellune-motion" style={{ animation: "velluneFadeUp 800ms cubic-bezier(.22,1,.36,1)" }}>
               <div className="pointer-events-none absolute inset-x-10 top-0 h-px bg-gradient-to-r from-transparent via-[#d4af37]/35 to-transparent" />
               <div className="pointer-events-none absolute -right-24 -top-24 h-48 w-48 rounded-full bg-[#d4af37]/[0.035] blur-3xl" style={{ animation: "velluneGlow 7s ease-in-out infinite" }} />
+              <div key={`${mode}-${recoverySent ? "sent" : "form"}`} className="vellune-auth-panel-motion">
               {mode === "recovery" ? (
                 <div>
                   <button type="button" onClick={showLogin} className="mb-9 text-xs font-medium text-white/40 transition-colors hover:text-[#e5c66b]">
@@ -218,9 +256,11 @@ function LoginPage() {
                       <div className="space-y-2">
                         <Label htmlFor="recovery-email" className="text-xs font-medium text-white/65">E-mail cadastrado</Label>
                         <div className="relative">
+                          <span className={`pointer-events-none absolute -inset-1 rounded-2xl bg-[radial-gradient(circle_at_18%_50%,rgba(212,175,55,0.12),transparent_58%)] blur-md transition-opacity duration-300 ${focusedField === "recovery-email" ? "opacity-100" : "opacity-0"}`} />
                           <Mail className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-white/25" />
-                          <Input id="recovery-email" type="email" inputMode="email" autoComplete="email" value={recoveryEmail} onChange={(e) => setRecoveryEmail(e.target.value)} onBlur={() => setTouched(true)} placeholder="voce@empresa.com" aria-invalid={recoveryInvalid} className="h-12 rounded-xl border-white/[0.08] bg-white/[0.035] pl-10 text-white placeholder:text-white/20 focus-visible:border-[#d4af37]/55 focus-visible:ring-2 focus-visible:ring-[#d4af37]/12 focus-visible:shadow-[0_0_0_1px_rgba(212,175,55,0.14),0_10px_35px_rgba(212,175,55,0.05)]" />
+                          <Input id="recovery-email" type="email" inputMode="email" autoComplete="email" value={recoveryEmail} onChange={(e) => setRecoveryEmail(e.target.value)} onFocus={() => setFocusedField("recovery-email")} onBlur={() => { setFocusedField(null); setTouched(true); }} placeholder="voce@empresa.com" aria-invalid={recoveryInvalid} aria-describedby={recoveryError ? "recovery-email-error" : undefined} className="relative z-10 h-12 rounded-xl border-white/[0.08] bg-[#111318]/90 pl-10 text-white placeholder:text-white/20 transition-[border-color,box-shadow,background-color] duration-300 focus-visible:border-[#d4af37]/55 focus-visible:ring-2 focus-visible:ring-[#d4af37]/12 focus-visible:shadow-[0_0_0_1px_rgba(212,175,55,0.14),0_10px_35px_rgba(212,175,55,0.05)]" />
                         </div>
+                        {recoveryError && <p id="recovery-email-error" className="text-[11px] text-red-300/90">{recoveryError}</p>}
                       </div>
                   {error && <div role="alert" className="rounded-xl border border-red-300/15 bg-red-400/[0.07] px-4 py-3 text-sm leading-6 text-red-200">{error}</div>}
                       <Button type="submit" disabled={loading} className="group h-12 w-full rounded-xl bg-[#d4af37] font-semibold text-[#16130b] shadow-[0_12px_34px_rgba(212,175,55,0.10)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#e5c66b] hover:shadow-[0_16px_38px_rgba(212,175,55,0.16)] active:translate-y-0">
@@ -252,10 +292,35 @@ function LoginPage() {
                       <button type="button" onClick={() => { setMode("recovery"); setRecoveryEmail(identifier.includes("@") ? identifier.trim() : ""); setError(null); setTouched(false); }} className="rounded-md px-1.5 py-1 text-xs font-medium text-[#d4af37] transition-[color,background-color] duration-200 hover:bg-[#d4af37]/[0.06] hover:text-[#e5c66b] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d4af37]/20">Esqueci minha senha</button>
                     </div>
                     <div className="relative">
+                      <span className={`pointer-events-none absolute -inset-1 rounded-2xl bg-[radial-gradient(circle_at_18%_50%,rgba(212,175,55,0.12),transparent_58%)] blur-md transition-opacity duration-300 ${focusedField === "password" ? "opacity-100" : "opacity-0"}`} />
                       <LockKeyhole className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-white/25" />
-                      <Input id="password" type={showPassword ? "text" : "password"} autoComplete="current-password" value={password} maxLength={200} onChange={(e) => setPassword(e.target.value)} onBlur={() => setTouched(true)} aria-invalid={passwordInvalid} className="h-12 rounded-xl border-white/[0.08] bg-white/[0.035] text-white placeholder:text-white/20 transition-[border-color,box-shadow,background-color] duration-300 focus-visible:border-[#d4af37]/55 focus-visible:ring-2 focus-visible:ring-[#d4af37]/12 focus-visible:shadow-[0_0_0_1px_rgba(212,175,55,0.14),0_10px_35px_rgba(212,175,55,0.05)] hover:border-white/[0.12] pl-10 pr-11" />
+                      <Input
+                        ref={passwordRef}
+                        id="password"
+                        type={showPassword ? "text" : "password"}
+                        autoComplete="current-password"
+                        value={password}
+                        maxLength={200}
+                        onChange={(e) => setPassword(e.target.value)}
+                        onFocus={(event) => {
+                          setFocusedField("password");
+                          setCapsLockOn(event.getModifierState("CapsLock"));
+                        }}
+                        onBlur={() => {
+                          setFocusedField(null);
+                          setCapsLockOn(false);
+                          setTouched(true);
+                        }}
+                        onKeyDown={(event) => setCapsLockOn(event.getModifierState("CapsLock"))}
+                        onKeyUp={(event) => setCapsLockOn(event.getModifierState("CapsLock"))}
+                        aria-invalid={passwordInvalid}
+                        aria-describedby={passwordError ? "password-error" : undefined}
+                        className="relative z-10 h-12 rounded-xl border-white/[0.08] bg-[#111318]/90 text-white placeholder:text-white/20 transition-[border-color,box-shadow,background-color] duration-300 focus-visible:border-[#d4af37]/55 focus-visible:ring-2 focus-visible:ring-[#d4af37]/12 focus-visible:shadow-[0_0_0_1px_rgba(212,175,55,0.14),0_10px_35px_rgba(212,175,55,0.05)] hover:border-white/[0.12] pl-10 pr-11"
+                      />
                       <button type="button" onClick={() => setShowPassword((value) => !value)} aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"} className="absolute right-0 top-0 flex h-12 w-11 items-center justify-center text-white/30 transition-colors hover:text-[#e5c66b]">{showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}</button>
                     </div>
+                    {capsLockOn && <p className="flex items-center gap-2 text-[11px] text-[#e5c66b]" role="status"><span className="h-1.5 w-1.5 rounded-full bg-[#d4af37] shadow-[0_0_8px_rgba(212,175,55,0.75)]" />Caps Lock está ativado.</p>}
+                    {passwordError && <p id="password-error" className="text-[11px] text-red-300/90">{passwordError}</p>}
                   </div>
 
                       <label className="flex min-h-8 cursor-pointer items-center gap-3 py-1 text-xs text-white/40 select-none transition-colors hover:text-white/55">
@@ -292,6 +357,7 @@ function LoginPage() {
                   <p className="text-center text-xs text-white/35">Primeira vez aqui? <a href="/first-access" className="font-semibold text-white/65 transition-colors hover:text-[#e5c66b]">Faça seu primeiro acesso</a></p>
                 </form>
               )}
+              </div>
             </div>
 
             <p className="mt-5 text-center text-[9px] font-medium uppercase tracking-[0.24em] text-white/20">Vellune Digital · v1.6</p>
