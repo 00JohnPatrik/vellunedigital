@@ -410,7 +410,16 @@ export function VisualTransformCanvas({ blocks, selectedIds: selectedIdsProp, zo
   const begin = (event: React.PointerEvent, mode: Interaction["mode"], handle?: string, block?: any) => {
     event.stopPropagation();
     const additive = event.shiftKey || event.ctrlKey || event.metaKey;
-    const requestedIds = block?.id ? selectedIds.includes(block.id) ? selectedIds : additive ? [...selectedIds, block.id] : [block.id] : selectedIds;
+    const blockGroupIds = block?.id ? groupMembers([block.id]) : [];
+    const requestedIds = block?.id
+      ? selectedIds.includes(block.id)
+        ? selectedIds
+        : additive
+          ? Array.from(new Set([...selectedIds, ...blockGroupIds]))
+          : blockGroupIds.length > 0
+            ? blockGroupIds
+            : [block.id]
+      : selectedIds;
     const ids = requestedIds.filter((id) => !blocks.find((item: any) => item.id === id)?.locked);
     const activeBlocks = blocks.filter((item: any) => ids.includes(item.id));
     const bounds = boundsOf(blocks, ids);
