@@ -677,6 +677,8 @@ export function VisualTransformCanvas({ blocks, selectedIds: selectedIdsProp, zo
             textLongPress.current = setTimeout(() => {
               const currentBlock = blocks.find((item: any) => item.id === block.id);
               if (currentBlock && !currentBlock.locked && !currentBlock.hidden && currentBlock.visibility !== false) {
+                interaction.current = null;
+                setGuides([]);
                 startTextEditing(currentBlock);
               }
               textLongPress.current = null;
