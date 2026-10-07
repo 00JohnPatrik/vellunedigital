@@ -5,7 +5,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { AuthCard } from "@/components/auth-card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { friendlyAuthError } from "@/lib/app-user";
+import { friendlyAuthError, isAuthServiceUnavailable } from "@/lib/app-user";
+import { AuthJourneySteps } from "@/components/auth-journey";
+import { AuthUnavailableState } from "@/components/auth-unavailable-state";
+import { AuthSuccessTransition } from "@/components/auth-success-transition";
 
 export const Route = createFileRoute("/reset-password")({
   ssr: false,
@@ -70,6 +73,8 @@ function ResetPage() {
   const [confirm, setConfirm] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [authUnavailable, setAuthUnavailable] = useState(false);
+  const [passwordUpdated, setPasswordUpdated] = useState(false);
   const passwordRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
@@ -111,18 +116,33 @@ function ResetPage() {
     const { error: updateError } = await supabase.auth.updateUser({ password });
     setLoading(false);
     if (updateError) {
+      if (isAuthServiceUnavailable(updateError)) setAuthUnavailable(true);
       setError(friendlyAuthError(updateError.message));
       return;
     }
 
+    setPasswordUpdated(true);
     await supabase.auth.signOut();
+    const prefersReducedMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
+    await new Promise((resolve) => window.setTimeout(resolve, prefersReducedMotion ? 420 : 1250));
     navigate({ to: "/login", replace: true });
   }
 
+  if (authUnavailable) {
+    return (
+      <main className="vellune-auth-root fixed inset-0 h-[100dvh] w-full overflow-hidden bg-[#08090d] text-white">
+        <AuthUnavailableState onRetry={() => { setAuthUnavailable(false); window.location.reload(); }} />
+      </main>
+    );
+  }
+
   return (
+    <>
     <AuthCard title="Crie uma nova senha" subtitle="Escolha uma senha forte para manter sua conta protegida.">
       {!ready ? (
-        <div className="space-y-5 rounded-2xl border border-red-300/15 bg-red-400/[0.07] p-4 sm:p-5" role="alert">
+        <div>
+          <AuthJourneySteps activeStep={2} />
+          <div className="space-y-5 rounded-2xl border border-red-300/15 bg-red-400/[0.07] p-4 sm:p-5" role="alert">
           <div className="flex h-11 w-11 items-center justify-center rounded-full border border-red-300/15 bg-red-400/[0.07] text-red-200">
             <ShieldCheck className="h-5 w-5" />
           </div>
@@ -131,12 +151,15 @@ function ResetPage() {
             <h2 className="mt-1 font-display text-[22px] font-medium tracking-[-0.025em] text-white">Este link não é mais válido</h2>
             <p className="mt-2 text-[13px] leading-5 text-red-100/55">O link pode ter expirado ou não foi possível validar sua sessão de recuperação.</p>
           </div>
-          <Link to="/login" search={{ mode: "recovery" }} className="inline-flex text-xs font-semibold text-[#e5c66b] transition-colors hover:text-white">
-            Solicitar novo link →
-          </Link>
+            <Link to="/login" search={{ mode: "recovery" }} className="inline-flex text-xs font-semibold text-[#e5c66b] transition-colors hover:text-white">
+              Solicitar novo link →
+            </Link>
+          </div>
         </div>
       ) : (
-        <form onSubmit={onSubmit} className="space-y-5" noValidate>
+        <div>
+          <AuthJourneySteps activeStep={3} />
+          <form onSubmit={onSubmit} className="space-y-5" noValidate>
           <div className="rounded-2xl border border-white/[0.06] bg-white/[0.025] px-4 py-3.5">
             <div className="flex items-center gap-2 text-xs font-medium text-white/75 sm:text-sm">
               <ShieldCheck className="h-4 w-4 text-[#d4af37]" />
@@ -200,8 +223,16 @@ function ResetPage() {
               <span className="flex items-center justify-center gap-2">Salvar nova senha <span aria-hidden="true">→</span></span>
             )}
           </Button>
-        </form>
+          </form>
+        </div>
       )}
     </AuthCard>
+    <AuthSuccessTransition
+      open={passwordUpdated}
+      eyebrow="Senha atualizada"
+      title="Seu acesso está protegido"
+      ariaLabel="Senha atualizada. Seu acesso está protegido. Retornando ao login."
+    />
+    </>
   );
 }
