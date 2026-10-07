@@ -356,7 +356,7 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra }: { h: Bl
     if (block.type === "button") return props.label || "Botão";
     return BLOCKS[block.type as BlockType]?.label ?? String(block.type || "Bloco");
   };
-  const canvasPoint = (event: React.PointerEvent) => {
+  const canvasPoint = (event: { clientX: number; clientY: number }) => {
     const rect = canvasRef.current?.getBoundingClientRect();
     return rect ? { x: (event.clientX - rect.left) / (zoom / 100), y: (event.clientY - rect.top) / (zoom / 100) } : { x: 0, y: 0 };
   };
@@ -644,7 +644,7 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra }: { h: Bl
                 const type = event.dataTransfer.getData("application/x-vellune-block-type") as BlockType;
                 if (!type || !(Object.keys(BLOCKS) as string[]).includes(type)) return;
                 event.preventDefault();
-                const point = canvasPoint(event as unknown as React.PointerEvent);
+                const point = canvasPoint(event);
                 addBlockByType(type, undefined, point);
               }}
               aria-label="Área de edição do convite"><BackgroundLayers bg={bg as any} />
