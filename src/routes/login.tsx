@@ -109,7 +109,7 @@ function LoginPage() {
     if (!parsed.success) return setError("Informe um e-mail válido.");
 
     setLoading(true);
-    await resetPassword({ data: { email: parsed.data, origin: window.location.origin } }).catch(() => null);
+    await resetPassword({ data: { email: parsed.data } }).catch(() => null);
     setLoading(false);
     setRecoverySent(true);
   }
@@ -263,7 +263,7 @@ function LoginPage() {
                         </svg>
                       </span>
                     </span>
-                    <span>Lembrar meu acesso neste dispositivo</span>
+                    <span>Lembrar e-mail ou telefone neste dispositivo</span>
                   </label>
 
 
