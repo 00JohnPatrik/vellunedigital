@@ -227,8 +227,11 @@ export const submitRsvp = createServerFn({ method: "POST" })
   }).parse(d))
   .handler(async ({ data }): Promise<SubmitRsvpResult> => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    // Public RSVP updates are intentionally disabled until a dedicated
+    // proof-of-control flow exists. Without that, anyone who knows a
+    // guest's phone/email could alter another person's response.
     const { data: res, error } = await supabaseAdmin.rpc("submit_rsvp" as never, {
-      _slug: data.slug, _status: data.status, _name: data.name, _people: data.people, _phone: data.phone, _email: data.email, _update: data.update,
+      _slug: data.slug, _status: data.status, _name: data.name, _people: data.people, _phone: data.phone, _email: data.email, _update: false,
     } as never);
     if (error) { console.error("submit_rsvp", error.message); throw new Error("Não foi possível enviar sua resposta."); }
     return res as unknown as SubmitRsvpResult;
