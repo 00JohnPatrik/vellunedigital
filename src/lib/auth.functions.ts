@@ -38,7 +38,15 @@ function publicAuthClient() {
   });
 }
 
-export const normalizePhone = (v: string) => v.replace(/\D/g, "");
+export const normalizePhone = (v: string) => {
+  const digits = v.replace(/\D/g, "");
+  // Accept pasted Brazilian numbers with country code while keeping the
+  // canonical database format (DDD + subscriber number).
+  if (digits.startsWith("55") && (digits.length === 12 || digits.length === 13)) {
+    return digits.slice(2);
+  }
+  return digits;
+};
 
 /** Phone + password sign-in: resolves the account server-side (email never returned). */
 export const signInWithPhone = createServerFn({ method: "POST" })
@@ -46,7 +54,7 @@ export const signInWithPhone = createServerFn({ method: "POST" })
     z.object({ phone: z.string().min(8).max(20), password: z.string().min(1).max(200) }).parse(d),
   )
   .handler(async ({ data }) => {
-    const generic = { ok: false as const, error: "Telefone ou senha inválidos." };
+    const generic = { ok: false as const, error: "E-mail, telefone ou senha inválidos." };
     const phone = normalizePhone(data.phone);
     if (phone.length < 10 || phone.length > 15) return generic;
 
