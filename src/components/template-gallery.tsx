@@ -154,7 +154,7 @@ export function TemplateGallery({ open, onClose, onApply, hasContent }: Template
             <div className="mb-4 space-y-3">
               <div className="relative">
                 <Search className="pointer-events-none absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Buscar modelos" className="h-10 pl-9 text-xs" aria-label="Buscar modelos" />
+                <Input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Buscar modelos" className="h-10 pl-9 text-base sm:text-xs" aria-label="Buscar modelos" />
               </div>
               <div className="flex gap-1 overflow-x-auto pb-1 lg:hidden">
                 {[{ value: "Todos", label: "Todos" }, ...CATEGORIES].map((item) => (
