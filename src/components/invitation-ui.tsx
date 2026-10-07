@@ -1,3 +1,4 @@
+import { type ComponentProps } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,7 +14,7 @@ export function InvitationStatusBadge({ status }: { status: InvitationStatus }) 
 }
 
 export function EventFields({ v, setV, errors }: { v: EventValues; setV: (v: EventValues) => void; errors: Partial<Record<keyof EventValues, string>> }) {
-  const f = (k: keyof EventValues, label: string, props: React.ComponentProps<typeof Input> = {}, span = "") => (
+  const f = (k: keyof EventValues, label: string, props: ComponentProps<typeof Input> = {}, span = "") => (
     <div className={`space-y-1.5 ${span}`}>
       <Label htmlFor={`ev-${k}`}>{label}</Label>
       <Input id={`ev-${k}`} value={v[k]} onChange={(e) => setV({ ...v, [k]: e.target.value })} {...props} />
