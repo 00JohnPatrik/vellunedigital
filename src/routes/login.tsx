@@ -174,13 +174,13 @@ function LoginPage() {
         </section>
 
         {/* Authentication side */}
-        <section className="flex min-h-full items-center justify-center px-4 py-5 sm:px-8 lg:h-full lg:min-h-0 lg:border-l lg:border-white/[0.045] lg:bg-white/[0.012] xl:px-16">
+        <section className="flex min-h-full items-center justify-center px-3.5 py-5 sm:px-8 lg:h-full lg:min-h-0 lg:border-l lg:border-white/[0.045] lg:bg-white/[0.012] xl:px-16">
           <div className="w-full max-w-[430px] py-1 sm:py-2">
-            <div className="mb-6 flex justify-center lg:hidden sm:mb-8">
-              <Logo className="h-11 w-[225px] text-white transition-opacity duration-500 hover:opacity-90" />
+            <div className="mb-7 flex w-full justify-center lg:hidden sm:mb-9">
+              <Logo className="h-14 w-auto max-w-[82vw] text-white transition-opacity duration-500 hover:opacity-90 sm:h-16" />
             </div>
 
-            <div className="relative overflow-hidden rounded-[28px] border border-white/[0.075] bg-[#111318]/92 p-6 shadow-[0_30px_100px_rgba(0,0,0,0.46)] backdrop-blur-xl sm:rounded-[28px] sm:p-9 vellune-motion" style={{ animation: "velluneFadeUp 800ms cubic-bezier(.22,1,.36,1)" }}>
+            <div className="relative overflow-hidden rounded-[24px] border border-white/[0.075] bg-[#111318]/92 p-5 shadow-[0_30px_100px_rgba(0,0,0,0.46)] backdrop-blur-xl sm:rounded-[28px] sm:p-9 vellune-motion" style={{ animation: "velluneFadeUp 800ms cubic-bezier(.22,1,.36,1)" }}>
               <div className="pointer-events-none absolute inset-x-10 top-0 h-px bg-gradient-to-r from-transparent via-[#d4af37]/35 to-transparent" />
               <div className="pointer-events-none absolute -right-24 -top-24 h-48 w-48 rounded-full bg-[#d4af37]/[0.035] blur-3xl" style={{ animation: "velluneGlow 7s ease-in-out infinite" }} />
               {mode === "recovery" ? (
