@@ -7,7 +7,7 @@ import { BackgroundPropertiesPanel, ContextualPropertiesPanel } from "@/componen
 import { BLOCKS, getBlockDefaultSize, getNextBlockZIndex, newBlock, resolveBlockGeometry, type Block, type BlockType } from "@/lib/templates";
 import { ElementsLibrary } from "@/components/elements-library";
 import { TemplateGallery } from "@/components/template-gallery";
-import { CalendarDays, CheckCircle2, Eye, EyeOff, Grid3X3, Minus, Plus, Redo2, Undo2, PanelLeft, PanelRight, Sparkles, Smartphone, Tablet, Monitor, BringToFront, SendToBack, Trash2, X, Pencil, RotateCcw, RotateCw, Lock, Unlock, AlignCenterHorizontal, AlignCenterVertical, Link2, Unlink2, MapPin, Type, Image as ImageIcon, Palette, MoreHorizontal } from "lucide-react";
+import { CalendarDays, CheckCircle2, Eye, EyeOff, Grid3X3, Minus, Plus, Redo2, Undo2, PanelLeft, PanelRight, Sparkles, Smartphone, Tablet, Monitor, BringToFront, SendToBack, Trash2, X, Pencil, RotateCcw, RotateCw, Lock, Unlock, AlignCenterHorizontal, AlignCenterVertical, Link2, Unlink2, MapPin, Type, Image as ImageIcon, Palette, MoreHorizontal, Maximize2 } from "lucide-react";
 
 function useIsCompact() {
   const [compact, setCompact] = useState(false);
@@ -161,6 +161,13 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra }: { h: Bl
     const available = Math.max(280, viewportWidth - 28);
     setZoom(Math.round(Math.min(100, Math.max(72, (available / 390) * 100))));
   }, [compact]);
+  const fitCanvas = useCallback(() => {
+    const viewportWidth = viewportRef.current?.clientWidth || window.innerWidth;
+    const deviceWidth = device === "mobile" ? 390 : device === "tablet" ? 768 : 1024;
+    const available = Math.max(260, viewportWidth - (compact ? 28 : 56));
+    const fitted = Math.round((available / deviceWidth) * 100);
+    setZoom(Math.min(100, Math.max(50, fitted)));
+  }, [compact, device]);
 
   useEffect(() => {
     if (!compact) return;
@@ -712,6 +719,7 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra }: { h: Bl
           <button type="button" aria-label="Diminuir zoom" title="Diminuir zoom" onClick={() => setZoom((value) => Math.max(50, value - 10))} className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-border/70 text-muted-foreground transition hover:bg-accent hover:text-foreground"><Minus className="h-3.5 w-3.5" /></button>
           <span className="min-w-12 text-center text-[11px] font-medium tabular-nums text-foreground">{zoom}%</span>
           <button type="button" aria-label="Aumentar zoom" title="Aumentar zoom" onClick={() => setZoom((value) => Math.min(150, value + 10))} className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-border/70 text-muted-foreground transition hover:bg-accent hover:text-foreground"><Plus className="h-3.5 w-3.5" /></button>
+          <button type="button" aria-label="Ajustar canvas à área disponível" title="Ajustar canvas" onClick={fitCanvas} className="inline-flex h-8 items-center justify-center gap-1.5 rounded-md border border-border/70 px-2 text-[11px] text-muted-foreground transition hover:bg-accent hover:text-foreground"><Maximize2 className="h-3.5 w-3.5" /><span className="hidden md:inline">Ajustar</span></button>
           <button type="button" aria-pressed={showGrid} title={showGrid ? "Ocultar guias" : "Mostrar guias"} onClick={() => setShowGrid((value) => !value)} className={`inline-flex h-8 items-center gap-1.5 rounded-md border px-2.5 text-[11px] transition ${showGrid ? "border-primary/25 bg-primary/10 text-primary" : "border-border/70 text-muted-foreground hover:bg-accent hover:text-foreground"}`}><Grid3X3 className="h-3.5 w-3.5" /><span className="hidden sm:inline">Guias</span></button>
           </div>
         </div>
