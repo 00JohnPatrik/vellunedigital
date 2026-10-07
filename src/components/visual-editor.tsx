@@ -954,7 +954,6 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra }: { h: Bl
               onChange={(update, group) => h.set(update, group)}
               onDuplicate={duplicateByIds}
               onDelete={removeByIds}
-              onClearSelection={() => setSelectedIds([])}
               onLayer={(direction, ids) => reorderSelectedLayers(direction, ids)}
               onAlign={(mode, ids) => alignSelectedOnCanvas(mode, ids)}
               onOpacity={(value, ids) => updateSelectedOpacity(value, ids)}
