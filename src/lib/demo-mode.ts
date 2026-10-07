@@ -18,7 +18,7 @@ export function isDemoMode() {
   return false;
 }
 
-const defaultContent = {
+const defaultContent: TemplateContent = {
   version: 1 as const,
   settings: { background: { color: "#fffaf5", gradient: "linear-gradient(145deg, #fffaf5 0%, #f2e8dc 100%)" } },
   blocks: [
