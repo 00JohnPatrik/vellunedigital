@@ -79,7 +79,7 @@ function normalizeKeyframes(value: unknown): AnimationKeyframe[] | undefined {
         ...(typeof source.x === "number" ? { x: numberInRange(source.x, 0, -200, 200) } : {}),
         ...(typeof source.y === "number" ? { y: numberInRange(source.y, 0, -200, 200) } : {}),
         ...(typeof source.scale === "number" ? { scale: numberInRange(source.scale, 1, 0.1, 3) } : {}),
-        ...(typeof source.blur === "number" ? { blur: numberInRange(source.blur, 0, 40) } : {}),
+        ...(typeof source.blur === "number" ? { blur: numberInRange(source.blur, 0, 0, 40) } : {}),
         ...(typeof source.rotate === "number" ? { rotate: numberInRange(source.rotate, 0, -360, 360) } : {}),
       };
     })
