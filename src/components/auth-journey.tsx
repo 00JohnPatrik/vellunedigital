@@ -5,12 +5,14 @@ type AuthJourneyStep = 1 | 2 | 3;
 export function AuthJourneySteps({
   activeStep,
   labels = ["Acesso", "Verificação", "Segurança"],
+  compact = false,
 }: {
   activeStep: AuthJourneyStep;
   labels?: [string, string, string];
+  compact?: boolean;
 }) {
   return (
-    <div className="vellune-auth-journey mb-5 grid grid-cols-3 gap-2 sm:mb-6 sm:gap-2.5" aria-label="Etapas do acesso Vellune">
+    <div className={`vellune-auth-journey grid grid-cols-3 gap-2 ${compact ? "mb-4 sm:mb-5" : "mb-5 sm:mb-6"} sm:gap-2.5"`} aria-label="Etapas do acesso Vellune">
       {labels.map((label, index) => {
         const step = (index + 1) as AuthJourneyStep;
         const complete = step < activeStep;
@@ -19,7 +21,7 @@ export function AuthJourneySteps({
           <div
             key={label}
             className={[
-              "relative min-w-0 rounded-xl border px-2.5 py-2.5 text-center transition-[border-color,background-color,box-shadow] duration-300 sm:px-3",
+              `relative min-w-0 rounded-xl border text-center transition-[border-color,background-color,box-shadow] duration-300 ${compact ? "px-2 py-1.5 sm:px-2.5" : "px-2.5 py-2.5 sm:px-3"}`,
               active
                 ? "border-[#d4af37]/25 bg-[#d4af37]/[0.065] shadow-[inset_0_0_0_1px_rgba(212,175,55,0.035)]"
                 : complete
@@ -35,7 +37,7 @@ export function AuthJourneySteps({
             )}
             <span
               className={[
-                "mx-auto flex h-6 w-6 items-center justify-center rounded-full text-[9px] font-bold transition-all duration-300",
+                `mx-auto flex items-center justify-center rounded-full font-bold transition-all duration-300 ${compact ? "h-5 w-5 text-[8px]" : "h-6 w-6 text-[9px]"}`,
                 active
                   ? "bg-[#d4af37] text-[#16130b] shadow-[0_0_18px_rgba(212,175,55,0.16)]"
                   : complete
@@ -45,7 +47,7 @@ export function AuthJourneySteps({
             >
               {complete ? <Check className="h-3 w-3" /> : step}
             </span>
-            <p className={`mt-2 truncate text-[8px] font-semibold uppercase tracking-[0.12em] sm:text-[9px] ${active ? "text-white/55" : complete ? "text-white/40" : "text-white/30"}`}>
+            <p className={`truncate font-semibold uppercase tracking-[0.12em] ${compact ? "mt-1 text-[7px] sm:text-[8px]" : "mt-2 text-[8px] sm:text-[9px]"} ${active ? "text-white/55" : complete ? "text-white/40" : "text-white/30"}`}>
               {label}
             </p>
           </div>
