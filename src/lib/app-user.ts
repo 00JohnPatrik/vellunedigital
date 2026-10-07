@@ -43,7 +43,12 @@ export function applyTheme(theme: "light" | "dark" | null) {
 }
 
 export function isAuthServiceUnavailable(error: unknown) {
-  const message = error instanceof Error ? error.message : String(error ?? "");
+  const candidate = error as { message?: unknown } | null | undefined;
+  const message = error instanceof Error
+    ? error.message
+    : typeof candidate?.message === "string"
+      ? candidate.message
+      : String(error ?? "");
   return /failed to fetch|fetch failed|networkerror|network error|timeout|timed out|service unavailable|temporarily unavailable|bad gateway|gateway timeout|502|503|504/i.test(message);
 }
 
