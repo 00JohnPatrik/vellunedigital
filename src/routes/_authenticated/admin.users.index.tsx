@@ -51,7 +51,7 @@ function UsersPage() {
     const s = search.trim().toLowerCase();
     const digits = s.replace(/\D/g, "");
     return (q.data ?? []).filter((u) => (filter === "all" || u.status === filter) &&
-      (!s || (u.name ?? "").toLowerCase().includes(s) || (u.email ?? "").toLowerCase().includes(s) || (!!digits && !!u.phone?.includes(digits))));
+      (!s || (u.name ?? "").toLowerCase().includes(s) || (u.email ?? "").toLowerCase().includes(s) || (!!digits && !!u.phone && u.phone.replace(/\D/g, "").includes(digits))));
   }, [q.data, search, filter]);
 
   const toggle = (u: Pick<CompanyAdmin, "id" | "status">) => async () => {
