@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
-import { ANIMATION_PRESETS, DEFAULT_ANIMATION, normalizeAnimation, type AnimationPreset, type AnimationTrigger } from "@/lib/invitation-editor-animation";
+import { ANIMATION_PRESETS, DEFAULT_ANIMATION, normalizeAnimation, requestMotionPermission, type AnimationPreset, type AnimationTrigger } from "@/lib/invitation-editor-animation";
 
 type BlockWithLayout = Block & {
   x?: number; y?: number; width?: number; height?: number; rotation?: number;
@@ -67,6 +67,14 @@ function AnimationProperties({ selected, onChange }: { selected: Block[]; onChan
   return <section className="space-y-3 rounded-xl border bg-muted/15 p-3" aria-label="Animação">
     <div className="flex items-center justify-between gap-2"><div><p className="text-xs font-semibold uppercase tracking-wide text-foreground">Animação</p><p className="mt-0.5 text-[11px] text-muted-foreground">Movimento seguro para o editor e a página pública.</p></div><Button type="button" size="sm" variant="ghost" className="h-7 px-2 text-[11px]" onClick={reset}>Restaurar</Button></div>
     <div className="flex items-center justify-between rounded-lg border bg-background/40 px-2.5 py-2"><Label htmlFor="animation-enabled" className="text-xs">Ativar animação</Label><Switch id="animation-enabled" checked={animation.enabled} onCheckedChange={(checked) => update({ enabled: checked })} /></div>
+    <div className="flex items-center justify-between rounded-lg border border-primary/10 bg-primary/5 px-2.5 py-2">
+      <div className="min-w-0 pr-3"><Label htmlFor="animation-sensor" className="text-xs">Reagir ao movimento do celular</Label><p className="mt-0.5 text-[10px] leading-4 text-muted-foreground">Cria um efeito sutil quando o convidado movimenta o aparelho.</p></div>
+      <Switch id="animation-sensor" checked={animation.sensor} onCheckedChange={async (checked) => {
+        if (!checked) { update({ sensor: false }); return; }
+        const granted = await requestMotionPermission();
+        if (granted) update({ sensor: true, parallax: animation.parallax || 10, depth: animation.depth || 2 });
+      }} />
+    </div>
     <div className="grid grid-cols-2 gap-2"><div className="space-y-1"><Label className="text-[11px] text-muted-foreground">Efeito</Label><select value={animation.preset} onChange={(event) => update({ preset: event.target.value as AnimationPreset })} className="flex h-8 w-full rounded-md border border-input bg-background px-2 text-xs text-foreground">{ANIMATION_PRESETS.map((preset) => <option key={preset.value} value={preset.value}>{preset.label}</option>)}</select></div><div className="space-y-1"><Label className="text-[11px] text-muted-foreground">Quando acontece</Label><select value={animation.trigger} onChange={(event) => update({ trigger: event.target.value as AnimationTrigger })} className="flex h-8 w-full rounded-md border border-input bg-background px-2 text-xs text-foreground"><option value="on_load">Ao abrir</option><option value="on_scroll">Ao rolar</option><option value="on_hover">Ao passar o mouse</option><option value="on_click">Ao clicar</option></select></div></div>
     <details className="group rounded-lg border border-primary/10 bg-background/35">
       <summary className="flex cursor-pointer list-none items-center justify-between p-2.5 text-[11px] font-semibold text-foreground [&::-webkit-details-marker]:hidden">
