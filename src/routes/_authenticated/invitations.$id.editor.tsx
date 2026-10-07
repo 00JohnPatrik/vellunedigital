@@ -2,7 +2,7 @@ import { buildContent, type Background } from "@/lib/templates";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { AlertCircle, ArrowLeft, Check, Eye, Loader2, PanelBottom, QrCode, Send, Settings2, Share2, SlidersHorizontal, UserCheck, Users } from "lucide-react";
+import { AlertCircle, ArrowLeft, Check, Eye, Loader2, QrCode, Send, Settings2, Share2, SlidersHorizontal, UserCheck, Users } from "lucide-react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { ShareDialog } from "@/components/share-dialog";
 import { RsvpPanel } from "@/components/rsvp-panel";
