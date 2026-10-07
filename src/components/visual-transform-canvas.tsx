@@ -1,6 +1,7 @@
 // @ts-nocheck
 import { useEffect, useMemo, useRef, useState } from "react";
 import { BlockView } from "@/components/block-render";
+import { EditorQuickToolbar, type ImageAction } from "@/components/editor-quick-toolbar";
 import { resolveBlockGeometry, type Block } from "@/lib/templates";
 
 type Point = { x: number; y: number };
@@ -332,7 +333,74 @@ export function VisualTransformCanvas({ blocks, selectedIds: selectedIdsProp, zo
 
   const end = (event?: React.PointerEvent) => { event?.stopPropagation(); finish(); };
 
+  const selectedBlocks = blocks.filter((block: any) => selectedIds.includes(block.id));
+  const updateSelectedProps = (key: string, value: string) => {
+    if (!selectedBlocks.length) return;
+    onChange((items: any[]) => items.map((item: any) => selectedIds.includes(item.id)
+      ? { ...item, props: { ...item.props, [key]: value } }
+      : item), `quick-toolbar:${key}`);
+  };
+  const duplicateSelected = () => {
+    if (!selectedBlocks.length) return;
+    const duplicated = selectedBlocks.map((block: any, index: number) => ({
+      ...structuredClone(block),
+      id: typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
+        ? crypto.randomUUID()
+        : `${block.id}-copy-${Date.now()}-${index}`,
+      x: number(block.x, 0) + 24,
+      y: number(block.y, 0) + 24,
+      zIndex: number(block.zIndex, 0) + 1,
+      groupId: block.groupId ? `group-${Date.now()}-${index}` : undefined,
+    }));
+    onChange((items: any[]) => [...items, ...duplicated], "quick-toolbar:duplicate");
+  };
+  const deleteSelected = () => {
+    if (!selectedBlocks.length) return;
+    onChange((items: any[]) => items.filter((item: any) => !selectedIds.includes(item.id)), "quick-toolbar:delete");
+    selectedIds.forEach((id) => onSelect(id, true));
+  };
+  const toggleLockSelected = () => {
+    if (!selectedBlocks.length) return;
+    const locked = selectedBlocks.some((block: any) => block.locked);
+    onChange((items: any[]) => items.map((item: any) => selectedIds.includes(item.id)
+      ? { ...item, locked: !locked }
+      : item), "quick-toolbar:lock");
+  };
+  const imageAction = (action: ImageAction) => {
+    const image = selectedBlocks.find((block: any) => block.type === "image");
+    if (!image || selectedBlocks.length !== 1) return;
+    if (action === "replace") {
+      const value = window.prompt("Cole a URL da nova imagem", String(image.props?.url ?? ""));
+      if (value !== null && value.trim()) updateSelectedProps("url", value.trim());
+      return;
+    }
+    if (action === "crop") {
+      const fit = image.props?.objectFit === "contain" ? "cover" : "contain";
+      updateSelectedProps("objectFit", fit);
+      return;
+    }
+    const brightness = Number(image.props?.imageBrightness ?? 100);
+    updateSelectedProps("imageBrightness", String(brightness >= 110 ? 100 : 110));
+  };
+
   return <>
+    {selectedBounds && selectedBlocks.length > 0 && (
+      <div
+        className="pointer-events-auto absolute z-[90] max-w-[calc(100%-1rem)] -translate-y-full pb-2"
+        style={{ left: Math.max(8, selectedBounds.left), top: Math.max(8, selectedBounds.top) }}
+        onPointerDown={(event) => event.stopPropagation()}
+      >
+        <EditorQuickToolbar
+          selected={selectedBlocks}
+          onProp={updateSelectedProps}
+          onDuplicate={duplicateSelected}
+          onDelete={deleteSelected}
+          onAdvanced={() => undefined}
+          onImage={imageAction}
+          onLock={toggleLockSelected}
+        />
+      </div>
+    )}
     <div aria-hidden className="pointer-events-none absolute inset-0 z-0 opacity-30" style={{ backgroundImage: "linear-gradient(to right, hsl(var(--border)) 1px, transparent 1px), linear-gradient(to bottom, hsl(var(--border)) 1px, transparent 1px)", backgroundSize: `${GRID_UNIT}px ${GRID_UNIT}px` }} />
     <div aria-hidden className="pointer-events-none absolute z-[5] border border-dashed border-amber-500/50" style={{ left: SAFE_MARGIN, top: SAFE_MARGIN, right: SAFE_MARGIN, bottom: SAFE_MARGIN }} />
     {guides.map((guide, index) => <div key={`${guide.axis}-${index}`} className={`pointer-events-none absolute z-[70] ${guide.kind === "grid" ? "border-amber-400/60" : "border-primary/70"}`} style={guide.axis === "x" ? { left: guide.value, top: 0, bottom: 0, borderLeftWidth: 1, borderLeftStyle: "dashed" } : { top: guide.value, left: 0, right: 0, borderTopWidth: 1, borderTopStyle: "dashed" }} />)}
