@@ -7,7 +7,7 @@ import { BackgroundPropertiesPanel, ContextualPropertiesPanel } from "@/componen
 import { BLOCKS, getBlockDefaultSize, getNextBlockZIndex, newBlock, resolveBlockGeometry, type Block, type BlockType } from "@/lib/templates";
 import { ElementsLibrary } from "@/components/elements-library";
 import { TemplateGallery } from "@/components/template-gallery";
-import { Grid3X3, Minus, Plus, Redo2, Undo2, PanelLeft, PanelRight, Sparkles, Smartphone, Tablet, Monitor, BringToFront, SendToBack, Trash2, X, Pencil, RotateCcw, RotateCw, Lock, Unlock, AlignCenterHorizontal, AlignCenterVertical } from "lucide-react";
+import { Grid3X3, Minus, Plus, Redo2, Undo2, PanelLeft, PanelRight, Sparkles, Smartphone, Tablet, Monitor, BringToFront, SendToBack, Trash2, X, Pencil, RotateCcw, RotateCw, Lock, Unlock, AlignCenterHorizontal, AlignCenterVertical, Link2, Unlink2, Image as ImageIcon } from "lucide-react";
 
 function useIsCompact() {
   const [compact, setCompact] = useState(false);
@@ -345,6 +345,19 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra }: { h: Bl
   };
   const cancelImageReplace = () => setImageReplaceId(null);
   const handleStartEditingHandled = useCallback(() => setStartEditingTextId(null), []);
+  const groupSelected = useCallback(() => {
+    if (selectedIds.length < 2) return;
+    const groupId = `group-${crypto.randomUUID()}`;
+    h.set((items) => items.map((item: any) =>
+      selectedIds.includes(item.id) && !item.locked ? { ...item, groupId } : item
+    ), "selection:group");
+  }, [h, selectedIds]);
+  const ungroupSelected = useCallback(() => {
+    if (!selectedIds.length) return;
+    h.set((items) => items.map((item: any) =>
+      selectedIds.includes(item.id) ? { ...item, groupId: undefined } : item
+    ), "selection:ungroup");
+  }, [h, selectedIds]);
   const duplicateByIds = (ids: string[]) => {
     if (!ids.length) return;
     const sourceBlocks = blocks.filter((block: any) => ids.includes(block.id) && block.type !== "rsvp");
@@ -818,16 +831,11 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra }: { h: Bl
               onRotate={(amount, ids) => rotateSelectedBy(amount, ids)}
               onGroup={(ids) => {
                 if (ids.length < 2) return;
-                const groupId = `group-${crypto.randomUUID()}`;
-                h.set((items) => items.map((item: any) =>
-                  ids.includes(item.id) && !item.locked ? { ...item, groupId } : item
-                ), "selection:group");
+                groupSelected();
               }}
               onUngroup={(ids) => {
                 if (!ids.length) return;
-                h.set((items) => items.map((item: any) =>
-                  ids.includes(item.id) ? { ...item, groupId: undefined } : item
-                ), "selection:ungroup");
+                ungroupSelected();
               }}
               onImageAction={openImageAction}
               startEditingId={startEditingTextId}
@@ -854,6 +862,15 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra }: { h: Bl
             <button type="button" className="flex min-w-[64px] flex-col items-center gap-1 rounded-xl px-2 py-1.5 text-[10px] text-muted-foreground hover:bg-primary/10 hover:text-primary" onClick={() => setMobileSheet("properties")}><PanelRight className="h-4 w-4" />Editar</button>
             <button type="button" className="flex min-w-[64px] flex-col items-center gap-1 rounded-xl px-2 py-1.5 text-[10px] text-muted-foreground hover:bg-primary/10 hover:text-primary" onClick={() => rotate(-15)}><RotateCcw className="h-4 w-4" />−15°</button>
             <button type="button" className="flex min-w-[64px] flex-col items-center gap-1 rounded-xl px-2 py-1.5 text-[10px] text-muted-foreground hover:bg-primary/10 hover:text-primary" onClick={() => rotate(15)}><RotateCw className="h-4 w-4" />+15°</button>
+            {selected.length === 1 && selected[0]?.type === "image" && (
+              <button type="button" className="flex min-w-[64px] flex-col items-center gap-1 rounded-xl px-2 py-1.5 text-[10px] text-muted-foreground hover:bg-primary/10 hover:text-primary" onClick={() => openImageAction(selected[0].id, "replace")}><ImageIcon className="h-4 w-4" />Trocar</button>
+            )}
+            {selected.length > 1 && (
+              <button type="button" className="flex min-w-[64px] flex-col items-center gap-1 rounded-xl px-2 py-1.5 text-[10px] text-muted-foreground hover:bg-primary/10 hover:text-primary" onClick={selected.every((item: any) => item.groupId) ? ungroupSelected : groupSelected}>
+                {selected.every((item: any) => item.groupId) ? <Unlink2 className="h-4 w-4" /> : <Link2 className="h-4 w-4" />}
+                {selected.every((item: any) => item.groupId) ? "Desagrupar" : "Agrupar"}
+              </button>
+            )}
             <button type="button" className="flex min-w-[64px] flex-col items-center gap-1 rounded-xl px-2 py-1.5 text-[10px] text-muted-foreground hover:bg-primary/10 hover:text-primary" onClick={duplicate}><Plus className="h-4 w-4" />Duplicar</button>
                         <button type="button" className="flex min-w-[64px] flex-col items-center gap-1 rounded-xl px-2 py-1.5 text-[10px] text-muted-foreground hover:bg-primary/10 hover:text-primary" onClick={() => reorderSelectedLayers("front")}><BringToFront className="h-4 w-4" />Frente</button>
             <button type="button" className="flex min-w-[64px] flex-col items-center gap-1 rounded-xl px-2 py-1.5 text-[10px] text-muted-foreground hover:bg-primary/10 hover:text-primary" onClick={() => reorderSelectedLayers("back")}><SendToBack className="h-4 w-4" />Trás</button>
