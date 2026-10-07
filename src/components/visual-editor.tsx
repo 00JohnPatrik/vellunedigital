@@ -159,6 +159,7 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra }: { h: Bl
   const [mobileSheet, setMobileSheet] = useState<"elements" | "layers" | "properties" | "background" | "view" | null>(null);
   const [toolCategory, setToolCategory] = useState("Elementos");
   const [templateOpen, setTemplateOpen] = useState(false);
+  const [startEditingTextId, setStartEditingTextId] = useState<string | null>(null);
   const compact = useIsCompact();
   const [marquee, setMarquee] = useState<{ x: number; y: number; width: number; height: number } | null>(null);
   const interaction = useRef<{ mode: "drag" | "resize" | "marquee" | "background"; id?: string; startX: number; startY: number; originX?: number; originY?: number; originWidth?: number; originHeight?: number; selected?: string[] } | null>(null);
@@ -174,7 +175,7 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra }: { h: Bl
     setContextPanel("elements");
     setToolCategory("Elementos");
   };
-  const addBlockByType = (type: BlockType) => {
+  const addBlockByType = (type: BlockType, initialProps?: Record<string, unknown>) => {
     if (type === "rsvp" && blocks.some((block: any) => block.type === "rsvp")) {
       window.alert(RSVP_DUP);
       return;
@@ -196,9 +197,16 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra }: { h: Bl
       const textPresets = ["Título", "Subtítulo", "Texto"];
       block.props = { ...(block.props || {}), text: textPresets[Math.min(textCount, textPresets.length - 1)] };
     }
+    if (initialProps) block.props = { ...(block.props || {}), ...initialProps };
     h.set((current) => [...current, block]);
     setSelectedIds([block.id]);
+    setStartEditingTextId(type === "text" ? block.id : null);
   };
+  const addImageByUrl = (url: string) => {
+    if (!url) return;
+    addBlockByType("image", { url });
+  };
+  const handleStartEditingHandled = useCallback(() => setStartEditingTextId(null), []);
   const duplicateByIds = (ids: string[]) => {
     if (!ids.length) return;
     const sourceBlocks = blocks.filter((block: any) => ids.includes(block.id) && block.type !== "rsvp");
@@ -676,7 +684,7 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra }: { h: Bl
               <button type="button" className="rounded px-1.5 py-1 text-[11px] text-destructive hover:bg-destructive/10" aria-label={`Excluir ${getBlockLabel(block)}`} onClick={() => removeByIds([block.id])}>Excluir</button>
             </div>)}
           </div>
-        </div> : <ElementsLibrary availableTypes={(toolCategory === "Texto" ? ["text"] : toolCategory === "Imagens" ? ["image", "gallery"] : toolCategory === "Botões" ? ["button", "whatsapp"] : toolCategory === "RSVP" ? ["rsvp"] : toolCategory === "QR Code" ? ["qr_code"] : Object.keys(BLOCKS)) as BlockType[]} onAdd={addBlockByType} />}
+        </div> : <ElementsLibrary availableTypes={(toolCategory === "Texto" ? ["text"] : toolCategory === "Imagens" ? ["image", "gallery"] : toolCategory === "Botões" ? ["button", "whatsapp"] : toolCategory === "RSVP" ? ["rsvp"] : toolCategory === "QR Code" ? ["qr_code"] : Object.keys(BLOCKS)) as BlockType[]} assets={assets as any} onAdd={addBlockByType} onAddImage={addImageByUrl} />}
       </section>
       <p className="text-xs text-muted-foreground">Arraste com mouse ou toque, use Shift para snap, Shift/Ctrl para múltipla seleção, Ctrl/Cmd+C para copiar, Ctrl/Cmd+V para colar e arraste o fundo para selecionar uma área. Alterações são persistidas pelo autosave existente.</p>
       <TemplateGallery open={templateOpen} onClose={() => setTemplateOpen(false)} onApply={applyStarterTemplate} hasContent={blocks.length > 0} />
