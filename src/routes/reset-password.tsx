@@ -46,7 +46,7 @@ function ResetPage() {
   return (
     <AuthCard title="Crie uma nova senha" subtitle="Escolha uma senha forte para manter sua conta protegida.">
       {!ready ? (
-        <div className="space-y-4 rounded-2xl border border-destructive/20 bg-destructive/5 p-5"><div className="flex h-11 w-11 items-center justify-center rounded-full bg-destructive/10 text-destructive"><ShieldCheck className="h-5 w-5" /></div><p className="text-sm leading-relaxed text-muted-foreground">Link inválido ou expirado. <Link to="/login?mode=recovery" className="font-semibold text-primary hover:underline">Solicite um novo link</Link>.</p></div>
+        <div className="space-y-4 rounded-2xl border border-destructive/20 bg-destructive/5 p-5"><div className="flex h-11 w-11 items-center justify-center rounded-full bg-destructive/10 text-destructive"><ShieldCheck className="h-5 w-5" /></div><p className="text-sm leading-relaxed text-muted-foreground">Link inválido ou expirado. <Link to="/login" search={{ mode: "recovery" }} className="font-semibold text-primary hover:underline">Solicite um novo link</Link>.</p></div>
       ) : (
         <form onSubmit={onSubmit} className="space-y-5" noValidate>
           <div className="space-y-2"><Label htmlFor="pw">Nova senha</Label><PasswordInput id="pw" autoComplete="new-password" value={password} maxLength={200} onChange={(e) => setPassword(e.target.value)} placeholder="Mínimo de 8 caracteres" /></div>
