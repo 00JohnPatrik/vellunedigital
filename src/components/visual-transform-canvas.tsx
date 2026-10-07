@@ -717,17 +717,6 @@ export function VisualTransformCanvas({ blocks, selectedIds: selectedIdsProp, zo
           lastTextTap.current = null;
           end(event);
         }}
-        onClick={(event) => {
-          event.stopPropagation();
-          const additive = event.shiftKey || event.ctrlKey || event.metaKey;
-          const memberIds = block.groupId
-            ? blocks.filter((item: any) => item.groupId === block.groupId).map((item: any) => item.id)
-            : [block.id];
-          onSelect(block.id, additive);
-          if (!additive) {
-            memberIds.slice(1).forEach((id) => onSelect(id, true));
-          }
-        }}
         onDoubleClick={(event) => {
           if (block.type !== "text" || block.locked) return;
           event.preventDefault();
