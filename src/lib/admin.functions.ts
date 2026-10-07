@@ -2,6 +2,18 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
+function trustedAppOrigin(): string {
+  const configured = process.env["APP_ORIGIN"] ?? "https://vellunedigital.lovable.app";
+  const url = new URL(configured);
+  if (url.username || url.password || url.search || url.hash) {
+    throw new Error("Invalid APP_ORIGIN configuration.");
+  }
+  if (url.protocol !== "https:" && process.env["NODE_ENV"] === "production") {
+    throw new Error("APP_ORIGIN must use HTTPS in production.");
+  }
+  return url.origin;
+}
+
 /**
  * Super admin: (re)sends the first-access e-mail to a company admin.
  * Creates the auth account if missing (random password, never stored) and
@@ -10,7 +22,7 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
  */
 export const sendAccessInvite = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((d) => z.object({ userId: z.string().uuid(), origin: z.string().url() }).parse(d))
+  .validator((d) => z.object({ userId: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
     const { data: isAdmin } = await context.supabase.rpc("is_super_admin");
     if (!isAdmin) throw new Response("Forbidden", { status: 403 });
@@ -65,7 +77,7 @@ export const sendAccessInvite = createServerFn({ method: "POST" })
       },
     });
     const { error } = await client.auth.resetPasswordForEmail(row.email, {
-      redirectTo: `${new URL(data.origin).origin}/reset-password`,
+      redirectTo: `${trustedAppOrigin()}/reset-password`,
     });
     if (error) {
       console.error("invite email", error.message);
