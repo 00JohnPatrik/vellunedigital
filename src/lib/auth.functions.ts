@@ -122,7 +122,7 @@ export const requestFirstAccess = createServerFn({ method: "POST" })
 /** Password recovery: only for already-activated, provisioned accounts. Never creates users. */
 export const requestPasswordReset = createServerFn({ method: "POST" })
   .validator((d) =>
-    z.object({ email: z.string().trim().toLowerCase().email().max(255), origin: z.string().url() }).parse(d),
+    z.object({ email: z.string().trim().toLowerCase().email().max(255) }).parse(d),
   )
   .handler(async ({ data }) => {
     const done = { ok: true as const };
@@ -135,7 +135,7 @@ export const requestPasswordReset = createServerFn({ method: "POST" })
     if (!row || row.status !== "active" || row.deleted_at || !row.auth_user_id) return done;
     const client = await publicAuthClient();
     const { error } = await client.auth.resetPasswordForEmail(data.email, {
-      redirectTo: `${new URL(data.origin).origin}/reset-password`,
+      redirectTo: passwordResetRedirect(),
     });
     if (error) console.error("password reset email", error.message);
     return done;
