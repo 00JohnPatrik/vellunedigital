@@ -22,6 +22,10 @@ type StarterItem = {
 
 const STARTER_CATEGORIES: Record<string, Category> = {
   editorial: "casamento",
+  wedding: "casamento",
+  birthday: "aniversario",
+  baby_shower: "cha_de_bebe",
+  quince: "15_anos",
   basic: "outros",
   complete: "outros",
   blank: "outros",
