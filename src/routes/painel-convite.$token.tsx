@@ -29,7 +29,7 @@ function DashboardContent({ dashboard }: { dashboard: NonNullable<Extract<Awaite
     const term = search.trim().toLowerCase();
     return dashboard.responses.filter((response) =>
       (filter === "all" || response.status === filter) &&
-      (!term || response.name.toLowerCase().includes(term) || response.email?.toLowerCase().includes(term) || response.phone?.includes(term)),
+      (!term || response.name.toLowerCase().includes(term) || response.email?.toLowerCase().includes(term) || response.phone && response.phone.replace(/\D/g, "").includes(term.replace(/\D/g, ""))),
     );
   }, [dashboard.responses, filter, search]);
 
