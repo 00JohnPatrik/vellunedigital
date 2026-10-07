@@ -66,7 +66,7 @@ export function publishDemoInvitation(id: string) { if (id !== DEMO_INVITATION_I
 export function deleteDemoInvitation(id: string) { if (id !== DEMO_INVITATION_ID) return false; writeState({ invitationDeleted: true }); return true; }
 export function restoreDemoInvitation() { writeState({ invitationDeleted: false }); }
 
-export function getDemoTemplate(id: string) { return id === DEMO_TEMPLATE_ID ? { id: DEMO_TEMPLATE_ID, company_id: null, name: "Romance Editorial", category: "casamento", type: "official", preview_image: null, content: structuredClone(defaultContent), status: "active", created_at: now, updated_at: now } as Template : null; }
+export function getDemoTemplate(id: string) { return id === DEMO_TEMPLATE_ID ? { id: DEMO_TEMPLATE_ID, company_id: null, name: "Romance Editorial", category: "casamento", type: "official", preview_image: null, content: structuredClone(defaultContent), status: "active", created_at: now, updated_at: now } as unknown as Template : null; }
 export function listDemoTemplates() { return [getDemoTemplate(DEMO_TEMPLATE_ID)!]; }
 export function listDemoGuests(invitationId: string) { return invitationId === DEMO_INVITATION_ID ? [structuredClone(defaultGuest)] : []; }
 export function getDemoGuest(invitationId: string, id: string) { return invitationId === DEMO_INVITATION_ID && id === DEMO_GUEST_ID ? structuredClone(defaultGuest) : null; }
