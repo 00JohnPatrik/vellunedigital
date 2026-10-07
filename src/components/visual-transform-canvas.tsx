@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useEffect, useMemo, useRef, useState } from "react";
 import { BlockView } from "@/components/block-render";
 import { EditorQuickToolbar, type ImageAction } from "@/components/editor-quick-toolbar";
