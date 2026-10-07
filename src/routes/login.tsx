@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { ArrowRight, CheckCircle2, Eye, EyeOff, LockKeyhole, Mail, MailCheck, UserRound } from "lucide-react";
+import { AlertCircle, ArrowRight, CheckCircle2, Eye, EyeOff, LoaderCircle, LockKeyhole, Mail, MailCheck, ShieldCheck, UserRound } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
@@ -46,7 +46,9 @@ function LoginPage() {
   const [focusedField, setFocusedField] = useState<string | null>(null);
   const [capsLockOn, setCapsLockOn] = useState(false);
   const [loginCooldown, setLoginCooldown] = useState(0);
+  const identifierRef = useRef<HTMLInputElement | null>(null);
   const passwordRef = useRef<HTMLInputElement | null>(null);
+  const recoveryEmailRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     try {
@@ -107,7 +109,14 @@ function LoginPage() {
       !id ||
       (id.includes("@") && !z.string().email().safeParse(id).success) ||
       (!id.includes("@") && (localDigits.length < 10 || localDigits.length > 11));
-    if (invalidIdentifier || !password) return;
+    if (invalidIdentifier || !password) {
+      if (invalidIdentifier) {
+        window.setTimeout(() => identifierRef.current?.focus(), 0);
+      } else {
+        window.setTimeout(() => passwordRef.current?.focus(), 0);
+      }
+      return;
+    }
     if (loginCooldown > 0) return;
 
     setLoading(true);
@@ -154,7 +163,10 @@ function LoginPage() {
     setTouched(true);
     setError(null);
     const parsed = z.string().trim().toLowerCase().email().max(255).safeParse(recoveryEmail);
-    if (!parsed.success) return;
+    if (!parsed.success) {
+      window.setTimeout(() => recoveryEmailRef.current?.focus(), 0);
+      return;
+    }
 
     setLoading(true);
     await resetPassword({ data: { email: parsed.data } }).catch(() => null);
@@ -208,7 +220,15 @@ function LoginPage() {
         {/* Brand side */}
         <section className="relative hidden min-h-0 flex-col justify-between overflow-hidden px-12 py-10 lg:flex xl:px-20 vellune-motion" style={{ animation: "velluneFadeUp 750ms cubic-bezier(.22,1,.36,1)" }}>
           <div>
-            <Logo className="h-12 w-[248px] text-white transition-opacity duration-500 hover:opacity-90" />
+            <div className="flex items-center gap-3">
+              <span className="flex h-8 w-8 items-center justify-center rounded-[10px] border border-[#d4af37]/25 bg-[#d4af37]/[0.06] text-[#e5c66b] shadow-[0_0_24px_rgba(212,175,55,0.08)]">
+                <ShieldCheck className="h-4 w-4" />
+              </span>
+              <div>
+                <Logo className="h-10 w-[208px] text-white transition-opacity duration-500 hover:opacity-90" />
+                <p className="mt-1 text-[9px] font-semibold uppercase tracking-[0.3em] text-white/25">Plataforma de convites digitais</p>
+              </div>
+            </div>
           </div>
 
           <div className="max-w-[650px] pb-10 xl:pb-16">
@@ -224,20 +244,26 @@ function LoginPage() {
             <p className="mt-8 max-w-[500px] text-[15px] leading-7 text-white/45">
               Uma experiência elegante para criar, personalizar e compartilhar convites que fazem cada celebração começar antes mesmo do evento.
             </p>
+            <div className="mt-9 flex flex-wrap gap-2.5">
+              <span className="rounded-full border border-white/[0.08] bg-white/[0.025] px-3.5 py-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-white/40">Criar</span>
+              <span className="rounded-full border border-white/[0.08] bg-white/[0.025] px-3.5 py-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-white/40">Personalizar</span>
+              <span className="rounded-full border border-white/[0.08] bg-white/[0.025] px-3.5 py-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-white/40">Publicar</span>
+            </div>
           </div>
 
           <div className="flex items-center gap-7 text-[10px] font-medium uppercase tracking-[0.2em] text-white/30">
             <span>Experiência Vellune</span>
             <span className="h-px w-8 bg-white/10" />
-            <span>Acesso protegido</span>
+            <span>Ambiente protegido</span>
           </div>
         </section>
 
         {/* Authentication side */}
         <section className="flex h-full min-h-0 items-center justify-center overflow-hidden px-3 py-3 sm:px-8 sm:py-5 lg:h-full lg:min-h-0 lg:border-l lg:border-white/[0.045] lg:bg-white/[0.012] xl:px-16">
           <div className="w-full max-w-[430px] py-1 sm:py-2">
-            <div className="mb-4 flex w-full shrink-0 justify-center lg:hidden sm:mb-9">
+            <div className="mb-4 flex w-full shrink-0 flex-col items-center justify-center lg:hidden sm:mb-9">
               <Logo className="h-12 w-auto max-w-[78vw] text-white transition-opacity duration-500 hover:opacity-90 sm:h-16" />
+              <span className="mt-2 text-[8px] font-semibold uppercase tracking-[0.28em] text-white/25">Seu espaço de criação</span>
             </div>
 
             <div className="relative max-h-full w-full overflow-hidden rounded-[20px] border border-white/[0.075] bg-[#111318]/94 p-4 shadow-[0_30px_100px_rgba(0,0,0,0.46),inset_0_1px_0_rgba(255,255,255,0.035)] ring-1 ring-white/[0.018] backdrop-blur-xl sm:rounded-[28px] sm:p-9 vellune-motion" style={{ animation: "velluneFadeUp 800ms cubic-bezier(.22,1,.36,1)" }}>
@@ -277,7 +303,17 @@ function LoginPage() {
                         </div>
                         {recoveryError && <p id="recovery-email-error" className="text-[11px] text-red-300/90">{recoveryError}</p>}
                       </div>
-                  {error && <div role="alert" className="rounded-xl border border-red-300/15 bg-red-400/[0.07] px-4 py-3 text-sm leading-6 text-red-200">{error}</div>}
+                  {error && (
+                    <div role="alert" aria-live="assertive" className="flex items-start gap-3 rounded-xl border border-red-300/15 bg-red-400/[0.07] px-4 py-3 text-sm leading-6 text-red-200">
+                      <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-red-200/10 bg-red-200/[0.06]">
+                        <AlertCircle className="h-3.5 w-3.5" />
+                      </span>
+                      <div>
+                        <p className="font-medium text-red-100/95">Não conseguimos entrar</p>
+                        <p className="mt-0.5 text-[12px] leading-5 text-red-200/75">{error}</p>
+                      </div>
+                    </div>
+                  )}
                       <Button type="submit" disabled={loading} className="group h-12 w-full rounded-xl bg-[#d4af37] font-semibold text-[#16130b] shadow-[0_12px_34px_rgba(212,175,55,0.10)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#e5c66b] hover:shadow-[0_16px_38px_rgba(212,175,55,0.16)] active:translate-y-0">
                         {loading ? "Enviando link..." : "Enviar link de recuperação"}
                       </Button>
@@ -297,17 +333,23 @@ function LoginPage() {
                     <div className="relative">
                       <UserRound className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-white/25" />
                       <Input
+                        ref={identifierRef}
                         id="identifier"
                         type="text"
                         autoComplete="username"
-                        inputMode={identifier.trim() && !/[A-Za-zÀ-ÿ@]/.test(identifier) ? "tel" : "email"}
+                        inputMode="email"
                         enterKeyHint="next"
                         autoCapitalize="none"
                         autoCorrect="off"
                         spellCheck={false}
                         value={identifier}
                         maxLength={255}
-                        onChange={(e) => setIdentifier(e.target.value)}
+                        onChange={(e) => {
+                          const nextValue = e.target.value;
+                          const nextIdentifier = /[A-Za-zÀ-ÿ@]/.test(nextValue) ? nextValue : formatBrazilianPhone(nextValue);
+                          setIdentifier(nextIdentifier);
+                          if (error) setError(null);
+                        }}
                         onFocus={() => setFocusedField("identifier")}
                         onBlur={() => {
                           setFocusedField(null);
@@ -329,7 +371,7 @@ function LoginPage() {
                         className="relative z-10 h-12 rounded-xl border-white/[0.08] bg-[#111318]/90 text-white placeholder:text-white/20 transition-[border-color,box-shadow,background-color] duration-300 focus-visible:border-[#d4af37]/55 focus-visible:ring-2 focus-visible:ring-[#d4af37]/12 focus-visible:shadow-[0_0_0_1px_rgba(212,175,55,0.14),0_10px_35px_rgba(212,175,55,0.05)] hover:border-white/[0.12] pl-10"
                       />
                     </div>
-                    {identifierError && <p id="identifier-error" className="text-[11px] text-red-300/90">{identifierError}</p>}
+                    {identifierError && <p id="identifier-error" role="alert" className="flex items-center gap-1.5 text-[11px] text-red-300/90"><AlertCircle className="h-3.5 w-3.5 shrink-0" />{identifierError}</p>}
                   </div>
 
                   <div className="space-y-2">
@@ -347,7 +389,10 @@ function LoginPage() {
                         autoComplete="current-password"
                         value={password}
                         maxLength={200}
-                        onChange={(e) => setPassword(e.target.value)}
+                        onChange={(e) => {
+                          setPassword(e.target.value);
+                          if (error) setError(null);
+                        }}
                         onFocus={() => {
                           setFocusedField("password");
                           setCapsLockOn(false);
@@ -366,7 +411,7 @@ function LoginPage() {
                       <button type="button" onClick={() => setShowPassword((value) => !value)} aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"} className="absolute right-0 top-0 flex h-12 w-11 items-center justify-center text-white/30 transition-colors hover:text-[#e5c66b]">{showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}</button>
                     </div>
                     {capsLockOn && <p className="flex items-center gap-2 text-[11px] text-[#e5c66b]" role="status"><span className="h-1.5 w-1.5 rounded-full bg-[#d4af37] shadow-[0_0_8px_rgba(212,175,55,0.75)]" />Caps Lock está ativado.</p>}
-                    {passwordError && <p id="password-error" className="text-[11px] text-red-300/90">{passwordError}</p>}
+                    {passwordError && <p id="password-error" role="alert" className="flex items-center gap-1.5 text-[11px] text-red-300/90"><AlertCircle className="h-3.5 w-3.5 shrink-0" />{passwordError}</p>}
                   </div>
 
                       <label className="flex min-h-8 cursor-pointer items-center gap-3 py-1 text-xs text-white/40 select-none transition-colors hover:text-white/55">
@@ -397,16 +442,34 @@ function LoginPage() {
                         <CheckCircle2 className="h-4 w-4" style={{ animation: "velluneSuccess 260ms cubic-bezier(.22,1,.36,1)" }} />
                         Acesso confirmado
                       </span>
-                    ) : loading ? "Entrando..." : loginCooldown > 0 ? `Aguarde ${loginCooldown}s...` : <span className="flex items-center justify-center gap-2">Entrar na conta <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" /></span>}
+                    ) : loading ? (
+                      <span className="flex items-center justify-center gap-2">
+                        <LoaderCircle className="h-4 w-4 animate-spin" />
+                        Entrando...
+                      </span>
+                    ) : loginCooldown > 0 ? (
+                      <span className="flex items-center justify-center gap-2">Aguarde {loginCooldown}s</span>
+                    ) : (
+                      <span className="flex items-center justify-center gap-2">
+                        Entrar na conta
+                        <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
+                      </span>
+                    )}
                   </Button>
 
-                  <p className="text-center text-xs text-white/35">Primeira vez aqui? <a href="/first-access" className="font-semibold text-white/65 transition-colors hover:text-[#e5c66b]">Faça seu primeiro acesso</a></p>
+                  <div className="space-y-3">
+                    <p className="flex items-center justify-center gap-2 text-center text-[10px] uppercase tracking-[0.16em] text-white/25">
+                      <LockKeyhole className="h-3.5 w-3.5 text-[#d4af37]/60" />
+                      Acesso protegido
+                    </p>
+                    <p className="text-center text-xs text-white/35">Primeira vez aqui? <a href="/first-access" className="font-semibold text-white/65 transition-colors hover:text-[#e5c66b]">Faça seu primeiro acesso</a></p>
+                  </div>
                 </form>
               )}
               </div>
             </div>
 
-            <p className="mt-2 shrink-0 text-center text-[9px] font-medium uppercase tracking-[0.24em] text-white/20">Vellune Digital · v1.7</p>
+            <p className="mt-2 shrink-0 text-center text-[9px] font-medium uppercase tracking-[0.24em] text-white/20">Vellune Digital · v1.8</p>
           </div>
         </section>
       </div>
