@@ -41,6 +41,7 @@ import { NotificationCenter } from "@/components/phase7-ui";
 import { applyTheme, type AppUser } from "@/lib/app-user";
 import type { NavItem } from "@/lib/nav";
 import { cn } from "@/lib/utils";
+import Logo from "@/components/Logo";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 type Props = { base: "/admin" | "/dashboard"; nav: NavItem[]; appUser: AppUser; children: ReactNode };
@@ -190,17 +191,14 @@ export function AppShell({ base, nav, appUser, children }: Props) {
   );
 
   const brand = (compact: boolean) => (
-    <div className={cn("flex h-[4.5rem] items-center gap-3 border-b border-sidebar-border/70 px-4", compact && "justify-center px-0")}>
-      <div className="relative flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-cyan-300/20 bg-cyan-300/10 shadow-[0_0_24px_theme(colors.cyan.400/15%)]">
-        <img src="/uploads/LogoClara.png" alt="Vellune Digital" className="h-full w-full object-cover dark:hidden" />
-        <img src="/uploads/logoEscura.jpg" alt="Vellune Digital" className="hidden h-full w-full object-cover dark:block" />
-      </div>
-      {!compact && (
-        <div className="min-w-0">
-          <span className="block truncate font-display text-sm font-semibold tracking-tight text-sidebar-foreground">Vellune</span>
-          <span className="block truncate text-[10px] font-medium uppercase tracking-[0.2em] text-cyan-300/70">Digital</span>
-        </div>
-      )}
+    <div className={cn("flex h-[4.5rem] items-center border-b border-sidebar-border/70 px-4 text-sidebar-foreground", compact && "justify-center px-0")}>
+      <Logo
+        markOnly={compact}
+        className={cn(
+          "shrink-0",
+          compact ? "h-9 w-9" : "h-10 w-[180px] max-w-full",
+        )}
+      />
     </div>
   );
 
