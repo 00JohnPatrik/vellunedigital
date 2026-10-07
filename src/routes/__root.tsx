@@ -184,7 +184,11 @@ function RootComponent() {
       if (signingOut) return;
       signingOut = true;
       void supabase.auth.signOut().finally(() => {
-        window.sessionStorage.removeItem(SESSION_ACTIVITY_KEY);
+        try {
+          window.sessionStorage.removeItem(SESSION_ACTIVITY_KEY);
+        } catch {
+          // Ignore storage restrictions.
+        }
         window.location.assign("/login?error=inactive");
       });
     };
