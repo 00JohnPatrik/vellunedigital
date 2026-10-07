@@ -9,7 +9,7 @@ import { isDemoMode } from "@/lib/demo-mode";
 
 export const Route = createFileRoute("/_authenticated/settings")({ component: SettingsPage });
 function SettingsPage() {
-  const { appUser! } = Route.useRouteContext();
+  const { appUser } = Route.useRouteContext();
   const companyId = appUser!.company?.id;
   const whatsapp = whatsappHref();
   const demo = isDemoMode();
