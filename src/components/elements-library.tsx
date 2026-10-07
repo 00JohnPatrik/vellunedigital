@@ -123,8 +123,8 @@ export function ElementsLibrary({ availableTypes, onAdd, assets, onAddImage }: E
       add({ id: "text-subtitle", label: "Subtítulo", description: "Complemento elegante para contextualizar o convite.", category: "Texto", type: "text", preview: "text", eyebrow: "Hierarquia", tags: ["subtítulo", "apoio"] });
       add({ id: "text-message", label: "Mensagem", description: "Texto corrido para compartilhar uma mensagem afetiva.", category: "Texto", type: "text", preview: "text", eyebrow: "Conteúdo", tags: ["mensagem", "parágrafo"] });
       add({ id: "text-highlight", label: "Destaque", description: "Frase curta para chamar atenção em uma área do convite.", category: "Texto", type: "text", preview: "text", eyebrow: "Ênfase", tags: ["destaque", "frase"] });
-      add({ id: "shape-circle", label: "Círculo visual", description: "Insere um bloco de texto pronto para estilizar como forma circular no painel de aparência.", category: "Elementos", type: "text", preview: "circle", eyebrow: "Preset visual", tags: ["forma", "círculo"] });
-      add({ id: "shape-rectangle", label: "Retângulo visual", description: "Insere um bloco de texto pronto para receber preenchimento, borda e cantos personalizados.", category: "Elementos", type: "text", preview: "rectangle", eyebrow: "Preset visual", tags: ["forma", "retângulo"] });
+      add({ id: "text-shape-circle", label: "Círculo visual", description: "Insere um bloco de texto pronto para estilizar como forma circular no painel de aparência.", category: "Elementos", type: "text", preview: "circle", eyebrow: "Preset visual", tags: ["forma", "círculo"] });
+      add({ id: "text-shape-rectangle", label: "Retângulo visual", description: "Insere um bloco de texto pronto para receber preenchimento, borda e cantos personalizados.", category: "Elementos", type: "text", preview: "rectangle", eyebrow: "Preset visual", tags: ["forma", "retângulo"] });
     }
 
     if (has("shape")) {
