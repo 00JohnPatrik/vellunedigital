@@ -25,7 +25,7 @@ export function EditorQuickToolbar({ selected, onProp, onDuplicate, onDelete, on
   const text = selected.every((block) => block.type === "text");
   const locked = selected.some((block) => block.locked);
   const bold = p.fontWeight === "bold" || Number(p.fontWeight) >= 600 || (!p.fontWeight && p.bold === "1");
-  return <div className="editor-quick-toolbar flex max-w-full flex-wrap items-center gap-1 rounded-lg border border-border bg-popover p-1.5 text-popover-foreground shadow-elevated" role="toolbar" aria-label="Ações do elemento selecionado" onPointerDown={(event) => event.stopPropagation()}>
+  return <div className="editor-quick-toolbar flex max-w-full flex-wrap items-center gap-1 rounded-xl border border-primary/15 bg-popover/95 p-1.5 text-popover-foreground shadow-2xl shadow-black/20 backdrop-blur-xl ring-1 ring-black/5" role="toolbar" aria-label="Ações do elemento selecionado" onPointerDown={(event) => event.stopPropagation()}>
     {text && <fieldset disabled={locked} className="flex min-w-0 flex-wrap items-center gap-1">
       {selected.length === 1 && <Input
         aria-label="Conteúdo do texto"
@@ -116,7 +116,7 @@ export function EditorQuickToolbar({ selected, onProp, onDuplicate, onDelete, on
       <Button variant="ghost" size="sm" className="h-8 px-2 text-[10px]" title="Distribuir horizontalmente" onClick={() => onAlign("distributeX")} aria-label="Distribuir horizontalmente">Distribuir X</Button>
       <Button variant="ghost" size="sm" className="h-8 rounded-l-none border-l px-2 text-[10px]" title="Distribuir verticalmente" onClick={() => onAlign("distributeY")} aria-label="Distribuir verticalmente">Distribuir Y</Button>
     </div>}
-    <span className="mx-1 h-5 w-px bg-border" />
+    <span className="mx-1 h-5 w-px bg-primary/10" aria-hidden="true" />
     {onLayer && <div className="flex items-center rounded-md border border-input bg-background" role="group" aria-label="Ordem das camadas">
       <Button variant="ghost" size="icon" className="h-8 w-8 rounded-r-none" disabled={locked} aria-label="Enviar seleção para trás" title="Enviar para trás" onClick={() => onLayer("back")}><SendToBack /></Button>
       <Button variant="ghost" size="icon" className="h-8 w-8 rounded-l-none border-l" disabled={locked} aria-label="Trazer seleção para frente" title="Trazer para frente" onClick={() => onLayer("front")}><BringToFront /></Button>
