@@ -476,8 +476,10 @@ function LoginPage() {
                         maxLength={255}
                         onChange={(e) => {
                           const nextValue = e.target.value;
-                          const nextIdentifier = /[A-Za-zÀ-ÿ@]/.test(nextValue) ? nextValue : formatBrazilianPhone(nextValue);
-                          setIdentifier(nextIdentifier);
+                          // Keep the identifier raw while typing. Formatting is applied on blur only
+                          // when the value is clearly a phone number, preventing numeric-prefixed
+                          // email addresses from being corrupted by the phone mask.
+                          setIdentifier(nextValue);
                           if (error) setError(null);
                         }}
                         onFocus={() => setFocusedField("identifier")}
@@ -538,7 +540,7 @@ function LoginPage() {
                         aria-describedby={passwordError ? "password-error" : undefined}
                         className="relative z-10 h-12 rounded-xl border-white/[0.08] bg-[#111318]/90 text-white placeholder:text-white/20 transition-[border-color,box-shadow,background-color] duration-300 focus-visible:border-[#d4af37]/55 focus-visible:ring-2 focus-visible:ring-[#d4af37]/12 focus-visible:shadow-[0_0_0_1px_rgba(212,175,55,0.14),0_10px_35px_rgba(212,175,55,0.05)] hover:border-white/[0.12] pl-10 pr-11"
                       />
-                      <button type="button" onClick={() => setShowPassword((value) => !value)} aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"} className="absolute right-0 top-0 flex h-12 w-11 items-center justify-center text-white/30 transition-colors hover:text-[#e5c66b]">{showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}</button>
+                      <button type="button" onClick={() => setShowPassword((value) => !value)} aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"} className="absolute right-0 top-0 z-20 flex h-12 w-11 items-center justify-center text-white/30 transition-colors hover:text-[#e5c66b]">{showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}</button>
                     </div>
                     {capsLockOn && <p className="flex items-center gap-2 text-[11px] text-[#e5c66b]" role="status"><span className="h-1.5 w-1.5 rounded-full bg-[#d4af37] shadow-[0_0_8px_rgba(212,175,55,0.75)]" />Caps Lock está ativado.</p>}
                     {passwordError && <p id="password-error" role="alert" className="flex items-center gap-1.5 text-[11px] text-red-300/90"><AlertCircle className="h-3.5 w-3.5 shrink-0" />{passwordError}</p>}
