@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { ArrowRight, CheckCircle2, Eye, EyeOff, LockKeyhole, Mail, MailCheck, ShieldCheck, Sparkles, UserRound } from "lucide-react";
+import { ArrowRight, CheckCircle2, Eye, EyeOff, LockKeyhole, Mail, MailCheck, UserRound } from "lucide-react";
 import { useEffect, useState } from "react";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
@@ -39,7 +39,20 @@ function LoginPage() {
     reason === "inactive" ? "Sua conta está inativa. Fale com o administrador." : null,
   );
   const [loading, setLoading] = useState(false);
-  const [touched, setTouched] = useState(false);\n  const [rememberAccess, setRememberAccess] = useState(false);\n\n  useEffect(() => {\n    try {\n      const savedIdentifier = window.localStorage.getItem("vellune-login-identifier");\n      if (savedIdentifier) {\n        setIdentifier(savedIdentifier);\n        setRememberAccess(true);\n      }\n    } catch {\n      // Ignore storage restrictions (private mode, blocked storage, etc.).\n    }\n  }, []);
+  const [touched, setTouched] = useState(false);
+  const [rememberAccess, setRememberAccess] = useState(false);
+
+  useEffect(() => {
+    try {
+      const savedIdentifier = window.localStorage.getItem("vellune-login-identifier");
+      if (savedIdentifier) {
+        setIdentifier(savedIdentifier);
+        setRememberAccess(true);
+      }
+    } catch {
+      // Ignore storage restrictions (private mode, blocked storage, etc.).
+    }
+  }, []);
 
   const identifierInvalid = touched && (!identifier.trim() || (identifier.includes("@") && !z.string().email().safeParse(identifier.trim()).success));
   const passwordInvalid = touched && !password;
@@ -71,7 +84,16 @@ function LoginPage() {
         await supabase.auth.signOut();
         throw new Error("Sua conta está inativa ou sem acesso. Fale com o administrador.");
       }
-      try {\n        if (rememberAccess) {\n          window.localStorage.setItem("vellune-login-identifier", id);\n        } else {\n          window.localStorage.removeItem("vellune-login-identifier");\n        }\n      } catch {\n        // Login must continue even if browser storage is unavailable.\n      }\n      navigate({ to: homeFor(appUser), replace: true });
+      try {
+        if (rememberAccess) {
+          window.localStorage.setItem("vellune-login-identifier", id);
+        } else {
+          window.localStorage.removeItem("vellune-login-identifier");
+        }
+      } catch {
+        // Login must continue even if browser storage is unavailable.
+      }
+      navigate({ to: homeFor(appUser), replace: true });
     } catch (err) {
       setError(err instanceof Error && err.message ? err.message : friendlyAuthError());
     } finally {
@@ -101,17 +123,30 @@ function LoginPage() {
 
   return (
     <main className="fixed inset-0 overflow-hidden bg-[#08090d] text-white selection:bg-[#d4af37]/25">
+      <style>{`
+        @keyframes velluneFadeUp {
+          from { opacity: 0; transform: translateY(10px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes velluneGlow {
+          0%, 100% { opacity: .55; transform: scale(1); }
+          50% { opacity: .85; transform: scale(1.02); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .vellune-motion { animation: none !important; transition: none !important; }
+        }
+      `}</style>
       {/* Premium, restrained background */}
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_18%_18%,rgba(212,175,55,0.10),transparent_34%),radial-gradient(ellipse_at_82%_78%,rgba(74,64,43,0.16),transparent_38%),linear-gradient(135deg,#08090d_0%,#0d0f15_52%,#08090d_100%)]" />
       <div className="pointer-events-none absolute -left-32 -top-32 h-[28rem] w-[28rem] rounded-full border border-[#d4af37]/10" />
       <div className="pointer-events-none absolute -right-40 -bottom-40 h-[34rem] w-[34rem] rounded-full border border-white/[0.035]" />
       <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(90deg,transparent_0%,rgba(255,255,255,0.018)_50%,transparent_100%)]" />
 
-      <div className="relative z-10 mx-auto grid h-full w-full max-w-[1440px] grid-cols-1 lg:grid-cols-[1.15fr_0.85fr]">
+      <div className="relative z-10 mx-auto grid h-full w-full max-w-[1440px] grid-cols-1 lg:grid-cols-[1.15fr_0.85fr] vellune-motion" style={{ animation: "velluneFadeUp 650ms cubic-bezier(.22,1,.36,1)" }}>
         {/* Brand side */}
-        <section className="relative hidden min-h-0 flex-col justify-between overflow-hidden px-12 py-10 lg:flex xl:px-20">
+        <section className="relative hidden min-h-0 flex-col justify-between overflow-hidden px-12 py-10 lg:flex xl:px-20 vellune-motion" style={{ animation: "velluneFadeUp 750ms cubic-bezier(.22,1,.36,1)" }}>
           <div>
-            <Logo className="h-12 w-[248px] text-white" />
+            <Logo className="h-12 w-[248px] text-white transition-opacity duration-500 hover:opacity-90" />
           </div>
 
           <div className="max-w-[650px] pb-10 xl:pb-16">
@@ -137,13 +172,15 @@ function LoginPage() {
         </section>
 
         {/* Authentication side */}
-        <section className="flex h-full min-h-0 items-center justify-center px-5 py-6 sm:px-8 lg:border-l lg:border-white/[0.045] lg:bg-white/[0.012] xl:px-16">
+        <section className="flex h-full min-h-0 items-center justify-center px-4 py-5 sm:px-8 lg:border-l lg:border-white/[0.045] lg:bg-white/[0.012] xl:px-16">
           <div className="w-full max-w-[430px]">
             <div className="mb-8 flex justify-center lg:hidden">
-              <Logo className="h-11 w-[225px] text-white" />
+              <Logo className="h-11 w-[225px] text-white transition-opacity duration-500 hover:opacity-90" />
             </div>
 
-            <div className="rounded-[28px] border border-white/[0.07] bg-[#111318]/90 p-6 shadow-[0_30px_100px_rgba(0,0,0,0.45)] backdrop-blur-xl sm:p-9">
+            <div className="relative overflow-hidden rounded-[28px] border border-white/[0.075] bg-[#111318]/92 p-6 shadow-[0_30px_100px_rgba(0,0,0,0.46)] backdrop-blur-xl sm:p-9 vellune-motion" style={{ animation: "velluneFadeUp 800ms cubic-bezier(.22,1,.36,1)" }}>
+              <div className="pointer-events-none absolute inset-x-10 top-0 h-px bg-gradient-to-r from-transparent via-[#d4af37]/35 to-transparent" />
+              <div className="pointer-events-none absolute -right-24 -top-24 h-48 w-48 rounded-full bg-[#d4af37]/[0.035] blur-3xl" style={{ animation: "velluneGlow 7s ease-in-out infinite" }} />
               {mode === "recovery" ? (
                 <div>
                   <button type="button" onClick={showLogin} className="mb-9 text-xs font-medium text-white/40 transition-colors hover:text-[#e5c66b]">
@@ -175,25 +212,8 @@ function LoginPage() {
                           <Input id="recovery-email" type="email" inputMode="email" autoComplete="email" value={recoveryEmail} onChange={(e) => setRecoveryEmail(e.target.value)} onBlur={() => setTouched(true)} placeholder="voce@empresa.com" aria-invalid={recoveryInvalid} className="h-12 rounded-xl border-white/[0.08] bg-white/[0.035] pl-10 text-white placeholder:text-white/20 focus-visible:border-[#d4af37]/50 focus-visible:ring-[#d4af37]/10" />
                         </div>
                       </div>
-                      <label className="flex cursor-pointer items-center gap-3 py-1 text-xs text-white/40 select-none">
-                    <span className="relative flex h-4 w-4 shrink-0 items-center justify-center">
-                      <input
-                        type="checkbox"
-                        checked={rememberAccess}
-                        onChange={(e) => setRememberAccess(e.target.checked)}
-                        className="peer absolute inset-0 z-10 h-4 w-4 cursor-pointer opacity-0"
-                      />
-                      <span className="flex h-4 w-4 items-center justify-center rounded-[5px] border border-white/[0.12] bg-white/[0.035] transition-all peer-checked:border-[#d4af37]/70 peer-checked:bg-[#d4af37] peer-focus-visible:ring-2 peer-focus-visible:ring-[#d4af37]/25">
-                        <svg viewBox="0 0 16 16" className="h-3 w-3 scale-0 text-[#16130b] transition-transform peer-checked:scale-100" aria-hidden="true">
-                          <path d="M3.2 8.2 6.6 11.3 12.8 4.8" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                        </svg>
-                      </span>
-                    </span>
-                    <span>Lembrar meu acesso neste dispositivo</span>
-                  </label>
-
                   {error && <div role="alert" className="rounded-xl border border-red-300/15 bg-red-400/[0.07] px-4 py-3 text-sm leading-6 text-red-200">{error}</div>}
-                      <Button type="submit" disabled={loading} className="h-12 w-full rounded-xl bg-[#d4af37] font-semibold text-[#16130b] shadow-[0_10px_30px_rgba(212,175,55,0.12)] transition-all hover:-translate-y-0.5 hover:bg-[#e5c66b]">
+                      <Button type="submit" disabled={loading} className="group h-12 w-full rounded-xl bg-[#d4af37] font-semibold text-[#16130b] shadow-[0_12px_34px_rgba(212,175,55,0.10)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#e5c66b] hover:shadow-[0_16px_38px_rgba(212,175,55,0.16)] active:translate-y-0">
                         {loading ? "Enviando link..." : "Enviar link de recuperação"}
                       </Button>
                     </form>
@@ -228,9 +248,27 @@ function LoginPage() {
                     </div>
                   </div>
 
+                      <label className="flex cursor-pointer items-center gap-3 py-1 text-xs text-white/40 select-none">
+                    <span className="relative flex h-4 w-4 shrink-0 items-center justify-center">
+                      <input
+                        type="checkbox"
+                        checked={rememberAccess}
+                        onChange={(e) => setRememberAccess(e.target.checked)}
+                        className="peer absolute inset-0 z-10 h-4 w-4 cursor-pointer opacity-0"
+                      />
+                      <span className="flex h-4 w-4 items-center justify-center rounded-[5px] border border-white/[0.12] bg-white/[0.035] transition-all peer-checked:border-[#d4af37]/70 peer-checked:bg-[#d4af37] peer-focus-visible:ring-2 peer-focus-visible:ring-[#d4af37]/25">
+                        <svg viewBox="0 0 16 16" className="h-3 w-3 scale-0 text-[#16130b] transition-transform peer-checked:scale-100" aria-hidden="true">
+                          <path d="M3.2 8.2 6.6 11.3 12.8 4.8" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                      </span>
+                    </span>
+                    <span>Lembrar meu acesso neste dispositivo</span>
+                  </label>
+
+
                   {error && <div role="alert" className="rounded-xl border border-red-300/15 bg-red-400/[0.07] px-4 py-3 text-sm leading-6 text-red-200">{error}</div>}
 
-                  <Button type="submit" disabled={loading} className="group mt-2 h-12 w-full rounded-xl bg-[#d4af37] font-semibold text-[#16130b] shadow-[0_10px_30px_rgba(212,175,55,0.12)] transition-all hover:-translate-y-0.5 hover:bg-[#e5c66b]">
+                  <Button type="submit" disabled={loading} className="group mt-2 h-12 w-full rounded-xl bg-[#d4af37] font-semibold text-[#16130b] shadow-[0_12px_34px_rgba(212,175,55,0.10)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#e5c66b] hover:shadow-[0_16px_38px_rgba(212,175,55,0.16)] active:translate-y-0">
                     {loading ? "Entrando..." : <span className="flex items-center justify-center gap-2">Entrar na conta <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" /></span>}
                   </Button>
 
