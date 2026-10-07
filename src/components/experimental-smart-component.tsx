@@ -40,7 +40,7 @@ export type SmartFunctionalConfig = {
   qrValue?: string;
   images?: SmartGalleryImage[];
   socialLinks?: SmartSocialLink[];
-  gifts?: Array<{ name: string; url: string; claimed?: boolean }>;
+  gifts?: SmartGift[];
   hosts?: Array<{ name: string; role?: string; image?: string }>;
   story?: string;
   rsvpTitle?: string;
