@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { ArrowUpRight, LockKeyhole, Sparkles } from "lucide-react";
+import { LockKeyhole, Sparkles } from "lucide-react";
 import Logo from "@/components/Logo";
 
 export function AuthCard({
