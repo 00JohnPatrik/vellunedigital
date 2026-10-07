@@ -18,6 +18,27 @@ export function AuthCard({
   const authScrollRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
+    const html = document.documentElement;
+    const body = document.body;
+    const previous = {
+      htmlBackground: html.style.backgroundColor,
+      bodyBackground: body.style.backgroundColor,
+      htmlColorScheme: html.style.colorScheme,
+      bodyColorScheme: body.style.colorScheme,
+    };
+    html.style.backgroundColor = "#08090d";
+    body.style.backgroundColor = "#08090d";
+    html.style.colorScheme = "dark";
+    body.style.colorScheme = "dark";
+    return () => {
+      html.style.backgroundColor = previous.htmlBackground;
+      body.style.backgroundColor = previous.bodyBackground;
+      html.style.colorScheme = previous.htmlColorScheme;
+      body.style.colorScheme = previous.bodyColorScheme;
+    };
+  }, []);
+
+  useEffect(() => {
     const section = authScrollRef.current;
     if (!section) return;
 
