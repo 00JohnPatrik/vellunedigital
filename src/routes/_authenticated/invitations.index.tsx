@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useRouteContext } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { AlertCircle, BarChart3, CheckCircle2, CircleDashed, Copy, Eye, Link2, MessageCircle, Pencil, Plus, Search, Trash2 } from "lucide-react";
@@ -27,13 +27,14 @@ function InvitationsPage() {
   const q = useQuery({ queryKey: invitationsKey, queryFn: listInvitations });
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<Filter>("all");
-  const isSuper = Route.useRouteContext().appUser!.role === "super_admin";
+  const { appUser } = useRouteContext({ from: "/_authenticated" });
+  const isSuper = appUser?.role === "super_admin";
   const [toDelete, setToDelete] = useState<Invitation | null>(null);
   const [busy, setBusy] = useState(false);
 
   const rows = useMemo(() => {
     const s = search.trim().toLowerCase();
-    return (q.data ?? []).filter((i) => (filter === "all" || i.status === filter) && (!s || i.name.toLowerCase().includes(s) || i.customer?.name?.toLowerCase().includes(s)));
+    return (q.data ?? []).filter((i) => { const name = String(i.name ?? ""); const customer = String(i.customer?.name ?? ""); return (filter === "all" || i.status === filter) && (!s || name.toLowerCase().includes(s) || customer.toLowerCase().includes(s)); });
   }, [q.data, search, filter]);
 
   const statusCounts = useMemo(() => {
@@ -150,7 +151,7 @@ function InvitationsPage() {
                   <tr key={i.id} className="border-t transition-colors hover:bg-muted/30">
                     <td className="px-4 py-3 font-medium">{i.name}</td>
                     <td className="px-4 py-3">{i.customer?.name ?? "—"}</td>
-                    <td className="px-4 py-3">{fmtEventDate(i.event_date)} · {i.event_time.slice(0, 5)}</td>
+                    <td className="px-4 py-3">{fmtEventDate(i.event_date)} · {String(i.event_time ?? "").slice(0, 5) || "—"}</td>
                     <td className="px-4 py-3"><InvitationStatusBadge status={i.status} /></td>
                     <td className="px-4 py-3">{fmtDate(i.updated_at)}</td>
                     <td className="px-4 py-3"><div className="flex flex-wrap justify-end gap-1">{actions(i, "ghost")}</div></td>
@@ -169,7 +170,7 @@ function InvitationsPage() {
                   </div>
                   <InvitationStatusBadge status={i.status} />
                 </div>
-                <div className="mt-2 text-sm">{fmtEventDate(i.event_date)} · {i.event_time.slice(0, 5)} · atualizado {fmtDate(i.updated_at)}</div>
+                <div className="mt-2 text-sm">{fmtEventDate(i.event_date)} · {String(i.event_time ?? "").slice(0, 5) || "—"} · atualizado {fmtDate(i.updated_at)}</div>
                 <div className="mt-3 flex flex-wrap gap-2">{actions(i, "outline")}</div>
               </div>
             ))}
