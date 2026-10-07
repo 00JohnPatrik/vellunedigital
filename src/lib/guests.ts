@@ -161,9 +161,20 @@ export async function updateGuest(invitationId: string, id: string, values: Gues
 
 export async function deleteGuest(invitationId: string, id: string) {
   const { data: auth } = await supabase.auth.getUser();
+  let deletedBy: string | null = null;
+  if (auth.user?.id) {
+    const { data: appUser, error: userError } = await supabase
+      .from("users")
+      .select("id")
+      .eq("auth_user_id", auth.user.id)
+      .maybeSingle();
+    if (userError) throw userError;
+    deletedBy = appUser?.id ?? null;
+  }
+
   const { error } = await supabase
     .from("invitation_guests")
-    .update({ status: "deleted", deleted_at: new Date().toISOString(), deleted_by: auth.user?.id ?? null })
+    .update({ status: "deleted", deleted_at: new Date().toISOString(), deleted_by: deletedBy })
     .eq("invitation_id", invitationId)
     .eq("id", id)
     .neq("status", "deleted")
