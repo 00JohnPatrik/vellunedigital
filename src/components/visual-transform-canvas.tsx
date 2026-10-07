@@ -19,6 +19,7 @@ type Props = {
   onDuplicate?: (ids: string[]) => void;
   onDelete?: (ids: string[]) => void;
   onAdvanced?: () => void;
+  onLayer?: (direction: "front" | "back", ids: string[]) => void;
   onGroup?: (ids: string[]) => void;
   onUngroup?: (ids: string[]) => void;
   onImageAction?: (id: string, action: ImageAction) => void;
@@ -284,7 +285,10 @@ export function VisualTransformCanvas({ blocks, selectedIds: selectedIdsProp, zo
     const preferredLeft = selectedBounds.left + selectedBounds.width / 2 - toolbarWidth / 2;
     const left = clamp(preferredLeft, 8, Math.max(8, size.width - toolbarWidth - 8));
     const above = selectedBounds.top - 12;
-    const top = above >= 76 ? above : Math.min(size.height - 64, selectedBounds.bottom + 76);
+    const below = selectedBounds.bottom + 12;
+    const top = above >= 76
+      ? above
+      : clamp(below, 8, Math.max(8, size.height - 84));
     return { left, top, width: toolbarWidth };
   })() : null;
 
@@ -606,6 +610,7 @@ export function VisualTransformCanvas({ blocks, selectedIds: selectedIdsProp, zo
           onAdvanced={() => onAdvanced?.()}
           onImage={imageAction}
           onLock={toggleLockSelected}
+          onLayer={(direction) => onLayer?.(direction, selectedIds)}
         />
       </div>
     )}
