@@ -375,6 +375,7 @@ function LoginPage() {
                   )}
                 </div>
               ) : (
+                <div>
                 <AuthJourneySteps activeStep={1} />
                 <form onSubmit={onLogin} className="space-y-5" noValidate>
                   <div className="mb-8">
@@ -530,6 +531,7 @@ function LoginPage() {
                     <p className="text-center text-xs text-white/35">Primeira vez aqui? <a href="/first-access" className="font-semibold text-white/65 transition-colors hover:text-[#e5c66b]">Faça seu primeiro acesso</a></p>
                   </div>
                 </form>
+                </div>
               )}
               </div>
             </div>
