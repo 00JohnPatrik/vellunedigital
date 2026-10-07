@@ -968,6 +968,7 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra }: { h: Bl
               onImageAction={openImageAction}
               startEditingId={startEditingTextId}
               onStartEditingHandled={handleStartEditingHandled}
+              showGrid={showGrid}
               onAdvanced={() => {
                 if (compact) {
                   setMobileSheet("properties");
