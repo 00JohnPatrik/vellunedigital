@@ -55,7 +55,7 @@ export function AuthCard({
   }, []);
 
   return (
-    <main className="vellune-auth-root fixed inset-0 h-[100dvh] w-full max-w-full overflow-hidden overflow-x-clip overscroll-none bg-[#08090d] text-white selection:bg-[#d4af37]/25" style={{ colorScheme: "dark" }}>
+    <main className="vellune-auth-root relative min-h-[100svh] w-full max-w-full overflow-x-clip bg-[#08090d] overscroll-y-auto lg:fixed lg:inset-0 lg:h-[100dvh] lg:overflow-hidden lg:overscroll-none text-white selection:bg-[#d4af37]/25" style={{ colorScheme: "dark" }}>
       <style>{`
         @keyframes velluneAuthFadeUp {
           from { opacity: 0; transform: translateY(10px); }
@@ -76,12 +76,12 @@ export function AuthCard({
       <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(90deg,transparent_0%,rgba(255,255,255,0.018)_50%,transparent_100%)]" />
 
       <div
-        className="relative z-10 mx-auto grid h-full min-h-0 w-full max-w-[1440px] grid-cols-1 lg:grid-cols-[1.15fr_0.85fr] vellune-auth-motion"
+        className="relative z-10 mx-auto grid min-h-[100svh] w-full max-w-[1440px] grid-cols-1 lg:grid-cols-[1.15fr_0.85fr] vellune-auth-motion"
         style={{ animation: "velluneAuthFadeUp 650ms cubic-bezier(.22,1,.36,1)" }}
       >
         <AuthPremiumVisual />
 
-        <section ref={authScrollRef} className="flex h-full min-h-0 items-stretch justify-start overflow-y-auto overflow-x-clip overscroll-contain bg-[#08090d] px-3 pt-[max(1rem,env(safe-area-inset-top))] pb-[max(1rem,env(safe-area-inset-bottom))] sm:px-8 sm:py-5 lg:items-stretch lg:justify-start lg:overflow-y-auto lg:border-l lg:border-white/[0.045] lg:bg-white/[0.012] xl:px-16">
+        <section ref={authScrollRef} className="flex min-h-[100svh] items-stretch justify-start overflow-x-clip bg-[#08090d] lg:h-full lg:min-h-0 lg:overflow-y-auto lg:overscroll-contain px-3 pt-[max(1rem,env(safe-area-inset-top))] pb-[max(1rem,env(safe-area-inset-bottom))] sm:px-8 sm:py-5 lg:items-stretch lg:justify-start lg:overflow-y-auto lg:border-l lg:border-white/[0.045] lg:bg-white/[0.012] xl:px-16">
           <div className="my-auto mx-auto flex w-full max-w-[430px] min-h-0 shrink-0 flex-col py-0.5 pb-[max(0.5rem,env(safe-area-inset-bottom))] sm:py-2">
             <div className="mb-3 flex w-full shrink-0 flex-col items-center justify-center lg:hidden sm:mb-7">
               <Logo className="h-10 w-auto max-w-[72vw] text-white transition-opacity duration-500 hover:opacity-90 sm:h-14" />
