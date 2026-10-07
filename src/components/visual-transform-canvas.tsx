@@ -133,6 +133,26 @@ function nearest(value: number, candidates: number[], threshold = 8) {
   return best;
 }
 
+type SnapAnchor = { value: number; kind: "edge" | "center" };
+
+function nearestSnap(anchors: SnapAnchor[], candidates: number[], threshold = 8) {
+  let best: { offset: number; guide: number; kind: SnapAnchor["kind"]; distance: number } | null = null;
+  for (const anchor of anchors) {
+    for (const candidate of candidates) {
+      const distance = Math.abs(candidate - anchor.value);
+      if (distance <= threshold && (!best || distance < best.distance)) {
+        best = {
+          offset: candidate - anchor.value,
+          guide: candidate,
+          kind: anchor.kind,
+          distance,
+        };
+      }
+    }
+  }
+  return best;
+}
+
 function resizeBounds(start: Interaction, point: Point, proportional: boolean, canvasWidth: number, canvasHeight: number) {
   const original = start.bounds;
   let left = original.left;
@@ -325,30 +345,54 @@ export function VisualTransformCanvas({ blocks, selectedIds: selectedIdsProp, zo
       const moved = { ...current.bounds, left: current.bounds.left + dx, right: current.bounds.right + dx, top: current.bounds.top + dy, bottom: current.bounds.bottom + dy };
       const others = blocks.filter((block: any) => !current.ids.includes(block.id));
       const nextGuides: Guide[] = [];
-      if (event.shiftKey) {
-        const xCandidates = [SAFE_MARGIN, size.width / 2, size.width - SAFE_MARGIN];
-        const yCandidates = [SAFE_MARGIN, size.height / 2, size.height - SAFE_MARGIN];
-        for (const other of others) {
-          const box = rotatedBounds(geometry(other, blocks.indexOf(other)));
-          xCandidates.push(box.left, box.right, (box.left + box.right) / 2);
-          yCandidates.push(box.top, box.bottom, (box.top + box.bottom) / 2);
-        }
-        const snapX = nearest((moved.left + moved.right) / 2, xCandidates);
-        const snapY = nearest((moved.top + moved.bottom) / 2, yCandidates);
-        if (snapX !== (moved.left + moved.right) / 2) {
-          offsetX += snapX - (moved.left + moved.right) / 2;
-          nextGuides.push({ axis: "x", value: snapX, kind: "center" });
-        }
-        if (snapY !== (moved.top + moved.bottom) / 2) {
-          offsetY += snapY - (moved.top + moved.bottom) / 2;
-          nextGuides.push({ axis: "y", value: snapY, kind: "center" });
-        }
-        const gridX = Math.round((current.bounds.left + offsetX) / GRID_UNIT) * GRID_UNIT;
-        const gridY = Math.round((current.bounds.top + offsetY) / GRID_UNIT) * GRID_UNIT;
-        offsetX += gridX - (current.bounds.left + offsetX);
-        offsetY += gridY - (current.bounds.top + offsetY);
-        nextGuides.push({ axis: "x", value: gridX, kind: "grid" }, { axis: "y", value: gridY, kind: "grid" });
+      const xCandidates = [SAFE_MARGIN, size.width / 2, size.width - SAFE_MARGIN];
+      const yCandidates = [SAFE_MARGIN, size.height / 2, size.height - SAFE_MARGIN];
+      for (const other of others) {
+        const box = rotatedBounds(geometry(other, blocks.indexOf(other)));
+        xCandidates.push(box.left, box.right, (box.left + box.right) / 2);
+        yCandidates.push(box.top, box.bottom, (box.top + box.bottom) / 2);
       }
+
+      // Smart guides: snap edges and centers automatically when an element
+      // gets close to another element or to the safe canvas margins.
+      const xSnap = nearestSnap(
+        [
+          { value: moved.left, kind: "edge" },
+          { value: (moved.left + moved.right) / 2, kind: "center" },
+          { value: moved.right, kind: "edge" },
+        ],
+        xCandidates,
+      );
+      const ySnap = nearestSnap(
+        [
+          { value: moved.top, kind: "edge" },
+          { value: (moved.top + moved.bottom) / 2, kind: "center" },
+          { value: moved.bottom, kind: "edge" },
+        ],
+        yCandidates,
+      );
+
+      if (xSnap) {
+        offsetX += xSnap.offset;
+        nextGuides.push({ axis: "x", value: xSnap.guide, kind: xSnap.kind });
+      }
+      if (ySnap) {
+        offsetY += ySnap.offset;
+        nextGuides.push({ axis: "y", value: ySnap.guide, kind: ySnap.kind });
+      }
+
+      // Shift keeps the explicit grid snap available as a secondary precision aid.
+      if (event.shiftKey && !xSnap) {
+        const gridX = Math.round((current.bounds.left + offsetX) / GRID_UNIT) * GRID_UNIT;
+        offsetX += gridX - (current.bounds.left + offsetX);
+        nextGuides.push({ axis: "x", value: gridX, kind: "grid" });
+      }
+      if (event.shiftKey && !ySnap) {
+        const gridY = Math.round((current.bounds.top + offsetY) / GRID_UNIT) * GRID_UNIT;
+        offsetY += gridY - (current.bounds.top + offsetY);
+        nextGuides.push({ axis: "y", value: gridY, kind: "grid" });
+      }
+
       offsetX = clamp(offsetX, -current.bounds.left, size.width - current.bounds.right);
       offsetY = clamp(offsetY, -current.bounds.top, size.height - current.bounds.bottom);
       setGuides(nextGuides);
