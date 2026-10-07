@@ -13,7 +13,7 @@ export const Route = createFileRoute("/_authenticated/templates/new")({
 function NewCompanyTemplate() {
   const navigate = useNavigate();
   const qc = useQueryClient();
-  const { appUser! } = Route.useRouteContext();
+  const { appUser } = Route.useRouteContext();
   return (
     <div>
       <Link to="/templates" className="mb-3 inline-block text-sm text-muted-foreground hover:text-foreground">← Modelos</Link>
