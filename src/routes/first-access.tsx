@@ -90,6 +90,7 @@ function FirstAccessPage() {
     setEmail(parsed.data);
 
     if (resendCooldown > 0) return;
+    requestLockRef.current = true;
     setLoading(true);
     setError(null);
     setErrorIsValidation(false);
@@ -98,6 +99,7 @@ function FirstAccessPage() {
       await request({ data: { email: parsed.data } });
       setSent(true);
       setResendCooldown(30);
+      try { window.sessionStorage.setItem("vellune-first-access-cooldown-until", String(Date.now() + 30000)); } catch {}
     } catch (err) {
       if (isAuthServiceUnavailable(err)) {
         setAuthUnavailable(true);
