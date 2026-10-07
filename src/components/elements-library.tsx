@@ -28,6 +28,8 @@ type ElementsLibraryProps = {
   onAdd: (type: BlockType) => void;
   assets?: AssetScope;
   onAddImage?: (value: string) => void;
+  imageMode?: "add" | "replace";
+  onSelectImage?: (value: string) => void;
 };
 
 type LibraryCategory = "Todos" | "Recentes" | "Texto" | "Elementos" | "Mídia" | "Interações";
@@ -103,7 +105,7 @@ function typeLabel(type: BlockType) {
   return BLOCKS[type]?.label || type;
 }
 
-export function ElementsLibrary({ availableTypes, onAdd, assets, onAddImage }: ElementsLibraryProps) {
+export function ElementsLibrary({ availableTypes, onAdd, assets, onAddImage, imageMode = "add", onSelectImage }: ElementsLibraryProps) {
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState<LibraryCategory>("Todos");
   const [recents, setRecents] = useState<string[]>([]);
@@ -151,6 +153,7 @@ export function ElementsLibrary({ availableTypes, onAdd, assets, onAddImage }: E
   const filtered = useMemo(() => {
     const term = search.trim().toLowerCase();
     return items
+      .filter((item) => imageMode !== "replace" || !["image", "gallery"].includes(item.type))
       .filter((item) => category === "Todos" || (category === "Recentes" ? recents.includes(item.id) : item.category === category))
       .filter((item) => !term || `${item.label} ${item.description} ${item.category} ${item.eyebrow} ${item.tags.join(" ")}`.toLowerCase().includes(term))
       .sort((a, b) => {
@@ -170,7 +173,10 @@ export function ElementsLibrary({ availableTypes, onAdd, assets, onAddImage }: E
 
   const handleImage = (value: string) => {
     setUploadedImage(value);
-    if (value && onAddImage) {
+    if (!value) return;
+    if (imageMode === "replace") {
+      onSelectImage?.(value);
+    } else if (onAddImage) {
       onAddImage(value);
       const next = ["image", ...recents.filter((id) => id !== "image")].slice(0, MAX_RECENTS);
       setRecents(next);
@@ -208,9 +214,9 @@ export function ElementsLibrary({ availableTypes, onAdd, assets, onAddImage }: E
 
       {category === "Mídia" && availableTypes.includes("image") && (
         <div className="rounded-xl border border-primary/20 bg-primary/5 p-3" aria-label="Biblioteca de imagens">
-          <div className="mb-3 flex items-start gap-2"><ImageIcon className="mt-0.5 h-4 w-4 text-primary" aria-hidden="true" /><div><p className="text-xs font-semibold text-foreground">Imagens do convite</p><p className="mt-0.5 text-[11px] leading-4 text-muted-foreground">Escolha uma imagem existente ou envie uma nova para usar no canvas.</p></div></div>
+          <div className="mb-3 flex items-start gap-2"><ImageIcon className="mt-0.5 h-4 w-4 text-primary" aria-hidden="true" /><div><p className="text-xs font-semibold text-foreground">{imageMode === "replace" ? "Escolher substituta" : "Imagens do convite"}</p><p className="mt-0.5 text-[11px] leading-4 text-muted-foreground">{imageMode === "replace" ? "Escolha uma imagem existente ou envie uma nova para substituir a imagem selecionada." : "Escolha uma imagem existente ou envie uma nova para usar no canvas."}</p></div></div>
           <ImageUpload scope={assets} value={uploadedImage} onChange={handleImage} />
-          {!onAddImage && assets && <p className="mt-2 rounded-md border border-dashed p-2 text-[10px] leading-4 text-muted-foreground">A imagem ficará disponível na biblioteca. Selecione o card Imagem para inseri-la e ajuste a URL no painel de propriedades.</p>}
+          {imageMode === "replace" ? <p className="mt-2 rounded-md border border-primary/20 bg-primary/5 p-2 text-[10px] leading-4 text-primary">A escolha será aplicada imediatamente à imagem selecionada, preservando posição, tamanho, rotação e demais ajustes.</p> : !onAddImage && assets && <p className="mt-2 rounded-md border border-dashed p-2 text-[10px] leading-4 text-muted-foreground">A imagem ficará disponível na biblioteca. Selecione o card Imagem para inseri-la e ajuste a URL no painel de propriedades.</p>}
         </div>
       )}
 
