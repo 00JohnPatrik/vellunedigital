@@ -7,7 +7,7 @@ import { BackgroundPropertiesPanel, ContextualPropertiesPanel } from "@/componen
 import { BLOCKS, getBlockDefaultSize, getNextBlockZIndex, newBlock, resolveBlockGeometry, type Block, type BlockType } from "@/lib/templates";
 import { ElementsLibrary } from "@/components/elements-library";
 import { TemplateGallery } from "@/components/template-gallery";
-import { CalendarDays, CheckCircle2, Eye, EyeOff, Grid3X3, Minus, Plus, Redo2, Undo2, PanelLeft, PanelRight, Sparkles, Smartphone, Tablet, Monitor, BringToFront, SendToBack, Trash2, X, Pencil, RotateCcw, RotateCw, Lock, Unlock, AlignCenterHorizontal, AlignCenterVertical, Link2, Unlink2, MapPin, Type, Image as ImageIcon } from "lucide-react";
+import { CalendarDays, CheckCircle2, Eye, EyeOff, Grid3X3, Minus, Plus, Redo2, Undo2, PanelLeft, PanelRight, Sparkles, Smartphone, Tablet, Monitor, BringToFront, SendToBack, Trash2, X, Pencil, RotateCcw, RotateCw, Lock, Unlock, AlignCenterHorizontal, AlignCenterVertical, Link2, Unlink2, MapPin, Type, Image as ImageIcon, Palette, MoreHorizontal } from "lucide-react";
 
 function useIsCompact() {
   const [compact, setCompact] = useState(false);
@@ -166,7 +166,7 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra }: { h: Bl
   const [showGrid, setShowGrid] = useState(true);
   const [contextPanel, setContextPanel] = useState<"elements" | "layers" | "background" | "view" | null>("elements");
   const [mobileSheet, setMobileSheet] = useState<"elements" | "layers" | "properties" | "background" | "view" | null>(null);
-  const [toolCategory, setToolCategory] = useState("Elementos");
+  const [toolCategory, setToolCategory] = useState("Modelos");
   const [templateOpen, setTemplateOpen] = useState(false);
   const [startEditingTextId, setStartEditingTextId] = useState<string | null>(null);
   const [imageReplaceId, setImageReplaceId] = useState<string | null>(null);
@@ -735,63 +735,166 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra }: { h: Bl
         </div>
       </div>
       <div className="vellune-editor-body flex min-h-0 flex-1 flex-col lg:flex-row">
-        <aside className="vellune-editor-sidebar hidden w-[244px] shrink-0 flex-col border-r border-primary/10 bg-card/80 backdrop-blur-xl lg:flex" aria-label="Ferramentas do editor">
+        <aside className="vellune-editor-sidebar hidden w-[270px] shrink-0 flex-col border-r border-primary/10 bg-card/80 backdrop-blur-xl lg:flex" aria-label="Ferramentas do editor">
           <div className="border-b border-primary/10 p-3.5">
-            <div className="flex items-center justify-between gap-2">
-              <div>
-                <p className="text-sm font-semibold text-foreground">Ferramentas</p>
-                <p className="mt-1 text-xs text-muted-foreground">Monte o convite de forma simples e visual.</p>
+            <div className="flex items-center gap-2">
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary"><Sparkles className="h-4 w-4" /></div>
+              <div className="min-w-0">
+                <p className="text-sm font-semibold text-foreground">Criar convite</p>
+                <p className="mt-0.5 text-[10px] leading-4 text-muted-foreground">Tudo o que você precisa, na ordem certa.</p>
               </div>
-              <button type="button" onClick={() => setTemplateOpen(true)} className="inline-flex h-8 items-center gap-1.5 rounded-md border border-primary/30 bg-primary/10 px-2.5 text-[11px] font-medium text-primary transition hover:bg-primary/15" aria-label="Abrir modelos">
-                <Sparkles className="h-3.5 w-3.5" />Modelos
-              </button>
             </div>
           </div>
-        <div className="vellune-editor-tabs flex gap-1 border-b border-primary/10 bg-background/20 p-2">
-            {[['elements', 'Adicionar'], ['layers', 'Organizar'], ['background', 'Fundo'], ['view', 'Visualizar']].map(([key, label]) => (
-              <button key={key} type="button" onClick={() => setContextPanel(key as any)} className={`flex-1 rounded-md px-1 py-2 text-[10px] ${contextPanel === key ? "bg-primary/10 font-medium text-primary" : "text-muted-foreground hover:bg-muted"}`}>
-                {label}
+
+          <nav className="grid grid-cols-2 gap-1.5 border-b border-primary/10 bg-background/30 p-2" aria-label="Etapas da criação">
+            {[
+              ["Modelos", Sparkles, "Comece por um modelo pronto"],
+              ["Texto", Type, "Títulos, subtítulos e mensagens"],
+              ["Fotos", ImageIcon, "Imagens e galerias"],
+              ["Elementos", PanelLeft, "Data, local, botões e mais"],
+              ["Fundo", Palette, "Cor e imagem de fundo"],
+              ["Mais", MoreHorizontal, "Camadas e ajustes avançados"],
+            ].map(([key, Icon, description]) => (
+              <button
+                key={key as string}
+                type="button"
+                onClick={() => setToolCategory(key as string)}
+                className={cn(
+                  "group flex min-h-[58px] flex-col items-start justify-center gap-1 rounded-xl border px-2.5 py-2 text-left transition-all",
+                  toolCategory === key
+                    ? "border-primary/30 bg-primary/10 text-primary shadow-sm"
+                    : "border-transparent text-muted-foreground hover:border-primary/15 hover:bg-accent/50 hover:text-foreground",
+                )}
+                aria-pressed={toolCategory === key}
+                title={description as string}
+              >
+                <Icon className="h-4 w-4" />
+                <span className="text-[11px] font-medium">{key as string}</span>
               </button>
             ))}
-          </div>
-          <div className="min-h-0 flex-1 overflow-y-auto p-3">
-            {contextPanel === "elements" && <div className="space-y-4">
-  <div>
-    <p className="text-xs font-medium text-foreground">Comece seu convite</p>
-    <p className="mt-1 text-[11px] leading-relaxed text-muted-foreground">Escolha um modelo pronto ou adicione só o que precisa.</p>
-  </div>
-  <button type="button" onClick={() => setTemplateOpen(true)} className="vellune-editor-start-card group flex w-full items-center gap-3 rounded-xl border border-primary/20 bg-primary/8 p-3 text-left shadow-sm transition hover:border-primary/40 hover:bg-primary/10 active:scale-[.99]">
-    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/15 text-primary"><Sparkles className="h-4 w-4" /></span>
-    <span className="min-w-0 flex-1"><span className="block text-xs font-semibold text-foreground">Começar com um modelo</span><span className="mt-0.5 block text-[10px] leading-4 text-muted-foreground">Casamento, aniversário, chá de bebê e mais.</span></span>
-    <span className="text-[10px] font-semibold text-primary">Ver modelos</span>
-  </button>
-  <div>
-    <p className="mb-2 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Mais usados</p>
-    <div className="grid grid-cols-2 gap-2">
-      {(["text", "image", "date", "location", "button", "rsvp"] as BlockType[]).map((type) => (
-        <button key={type} type="button" onClick={() => addElement(type)} className="group flex items-center gap-2 rounded-xl border border-border/70 bg-background/45 px-3 py-2.5 text-left text-xs text-foreground transition hover:border-primary/35 hover:bg-primary/5 active:scale-[.99]">
-          <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-primary/8 text-primary">{(() => { const Icon = ELEMENT_ICONS[type]; return Icon ? <Icon className="h-3.5 w-3.5" /> : <Plus className="h-3.5 w-3.5" />; })()}</span>
-          <span className="min-w-0 truncate">{BLOCKS[type].label}</span>
-        </button>
-      ))}
-    </div>
-  </div>
-  <details className="group rounded-xl border border-primary/10 bg-background/30">
-    <summary className="flex cursor-pointer list-none items-center justify-between px-3 py-2.5 text-xs font-medium text-foreground [&::-webkit-details-marker]:hidden">
-      Mais elementos
-      <span className="text-muted-foreground transition-transform group-open:rotate-180">⌄</span>
-    </summary>
-    <div className="grid grid-cols-1 gap-1.5 border-t border-border/60 p-2">
-      {(Object.keys(BLOCKS) as BlockType[]).filter((type) => !["text", "image", "date", "location", "button", "rsvp"].includes(type)).map((type) => (
-        <button key={type} type="button" onClick={() => addElement(type)} className="flex items-center justify-between rounded-lg border border-border/70 px-3 py-2 text-left text-xs text-foreground transition hover:border-primary/50 hover:bg-primary/5">
-          <span>{BLOCKS[type].label}</span><span className="text-primary">+</span>
-        </button>
-      ))}
-    </div>
-  </details>
-</div>}
-            {contextPanel === "layers" && <div className="space-y-2"><div className="mb-2 flex items-center justify-between gap-2"><div><p className="text-xs font-medium text-foreground">Organizar elementos</p><span className="text-[10px] text-muted-foreground">{blocks.length} elemento(s)</span></div><div className="flex items-center gap-1"><button type="button" disabled={!selectedIds.length} onClick={() => reorderSelectedLayers("back")} className="rounded-md border p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground disabled:cursor-not-allowed disabled:opacity-40" title="Enviar seleção para trás" aria-label="Enviar seleção para trás"><SendToBack className="h-3.5 w-3.5" /></button><button type="button" disabled={!selectedIds.length} onClick={() => reorderSelectedLayers("front")} className="rounded-md border p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground disabled:cursor-not-allowed disabled:opacity-40" title="Trazer seleção para frente" aria-label="Trazer seleção para frente"><BringToFront className="h-3.5 w-3.5" /></button></div></div>{orderedLayerBlocks.map(({ block, layerIndex }) => { const selectedLayer = selectedIds.includes(block.id); const moveLayer = (direction: number) => { select(block.id, false); reorderSelectedLayers(direction === 1 ? "up" : "down", [block.id]); }; const toggleLayer = (key: "hidden" | "locked") => h.set((items) => items.map((item: any) => item.id === block.id ? { ...item, [key]: !item[key], ...(key === "hidden" ? { visibility: item[key] } : {}) } : item), `layers:${key}`); return <div key={block.id} className={`rounded-lg border px-2 py-2 transition ${selectedLayer ? "border-primary bg-primary/10" : "border-border/70"}`}><div className="flex items-center gap-2"><button type="button" onClick={() => select(block.id, false)} className="min-w-0 flex-1 truncate text-left text-xs text-foreground"><span className="mr-1.5 text-[10px] text-muted-foreground">{layerIndex + 1}</span>{getBlockLabel(block)}{block.groupId && <span className="ml-1 rounded bg-muted px-1 py-0.5 text-[9px]">grupo</span>}</button><button type="button" aria-label={block.hidden ? "Mostrar camada" : "Ocultar camada"} onClick={() => toggleLayer("hidden")} className={`inline-flex h-7 w-7 items-center justify-center rounded-lg ${block.hidden ? "bg-muted text-muted-foreground" : "text-foreground hover:bg-muted"}`}>{block.hidden ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}</button><button type="button" aria-label={block.locked ? "Desbloquear camada" : "Bloquear camada"} onClick={() => toggleLayer("locked")} className={`inline-flex h-7 w-7 items-center justify-center rounded-lg ${block.locked ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-muted"}`}>{block.locked ? <Lock className="h-3.5 w-3.5" /> : <Unlock className="h-3.5 w-3.5" />}</button></div><div className="mt-1.5 flex items-center justify-end gap-1"><button type="button" disabled={layerIndex === 0} onClick={() => moveLayer(1)} className="rounded border px-1.5 py-1 text-[10px] disabled:cursor-not-allowed disabled:opacity-40">↑</button><button type="button" disabled={layerIndex === orderedLayerBlocks.length - 1} onClick={() => moveLayer(-1)} className="rounded border px-1.5 py-1 text-[10px] disabled:cursor-not-allowed disabled:opacity-40">↓</button><button type="button" onClick={() => { select(block.id, false); duplicate(); }} className="rounded border px-1.5 py-1 text-[10px]">Duplicar</button><button type="button" onClick={() => { select(block.id, false); remove(); }} className="rounded border border-destructive/30 px-1.5 py-1 text-[10px] text-destructive">Excluir</button></div></div>; })}{blocks.length === 0 && <p className="rounded-lg border border-dashed p-4 text-center text-[11px] text-muted-foreground">Nenhuma camada adicionada.</p>}</div>}
-            {contextPanel === "background" && <BackgroundPropertiesPanel background={(bg as Record<string, unknown>) || {}} assets={assets as any} onChange={(value) => onBg?.(value)} />}{contextPanel === "view" && <div className="space-y-3"><p className="text-xs font-medium text-foreground">Exibição</p><div className="flex items-center justify-between rounded-lg border border-border/70 px-3 py-2 text-xs"><span>Guias</span><button type="button" onClick={() => setShowGrid((value) => !value)} className={`rounded-md px-2 py-1 ${showGrid ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"}`}>{showGrid ? "Ativas" : "Desativadas"}</button></div><div className="flex items-center gap-2"><button type="button" onClick={() => setZoom((value) => Math.max(50, value - 10))} className="h-8 w-8 rounded-md border">−</button><span className="flex-1 text-center text-xs">{zoom}%</span><button type="button" onClick={() => setZoom((value) => Math.min(150, value + 10))} className="h-8 w-8 rounded-md border">+</button></div></div>}
+          </nav>
+
+          <div className="min-h-0 flex-1 overflow-y-auto p-3.5">
+            {toolCategory === "Modelos" && (
+              <div className="space-y-3">
+                <div>
+                  <p className="text-xs font-semibold text-foreground">Comece sem complicação</p>
+                  <p className="mt-1 text-[11px] leading-5 text-muted-foreground">Escolha uma composição pronta e depois personalize tudo no canvas.</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setTemplateOpen(true)}
+                  className="group w-full rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/12 via-primary/5 to-background p-3 text-left shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-lg"
+                >
+                  <div className="mb-3 flex items-center justify-between">
+                    <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/15 text-primary"><Sparkles className="h-4 w-4" /></span>
+                    <span className="text-[10px] font-semibold text-primary">ABRIR GALERIA →</span>
+                  </div>
+                  <p className="text-sm font-semibold text-foreground">Modelos prontos</p>
+                  <p className="mt-1 text-[11px] leading-5 text-muted-foreground">Casamento, aniversário, chá de bebê e outras composições editáveis.</p>
+                </button>
+                <div className="rounded-xl border border-dashed border-primary/20 p-3">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Depois</p>
+                  <p className="mt-1 text-xs font-medium text-foreground">Texto → Fotos → Elementos → Visualizar → Publicar</p>
+                </div>
+              </div>
+            )}
+
+            {toolCategory === "Texto" && (
+              <ElementsLibrary
+                id="editor-text-library"
+                availableTypes={["text"]}
+                assets={assets as any}
+                onAdd={(type) => { addBlockByType(type); }}
+                onAddImage={addImageByUrl}
+                imageMode="add"
+              />
+            )}
+
+            {toolCategory === "Fotos" && (
+              <ElementsLibrary
+                id="editor-photo-library"
+                availableTypes={["image", "gallery"]}
+                assets={assets as any}
+                onAdd={(type) => { addBlockByType(type); }}
+                onAddImage={addImageByUrl}
+                imageMode={imageReplaceId ? "replace" : "add"}
+                onSelectImage={replaceSelectedImage}
+                onCancelImageReplace={cancelImageReplace}
+              />
+            )}
+
+            {toolCategory === "Elementos" && (
+              <ElementsLibrary
+                id="editor-elements-library"
+                availableTypes={(Object.keys(BLOCKS) as BlockType[]).filter((type) => !["text", "image", "gallery"].includes(type))}
+                assets={assets as any}
+                onAdd={(type) => { addBlockByType(type); }}
+                onAddImage={addImageByUrl}
+                imageMode="add"
+              />
+            )}
+
+            {toolCategory === "Fundo" && (
+              <div className="space-y-3">
+                <div>
+                  <p className="text-xs font-semibold text-foreground">Aparência do convite</p>
+                  <p className="mt-1 text-[11px] leading-5 text-muted-foreground">Troque a cor ou a imagem de fundo. Ajustes mais finos ficam disponíveis quando necessário.</p>
+                </div>
+                <BackgroundPropertiesPanel background={(bg as Record<string, unknown>) || {}} assets={assets as any} onChange={(value) => onBg?.(value)} />
+              </div>
+            )}
+
+            {toolCategory === "Mais" && (
+              <div className="space-y-4">
+                <div>
+                  <p className="text-xs font-semibold text-foreground">Organizar</p>
+                  <p className="mt-1 text-[11px] leading-5 text-muted-foreground">Camadas, visibilidade, bloqueio e ajustes técnicos ficam aqui para não atrapalhar a criação.</p>
+                </div>
+                <div className="rounded-xl border border-border/70 bg-background/35 p-2">
+                  <div className="mb-2 flex items-center justify-between gap-2">
+                    <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Camadas</p>
+                    <div className="flex items-center gap-1">
+                      <button type="button" disabled={!selectedIds.length} onClick={() => reorderSelectedLayers("back")} className="rounded-md border p-1.5 text-muted-foreground hover:bg-muted disabled:opacity-40" title="Enviar para trás"><SendToBack className="h-3.5 w-3.5" /></button>
+                      <button type="button" disabled={!selectedIds.length} onClick={() => reorderSelectedLayers("front")} className="rounded-md border p-1.5 text-muted-foreground hover:bg-muted disabled:opacity-40" title="Trazer para frente"><BringToFront className="h-3.5 w-3.5" /></button>
+                    </div>
+                  </div>
+                  <div className="space-y-1.5">
+                    {orderedLayerBlocks.map(({ block, layerIndex }) => {
+                      const selectedLayer = selectedIds.includes(block.id);
+                      return (
+                        <div key={block.id} className={cn("rounded-lg border px-2 py-2 transition", selectedLayer ? "border-primary/30 bg-primary/10" : "border-border/70")}>
+                          <div className="flex items-center gap-2">
+                            <button type="button" onClick={() => select(block.id, false)} className="min-w-0 flex-1 truncate text-left text-xs font-medium text-foreground">
+                              <span className="mr-1.5 text-[10px] text-muted-foreground">{layerIndex + 1}</span>{getBlockLabel(block)}
+                            </button>
+                            <button type="button" aria-label={block.hidden ? "Mostrar camada" : "Ocultar camada"} onClick={() => h.set((items) => items.map((item: any) => item.id === block.id ? { ...item, hidden: !item.hidden, visibility: item.hidden } : item), "layer:visibility")} className="inline-flex h-7 w-7 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted">{block.hidden ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}</button>
+                            <button type="button" aria-label={block.locked ? "Desbloquear camada" : "Bloquear camada"} onClick={() => h.set((items) => items.map((item: any) => item.id === block.id ? { ...item, locked: !item.locked } : item), "layer:lock")} className={cn("inline-flex h-7 w-7 items-center justify-center rounded-lg", block.locked ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-muted")}>{block.locked ? <Lock className="h-3.5 w-3.5" /> : <Unlock className="h-3.5 w-3.5" />}</button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                    {blocks.length === 0 && <p className="rounded-lg border border-dashed p-4 text-center text-[11px] text-muted-foreground">Nenhuma camada adicionada.</p>}
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => document.getElementById("editor-contextual-properties")?.scrollIntoView({ behavior: "smooth", block: "nearest" })}
+                  disabled={!selectedIds.length}
+                  className="flex w-full items-center justify-between rounded-xl border border-border/70 bg-background/35 px-3 py-3 text-left transition hover:border-primary/30 hover:bg-primary/5 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  <span>
+                    <span className="block text-xs font-semibold text-foreground">Ajustes avançados</span>
+                    <span className="mt-0.5 block text-[10px] text-muted-foreground">X/Y, tamanho, rotação, opacidade e propriedades do elemento.</span>
+                  </span>
+                  <PanelRight className="h-4 w-4 text-primary" />
+                </button>
+                <div className="flex items-center justify-between rounded-xl border border-border/70 bg-background/35 px-3 py-3 text-xs">
+                  <span className="text-foreground">Guias e grade</span>
+                  <button type="button" onClick={() => setShowGrid((value) => !value)} className={cn("rounded-lg px-2.5 py-1.5 text-[10px] font-medium", showGrid ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground")}>{showGrid ? "Ativas" : "Desativadas"}</button>
+                </div>
+              </div>
+            )}
           </div>
         </aside>
         <main className="vellune-editor-workspace relative min-w-0 flex-1 overflow-hidden rounded-2xl border border-primary/10 bg-[radial-gradient(circle_at_top,hsl(var(--primary)/.12),transparent_38%),linear-gradient(145deg,hsl(var(--muted)/.45),hsl(var(--background)/.95))] p-2 shadow-inner sm:p-4 lg:p-5">
@@ -885,7 +988,7 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra }: { h: Bl
               }}
             /></div></div></div>
         </main>
-        <aside id="editor-contextual-properties" className="vellune-editor-inspector hidden w-[328px] shrink-0 overflow-y-auto rounded-2xl border border-primary/10 bg-card/80 p-3.5 shadow-xl shadow-black/10 backdrop-blur-xl lg:block" aria-label="Painel contextual de propriedades"><div className="mb-3 flex items-center gap-2 border-b border-border/70 pb-3"><div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary/10 text-primary"><PanelRight className="h-3.5 w-3.5" /></div><div className="min-w-0"><p className="text-xs font-semibold text-foreground">Painel contextual</p><p className="text-[10px] text-muted-foreground">Ajustes do elemento selecionado</p></div></div><ContextualPropertiesPanel blocks={blocks} selectedIds={selectedIds} assets={assets as any} onChange={(update, group) => h.set(update, group)} onDuplicate={duplicateByIds} onDelete={removeByIds} /></aside>
+        <aside id="editor-contextual-properties" className="vellune-editor-inspector hidden w-[300px] shrink-0 overflow-y-auto rounded-2xl border border-primary/10 bg-card/75 p-3 shadow-xl shadow-black/10 backdrop-blur-xl lg:block" aria-label="Ajustes avançados do elemento"><div className="mb-2 flex items-center gap-2 rounded-xl border border-primary/10 bg-background/35 px-3 py-2.5"><div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary/10 text-primary"><PanelRight className="h-3.5 w-3.5" /></div><div className="min-w-0"><p className="text-xs font-semibold text-foreground">Ajustes</p><p className="text-[10px] text-muted-foreground">Opções avançadas, sem poluir o canvas.</p></div></div><ContextualPropertiesPanel blocks={blocks} selectedIds={selectedIds} assets={assets as any} onChange={(update, group) => h.set(update, group)} onDuplicate={duplicateByIds} onDelete={removeByIds} collapsible /></aside>
       </div>
       <div className="vellune-editor-mobile-bar flex items-center justify-between gap-1.5 rounded-2xl border border-primary/15 bg-card/95 p-2 shadow-2xl shadow-black/25 backdrop-blur-xl lg:hidden" role="toolbar" aria-label="Ferramentas móveis do editor"><button type="button" className="flex flex-1 flex-col items-center gap-0.5 rounded-xl px-1 py-1.5 text-[10px] text-muted-foreground transition hover:bg-primary/10 hover:text-primary" onClick={() => setMobileSheet("elements")}><PanelLeft className="h-4 w-4" />Elementos</button><button type="button" className="flex flex-1 flex-col items-center gap-0.5 rounded-xl px-1 py-1.5 text-[10px] text-muted-foreground transition hover:bg-primary/10 hover:text-primary" onClick={() => setMobileSheet("layers")}><Grid3X3 className="h-4 w-4" />Camadas</button><button type="button" className="flex flex-1 flex-col items-center gap-0.5 rounded-xl px-1 py-1.5 text-[10px] text-muted-foreground transition hover:bg-primary/10 hover:text-primary" onClick={() => setMobileSheet("properties")}><PanelRight className="h-4 w-4" />Propriedades</button><button type="button" className="flex flex-1 flex-col items-center gap-0.5 rounded-xl px-1 py-1.5 text-[10px] text-muted-foreground transition hover:bg-primary/10 hover:text-primary" onClick={() => setMobileSheet("background")}><Sparkles className="h-4 w-4" />Fundo</button><button type="button" className="flex flex-1 flex-col items-center gap-0.5 rounded-xl px-1 py-1.5 text-[10px] text-muted-foreground transition hover:bg-primary/10 hover:text-primary" onClick={() => setMobileSheet("view")}><Grid3X3 className="h-4 w-4" />Exibir</button></div>
       {compact && mobileSheet && (
