@@ -61,7 +61,7 @@ function makeInvitation(): Invitation {
 }
 export function getDemoInvitation(id: string) { return id === DEMO_INVITATION_ID || id === "demo" || id === "editor-preview-demo" ? structuredClone(makeInvitation()) : null; }
 export function listDemoInvitations() { return readState().invitationDeleted ? [] : [makeInvitation()]; }
-export function updateDemoInvitation(id: string, customerId: string, values: Record<string, string>, content: unknown) { if (id !== DEMO_INVITATION_ID && id !== "demo" && id !== "editor-preview-demo") return; writeState({ content, customerId, values }); }
+export function updateDemoInvitation(id: string, customerId: string, values: Record<string, string | null>, content: unknown) { if (id !== DEMO_INVITATION_ID && id !== "demo" && id !== "editor-preview-demo") return; writeState({ content, customerId, values }); }
 export function publishDemoInvitation(id: string) { if (id !== DEMO_INVITATION_ID && id !== "demo" && id !== "editor-preview-demo") return false; writeState({ invitationStatus: "published" }); return true; }
 export function deleteDemoInvitation(id: string) { if (id !== DEMO_INVITATION_ID) return false; writeState({ invitationDeleted: true }); return true; }
 export function restoreDemoInvitation() { writeState({ invitationDeleted: false }); }
