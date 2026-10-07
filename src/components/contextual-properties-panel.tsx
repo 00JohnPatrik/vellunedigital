@@ -108,10 +108,7 @@ export function BackgroundPropertiesPanel({ background = {}, assets, onChange }:
   return <section className="space-y-3 rounded-xl border bg-muted/15 p-3" aria-label="Fundo do convite">
     <div className="flex items-start justify-between gap-2"><div><p className="text-sm font-semibold text-foreground">Fundo</p><p className="mt-0.5 text-[11px] text-muted-foreground">Ajuste o plano de fundo sem selecionar elementos.</p></div><Palette className="h-4 w-4 text-primary" /></div>
     <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-4">{backgroundPresets.map((item) => <Button key={item.id} type="button" size="sm" variant="outline" className="h-8 px-2 text-[11px]" onClick={() => preset(item)}>{item.label}</Button>)}</div>
-    <div className="grid grid-cols-2 gap-2">
-      <div className="space-y-1"><Label className="text-[11px] text-muted-foreground">Cor</Label><input type="color" value={color} onChange={(event) => update({ color: event.target.value })} className="h-9 w-full cursor-pointer rounded-lg border bg-background p-1.5" aria-label="Escolher cor do fundo" /></div>
-      <div className="space-y-1"><Label className="text-[11px] text-muted-foreground">Imagem de fundo</Label><Button type="button" size="sm" variant="outline" className="h-9 w-full text-[11px]" onClick={() => document.getElementById("background-image-upload")?.focus()}>Escolher imagem</Button></div>
-    </div>
+    <div className="space-y-1"><Label className="text-[11px] text-muted-foreground">Cor</Label><input type="color" value={color} onChange={(event) => update({ color: event.target.value })} className="h-9 w-full cursor-pointer rounded-lg border bg-background p-1.5" aria-label="Escolher cor do fundo" /></div>
     <details className="group rounded-lg border border-primary/10 bg-background/35">
       <summary className="flex cursor-pointer list-none items-center justify-between p-2.5 text-[11px] font-semibold text-foreground [&::-webkit-details-marker]:hidden">Personalizar<ChevronDown className="h-4 w-4 text-muted-foreground transition-transform group-open:rotate-180" /></summary>
       <div className="space-y-3 border-t border-border/60 p-2">
@@ -121,7 +118,7 @@ export function BackgroundPropertiesPanel({ background = {}, assets, onChange }:
     </details>
     <div className="space-y-2 rounded-lg border bg-background/40 p-2">
       <p className="text-[11px] font-semibold text-foreground">Imagem e enquadramento</p>
-      <div id="background-image-upload" className="sr-only" tabIndex={-1} aria-hidden="true" /><ImageUpload
+      <ImageUpload
         scope={assets}
         value={image}
         onChange={(value) => update({ image: value })}
