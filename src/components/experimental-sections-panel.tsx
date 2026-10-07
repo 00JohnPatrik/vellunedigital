@@ -98,7 +98,11 @@ export function ExperimentalSectionsPanel({ document, onChange, selectedSectionI
       const nextIndex = index + direction;
       if (index < 0 || nextIndex < 0 || nextIndex >= current.sections.length) return current;
       const nextSections = [...current.sections];
-      [nextSections[index], nextSections[nextIndex]] = [nextSections[nextIndex], nextSections[index]];
+      const currentSection = nextSections[index];
+      const targetSection = nextSections[nextIndex];
+      if (!currentSection || !targetSection) return current;
+      nextSections[index] = targetSection;
+      nextSections[nextIndex] = currentSection;
       return { ...current, sections: nextSections };
     });
   };
