@@ -789,7 +789,7 @@ export function VisualTransformCanvas({ blocks, selectedIds: selectedIdsProp, zo
       <div className="pointer-events-none absolute -bottom-7 left-1/2 whitespace-nowrap rounded-full border border-primary/20 bg-card/95 px-2.5 py-1 text-[9px] font-medium text-foreground shadow-lg backdrop-blur-sm sm:hidden">
         {Math.round(selectedBounds.width)} × {Math.round(selectedBounds.height)}{selected.length === 1 ? " · " + Math.round(selected[0]?.rotation ?? 0) + "°" : ""}
       </div>
-      {selected.length === 1 && !selected[0]?.locked && <button type="button" aria-label="Girar seleção" className="pointer-events-auto absolute left-1/2 top-0 h-8 w-8 -translate-x-1/2 -translate-y-10 rounded-full sm:h-6 sm:w-6 sm:-translate-y-9" border-2 border-background bg-primary shadow-sm" style={{ cursor: cursorFor("rotate"), touchAction: "none" }} onPointerDown={(event) => begin(event, "rotate")} onPointerMove={move} onPointerUp={end} onPointerCancel={end} />}
+      {selected.length === 1 && !selected[0]?.locked && <button type="button" aria-label="Girar seleção" className="pointer-events-auto absolute left-1/2 top-0 h-8 w-8 -translate-x-1/2 -translate-y-10 rounded-full border-2 border-background bg-primary shadow-sm sm:h-6 sm:w-6 sm:-translate-y-9" style={{ cursor: cursorFor("rotate"), touchAction: "none" }} onPointerDown={(event) => begin(event, "rotate")} onPointerMove={move} onPointerUp={end} onPointerCancel={end} />}
       {HANDLES.map((handle) => {
         const position = {
           nw: "-left-3 -top-3", n: "left-1/2 -top-3 -translate-x-1/2",
