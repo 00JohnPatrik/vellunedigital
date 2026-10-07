@@ -546,7 +546,7 @@ export function VisualTransformCanvas({ blocks, selectedIds: selectedIdsProp, zo
     }
 
     // Shift keeps the aspect ratio. Alt/Option keeps the resize centered.
-    const proportional = event.shiftKey || (current.ids.length === 1 && ["image", "gallery"].includes(blocks.find((block: any) => block.id === current.ids[0])?.type));
+    const proportional = event.shiftKey || (current.ids.length === 1 && ["image", "gallery"].includes(blocks.find((block: any) => block.id === current.ids[0])?.type ?? ""));
     const centered = event.altKey;
     const resized = resizeBounds(current, point, proportional, centered, size.width, size.height);
     const sx = resized.width / Math.max(MIN_SIZE, current.bounds.width);
