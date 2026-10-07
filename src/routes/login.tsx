@@ -309,7 +309,7 @@ function LoginPage() {
                   </button>
                   {recoverySent ? (
                     <div>
-                      <AuthJourneySteps activeStep={2} />
+                      <AuthJourneySteps activeStep={2} labels={["Solicitar", "Verificar", "Redefinir"]} />
                       <div className="space-y-5">
                       <div className="flex h-11 w-11 items-center justify-center rounded-full border border-[#d4af37]/25 bg-[#d4af37]/10 text-[#e5c66b]">
                         <MailCheck className="h-5 w-5" />
@@ -353,7 +353,7 @@ function LoginPage() {
                       </div>
                   {error && (
                     <div role="alert" aria-live="assertive" className="flex items-start gap-3 rounded-xl border border-red-300/15 bg-red-400/[0.07] px-3.5 py-2.5 text-[13px] leading-5 text-red-200">
-                      <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-red-200/10 bg-red-200/[0.06]">
+                      <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-red-200/10 bg-red-200/[0.06]">
                         <AlertCircle className="h-3.5 w-3.5" />
                       </span>
                       <div>
@@ -491,7 +491,7 @@ function LoginPage() {
 
 
                   {error && (
-                    <div role="alert" aria-live="assertive" className="flex items-start gap-3 rounded-xl border border-red-300/15 bg-red-400/[0.07] px-4 py-3 text-sm leading-6 text-red-200">
+                    <div role="alert" aria-live="assertive" className="flex items-start gap-3 rounded-xl border border-red-300/15 bg-red-400/[0.07] px-3.5 py-2.5 text-[12.5px] leading-5 text-red-200">
                       <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-red-200/10 bg-red-200/[0.06]">
                         <AlertCircle className="h-3.5 w-3.5" />
                       </span>
@@ -523,12 +523,12 @@ function LoginPage() {
                     )}
                   </Button>
 
-                  <div className="space-y-2 sm:space-y-3">
+                  <div className="space-y-1.5 sm:space-y-2.5">
                     <p className="flex items-center justify-center gap-2 text-center text-[10px] uppercase tracking-[0.16em] text-white/25">
                       <ShieldCheck className="h-3.5 w-3.5 text-[#d4af37]/60" />
-                      Vellune Secure · Acesso protegido
+                      Vellune Secure · Ambiente protegido
                     </p>
-                    <p className="text-center text-xs text-white/35">Primeira vez aqui? <a href="/first-access" className="font-semibold text-white/65 transition-colors hover:text-[#e5c66b]">Faça seu primeiro acesso</a></p>
+                    <p className="text-center text-[11px] leading-5 text-white/35 sm:text-xs">Primeira vez aqui? <a href="/first-access" className="font-semibold text-white/65 transition-colors hover:text-[#e5c66b]">Faça seu primeiro acesso</a></p>
                   </div>
                 </form>
                 </div>
