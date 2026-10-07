@@ -255,7 +255,7 @@ function LoginPage() {
   }
 
   return (
-    <main className="vellune-login-root fixed inset-0 h-[100dvh] w-full max-w-full overflow-hidden overflow-x-clip overscroll-none bg-[#08090d] text-white selection:bg-[#d4af37]/25">
+    <main className="vellune-login-root fixed inset-0 h-[100dvh] w-full max-w-full overflow-hidden overflow-x-clip overscroll-none bg-[#08090d] text-white selection:bg-[#d4af37]/25" style={{ colorScheme: "dark" }}>
       <style>{`
         @keyframes velluneFadeUp {
           from { opacity: 0; transform: translateY(10px); }
@@ -291,14 +291,14 @@ function LoginPage() {
         <AuthPremiumVisual />
 
         {/* Authentication side */}
-        <section className="flex h-full min-h-0 items-center justify-center overflow-hidden px-3 py-3 sm:px-8 sm:py-5 lg:h-full lg:min-h-0 lg:border-l lg:border-white/[0.045] lg:bg-white/[0.012] xl:px-16">
+        <section className="flex h-full min-h-0 items-start justify-start overflow-y-auto overflow-x-clip overscroll-contain bg-[#08090d] px-3 pt-[max(1rem,env(safe-area-inset-top))] pb-[max(1rem,env(safe-area-inset-bottom))] sm:px-8 sm:py-5 lg:h-full lg:min-h-0 lg:items-center lg:justify-center lg:overflow-visible lg:border-l lg:border-white/[0.045] lg:bg-white/[0.012] xl:px-16">
           <div className="w-full max-w-[430px] py-1 sm:py-2">
             <div className="mb-4 flex w-full shrink-0 flex-col items-center justify-center lg:hidden sm:mb-9">
               <Logo className="h-12 w-auto max-w-[78vw] text-white transition-opacity duration-500 hover:opacity-90 sm:h-16" />
               <span className="mt-2 text-[8px] font-semibold uppercase tracking-[0.28em] text-white/25">Seu espaço de criação</span>
             </div>
 
-            <div className="relative max-h-full w-full overflow-hidden rounded-[20px] border border-white/[0.075] bg-[#111318]/94 p-4 shadow-[0_30px_100px_rgba(0,0,0,0.46),inset_0_1px_0_rgba(255,255,255,0.035)] ring-1 ring-white/[0.018] backdrop-blur-xl sm:rounded-[28px] sm:p-9 vellune-motion" style={{ animation: "velluneFadeUp 800ms cubic-bezier(.22,1,.36,1)" }}>
+            <div className="relative w-full overflow-hidden rounded-[20px] border border-white/[0.075] bg-[#111318]/94 p-4 shadow-[0_30px_100px_rgba(0,0,0,0.46),inset_0_1px_0_rgba(255,255,255,0.035)] ring-1 ring-white/[0.018] backdrop-blur-xl sm:rounded-[28px] sm:p-9 vellune-motion" style={{ animation: "velluneFadeUp 800ms cubic-bezier(.22,1,.36,1)" }}>
               <div className="pointer-events-none absolute inset-x-10 top-0 h-px bg-gradient-to-r from-transparent via-[#d4af37]/35 to-transparent" />
               <div className="pointer-events-none absolute -right-24 -top-24 h-48 w-48 rounded-full bg-[#d4af37]/[0.035] blur-3xl" style={{ animation: "velluneGlow 7s ease-in-out infinite" }} />
               <div key={`${mode}-${recoverySent ? "sent" : "form"}`} className="vellune-auth-panel-motion">
@@ -377,8 +377,8 @@ function LoginPage() {
               ) : (
                 <div>
                 <AuthJourneySteps activeStep={1} compact />
-                <form onSubmit={onLogin} className="space-y-5" noValidate>
-                  <div className="mb-8">
+                <form onSubmit={onLogin} className="space-y-4 sm:space-y-5" noValidate>
+                  <div className="mb-5 sm:mb-8">
                     <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.25em] text-[#d4af37]">Área exclusiva</p>
                     <h1 className="font-display text-[32px] font-medium tracking-[-0.04em]">Bem-vindo de volta</h1>
                     <p className="mt-3 text-sm leading-6 text-white/45">Entre para continuar criando experiências memoráveis.</p>
@@ -523,7 +523,7 @@ function LoginPage() {
                     )}
                   </Button>
 
-                  <div className="space-y-3">
+                  <div className="space-y-2 sm:space-y-3">
                     <p className="flex items-center justify-center gap-2 text-center text-[10px] uppercase tracking-[0.16em] text-white/25">
                       <ShieldCheck className="h-3.5 w-3.5 text-[#d4af37]/60" />
                       Vellune Secure · Acesso protegido
