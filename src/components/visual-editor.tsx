@@ -176,6 +176,11 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra }: { h: Bl
     if (!compact) return;
     setDevice("mobile");
     requestAnimationFrame(fitCanvasToViewport);
+    const node = viewportRef.current;
+    if (!node || typeof ResizeObserver === "undefined") return;
+    const observer = new ResizeObserver(() => requestAnimationFrame(fitCanvasToViewport));
+    observer.observe(node);
+    return () => observer.disconnect();
   }, [compact, fitCanvasToViewport]);
   const [marquee, setMarquee] = useState<{ x: number; y: number; width: number; height: number } | null>(null);
   const interaction = useRef<{ mode: "drag" | "resize" | "marquee" | "background"; id?: string; startX: number; startY: number; originX?: number; originY?: number; originWidth?: number; originHeight?: number; selected?: string[] } | null>(null);
@@ -682,7 +687,7 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra }: { h: Bl
     h.set((items) => items.map((item: any) => selectedIds.includes(item.id) ? { ...item, props: { ...(item.props ?? {}), [key]: value } } : item), "selection:properties");
   };
   return (
-    <div className="flex min-h-[680px] flex-col overflow-hidden rounded-2xl border border-border/70 bg-background pb-20 shadow-2xl shadow-black/10 lg:pb-0">
+    <div className="flex min-h-[calc(100dvh-7rem)] flex-col overflow-hidden rounded-2xl border border-border/70 bg-background pb-20 shadow-2xl shadow-black/10 lg:min-h-[680px] lg:pb-0">
       <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border/70 bg-card/95 px-3 py-2.5" role="toolbar" aria-label="Barra principal do editor">
         <div className="flex min-w-0 items-center gap-2">
           <div className="hidden items-center gap-0.5 rounded-lg border border-border/70 bg-background p-0.5 sm:flex" role="group" aria-label="Tamanho da tela do convite">
