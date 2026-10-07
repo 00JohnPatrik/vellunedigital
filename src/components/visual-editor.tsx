@@ -218,7 +218,7 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra }: { h: Bl
     addBlockByType("image", { url });
   };
 
-  const alignSelectedOnCanvas = (mode: "left" | "center" | "right" | "top" | "middle" | "bottom" | "distributeX" | "distributeY", ids: string[]) => {
+  const alignSelectedOnCanvas = (mode: "left" | "center" | "right" | "top" | "middle" | "bottom" | "distributeX" | "distributeY" | "canvasCenterX" | "canvasCenterY", ids: string[]) => {
     const targetIds = Array.from(new Set(ids));
     if (targetIds.length < 2) return;
     h.set((items) => {
@@ -226,6 +226,24 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra }: { h: Bl
         .map((block: any, index: number) => ({ block, index, position: getPosition(block, index), size: getSize(block, index) }))
         .filter(({ block }) => targetIds.includes(block.id) && !block.locked);
       if (selectedItems.length < 2) return items;
+
+      if (mode === "canvasCenterX" || mode === "canvasCenterY") {
+        const canvasWidth = canvasRef.current?.clientWidth || 390;
+        const canvasHeightForAlign = canvasRef.current?.clientHeight || canvasHeight;
+        const minLeft = Math.min(...selectedItems.map((entry) => entry.position.x));
+        const minTop = Math.min(...selectedItems.map((entry) => entry.position.y));
+        const maxRight = Math.max(...selectedItems.map((entry) => entry.position.x + entry.size.width));
+        const maxBottom = Math.max(...selectedItems.map((entry) => entry.position.y + entry.size.height));
+        const groupWidth = maxRight - minLeft;
+        const groupHeight = maxBottom - minTop;
+        const dx = mode === "canvasCenterX" ? (canvasWidth - groupWidth) / 2 - minLeft : 0;
+        const dy = mode === "canvasCenterY" ? (canvasHeightForAlign - groupHeight) / 2 - minTop : 0;
+        return items.map((block: any) => {
+          const entry = selectedItems.find((item) => item.block.id === block.id);
+          if (!entry) return block;
+          return { ...block, x: Math.round(entry.position.x + dx), y: Math.round(entry.position.y + dy) };
+        });
+      }
 
       if (mode === "distributeX" || mode === "distributeY") {
         if (selectedItems.length < 3) return items;
