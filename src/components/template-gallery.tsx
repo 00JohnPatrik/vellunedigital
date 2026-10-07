@@ -29,6 +29,9 @@ const STARTER_CATEGORIES: Record<string, Category> = {
   basic: "outros",
   complete: "outros",
   blank: "outros",
+  minimal: "outros",
+  floral: "outros",
+  party: "aniversario",
 };
 
 function starterItems(): StarterItem[] {
