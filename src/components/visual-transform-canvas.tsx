@@ -563,7 +563,7 @@ export function VisualTransformCanvas({ blocks, selectedIds: selectedIdsProp, zo
   const selectedBlocks = blocks.filter((block: any) => selectedIds.includes(block.id));
   const updateSelectedProps = (key: string, value: string) => {
     if (!selectedBlocks.length) return;
-    onChange((items: any[]) => items.map((item: any) => selectedIds.includes(item.id)
+    onChange((items: any[]) => items.map((item: any) => selectedIds.includes(item.id) && !item.locked
       ? { ...item, props: { ...item.props, [key]: value } }
       : item), `quick-toolbar:${key}`);
   };
@@ -576,7 +576,9 @@ export function VisualTransformCanvas({ blocks, selectedIds: selectedIdsProp, zo
     const duplicatedGroupId = selectedBlocks.some((block: any) => block.groupId)
       ? `group-${Date.now()}-${Math.random().toString(36).slice(2)}`
       : undefined;
-    const duplicated = selectedBlocks.map((block: any) => {
+    const duplicableBlocks = selectedBlocks.filter((block: any) => !block.locked && block.type !== "rsvp");
+    if (!duplicableBlocks.length) return;
+    const duplicated = duplicableBlocks.map((block: any) => {
       const index = blocks.indexOf(block);
       const value = geometry(block, index);
       return {
@@ -602,7 +604,7 @@ export function VisualTransformCanvas({ blocks, selectedIds: selectedIdsProp, zo
       onDelete(selectedIds);
       return;
     }
-    onChange((items: any[]) => items.filter((item: any) => !selectedIds.includes(item.id)), "quick-toolbar:delete");
+    onChange((items: any[]) => items.filter((item: any) => !selectedIds.includes(item.id) || item.locked), "quick-toolbar:delete");
     selectedIds.forEach((id) => onSelect(id, true));
   }; 
   const toggleLockSelected = () => {
