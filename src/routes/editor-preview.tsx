@@ -3,7 +3,7 @@ import { Eye, ShieldCheck } from "lucide-react";
 import { VisualEditor, useBlocksHistory } from "@/components/visual-editor";
 import { invitationCtx } from "@/components/invitation-ui";
 import { normalizeBlocks } from "@/lib/blocks";
-import type { Background } from "@/lib/templates";
+import type { Background, TemplateContent } from "@/lib/templates";
 
 const demoInvitation = {
   id: "editor-preview-demo",
@@ -41,7 +41,7 @@ const demoEvent = {
   message: demoInvitation.message,
 } as any;
 
-const demoContent = {
+const demoContent: TemplateContent = {
   version: 1,
   settings: {
     background: {
