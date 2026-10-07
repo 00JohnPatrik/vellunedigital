@@ -132,8 +132,6 @@ const blockLabel = (b: Block) => (isKnownType(b.type) ? BLOCKS[b.type].label : `
 type Device = "mobile" | "tablet" | "desktop";
 const DEVICE_W: Record<Device, string> = { mobile: "max-w-[390px]", tablet: "max-w-[768px]", desktop: "max-w-[1024px]" };
 
-const DEVICE_W: Record<"mobile" | "tablet" | "desktop", string> = { mobile: "max-w-[390px]", tablet: "max-w-[768px]", desktop: "max-w-[1024px]" };
-
 const EDITOR_CATEGORIES: Record<string, BlockType[]> = {
   Elementos: ["date", "time", "location", "countdown", "divider"],
   Texto: ["text"],
