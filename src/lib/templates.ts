@@ -263,6 +263,81 @@ export const STARTERS: Record<string, { label: string; build: () => TemplateCont
       ] as Block[],
     }),
   },
+  wedding: {
+    label: "Casamento — Romântico",
+    build: () => ({
+      version: 1,
+      settings: { background: { color: "#fbf8f5", gradient: "linear-gradient(145deg, #fbf8f5 0%, #f1e5e4 52%, #fffdfb 100%)" } },
+      blocks: [
+        { ...newBlock("text"), x: 28, y: 42, width: 364, height: 34, zIndex: 2, props: { text: "PARA UM DIA INESQUECÍVEL", font: "sans", fontSize: "11", letterSpacing: "3.4", color: "#9d766f", align: "center", width: "full", textTransform: "uppercase" } },
+        { ...newBlock("text"), x: 24, y: 96, width: 372, height: 108, zIndex: 3, props: { text: "Ana & Lucas", font: "display", fontSize: "48", letterSpacing: "-1", lineHeight: "1.05", color: "#3a2f31", align: "center", width: "full" } },
+        { ...newBlock("divider"), x: 118, y: 226, width: 184, height: 18, zIndex: 4, props: { thickness: "1", width: "full", align: "center", style: "solid" } },
+        { ...newBlock("text"), x: 36, y: 266, width: 348, height: 64, zIndex: 5, props: { text: "Com carinho, convidamos você para celebrar
+este novo capítulo conosco.", font: "sans", fontSize: "16", lineHeight: "1.5", color: "#625658", align: "center", width: "full" } },
+        { ...newBlock("date"), x: 48, y: 360, width: 324, height: 60, zIndex: 6, props: { source: "event", date: "", format: "weekday", label: "DATA", align: "center" } },
+        { ...newBlock("time"), x: 48, y: 432, width: 324, height: 60, zIndex: 7, props: { source: "event", time: "", format: "text", label: "HORÁRIO", align: "center" } },
+        { ...newBlock("location"), x: 34, y: 510, width: 352, height: 108, zIndex: 8, props: { source: "event", show_name: "1", show_address: "1", show_city: "1", show_directions: "1", align: "center" } },
+        { ...newBlock("rsvp"), x: 58, y: 652, width: 304, height: 92, zIndex: 9, props: { title: "Será uma alegria ter você conosco.", label: "Confirmar presença", preset: "pill", style: "solid", fontFamily: "sans", fontSize: "15", fontWeight: "600", textColor: "#ffffff", backgroundColor: "#8d6d69", borderColor: "#8d6d69", radius: "999", paddingX: "26", paddingY: "12", shadow: "soft", align: "center" } },
+        { ...newBlock("text"), x: 36, y: 788, width: 348, height: 34, zIndex: 10, props: { text: "Com amor, Ana & Lucas", font: "display", fontSize: "19", color: "#8d6d69", align: "center", width: "full" } },
+      ] as Block[],
+    }),
+  },
+  birthday: {
+    label: "Aniversário — Elegante",
+    build: () => ({
+      version: 1,
+      settings: { background: { color: "#f4f0e8", gradient: "linear-gradient(180deg, #f4f0e8 0%, #e7dccb 100%)" } },
+      blocks: [
+        { ...newBlock("text"), x: 34, y: 42, width: 356, height: 30, zIndex: 2, props: { text: "VAMOS CELEBRAR", font: "sans", fontSize: "12", letterSpacing: "3", color: "#7c6a51", align: "center", textTransform: "uppercase", width: "full" } },
+        { ...newBlock("shape"), x: 132, y: 100, width: 156, height: 156, zIndex: 1, props: { shape: "circle", fill: "solid", fillColor: "#cdb48f", borderWidth: "0", borderColor: "#cdb48f", borderRadius: "999", shadow: "soft" } },
+        { ...newBlock("text"), x: 70, y: 118, width: 280, height: 94, zIndex: 3, props: { text: "40", font: "display", fontSize: "70", color: "#fffaf2", align: "center", width: "full", lineHeight: "1" } },
+        { ...newBlock("text"), x: 28, y: 286, width: 364, height: 84, zIndex: 4, props: { text: "Mariana
+faz 40!", font: "display", fontSize: "42", lineHeight: "1.02", letterSpacing: "-1", color: "#3e382f", align: "center", width: "full" } },
+        { ...newBlock("text"), x: 44, y: 398, width: 332, height: 54, zIndex: 5, props: { text: "Uma noite especial merece pessoas especiais.", font: "sans", fontSize: "16", lineHeight: "1.45", color: "#6b6258", align: "center", width: "full" } },
+        { ...newBlock("date"), x: 46, y: 470, width: 326, height: 60, zIndex: 6, props: { source: "event", format: "long", label: "DATA", align: "center" } },
+        { ...newBlock("time"), x: 46, y: 540, width: 326, height: 60, zIndex: 7, props: { source: "event", format: "24h", label: "HORÁRIO", align: "center" } },
+        { ...newBlock("location"), x: 36, y: 616, width: 344, height: 100, zIndex: 8, props: { source: "event", show_name: "1", show_address: "1", show_city: "1", show_directions: "1", align: "center" } },
+        { ...newBlock("rsvp"), x: 56, y: 748, width: 308, height: 88, zIndex: 9, props: { title: "Reserve sua noite.", label: "Confirmar presença", preset: "pill", style: "solid", backgroundColor: "#6f624f", borderColor: "#6f624f", textColor: "#ffffff", radius: "999", paddingX: "26", paddingY: "12", shadow: "soft", align: "center" } },
+      ] as Block[],
+    }),
+  },
+  baby_shower: {
+    label: "Chá de bebê — Delicado",
+    build: () => ({
+      version: 1,
+      settings: { background: { color: "#f8f5f0", gradient: "linear-gradient(160deg, #f8f5f0 0%, #eef3f2 50%, #f9f8f5 100%)" } },
+      blocks: [
+        { ...newBlock("text"), x: 32, y: 46, width: 356, height: 28, zIndex: 2, props: { text: "CHÁ DE BEBÊ", font: "sans", fontSize: "12", letterSpacing: "3", color: "#7b8d89", align: "center", textTransform: "uppercase", width: "full" } },
+        { ...newBlock("text"), x: 24, y: 102, width: 372, height: 112, zIndex: 3, props: { text: "Isabela", font: "display", fontSize: "54", letterSpacing: "-1", lineHeight: "1", color: "#445653", align: "center", width: "full" } },
+        { ...newBlock("decoration"), x: 160, y: 236, width: 80, height: 42, zIndex: 4, props: { shape: "heart", borderColor: "#9ab0aa", borderWidth: "2", fill: "none" } },
+        { ...newBlock("text"), x: 40, y: 302, width: 340, height: 70, zIndex: 5, props: { text: "Esperamos você para uma tarde
+cheia de carinho e descobertas.", font: "sans", fontSize: "17", lineHeight: "1.45", color: "#5f6e6a", align: "center", width: "full" } },
+        { ...newBlock("date"), x: 46, y: 404, width: 326, height: 60, zIndex: 6, props: { source: "event", format: "weekday", label: "DATA", align: "center" } },
+        { ...newBlock("time"), x: 46, y: 476, width: 326, height: 60, zIndex: 7, props: { source: "event", format: "text", label: "HORÁRIO", align: "center" } },
+        { ...newBlock("location"), x: 34, y: 552, width: 352, height: 102, zIndex: 8, props: { source: "event", show_name: "1", show_address: "1", show_city: "1", show_directions: "1", align: "center" } },
+        { ...newBlock("rsvp"), x: 58, y: 686, width: 304, height: 88, zIndex: 9, props: { title: "Sua presença fará parte desta memória.", label: "Confirmar presença", preset: "pill", style: "solid", backgroundColor: "#78918b", borderColor: "#78918b", textColor: "#ffffff", radius: "999", paddingX: "24", paddingY: "12", shadow: "soft", align: "center" } },
+      ] as Block[],
+    }),
+  },
+  quince: {
+    label: "15 anos — Moderno",
+    build: () => ({
+      version: 1,
+      settings: { background: { color: "#191722", gradient: "radial-gradient(circle at top, #3a3654 0%, #191722 60%, #101016 100%)" } },
+      blocks: [
+        { ...newBlock("text"), x: 36, y: 44, width: 348, height: 26, zIndex: 2, props: { text: "UMA NOITE PARA LEMBRAR", font: "sans", fontSize: "11", letterSpacing: "3", color: "#d8c9a8", align: "center", textTransform: "uppercase", width: "full" } },
+        { ...newBlock("text"), x: 24, y: 90, width: 372, height: 54, zIndex: 3, props: { text: "SOFIA", font: "display", fontSize: "50", letterSpacing: "5", color: "#f4efe2", align: "center", width: "full" } },
+        { ...newBlock("divider"), x: 128, y: 166, width: 164, height: 18, zIndex: 4, props: { thickness: "1", width: "full", align: "center", style: "solid" } },
+        { ...newBlock("text"), x: 40, y: 218, width: 340, height: 80, zIndex: 5, props: { text: "Minha noite de 15 anos.
+Você faz parte dela.", font: "sans", fontSize: "21", lineHeight: "1.35", color: "#e3dbca", align: "center", width: "full" } },
+        { ...newBlock("countdown"), x: 42, y: 328, width: 336, height: 74, zIndex: 6, props: { source: "event", target: "", title: "FALTAM", align: "center" } },
+        { ...newBlock("date"), x: 46, y: 430, width: 326, height: 58, zIndex: 7, props: { source: "event", format: "long", label: "DATA", align: "center" } },
+        { ...newBlock("time"), x: 46, y: 500, width: 326, height: 58, zIndex: 8, props: { source: "event", format: "24h", label: "HORÁRIO", align: "center" } },
+        { ...newBlock("location"), x: 34, y: 574, width: 352, height: 102, zIndex: 9, props: { source: "event", show_name: "1", show_address: "1", show_city: "1", show_directions: "1", align: "center" } },
+        { ...newBlock("rsvp"), x: 58, y: 708, width: 304, height: 88, zIndex: 10, props: { title: "Confirme sua presença.", label: "Confirmar presença", preset: "pill", style: "outline", backgroundColor: "transparent", borderColor: "#d8c9a8", textColor: "#f4efe2", radius: "999", paddingX: "24", paddingY: "12", shadow: "none", align: "center" } },
+      ] as Block[],
+    }),
+  },
   blank: { label: "Em branco", build: () => ({ version: 1, blocks: [] }) },
   basic: {
     label: "Convite básico",
