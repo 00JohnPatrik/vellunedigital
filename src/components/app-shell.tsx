@@ -56,7 +56,7 @@ export function AppShell({ base, nav, appUser, children }: Props) {
     if (typeof window === "undefined") return "comfortable";
     return window.localStorage.getItem("vellune-density") === "compact" ? "compact" : "comfortable";
   });
-  const [onlineCount, setOnlineCount] = useState(1);
+  const [onlineCount, setOnlineCount] = useState<number | null>(null);
   const [isOnline, setIsOnline] = useState(() => typeof navigator === "undefined" || navigator.onLine);
   const navigate = useNavigate();
   const qc = useQueryClient();
@@ -92,7 +92,7 @@ export function AppShell({ base, nav, appUser, children }: Props) {
 
     const updateCount = () => {
       const state = channel.presenceState();
-      setOnlineCount(Math.max(1, Object.keys(state).length));
+      setOnlineCount(Object.keys(state).length);
     };
 
     channel
@@ -279,7 +279,7 @@ export function AppShell({ base, nav, appUser, children }: Props) {
           <div className="min-w-0 flex-1 truncate text-sm text-muted-foreground sm:hidden">{appUser.company?.name ?? "Administração global"}</div>
           <div
             className={cn("hidden items-center gap-2 text-xs lg:flex", isOnline ? "text-muted-foreground" : "text-destructive")}
-            title={isOnline ? `${onlineCount} usuário(s) online` : "Sem conexão com a internet"}
+            title={!isOnline ? "Sem conexão com a internet" : onlineCount === null ? "Conectando à presença" : `${onlineCount} usuário(s) online`}
             role="status"
             aria-live="polite"
           >
@@ -288,7 +288,7 @@ export function AppShell({ base, nav, appUser, children }: Props) {
               <>
                 <span className="h-2 w-2 rounded-full bg-emerald-500" />
                 <Users className="h-3.5 w-3.5" aria-hidden="true" />
-                <span>{onlineCount} online</span>
+                <span>{onlineCount === null ? "Conectando…" : `${onlineCount} online`}</span>
               </>
             ) : (
               <span>Offline</span>
