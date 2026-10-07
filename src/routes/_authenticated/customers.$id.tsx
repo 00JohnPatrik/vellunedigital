@@ -25,7 +25,7 @@ const fmtDateTime = (s: string) => new Date(s).toLocaleString("pt-BR", { dateSty
 function CustomerDetail() {
   const { id } = Route.useParams();
   const { edit } = Route.useSearch();
-  const { appUser } = Route.useRouteContext();
+  const { appUser! } = Route.useRouteContext();
   const navigate = useNavigate({ from: Route.fullPath });
   const qc = useQueryClient();
   const valid = isUuid(id);
@@ -53,13 +53,13 @@ function CustomerDetail() {
   return (
     <div>
       {back}
-      <PageHeader title={c.name} description={appUser.role === "super_admin" ? c.company?.name : undefined}
+      <PageHeader title={c.name} description={appUser!.role === "super_admin" ? c.company?.name : undefined}
         action={
           <div className="flex flex-wrap gap-2">
             <Button variant="outline" onClick={() => setEdit(true)}><Pencil className="h-4 w-4" />Editar</Button>
             <StatusToggle size="default" status={c.status} name={c.name}
               onConfirm={async () => { await setCustomerStatus(c.id, c.status === "active" ? "inactive" : "active"); refresh(); }} />
-            {appUser.role === "super_admin" && <DeleteButton name={c.name} onConfirm={async () => {
+            {appUser!.role === "super_admin" && <DeleteButton name={c.name} onConfirm={async () => {
               try { await softDelete("customer", c.id); toast.success("Cliente enviado para a Lixeira."); await refresh(); navigate({ to: "/customers" }); }
               catch { toast.error("Não foi possível excluir."); }
             }} />}
