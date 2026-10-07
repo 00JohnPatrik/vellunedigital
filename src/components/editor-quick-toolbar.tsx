@@ -35,8 +35,26 @@ export function EditorQuickToolbar({ selected, onProp, onDuplicate, onDelete, on
     </fieldset>}
     {primary.type === "image" && selected.length === 1 && <>
       <Button size="sm" variant="ghost" disabled={locked} onClick={() => onImage("replace")}><ImageIcon />Trocar</Button>
-      <Button size="sm" variant="ghost" disabled={locked} onClick={() => onImage("crop")}><Crop />Recortar</Button>
-      <Button size="sm" variant="ghost" disabled={locked} onClick={() => onImage("adjust")}><SlidersHorizontal />Ajustar</Button>
+      <Button size="sm" variant="ghost" disabled={locked} onClick={() => onImage("crop")}><Crop />Enquadrar</Button>
+      <div className="flex items-center gap-1 rounded-md border border-input bg-background px-1" role="group" aria-label="Zoom da imagem">
+        <span className="px-1 text-[10px] text-muted-foreground">Zoom</span>
+        <Input
+          type="number"
+          aria-label="Zoom da imagem"
+          min={100}
+          max={300}
+          step={5}
+          className="h-7 w-14 border-0 bg-transparent px-1 text-[11px] shadow-none focus-visible:ring-0"
+          value={p.imageZoom ?? 100}
+          onChange={(event) => {
+            const value = Number(event.target.value);
+            if (Number.isFinite(value) && value >= 100 && value <= 300) onProp("imageZoom", String(value));
+          }}
+          disabled={locked}
+        />
+        <span className="pr-1 text-[10px] text-muted-foreground">%</span>
+      </div>
+      <Button size="sm" variant="ghost" disabled={locked} onClick={() => onImage("adjust")}><SlidersHorizontal />Ajustes</Button>
     </>}
     {selected.length > 1 && !text && <span className="px-2 text-xs text-muted-foreground">{selected.length} elementos</span>}
     <span className="mx-1 h-5 w-px bg-border" />
