@@ -181,7 +181,6 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra }: { h: Bl
     h.set(structuredClone(content.blocks ?? []), "template:apply");
     onBg?.(structuredClone(content.settings?.background ?? {}));
     setSelectedIds([]);
-    setContextPanel("elements");
     setToolCategory("Elementos");
   };
   const addBlockByType = (type: BlockType, initialProps?: Record<string, unknown>, dropPoint?: { x: number; y: number }) => {
@@ -703,6 +702,7 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra }: { h: Bl
             <p className="hidden text-[10px] text-muted-foreground sm:block">Crie, organize e refine o convite diretamente no canvas.</p>
           </div>
           <span className="hidden rounded-full border border-primary/20 bg-primary/5 px-2 py-1 text-[10px] font-medium text-primary sm:inline-flex">{selectedIds.length ? `${selectedIds.length} selecionado(s)` : `${blocks.length} elemento(s)`}</span>
+          {toolbarExtra && <div className="hidden items-center gap-1.5 md:flex">{toolbarExtra}</div>}
         </div>
         <div className="vellune-editor-history-cluster flex items-center gap-1 rounded-xl border border-primary/10 bg-background/60 p-1 shadow-sm">
           <button type="button" aria-label="Desfazer" title="Desfazer (Ctrl/Cmd+Z)" disabled={!h.canUndo} onClick={h.undo} className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-border/70 text-muted-foreground transition hover:bg-accent hover:text-foreground disabled:cursor-not-allowed disabled:opacity-40"><Undo2 className="h-3.5 w-3.5" /></button>
