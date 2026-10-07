@@ -5,14 +5,15 @@ import { isDemoMode } from "@/lib/demo-mode";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   beforeLoad: ({ context }) => {
-    if (!isDemoMode() && context.appUser.role !== "super_admin") throw redirect({ to: "/dashboard" });
+    if (!isDemoMode() && context.appUser!.role !== "super_admin") throw redirect({ to: "/dashboard" });
   },
   head: () => ({ meta: [{ title: "Administração — Vellune Digital" }, { name: "robots", content: "noindex" }] }),
   component: AdminLayout,
 });
 
 function AdminLayout() {
-  const { appUser } = Route.useRouteContext();
+  const { appUser: routeAppUser } = Route.useRouteContext();
+  const appUser = routeAppUser!;
   return (
     <AppShell base="/admin" nav={adminNav} appUser={appUser}>
       <Outlet />
