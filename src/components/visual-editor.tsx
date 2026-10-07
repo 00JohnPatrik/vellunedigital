@@ -757,15 +757,31 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra }: { h: Bl
           )}
           {mobileSheet === "layers" && (
             <div className="space-y-2">
+              <div className="flex items-center justify-between gap-2 rounded-lg border bg-muted/20 p-2">
+                <div>
+                  <p className="text-xs font-semibold text-foreground">Camadas</p>
+                  <p className="text-[10px] text-muted-foreground">{blocks.length} elemento(s)</p>
+                </div>
+                <div className="flex gap-1">
+                  <button type="button" disabled={!selectedIds.length} onClick={() => reorderSelectedLayers("back")} className="rounded-md border px-2 py-1 text-[10px] disabled:opacity-40">Para trás</button>
+                  <button type="button" disabled={!selectedIds.length} onClick={() => reorderSelectedLayers("front")} className="rounded-md border px-2 py-1 text-[10px] disabled:opacity-40">Para frente</button>
+                </div>
+              </div>
               {orderedLayerBlocks.map(({ block, layerIndex }) => {
+                const selectedLayer = selectedIds.includes(block.id);
+                const toggleLayer = (key: "hidden" | "locked") => h.set((items) => items.map((item: any) => item.id === block.id ? { ...item, [key]: !item[key], ...(key === "hidden" ? { visibility: item[key] } : {}) } : item), `mobile:layers:${key}`);
                 return (
-                  <div key={block.id} className="rounded-lg border p-2">
-                    <button type="button" className="w-full truncate text-left text-xs font-medium" onClick={() => { select(block.id, false); setMobileSheet("properties"); }}>
-                      {layerIndex + 1}. {getBlockLabel(block)}
-                    </button>
+                  <div key={block.id} className={`rounded-lg border p-2 ${selectedLayer ? "border-primary bg-primary/10" : ""}`}>
+                    <div className="flex items-center gap-2">
+                      <button type="button" className="min-w-0 flex-1 truncate text-left text-xs font-medium" onClick={() => { select(block.id, false); setMobileSheet("properties"); }}>
+                        {layerIndex + 1}. {getBlockLabel(block)}{block.groupId && <span className="ml-1 rounded bg-muted px-1 py-0.5 text-[9px]">grupo</span>}
+                      </button>
+                      <button type="button" aria-label={block.hidden ? "Mostrar camada" : "Ocultar camada"} onClick={() => toggleLayer("hidden")} className="rounded border px-1.5 py-1 text-[10px]">{block.hidden ? "○" : "●"}</button>
+                      <button type="button" aria-label={block.locked ? "Desbloquear camada" : "Bloquear camada"} onClick={() => toggleLayer("locked")} className="rounded border px-1.5 py-1 text-[10px]">{block.locked ? "🔒" : "🔓"}</button>
+                    </div>
                     <div className="mt-2 flex flex-wrap gap-1.5">
-                      <button type="button" disabled={orderedLayerBlocks.findIndex(({ block: item }) => item.id === block.id) === 0} onClick={() => { select(block.id, false); reorderSelectedLayers("up"); }} className="rounded border px-2 py-1 text-[10px] disabled:opacity-40">Subir</button>
-                      <button type="button" disabled={orderedLayerBlocks.findIndex(({ block: item }) => item.id === block.id) === orderedLayerBlocks.length - 1} onClick={() => { select(block.id, false); reorderSelectedLayers("down"); }} className="rounded border px-2 py-1 text-[10px] disabled:opacity-40">Descer</button>
+                      <button type="button" disabled={layerIndex === 0} onClick={() => { select(block.id, false); reorderSelectedLayers("up"); }} className="rounded border px-2 py-1 text-[10px] disabled:opacity-40">Subir</button>
+                      <button type="button" disabled={layerIndex === orderedLayerBlocks.length - 1} onClick={() => { select(block.id, false); reorderSelectedLayers("down"); }} className="rounded border px-2 py-1 text-[10px] disabled:opacity-40">Descer</button>
                       <button type="button" onClick={() => { select(block.id, false); duplicate(); }} className="rounded border px-2 py-1 text-[10px]">Duplicar</button>
                       <button type="button" onClick={() => { select(block.id, false); remove(); }} className="rounded border border-destructive/30 px-2 py-1 text-[10px] text-destructive">Excluir</button>
                     </div>
@@ -773,6 +789,7 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra }: { h: Bl
                 );
               })}
             </div>
+          )}
           )}
         </div>
       )}
