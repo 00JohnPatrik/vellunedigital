@@ -76,6 +76,7 @@ function ResetPage() {
   const [authUnavailable, setAuthUnavailable] = useState(false);
   const [passwordUpdated, setPasswordUpdated] = useState(false);
   const passwordRef = useRef<HTMLInputElement | null>(null);
+  const confirmRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     const isRecovery = window.location.hash.includes("type=recovery");
@@ -96,7 +97,7 @@ function ResetPage() {
     /\d/.test(password),
     /[^A-Za-zÀ-ÿ0-9]/.test(password),
   ].filter(Boolean).length;
-  const strengthLabel = strengthScore <= 1 ? "Fraca" : strengthScore === 2 ? "Média" : "Forte";
+  const strengthLabel = strengthScore <= 1 ? "Fraca" : strengthScore === 2 ? "Média" : strengthScore === 3 ? "Boa" : "Forte";
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -165,7 +166,7 @@ function ResetPage() {
               <ShieldCheck className="h-4 w-4 text-[#d4af37]" />
               Sua nova senha será protegida pela Vellune.
             </div>
-            <p className="mt-1.5 text-[11px] leading-5 text-white/35 sm:text-xs">Use pelo menos 8 caracteres e evite combinações fáceis de adivinhar.</p>
+            <p className="mt-1.5 text-[11px] leading-5 text-white/35 sm:text-xs">Use 8+ caracteres, misturando letras, números e símbolos.</p>
           </div>
 
           <div className="space-y-2">
@@ -190,6 +191,7 @@ function ResetPage() {
             <Label htmlFor="pw2" className="text-xs font-medium text-white/65">Confirmar nova senha</Label>
             <PasswordField
               id="pw2"
+              inputRef={confirmRef}
               autoComplete="new-password"
               value={confirm}
               onChange={setConfirm}
@@ -205,7 +207,7 @@ function ResetPage() {
           </p>
 
           {error && (
-            <div role="alert" aria-live="assertive" className="flex items-start gap-3 rounded-xl border border-red-300/15 bg-red-400/[0.07] px-3.5 py-2.5 text-[12.5px] leading-5 text-red-200">
+            <div role="alert" aria-live="assertive" className="vellune-auth-error flex items-start gap-2.5 rounded-xl border border-red-300/15 bg-red-400/[0.07] px-3.5 py-2.5 text-[12.5px] leading-5 text-red-200">
               <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-red-200/10 bg-red-200/[0.06]">
                 <AlertCircle className="h-3.5 w-3.5" />
               </span>
@@ -216,7 +218,7 @@ function ResetPage() {
             </div>
           )}
 
-          <Button type="submit" className="group relative h-12 w-full overflow-hidden rounded-xl bg-[#d4af37] font-semibold text-[#16130b] shadow-[0_12px_34px_rgba(212,175,55,0.10)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#e5c66b] hover:shadow-[0_16px_38px_rgba(212,175,55,0.16)] active:translate-y-0 disabled:cursor-default disabled:opacity-100" disabled={loading}>
+          <Button type="submit" className="group relative flex h-12 min-h-12 w-full items-center justify-center overflow-hidden rounded-xl bg-[#d4af37] font-semibold text-[#16130b] shadow-[0_12px_34px_rgba(212,175,55,0.10)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#e5c66b] hover:shadow-[0_16px_38px_rgba(212,175,55,0.16)] active:translate-y-0 disabled:cursor-default disabled:opacity-100" disabled={loading}>
             {loading ? (
               <span className="flex items-center justify-center gap-2"><LoaderCircle className="h-4 w-4 animate-spin" />Salvando senha...</span>
             ) : (
