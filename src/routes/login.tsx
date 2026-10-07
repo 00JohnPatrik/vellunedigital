@@ -315,7 +315,12 @@ function LoginPage() {
                     </div>
                   )}
                       <Button type="submit" disabled={loading} className="group h-12 w-full rounded-xl bg-[#d4af37] font-semibold text-[#16130b] shadow-[0_12px_34px_rgba(212,175,55,0.10)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#e5c66b] hover:shadow-[0_16px_38px_rgba(212,175,55,0.16)] active:translate-y-0">
-                        {loading ? "Enviando link..." : "Enviar link de recuperação"}
+                        {loading ? (
+                          <span className="flex items-center justify-center gap-2">
+                            <LoaderCircle className="h-4 w-4 animate-spin" />
+                            Enviando link...
+                          </span>
+                        ) : "Enviar link de recuperação"}
                       </Button>
                     </form>
                   )}
