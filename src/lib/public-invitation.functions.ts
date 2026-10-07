@@ -39,13 +39,14 @@ export const getPublicInvitation = createServerFn({ method: "GET" })
     const out = res as unknown as PublicInvitationResult;
     let publicCompanyId: string | null = null;
     let publicInvitationId: string | null = null;
+    let publicTemplateId: string | null = null;
 
     // The public SQL function intentionally does not expose internal tenant identifiers.
     // Resolve them only inside the server boundary for branding and private asset authorization.
     if (out.state === "ok") {
       const { data: tenant, error: tenantError } = await supabaseAdmin
         .from("invitations")
-        .select("id, company_id")
+        .select("id, company_id, template_id")
         .eq("slug", out.invitation.slug)
         .in("status", ["published", "closed"])
         .maybeSingle();
@@ -57,6 +58,7 @@ export const getPublicInvitation = createServerFn({ method: "GET" })
       if (tenant?.company_id) {
         publicCompanyId = tenant.company_id;
         publicInvitationId = tenant.id;
+        publicTemplateId = tenant.template_id;
         const { data: subscription } = await supabaseAdmin
           .from("company_subscriptions")
           .select("plan_id, status, expires_at")
@@ -138,8 +140,8 @@ export const getPublicInvitation = createServerFn({ method: "GET" })
       const allowedInvitationPrefix = publicCompanyId && publicInvitationId
         ? `companies/${publicCompanyId}/invitations/${publicInvitationId}/`
         : null;
-      const allowedCompanyTemplatePrefix = publicCompanyId
-        ? `companies/${publicCompanyId}/templates/`
+      const allowedTemplatePrefix = publicCompanyId && publicTemplateId
+        ? `companies/${publicCompanyId}/templates/${publicTemplateId}/`
         : null;
 
       const paths = [...new Set(rawRefs)].filter((p) => {
@@ -147,7 +149,7 @@ export const getPublicInvitation = createServerFn({ method: "GET" })
         return (
           p.startsWith("official/templates/") ||
           (!!allowedInvitationPrefix && p.startsWith(allowedInvitationPrefix)) ||
-          (!!allowedCompanyTemplatePrefix && p.startsWith(allowedCompanyTemplatePrefix))
+          (!!allowedTemplatePrefix && p.startsWith(allowedTemplatePrefix))
         );
       });
 
