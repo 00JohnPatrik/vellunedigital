@@ -45,6 +45,7 @@ function LoginPage() {
   const [loginSuccess, setLoginSuccess] = useState(false);
   const [focusedField, setFocusedField] = useState<string | null>(null);
   const [capsLockOn, setCapsLockOn] = useState(false);
+  const [phoneCooldown, setPhoneCooldown] = useState(0);
   const passwordRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
@@ -58,6 +59,12 @@ function LoginPage() {
       // Ignore storage restrictions (private mode, blocked storage, etc.).
     }
   }, []);
+
+  useEffect(() => {
+    if (phoneCooldown <= 0) return;
+    const timer = window.setTimeout(() => setPhoneCooldown((value) => Math.max(0, value - 1)), 1000);
+    return () => window.clearTimeout(timer);
+  }, [phoneCooldown]);
 
   function formatBrazilianPhone(value: string) {
     const digits = value.replace(/\D/g, "").slice(0, 11);
@@ -133,7 +140,11 @@ function LoginPage() {
       await new Promise((resolve) => window.setTimeout(resolve, 480));
       navigate({ to: homeFor(appUser), replace: true });
     } catch (err) {
-      setError(err instanceof Error && err.message ? err.message : friendlyAuthError());
+      const message = err instanceof Error && err.message ? err.message : friendlyAuthError();
+      if (!id.includes("@")) {
+        setPhoneCooldown(/muitas|rate|too many/i.test(message) ? 15 : 2);
+      }
+      setError(message);
     } finally {
       setLoading(false);
     }
@@ -268,7 +279,7 @@ function LoginPage() {
                         {recoveryError && <p id="recovery-email-error" className="text-[11px] text-red-300/90">{recoveryError}</p>}
                       </div>
                   {error && <div role="alert" className="rounded-xl border border-red-300/15 bg-red-400/[0.07] px-4 py-3 text-sm leading-6 text-red-200">{error}</div>}
-                      <Button type="submit" disabled={loading} className="group h-12 w-full rounded-xl bg-[#d4af37] font-semibold text-[#16130b] shadow-[0_12px_34px_rgba(212,175,55,0.10)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#e5c66b] hover:shadow-[0_16px_38px_rgba(212,175,55,0.16)] active:translate-y-0">
+                      <Button type="submit" disabled={loading || phoneCooldown > 0} className="group h-12 w-full rounded-xl bg-[#d4af37] font-semibold text-[#16130b] shadow-[0_12px_34px_rgba(212,175,55,0.10)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#e5c66b] hover:shadow-[0_16px_38px_rgba(212,175,55,0.16)] active:translate-y-0">
                         {loading ? "Enviando link..." : "Enviar link de recuperação"}
                       </Button>
                     </form>
@@ -376,7 +387,7 @@ function LoginPage() {
                         <CheckCircle2 className="h-4 w-4" style={{ animation: "velluneSuccess 260ms cubic-bezier(.22,1,.36,1)" }} />
                         Acesso confirmado
                       </span>
-                    ) : loading ? "Entrando..." : <span className="flex items-center justify-center gap-2">Entrar na conta <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" /></span>}
+                    ) : loading ? "Entrando..." : phoneCooldown > 0 ? `Aguarde ${phoneCooldown}s...` : <span className="flex items-center justify-center gap-2">Entrar na conta <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" /></span>}
                   </Button>
 
                   <div className="flex items-center gap-3 pt-1 text-[9px] font-medium tracking-[0.25em] text-white/20"><span className="h-px flex-1 bg-white/[0.07]" /><span>ACESSO PRIVADO</span><span className="h-px flex-1 bg-white/[0.07]" /></div>
