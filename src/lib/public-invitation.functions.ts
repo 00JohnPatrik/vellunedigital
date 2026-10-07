@@ -88,17 +88,91 @@ export const getPublicInvitation = createServerFn({ method: "GET" })
         }
       }
     }
-    // Sign only the storage images referenced by this published invitation's content (private bucket).
+    // Sign private storage assets used by image blocks, galleries and the invitation background.
+    // The browser cannot read this private bucket directly on the public invitation page.
     if (out.state === "ok") {
       const blocks = out.invitation.content?.blocks ?? [];
-      const refs = blocks.filter((b) => b.type === "image" && typeof b.props?.["url"] === "string" && b.props["url"].startsWith("storage:"));
+      const imageRefs = blocks.filter(
+        (b) => b.type === "image" && typeof b.props?.["url"] === "string" && b.props["url"].startsWith("storage:"),
+      );
+      const galleryBlocks = blocks.filter(
+        (b) => b.type === "gallery" && typeof b.props?.["images"] === "string",
+      );
       const bg = out.invitation.content?.settings?.background;
       const bgPath = bg?.image?.startsWith("storage:") ? bg.image.slice(8) : null;
-      const paths = [...new Set([...refs.map((b) => b.props!["url"]!.slice(8)), ...(bgPath ? [bgPath] : [])])].filter((p) => /^(companies|official)\/[\w\-/.]+$/.test(p) && !p.includes(".."));
+
+      const galleryEntries: Array<{ block: (typeof blocks)[number]; images: unknown[] }> = [];
+      const rawRefs: string[] = [];
+
+      for (const block of imageRefs) {
+        rawRefs.push(block.props!["url"]!.slice(8));
+      }
+
+      for (const block of galleryBlocks) {
+        try {
+          const parsed = JSON.parse(block.props!["images"]!);
+          if (!Array.isArray(parsed)) continue;
+          galleryEntries.push({ block, images: parsed });
+
+          for (const item of parsed) {
+            if (
+              item &&
+              typeof item === "object" &&
+              "url" in item &&
+              typeof item.url === "string" &&
+              item.url.startsWith("storage:")
+            ) {
+              rawRefs.push(item.url.slice(8));
+            }
+          }
+        } catch {
+          // Ignore malformed gallery payloads; the normal renderer already treats them as empty.
+        }
+      }
+
+      if (bgPath) rawRefs.push(bgPath);
+
+      const paths = [...new Set(rawRefs)].filter(
+        (p) => /^(companies|official)\/[\w\-/.]+$/.test(p) && !p.includes(".."),
+      );
+
       if (paths.length) {
-        const { data: signed } = await supabaseAdmin.storage.from("invitation-assets").createSignedUrls(paths, 60 * 60 * 24);
-        const map = new Map((signed ?? []).filter((s) => s.signedUrl).map((s) => [s.path, s.signedUrl]));
-        for (const b of refs) b.props!["url"] = map.get(b.props!["url"]!.slice(8)) ?? "";
+        const { data: signed } = await supabaseAdmin
+          .storage
+          .from("invitation-assets")
+          .createSignedUrls(paths, 60 * 60 * 24);
+
+        const map = new Map(
+          (signed ?? [])
+            .filter((s) => s.signedUrl)
+            .map((s) => [s.path, s.signedUrl]),
+        );
+
+        for (const block of imageRefs) {
+          const path = block.props!["url"]!.slice(8);
+          block.props!["url"] = map.get(path) ?? "";
+        }
+
+        for (const { block, images } of galleryEntries) {
+          const nextImages = images.map((item) => {
+            if (
+              !item ||
+              typeof item !== "object" ||
+              !("url" in item) ||
+              typeof item.url !== "string" ||
+              !item.url.startsWith("storage:")
+            ) {
+              return item;
+            }
+
+            const path = item.url.slice(8);
+            const signedUrl = map.get(path);
+            return signedUrl ? { ...item, url: signedUrl } : { ...item, url: "" };
+          });
+
+          block.props!["images"] = JSON.stringify(nextImages);
+        }
+
         if (bg && bgPath) bg.image = map.get(bgPath) ?? "";
       }
     }
