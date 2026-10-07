@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { LockKeyhole, ShieldCheck, Sparkles } from "lucide-react";
 import Logo from "@/components/Logo";
+import { AuthPremiumVisual } from "@/components/auth-premium-visual";
 
 export function AuthCard({
   title,
@@ -38,53 +39,7 @@ export function AuthCard({
         className="relative z-10 mx-auto grid h-full min-h-0 w-full max-w-[1440px] grid-cols-1 lg:grid-cols-[1.15fr_0.85fr] vellune-auth-motion"
         style={{ animation: "velluneAuthFadeUp 650ms cubic-bezier(.22,1,.36,1)" }}
       >
-        <section
-          className="relative hidden min-h-0 flex-col justify-between overflow-hidden px-12 py-10 lg:flex xl:px-20"
-          style={{ animation: "velluneAuthFadeUp 750ms cubic-bezier(.22,1,.36,1)" }}
-        >
-          <div className="flex items-center gap-3">
-            <span className="flex h-8 w-8 items-center justify-center rounded-[10px] border border-[#d4af37]/25 bg-[#d4af37]/[0.06] text-[#e5c66b] shadow-[0_0_24px_rgba(212,175,55,0.08)]">
-              <ShieldCheck className="h-4 w-4" />
-            </span>
-            <div>
-              <Logo className="h-10 w-[208px] text-white transition-opacity duration-500 hover:opacity-90" />
-              <p className="mt-1 text-[9px] font-semibold uppercase tracking-[0.3em] text-white/25">
-                Plataforma de convites digitais
-              </p>
-            </div>
-          </div>
-
-          <div className="relative max-w-[650px] pb-10 xl:pb-16">
-            <div className="pointer-events-none absolute -left-24 -top-20 h-56 w-56 rounded-full bg-[#d4af37]/[0.035] blur-3xl" style={{ animation: "velluneAuthGlow 8s ease-in-out infinite" }} />
-            <div className="relative">
-              <div className="mb-7 flex items-center gap-3">
-                <span className="h-px w-10 bg-[#d4af37]/70" />
-                <span className="text-[10px] font-semibold uppercase tracking-[0.32em] text-[#e5c66b]">
-                  Convites digitais
-                </span>
-              </div>
-              <h1 className="max-w-[620px] font-display text-[clamp(3.25rem,5vw,5.6rem)] font-medium leading-[0.98] tracking-[-0.055em] text-white">
-                Seu momento.
-                <br />
-                <span className="text-white/55">Do seu jeito.</span>
-              </h1>
-              <p className="mt-8 max-w-[500px] text-[15px] leading-7 text-white/45">
-                Uma experiência elegante para criar, personalizar e compartilhar convites que fazem cada celebração começar antes mesmo do evento.
-              </p>
-              <div className="mt-9 flex flex-wrap gap-2.5">
-                <span className="rounded-full border border-white/[0.08] bg-white/[0.025] px-3.5 py-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-white/40">Criar</span>
-                <span className="rounded-full border border-white/[0.08] bg-white/[0.025] px-3.5 py-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-white/40">Personalizar</span>
-                <span className="rounded-full border border-white/[0.08] bg-white/[0.025] px-3.5 py-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-white/40">Publicar</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-7 text-[10px] font-medium uppercase tracking-[0.2em] text-white/30">
-            <span>Experiência Vellune</span>
-            <span className="h-px w-8 bg-white/10" />
-            <span>Ambiente protegido</span>
-          </div>
-        </section>
+        <AuthPremiumVisual />
 
         <section className="flex h-full min-h-0 items-center justify-center overflow-hidden px-3 py-2 sm:px-8 sm:py-5 lg:overflow-visible lg:border-l lg:border-white/[0.045] lg:bg-white/[0.012] xl:px-16">
           <div className="flex w-full max-w-[430px] min-h-0 shrink-0 flex-col py-0.5 sm:py-2">
