@@ -19,6 +19,7 @@ export const Route = createFileRoute("/login")({
       { name: "description", content: "Acesse sua conta Vellune Digital." },
       { property: "og:title", content: "Entrar — Vellune Digital" },
       { property: "og:description", content: "Acesse sua conta Vellune Digital." },
+      { name: "theme-color", content: "#08090d" },
     ],
   }),
   component: LoginPage,
@@ -285,4 +286,5 @@ function LoginPage() {
         </section>
       </div>
     </main>
-  );}
+  );
+}
