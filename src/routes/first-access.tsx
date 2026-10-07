@@ -69,6 +69,7 @@ function FirstAccessPage() {
           </p>
         </div>
       ) : (
+        <>
         <div className="grid grid-cols-3 gap-2" aria-label="Etapas do primeiro acesso">
           <div className="rounded-xl border border-[#d4af37]/20 bg-[#d4af37]/[0.06] px-2.5 py-2 text-center">
             <span className="mx-auto flex h-5 w-5 items-center justify-center rounded-full bg-[#d4af37] text-[#16130b]">1</span>
@@ -145,6 +146,7 @@ function FirstAccessPage() {
             )}
           </Button>
         </form>
+        </>
       )}
 
       <Link
