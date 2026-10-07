@@ -229,6 +229,16 @@ export function VisualTransformCanvas({ blocks, selectedIds: selectedIdsProp, zo
     height: canvasRef.current?.clientHeight || 640,
   });
 
+  const toolbarPosition = selectedBounds ? (() => {
+    const size = canvasSize();
+    const toolbarWidth = Math.min(520, Math.max(220, size.width - 16));
+    const preferredLeft = selectedBounds.left + selectedBounds.width / 2 - toolbarWidth / 2;
+    const left = clamp(preferredLeft, 8, Math.max(8, size.width - toolbarWidth - 8));
+    const above = selectedBounds.top - 12;
+    const top = above >= 76 ? above : Math.min(size.height - 64, selectedBounds.bottom + 76);
+    return { left, top, width: toolbarWidth };
+  })() : null;
+
   const finish = () => {
     interaction.current = null;
     setGuides([]);
@@ -501,9 +511,11 @@ export function VisualTransformCanvas({ blocks, selectedIds: selectedIdsProp, zo
   return <>
     {selectedBounds && selectedBlocks.length > 0 && (
       <div
-        className="pointer-events-auto absolute z-[90] max-w-[calc(100%-1rem)] -translate-y-full pb-2"
-        style={{ left: Math.max(8, selectedBounds.left), top: Math.max(8, selectedBounds.top) }}
-        onPointerDown={(event) => event.stopPropagation()}
+        className="pointer-events-auto absolute z-[90] max-w-[calc(100%-1rem)] -translate-x-1/2 -translate-y-full pb-2"
+        style={{ left: toolbarPosition?.left ? toolbarPosition.left + (toolbarPosition.width / 2) : 8, top: toolbarPosition?.top ?? 76, width: toolbarPosition?.width ?? "auto" }}
+        onPointerDown={(event) => {
+          event.stopPropagation();
+        }}
       >
         <EditorQuickToolbar
           selected={selectedBlocks}
