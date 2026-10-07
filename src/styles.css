@@ -140,6 +140,13 @@
     border-color: var(--color-border);
   }
 
+  html,
+  body {
+    margin: 0;
+    min-width: 320px;
+    min-height: 100%;
+  }
+
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
