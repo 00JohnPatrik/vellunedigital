@@ -78,7 +78,18 @@ export const requestFirstAccess = createServerFn({ method: "POST" })
         console.error("first-access createUser", error?.message);
         return done;
       }
-      await supabaseAdmin.from("users").update({ auth_user_id: created.user.id }).eq("id", row.id);
+      const { error: linkError } = await supabaseAdmin
+        .from("users")
+        .update({ auth_user_id: created.user.id })
+        .eq("id", row.id);
+
+      if (linkError) {
+        console.error("first-access linkUser", linkError.message);
+        await supabaseAdmin.auth.admin.deleteUser(created.user.id).catch((cleanupError) => {
+          console.error("first-access cleanupUser", cleanupError?.message);
+        });
+        return done;
+      }
     }
 
     const client = await publicAuthClient();
