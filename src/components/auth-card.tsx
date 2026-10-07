@@ -15,7 +15,7 @@ export function AuthCard({
   footer?: ReactNode;
 }) {
   return (
-    <main className="vellune-auth-root fixed inset-0 h-[100dvh] w-full max-w-full overflow-hidden overflow-x-clip overscroll-none bg-[#08090d] text-white selection:bg-[#d4af37]/25">
+    <main className="vellune-auth-root fixed inset-0 h-[100dvh] w-full max-w-full overflow-hidden overflow-x-clip overscroll-none bg-[#08090d] text-white selection:bg-[#d4af37]/25" style={{ colorScheme: "dark" }}>
       <style>{`
         @keyframes velluneAuthFadeUp {
           from { opacity: 0; transform: translateY(10px); }
@@ -41,8 +41,8 @@ export function AuthCard({
       >
         <AuthPremiumVisual />
 
-        <section className="flex h-full min-h-0 items-center justify-center overflow-hidden px-3 py-2 sm:px-8 sm:py-5 lg:overflow-visible lg:border-l lg:border-white/[0.045] lg:bg-white/[0.012] xl:px-16">
-          <div className="flex w-full max-w-[430px] min-h-0 shrink-0 flex-col py-0.5 sm:py-2">
+        <section className="flex h-full min-h-0 items-start justify-start overflow-y-auto overflow-x-clip overscroll-contain bg-[#08090d] px-3 pt-[max(1rem,env(safe-area-inset-top))] pb-[max(1rem,env(safe-area-inset-bottom))] sm:px-8 sm:py-5 lg:items-center lg:justify-center lg:overflow-visible lg:border-l lg:border-white/[0.045] lg:bg-white/[0.012] xl:px-16">
+          <div className="flex w-full max-w-[430px] min-h-0 shrink-0 flex-col py-0.5 sm:py-2 pb-2">
             <div className="mb-3 flex w-full shrink-0 flex-col items-center justify-center lg:hidden sm:mb-7">
               <Logo className="h-10 w-auto max-w-[72vw] text-white transition-opacity duration-500 hover:opacity-90 sm:h-14" />
               <span className="mt-2 text-[8px] font-semibold uppercase tracking-[0.28em] text-white/25">Seu espaço de criação</span>
