@@ -5,7 +5,7 @@ import { companyNav } from "@/lib/nav";
 // Company reports: company_admin with active company only (super admin uses /admin/reports).
 export const Route = createFileRoute("/_authenticated/reports")({
   beforeLoad: ({ context }) => {
-    const u = context.appUser;
+    const u = context.appUser!;
     if (u.role === "super_admin") throw redirect({ to: "/admin/reports" });
     if (!u.company) throw redirect({ to: "/login", search: { error: "inactive" } });
   },
@@ -14,7 +14,8 @@ export const Route = createFileRoute("/_authenticated/reports")({
 });
 
 function ReportsLayout() {
-  const { appUser } = Route.useRouteContext();
+  const { appUser: routeAppUser } = Route.useRouteContext();
+  const appUser = routeAppUser!;
   return (
     <AppShell base="/dashboard" nav={companyNav} appUser={appUser}>
       <Outlet />
