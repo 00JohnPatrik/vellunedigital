@@ -119,6 +119,7 @@ function LoginPage() {
     setError(null);
     setTouched(false);
     setRecoverySent(false);
+    navigate({ to: "/login", replace: true });
   }
 
   return (
@@ -279,7 +280,7 @@ function LoginPage() {
               )}
             </div>
 
-            <p className="mt-5 text-center text-[9px] font-medium uppercase tracking-[0.24em] text-white/20">Vellune Digital · v1.5</p>
+            <p className="mt-5 text-center text-[9px] font-medium uppercase tracking-[0.24em] text-white/20">Vellune Digital · v1.6</p>
           </div>
         </section>
       </div>
