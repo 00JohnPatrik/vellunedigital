@@ -38,7 +38,7 @@ export type SmartFunctionalConfig = {
   mapUrl?: string;
   calendarUrl?: string;
   qrValue?: string;
-  images?: Array<{ url: string; alt?: string; caption?: string }>;
+  images?: SmartGalleryImage[];
   socialLinks?: Array<{ label: string; url: string }>;
   gifts?: Array<{ name: string; url: string; claimed?: boolean }>;
   hosts?: Array<{ name: string; role?: string; image?: string }>;
