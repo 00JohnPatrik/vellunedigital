@@ -49,9 +49,10 @@ export function PresenceTracker() {
     window.addEventListener("pointerdown", onActivity, { passive: true });
     window.addEventListener("keydown", onActivity, { passive: true });
 
-    const { data: subscription } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: subscription } = supabase.auth.onAuthStateChange((event, session) => {
       userId = session?.user.id ?? null;
-      if (session) void writePresence(true);
+      if (event === "SIGNED_IN" && session) void writePresence(true);
+      else if (session) void writePresence();
     });
 
     return () => {
