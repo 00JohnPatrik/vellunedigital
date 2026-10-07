@@ -56,6 +56,33 @@ function LoginPage() {
   const passwordRef = useRef<HTMLInputElement | null>(null);
   const recoveryEmailRef = useRef<HTMLInputElement | null>(null);
   const authScrollRef = useRef<HTMLElement | null>(null);
+  const requestLockRef = useRef(false);
+
+  useEffect(() => {
+    if (requestedMode === "recovery") return;
+
+    let cancelled = false;
+    const checkExistingSession = async () => {
+      try {
+        const { data } = await supabase.auth.getSession();
+        if (!data.session || cancelled) return;
+        const appUser = await loadAppUser(data.session.user.id);
+        if (cancelled) return;
+        if (canUseAdminArea(appUser)) {
+          navigate({ to: homeFor(appUser), replace: true });
+          return;
+        }
+        await supabase.auth.signOut();
+      } catch {
+        // Login remains available when the session check is unavailable.
+      }
+    };
+
+    void checkExistingSession();
+    return () => {
+      cancelled = true;
+    };
+  }, [navigate, requestedMode]);
 
   useEffect(() => {
     try {
@@ -119,6 +146,7 @@ function LoginPage() {
 
   async function onLogin(e: React.FormEvent) {
     e.preventDefault();
+    if (requestLockRef.current) return;
     setTouched(true);
     setError(null);
     const id = identifier.trim();
@@ -137,6 +165,7 @@ function LoginPage() {
     }
     if (loginCooldown > 0) return;
 
+    requestLockRef.current = true;
     setLoading(true);
     try {
       if (id.includes("@")) {
@@ -183,11 +212,13 @@ function LoginPage() {
       setError(message);
     } finally {
       setLoading(false);
+      requestLockRef.current = false;
     }
   }
 
   async function onRecovery(e: React.FormEvent) {
     e.preventDefault();
+    if (requestLockRef.current) return;
     if (recoveryCooldown > 0) return;
     setTouched(true);
     setError(null);
@@ -197,6 +228,7 @@ function LoginPage() {
       return;
     }
 
+    requestLockRef.current = true;
     setLoading(true);
     try {
       await resetPassword({ data: { email: parsed.data } });
@@ -212,6 +244,7 @@ function LoginPage() {
       setRecoveryCooldown(30);
     } finally {
       setLoading(false);
+      requestLockRef.current = false;
     }
   }
 
@@ -234,7 +267,8 @@ function LoginPage() {
   }
 
   async function resendRecovery() {
-    if (loading || recoveryCooldown > 0) return;
+    if (loading || recoveryCooldown > 0 || requestLockRef.current) return;
+    requestLockRef.current = true;
     const parsed = z.string().trim().toLowerCase().email().max(255).safeParse(recoveryEmail);
     if (!parsed.success) return;
     setLoading(true);
@@ -245,6 +279,7 @@ function LoginPage() {
       if (isAuthServiceUnavailable(err)) setAuthUnavailable(true);
     } finally {
       setLoading(false);
+      requestLockRef.current = false;
     }
   }
 
