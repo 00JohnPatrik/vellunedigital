@@ -103,10 +103,21 @@ function LoginPage() {
   }, [loginCooldown]);
 
   useEffect(() => {
-    if (recoveryCooldown <= 0) return;
-    const timer = window.setTimeout(() => setRecoveryCooldown((value) => Math.max(0, value - 1)), 1000);
-    return () => window.clearTimeout(timer);
-  }, [recoveryCooldown]);
+    const key = "vellune-recovery-cooldown-until";
+    const refreshCooldown = () => {
+      try {
+        const until = Number(window.sessionStorage.getItem(key) ?? "0");
+        const remaining = Math.max(0, Math.ceil((until - Date.now()) / 1000));
+        setRecoveryCooldown(remaining);
+        if (!remaining) window.sessionStorage.removeItem(key);
+      } catch {
+        // Session storage may be unavailable; the local cooldown still works.
+      }
+    };
+    refreshCooldown();
+    const timer = window.setInterval(refreshCooldown, 1000);
+    return () => window.clearInterval(timer);
+  }, []);
 
   function formatBrazilianPhone(value: string) {
     let digits = value.replace(/\D/g, "");
@@ -233,7 +244,7 @@ function LoginPage() {
     try {
       await resetPassword({ data: { email: parsed.data } });
       setRecoverySent(true);
-      setRecoveryCooldown(30);
+      setRecoveryCooldown(30); try { window.sessionStorage.setItem("vellune-recovery-cooldown-until", String(Date.now() + 30000)); } catch {}
     } catch (err) {
       if (isAuthServiceUnavailable(err)) {
         setAuthUnavailable(true);
@@ -254,6 +265,7 @@ function LoginPage() {
     setTouched(false);
     setRecoverySent(false);
     setRecoveryCooldown(0);
+    try { window.sessionStorage.removeItem("vellune-recovery-cooldown-until"); } catch {}
     setAuthUnavailable(false);
     setLoginSuccess(false);
     navigate({ to: "/login", replace: true });
@@ -268,9 +280,9 @@ function LoginPage() {
 
   async function resendRecovery() {
     if (loading || recoveryCooldown > 0 || requestLockRef.current) return;
-    requestLockRef.current = true;
     const parsed = z.string().trim().toLowerCase().email().max(255).safeParse(recoveryEmail);
     if (!parsed.success) return;
+    requestLockRef.current = true;
     setLoading(true);
     try {
       await resetPassword({ data: { email: parsed.data } });
