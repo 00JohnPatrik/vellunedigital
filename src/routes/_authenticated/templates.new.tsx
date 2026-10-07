@@ -14,6 +14,7 @@ function NewCompanyTemplate() {
   const navigate = useNavigate();
   const qc = useQueryClient();
   const { appUser } = Route.useRouteContext();
+  if (!appUser) return null;
   return (
     <div>
       <Link to="/templates" className="mb-3 inline-block text-sm text-muted-foreground hover:text-foreground">← Modelos</Link>
@@ -22,7 +23,7 @@ function NewCompanyTemplate() {
         onSubmit={async (v) => {
           try {
             // company_id is also forced server-side by the templates_guard trigger.
-            const id = await createTemplate(v, "company", appUser!.company?.id ?? null);
+            const id = await createTemplate(v, "company", appUser.company?.id ?? null);
             toast.success("Modelo criado."); await qc.invalidateQueries({ queryKey: templatesKey });
             navigate({ to: "/templates/$id", params: { id } });
           } catch (e) { toast.error(templateError(e)); }
