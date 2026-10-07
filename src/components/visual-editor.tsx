@@ -887,54 +887,11 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra }: { h: Bl
         </main>
         <aside id="editor-contextual-properties" className="vellune-editor-inspector hidden w-[328px] shrink-0 overflow-y-auto rounded-2xl border border-primary/10 bg-card/80 p-3.5 shadow-xl shadow-black/10 backdrop-blur-xl lg:block" aria-label="Painel contextual de propriedades"><div className="mb-3 flex items-center gap-2 border-b border-border/70 pb-3"><div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary/10 text-primary"><PanelRight className="h-3.5 w-3.5" /></div><div className="min-w-0"><p className="text-xs font-semibold text-foreground">Painel contextual</p><p className="text-[10px] text-muted-foreground">Ajustes do elemento selecionado</p></div></div><ContextualPropertiesPanel blocks={blocks} selectedIds={selectedIds} assets={assets as any} onChange={(update, group) => h.set(update, group)} onDuplicate={duplicateByIds} onDelete={removeByIds} /></aside>
       </div>
-      <div className="fixed inset-x-2 z-[70] lg:hidden" style={{ bottom: "max(0.5rem, env(safe-area-inset-bottom))" }}>
-        {selectedIds.length > 0 && (
-          <div className="mb-2 flex items-center gap-1 overflow-x-auto rounded-2xl border border-primary/20 bg-card/95 p-2 shadow-2xl shadow-black/30 backdrop-blur-xl" role="toolbar" aria-label="Ações da seleção no mobile">
-            {selected.length === 1 && selected[0]?.type === "text" && !selected[0]?.locked && (
-              <button type="button" className="flex min-w-[64px] flex-col items-center gap-1 rounded-xl bg-primary/10 px-2 py-1.5 text-[10px] font-medium text-primary touch-manipulation active:scale-95" onClick={() => setStartEditingTextId(selected[0].id)}><Pencil className="h-4 w-4" />Texto</button>
-            )}
-            <button type="button" className="flex min-w-[64px] flex-col items-center gap-1 rounded-xl px-2 py-1.5 text-[10px] text-muted-foreground touch-manipulation active:scale-95 hover:bg-primary/10 hover:text-primary" onClick={() => setMobileSheet("properties")}><PanelRight className="h-4 w-4" />Editar</button>
-            <button type="button" className="flex min-w-[64px] flex-col items-center gap-1 rounded-xl px-2 py-1.5 text-[10px] text-muted-foreground touch-manipulation active:scale-95 hover:bg-primary/10 hover:text-primary" onClick={() => rotate(-15)}><RotateCcw className="h-4 w-4" />−15°</button>
-            <button type="button" className="flex min-w-[64px] flex-col items-center gap-1 rounded-xl px-2 py-1.5 text-[10px] text-muted-foreground touch-manipulation active:scale-95 hover:bg-primary/10 hover:text-primary" onClick={() => rotate(15)}><RotateCw className="h-4 w-4" />+15°</button>
-            {selected.length === 1 && selected[0]?.type === "image" && !selected[0]?.locked && (
-              <button type="button" className="flex min-w-[64px] flex-col items-center gap-1 rounded-xl px-2 py-1.5 text-[10px] text-muted-foreground touch-manipulation active:scale-95 hover:bg-primary/10 hover:text-primary" onClick={() => openImageAction(selected[0].id, "replace")}><ImageIcon className="h-4 w-4" />Trocar</button>
-            )}
-            {selected.length > 1 && (() => {
-              const sameGroup = Boolean(selected[0]?.groupId) && selected.every((item: any) => item.groupId === selected[0]?.groupId);
-              return (
-                <button type="button" disabled={!sameGroup && selected.some((item: any) => item.locked)} className="flex min-w-[64px] flex-col items-center gap-1 rounded-xl px-2 py-1.5 text-[10px] text-muted-foreground touch-manipulation active:scale-95 hover:bg-primary/10 hover:text-primary disabled:cursor-not-allowed disabled:opacity-40" onClick={sameGroup ? ungroupSelected : groupSelected}>
-                  {sameGroup ? <Unlink2 className="h-4 w-4" /> : <Link2 className="h-4 w-4" />}
-                  {sameGroup ? "Desagrupar" : "Agrupar"}
-                </button>
-              );
-            })()}
-            <button type="button" className="flex min-w-[64px] flex-col items-center gap-1 rounded-xl px-2 py-1.5 text-[10px] text-muted-foreground touch-manipulation active:scale-95 hover:bg-primary/10 hover:text-primary" onClick={duplicate}><Plus className="h-4 w-4" />Duplicar</button>
-                        <button type="button" className="flex min-w-[64px] flex-col items-center gap-1 rounded-xl px-2 py-1.5 text-[10px] text-muted-foreground touch-manipulation active:scale-95 hover:bg-primary/10 hover:text-primary" onClick={() => reorderSelectedLayers("front")}><BringToFront className="h-4 w-4" />Frente</button>
-            <button type="button" className="flex min-w-[64px] flex-col items-center gap-1 rounded-xl px-2 py-1.5 text-[10px] text-muted-foreground touch-manipulation active:scale-95 hover:bg-primary/10 hover:text-primary" onClick={() => reorderSelectedLayers("back")}><SendToBack className="h-4 w-4" />Trás</button>
-            <button type="button" className="flex min-w-[64px] flex-col items-center gap-1 rounded-xl px-2 py-1.5 text-[10px] text-muted-foreground touch-manipulation active:scale-95 hover:bg-primary/10 hover:text-primary" onClick={() => alignSelectedOnCanvas("canvasCenterX", selectedIds)}><AlignCenterHorizontal className="h-4 w-4" />Centro X</button>
-            <button type="button" className="flex min-w-[64px] flex-col items-center gap-1 rounded-xl px-2 py-1.5 text-[10px] text-muted-foreground touch-manipulation active:scale-95 hover:bg-primary/10 hover:text-primary" onClick={() => alignSelectedOnCanvas("canvasCenterY", selectedIds)}><AlignCenterVertical className="h-4 w-4" />Centro Y</button>
-            <button type="button" className="flex min-w-[64px] flex-col items-center gap-1 rounded-xl px-2 py-1.5 text-[10px] text-muted-foreground touch-manipulation active:scale-95 hover:bg-primary/10 hover:text-primary" onClick={() => setMobileSheet("layers")}><Grid3X3 className="h-4 w-4" />Organizar</button>
-            <button type="button" className="flex min-w-[64px] flex-col items-center gap-1 rounded-xl px-2 py-1.5 text-[10px] text-muted-foreground touch-manipulation active:scale-95 hover:bg-primary/10 hover:text-primary" onClick={() => setMobileSheet("elements")}><Plus className="h-4 w-4" />Adicionar</button>
-            <button type="button" className="flex min-w-[64px] flex-col items-center gap-1 rounded-xl px-2 py-1.5 text-[10px] text-muted-foreground touch-manipulation active:scale-95 hover:bg-primary/10 hover:text-primary" onClick={() => { const shouldUnlock = selected.some((item: any) => item.locked); h.set((items) => items.map((item: any) => selectedIds.includes(item.id) ? { ...item, locked: !shouldUnlock } : item), "mobile:lock"); }}>{selected.some((item: any) => item.locked) ? <Unlock className="h-4 w-4" /> : <Lock className="h-4 w-4" />}{selected.some((item: any) => item.locked) ? "Abrir" : "Travar"}</button>
-            <button type="button" className="flex min-w-[64px] flex-col items-center gap-1 rounded-xl px-2 py-1.5 text-[10px] text-destructive touch-manipulation active:scale-95 hover:bg-destructive/10" onClick={remove}><Trash2 className="h-4 w-4" />Excluir</button>
-            <button type="button" className="flex min-w-[64px] flex-col items-center gap-1 rounded-xl px-2 py-1.5 text-[10px] text-muted-foreground touch-manipulation active:scale-95 hover:bg-primary/10 hover:text-primary" onClick={() => setSelectedIds([])}><X className="h-4 w-4" />Fechar</button>
-          </div>
-        )}
-        {!selectedIds.length && <div className="flex items-center justify-between gap-1 rounded-2xl border border-primary/15 bg-card/95 p-2 shadow-2xl shadow-black/25 backdrop-blur-xl" role="toolbar" aria-label="Ferramentas móveis do editor">
-          <button type="button" className="flex min-w-0 flex-1 flex-col items-center gap-0.5 rounded-xl px-1 py-1.5 text-[10px] text-muted-foreground transition touch-manipulation active:scale-95 hover:bg-primary/10 hover:text-primary" onClick={() => setMobileSheet("elements")}><PanelLeft className="h-4 w-4" />Elementos</button>
-          <button type="button" className="flex min-w-0 flex-1 flex-col items-center gap-0.5 rounded-xl px-1 py-1.5 text-[10px] text-muted-foreground transition touch-manipulation active:scale-95 hover:bg-primary/10 hover:text-primary" onClick={() => setMobileSheet("layers")}><Grid3X3 className="h-4 w-4" />Camadas</button>
-          <button type="button" className="flex min-w-0 flex-1 flex-col items-center gap-0.5 rounded-xl px-1 py-1.5 text-[10px] text-muted-foreground transition touch-manipulation active:scale-95 hover:bg-primary/10 hover:text-primary" onClick={() => setTemplateOpen(true)}><Sparkles className="h-4 w-4" />Modelos</button>
-          <button type="button" className="flex min-w-0 flex-1 flex-col items-center gap-0.5 rounded-xl px-1 py-1.5 text-[10px] text-muted-foreground transition touch-manipulation active:scale-95 hover:bg-primary/10 hover:text-primary" onClick={() => setMobileSheet("view")}><Tablet className="h-4 w-4" />Zoom</button>
-          <button type="button" className="flex min-w-0 flex-1 flex-col items-center gap-0.5 rounded-xl px-1 py-1.5 text-[10px] text-muted-foreground transition touch-manipulation active:scale-95 hover:bg-primary/10 hover:text-primary" onClick={() => setMobileSheet("background")}><Sparkles className="h-4 w-4" />Fundo</button>
-        </div>}
-      </div>
+      <div className="vellune-editor-mobile-bar flex items-center justify-between gap-1.5 rounded-2xl border border-primary/15 bg-card/95 p-2 shadow-2xl shadow-black/25 backdrop-blur-xl lg:hidden" role="toolbar" aria-label="Ferramentas móveis do editor"><button type="button" className="flex flex-1 flex-col items-center gap-0.5 rounded-xl px-1 py-1.5 text-[10px] text-muted-foreground transition hover:bg-primary/10 hover:text-primary" onClick={() => setMobileSheet("elements")}><PanelLeft className="h-4 w-4" />Elementos</button><button type="button" className="flex flex-1 flex-col items-center gap-0.5 rounded-xl px-1 py-1.5 text-[10px] text-muted-foreground transition hover:bg-primary/10 hover:text-primary" onClick={() => setMobileSheet("layers")}><Grid3X3 className="h-4 w-4" />Camadas</button><button type="button" className="flex flex-1 flex-col items-center gap-0.5 rounded-xl px-1 py-1.5 text-[10px] text-muted-foreground transition hover:bg-primary/10 hover:text-primary" onClick={() => setMobileSheet("properties")}><PanelRight className="h-4 w-4" />Propriedades</button><button type="button" className="flex flex-1 flex-col items-center gap-0.5 rounded-xl px-1 py-1.5 text-[10px] text-muted-foreground transition hover:bg-primary/10 hover:text-primary" onClick={() => setMobileSheet("background")}><Sparkles className="h-4 w-4" />Fundo</button><button type="button" className="flex flex-1 flex-col items-center gap-0.5 rounded-xl px-1 py-1.5 text-[10px] text-muted-foreground transition hover:bg-primary/10 hover:text-primary" onClick={() => setMobileSheet("view")}><Grid3X3 className="h-4 w-4" />Exibir</button></div>
       {compact && mobileSheet && (
-        <div className="fixed inset-0 z-[80] lg:hidden">
-          <button type="button" aria-label="Fechar painel" className="absolute inset-0 bg-background/55 backdrop-blur-[2px]" onClick={() => setMobileSheet(null)} />
-          <div className="absolute inset-x-0 bottom-0 max-h-[78vh] overflow-y-auto overscroll-contain rounded-t-3xl border border-border/80 bg-card px-4 pb-[calc(env(safe-area-inset-bottom)+6.5rem)] pt-2 shadow-2xl [&_input]:text-base [&_select]:text-base [&_textarea]:text-base sm:[&_input]:text-xs sm:[&_select]:text-xs sm:[&_textarea]:text-xs">
-            <div className="mx-auto mb-3 mt-1 h-1 w-10 rounded-full bg-muted-foreground/30" aria-hidden="true" />
-            <div className="mb-3 flex items-center justify-between gap-3">
-              <p className="text-sm font-semibold">
+        <div className="fixed inset-x-2 bottom-2 z-50 max-h-[70vh] overflow-y-auto rounded-2xl border border-border/80 bg-card p-4 shadow-2xl">
+          <div className="mb-3 flex items-center justify-between gap-3">
+            <p className="text-sm font-semibold">
               {mobileSheet === "properties" ? "Propriedades" : mobileSheet === "background" ? "Fundo" : mobileSheet === "view" ? "Exibição" : "Elementos"}
             </p>
             <button type="button" className="rounded-md border px-2 py-1 text-xs" onClick={() => setMobileSheet(null)}>Fechar</button>
@@ -958,25 +915,14 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra }: { h: Bl
           )}
           {mobileSheet === "view" && (
             <div className="space-y-3">
-              <div className="grid grid-cols-2 gap-2">
-                <button type="button" className="flex items-center justify-center gap-2 rounded-xl border px-3 py-2.5 text-xs font-medium disabled:opacity-40" disabled={!h.canUndo} onClick={h.undo}><Undo2 className="h-4 w-4" />Desfazer</button>
-                <button type="button" className="flex items-center justify-center gap-2 rounded-xl border px-3 py-2.5 text-xs font-medium disabled:opacity-40" disabled={!h.canRedo} onClick={h.redo}><Redo2 className="h-4 w-4" />Refazer</button>
+              <div className="flex items-center gap-2">
+                <button type="button" className="rounded border px-3 py-2" onClick={() => setZoom((value) => Math.max(50, value - 10))}>−</button>
+                <span className="flex-1 text-center">{zoom}%</span>
+                <button type="button" className="rounded border px-3 py-2" onClick={() => setZoom((value) => Math.min(150, value + 10))}>+</button>
               </div>
-              <div className="rounded-xl border bg-muted/20 p-2.5">
-                <div className="flex items-center gap-2">
-                  <button type="button" aria-label="Diminuir zoom" className="h-10 w-10 rounded-xl border bg-background text-lg" onClick={() => setZoom((value) => Math.max(50, value - 10))}>−</button>
-                  <span className="flex-1 text-center text-sm font-semibold tabular-nums">{zoom}%</span>
-                  <button type="button" aria-label="Aumentar zoom" className="h-10 w-10 rounded-xl border bg-background text-lg" onClick={() => setZoom((value) => Math.min(150, value + 10))}>+</button>
-                </div>
-                <div className="mt-2 grid grid-cols-2 gap-2">
-                  <button type="button" className="rounded-lg border bg-background px-3 py-2 text-xs" onClick={fitCanvasToViewport}>Ajustar à tela</button>
-                  <button type="button" className="rounded-lg border bg-background px-3 py-2 text-xs" onClick={() => setZoom(100)}>100%</button>
-                </div>
-              </div>
-              <button type="button" className={`flex w-full items-center justify-center gap-2 rounded-xl border px-3 py-2.5 text-xs font-medium ${showGrid ? "bg-primary/10 text-primary" : "text-muted-foreground"}`} onClick={() => setShowGrid((value) => !value)}>
-                <Grid3X3 className="h-4 w-4" />{showGrid ? "Guias ativas" : "Ativar guias"}
+              <button type="button" className={`w-full rounded border px-3 py-2 ${showGrid ? "bg-primary/10 text-primary" : "text-muted-foreground"}`} onClick={() => setShowGrid((value) => !value)}>
+                {showGrid ? "Guias ativas" : "Ativar guias"}
               </button>
-              <button type="button" className="flex w-full items-center justify-center gap-2 rounded-xl border px-3 py-2.5 text-xs font-semibold text-foreground" onClick={() => setMobileSheet(null)}><X className="h-4 w-4" />Fechar painel</button>
             </div>
           )}
           {mobileSheet === "elements" && (
@@ -993,31 +939,16 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra }: { h: Bl
           )}
           {mobileSheet === "layers" && (
             <div className="space-y-2">
-              <div className="flex items-center justify-between gap-2 rounded-lg border bg-muted/20 p-2">
-                <div>
-                  <p className="text-xs font-semibold text-foreground">Camadas</p>
-                  <p className="text-[10px] text-muted-foreground">{blocks.length} elemento(s)</p>
-                </div>
-                <div className="flex gap-1">
-                  <button type="button" disabled={!selectedIds.length} onClick={() => reorderSelectedLayers("back")} className="rounded-md border px-2 py-1 text-[10px] disabled:opacity-40">Para trás</button>
-                  <button type="button" disabled={!selectedIds.length} onClick={() => reorderSelectedLayers("front")} className="rounded-md border px-2 py-1 text-[10px] disabled:opacity-40">Para frente</button>
-                </div>
-              </div>
-              {orderedLayerBlocks.map(({ block, layerIndex }) => {
-                const selectedLayer = selectedIds.includes(block.id);
-                const toggleLayer = (key: "hidden" | "locked") => h.set((items) => items.map((item: any) => item.id === block.id ? { ...item, [key]: !item[key], ...(key === "hidden" ? { visibility: item[key] } : {}) } : item), `mobile:layers:${key}`);
+              {blocks.slice().reverse().map((block: any, reverseIndex: number) => {
+                const index = blocks.length - reverseIndex - 1;
                 return (
-                  <div key={block.id} className={`rounded-lg border p-2 ${selectedLayer ? "border-primary bg-primary/10" : ""}`}>
-                    <div className="flex items-center gap-2">
-                      <button type="button" className="min-w-0 flex-1 truncate text-left text-xs font-medium" onClick={() => { select(block.id, false); setMobileSheet("properties"); }}>
-                        {layerIndex + 1}. {getBlockLabel(block)}{block.groupId && <span className="ml-1 rounded bg-muted px-1 py-0.5 text-[9px]">grupo</span>}
-                      </button>
-                      <button type="button" aria-label={block.hidden ? "Mostrar camada" : "Ocultar camada"} onClick={() => toggleLayer("hidden")} className="rounded border px-1.5 py-1 text-[10px]">{block.hidden ? "○" : "●"}</button>
-                      <button type="button" aria-label={block.locked ? "Desbloquear camada" : "Bloquear camada"} onClick={() => toggleLayer("locked")} className="rounded border px-1.5 py-1 text-[10px]">{block.locked ? "🔒" : "🔓"}</button>
-                    </div>
+                  <div key={block.id} className="rounded-lg border p-2">
+                    <button type="button" className="w-full truncate text-left text-xs font-medium" onClick={() => { select(block.id, false); setMobileSheet("properties"); }}>
+                      {index + 1}. {getBlockLabel(block)}
+                    </button>
                     <div className="mt-2 flex flex-wrap gap-1.5">
-                      <button type="button" disabled={layerIndex === 0} onClick={() => { select(block.id, false); reorderSelectedLayers("up", [block.id]); }} className="rounded border px-2 py-1 text-[10px] disabled:opacity-40">Subir</button>
-                      <button type="button" disabled={layerIndex === orderedLayerBlocks.length - 1} onClick={() => { select(block.id, false); reorderSelectedLayers("down", [block.id]); }} className="rounded border px-2 py-1 text-[10px] disabled:opacity-40">Descer</button>
+                      <button type="button" disabled={index === blocks.length - 1} onClick={() => h.set((items) => reorderSelectedLayers("up", [block.id]), "mobile:layers:up")} className="rounded border px-2 py-1 text-[10px] disabled:opacity-40">Subir</button>
+                      <button type="button" disabled={index === 0} onClick={() => h.set((items) => reorderSelectedLayers("down", [block.id]), "mobile:layers:down")} className="rounded border px-2 py-1 text-[10px] disabled:opacity-40">Descer</button>
                       <button type="button" onClick={() => { select(block.id, false); duplicate(); }} className="rounded border px-2 py-1 text-[10px]">Duplicar</button>
                       <button type="button" onClick={() => { select(block.id, false); remove(); }} className="rounded border border-destructive/30 px-2 py-1 text-[10px] text-destructive">Excluir</button>
                     </div>
@@ -1028,6 +959,8 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra }: { h: Bl
           )}
         </div>
       )}
+    </div>
+  );
     </div>
   );
 }
