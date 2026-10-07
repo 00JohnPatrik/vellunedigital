@@ -50,7 +50,7 @@ export function Logo({ className, markOnly = false, title = "Vellune Digital" }:
             y="35"
             fill="currentColor"
             fontFamily="Sora, Manrope, Arial, sans-serif"
-            fontSize="22"
+            fontSize="25"
             fontWeight="600"
             letterSpacing="3.2"
           >
@@ -61,7 +61,7 @@ export function Logo({ className, markOnly = false, title = "Vellune Digital" }:
             y="56"
             fill="currentColor"
             fontFamily="Manrope, Arial, sans-serif"
-            fontSize="9.5"
+            fontSize="10.5"
             fontWeight="600"
             letterSpacing="5.6"
             opacity="0.62"
