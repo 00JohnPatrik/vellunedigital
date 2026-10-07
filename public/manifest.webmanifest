@@ -4,8 +4,8 @@
   "description": "Crie, publique e compartilhe convites digitais.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#f8fafc",
-  "theme_color": "#0f172a",
+  "background_color": "#08090d",
+  "theme_color": "#08090d",
   "lang": "pt-BR",
   "scope": "/",
   "icons": [
