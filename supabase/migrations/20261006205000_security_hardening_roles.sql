@@ -1,6 +1,6 @@
 -- Vellune Digital — security hardening
--- Incremental role hardening based on the live database definitions inspected on 2026-10-06.
--- No data, tables, triggers, constraints or function bodies are changed here.
+-- Idempotent live-database hardening: restrict administrative policies to authenticated
+-- callers and remove direct EXECUTE from trigger-only SECURITY DEFINER functions.
 
 BEGIN;
 
