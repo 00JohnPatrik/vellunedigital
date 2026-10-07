@@ -16,6 +16,9 @@ export function validateContent(c: unknown): string | null {
   if (!x || typeof x !== "object") return "Conteúdo ausente.";
   if (x.version !== 1) return "Versão do conteúdo inválida.";
   if (!Array.isArray(x.blocks)) return "Lista de blocos inválida.";
+  if (x.blocks.filter((block) => block && (block as Block).type === "rsvp").length > 1) {
+    return "O convite pode ter apenas um bloco de confirmação de presença.";
+  }
   const ids = new Set<string>();
   for (const b of x.blocks) {
     if (!b || typeof b.id !== "string" || !b.id) return "Há um bloco sem identificador.";
