@@ -609,11 +609,18 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra }: { h: Bl
           </div>
         </aside>
         <div className="overflow-auto rounded-2xl border bg-muted/40 p-3 shadow-inner sm:p-6"><div className="mx-auto origin-top transition-transform" style={{ width: `${100 / (zoom / 100)}%`, minHeight: canvasHeight / (zoom / 100) }}><div ref={canvasRef} className={`relative isolate mx-auto w-full max-w-[768px] overflow-hidden rounded-2xl border bg-card shadow-sm ${showGrid ? "[background-image:linear-gradient(to_right,hsl(var(--border)/.25)_1px,transparent_1px),linear-gradient(to_bottom,hsl(var(--border)/.25)_1px,transparent_1px)] [background-size:16px_16px]" : ""}`} style={{ minHeight: canvasHeight, backgroundColor: bg && (bg as any).color ? (bg as any).color : undefined, transform: `scale(${zoom / 100})`, transformOrigin: "top center" }} onPointerDown={(event) => { if (event.target === event.currentTarget) { const p = canvasPoint(event); interaction.current = { mode: "marquee", startX: p.x, startY: p.y }; setSelectedIds([]); } }} onPointerMove={moveInteraction} onPointerUp={stopInteraction} onPointerCancel={stopInteraction} aria-label="Área de edição do convite"><BackgroundLayers bg={bg as any} />{blocks.length === 0 && <div className="absolute inset-0 flex items-center justify-center text-center text-sm text-muted-foreground">Adicione elementos pela biblioteca acima.</div>}{marquee && <div className="pointer-events-none absolute z-50 border border-primary bg-primary/10" style={{ left: marquee.x, top: marquee.y, width: marquee.width, height: marquee.height }} />}<VisualTransformCanvas blocks={blocks} selectedIds={selectedIds} zoom={zoom} canvasRef={canvasRef} ctx={ctx as any} onSelect={select} onChange={(update, group) => h.set(update, group)} /></div></div></div><aside className="rounded-2xl border border-border/70 bg-card p-4 shadow-sm" aria-label="Propriedades do elemento selecionado"><ContextualPropertiesPanel blocks={blocks} selectedIds={selectedIds} assets={assets as any} onChange={(update, group) => h.set(update, group)} onDuplicate={duplicateByIds} onDelete={removeByIds} /></aside></div>
-      <section className="rounded-xl border bg-card p-3" aria-label="Ferramentas do editor">
-        <div className="flex gap-1 overflow-x-auto pb-2" role="tablist" aria-label="Categorias do editor">
+      <section className="sticky bottom-2 z-20 rounded-2xl border border-border/80 bg-card/95 p-3 shadow-xl shadow-black/10 backdrop-blur-xl lg:bottom-4" aria-label="Ferramentas do editor">
+        <div className="mb-2 flex items-center justify-between gap-3">
+          <div className="min-w-0">
+            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-primary">Ferramentas do canvas</p>
+            <p className="mt-0.5 truncate text-[11px] text-muted-foreground">Adicione elementos ou ajuste a seleção sem sair do convite.</p>
+          </div>
+          {selectedIds.length > 0 && <span className="shrink-0 rounded-full border border-primary/20 bg-primary/10 px-2 py-1 text-[10px] font-medium text-primary">{selectedIds.length} selecionado{selectedIds.length === 1 ? "" : "s"}</span>}
+        </div>
+        <div className="-mx-1 flex gap-1 overflow-x-auto px-1 pb-2" role="tablist" aria-label="Categorias do editor">
           {["Elementos", "Texto", "Imagens", "Botões", "RSVP", "QR Code", "Camadas", "Fundo", "Exibir"].map((category) => {
             const active = toolCategory === category;
-            return <button key={category} type="button" role="tab" aria-selected={active} className={`shrink-0 rounded-md border px-2.5 py-1.5 text-xs transition-colors ${active ? "border-primary bg-primary/10 text-primary" : "text-muted-foreground hover:bg-accent hover:text-foreground"}`} onClick={() => {
+            return <button key={category} type="button" role="tab" aria-selected={active} className={`shrink-0 rounded-lg border px-3 py-2 text-xs font-medium transition-colors ${active ? "border-primary bg-primary/10 text-primary shadow-sm" : "border-transparent text-muted-foreground hover:border-border hover:bg-accent hover:text-foreground"}`} onClick={() => {
               setToolCategory(category);
               if (category === "Camadas") { setContextPanel("layers"); setMobileSheet("layers"); }
               else if (category === "Fundo") { setContextPanel("background"); setMobileSheet("background"); }
@@ -622,19 +629,19 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra }: { h: Bl
             }}>{category}</button>;
           })}
         </div>
-        {toolCategory === "Fundo" ? <BackgroundPropertiesPanel background={(bg as Record<string, unknown>) || {}} assets={assets as any} onChange={(value) => onBg?.(value)} /> : toolCategory === "Exibir" ? <p className="rounded-lg border border-dashed p-3 text-xs text-muted-foreground">Os controles de exibição estão disponíveis no canvas.</p> : toolCategory === "Camadas" ? <div className="space-y-2">
+        {toolCategory === "Fundo" ? <BackgroundPropertiesPanel background={(bg as Record<string, unknown>) || {}} assets={assets as any} onChange={(value) => onBg?.(value)} /> : toolCategory === "Exibir" ? <p className="rounded-xl border border-dashed bg-muted/20 p-4 text-xs leading-5 text-muted-foreground">Os controles de exibição, zoom, grade e snap permanecem disponíveis no canvas para manter o foco na composição.</p> : toolCategory === "Camadas" ? <div className="space-y-3">
           <div className="flex flex-wrap gap-2">
-            <button type="button" disabled={!selectedIds.length} className="rounded-md border px-2 py-1 text-xs text-foreground disabled:opacity-50" onClick={() => duplicateByIds(selectedIds)}>Duplicar seleção</button>
-            <button type="button" disabled={!selectedIds.length} className="rounded-md border border-destructive/40 px-2 py-1 text-xs text-destructive disabled:opacity-50" onClick={() => removeByIds(selectedIds)}>Excluir seleção</button>
+            <button type="button" disabled={!selectedIds.length} className="rounded-lg border px-3 py-2 text-xs font-medium text-foreground transition-colors hover:bg-accent disabled:cursor-not-allowed disabled:opacity-50" onClick={() => duplicateByIds(selectedIds)}>Duplicar seleção</button>
+            <button type="button" disabled={!selectedIds.length} className="rounded-lg border border-destructive/40 px-3 py-2 text-xs font-medium text-destructive transition-colors hover:bg-destructive/10 disabled:cursor-not-allowed disabled:opacity-50" onClick={() => removeByIds(selectedIds)}>Excluir seleção</button>
           </div>
-          <div className="space-y-1">
-            {blocks.map((block: any, index: number) => <div key={block.id} className={`flex items-center gap-2 rounded-md border px-2 py-1.5 ${selectedIds.includes(block.id) ? "border-primary bg-primary/10" : "border-transparent"}`}>
+          <div className="max-h-64 space-y-1 overflow-y-auto pr-1">
+            {blocks.map((block: any, index: number) => <div key={block.id} className={`flex items-center gap-2 rounded-lg border px-2 py-1.5 transition-colors ${selectedIds.includes(block.id) ? "border-primary bg-primary/10" : "border-transparent hover:border-border hover:bg-muted/40"}`}>
               <button type="button" className="min-w-0 flex-1 truncate text-left text-xs text-foreground" onClick={() => select(block.id, false)}>{index + 1}. {getBlockLabel(block)}</button>
               <button type="button" className="rounded px-1.5 py-1 text-[11px] text-muted-foreground hover:bg-accent" aria-label={`Duplicar ${getBlockLabel(block)}`} onClick={() => duplicateByIds([block.id])}>Copiar</button>
               <button type="button" className="rounded px-1.5 py-1 text-[11px] text-destructive hover:bg-destructive/10" aria-label={`Excluir ${getBlockLabel(block)}`} onClick={() => removeByIds([block.id])}>Excluir</button>
             </div>)}
           </div>
-        </div> : <ElementsLibrary availableTypes={Object.keys(BLOCKS) as BlockType[]} onAdd={addBlockByType} />}
+        </div> : <ElementsLibrary availableTypes={(toolCategory === "Texto" ? ["text"] : toolCategory === "Imagens" ? ["image", "gallery"] : toolCategory === "Botões" ? ["button", "whatsapp"] : toolCategory === "RSVP" ? ["rsvp"] : toolCategory === "QR Code" ? ["qr_code"] : Object.keys(BLOCKS)) as BlockType[]} onAdd={addBlockByType} />}
       </section>
       <p className="text-xs text-muted-foreground">Arraste com mouse ou toque, use Shift para snap, Shift/Ctrl para múltipla seleção, Ctrl/Cmd+C para copiar, Ctrl/Cmd+V para colar e arraste o fundo para selecionar uma área. Alterações são persistidas pelo autosave existente.</p>
       <TemplateGallery open={templateOpen} onClose={() => setTemplateOpen(false)} onApply={applyStarterTemplate} hasContent={blocks.length > 0} />
