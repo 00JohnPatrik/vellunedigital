@@ -117,11 +117,13 @@ export function CompanyDashboardEnhancements({ companyId }: { companyId: string 
 }
 
 export function AdminPresence({ channelName = "presence:super-admin" }: { channelName?: string }) {
-  const [count, setCount] = useState(1);
+  const [count, setCount] = useState(0);
   useEffect(() => {
     const channel = supabase.channel(channelName);
-    const update = () => setCount(Math.max(1, Object.keys(channel.presenceState()).length));
-    channel.on("presence", { event: "sync" }, update).on("presence", { event: "join" }, update).on("presence", { event: "leave" }, update).subscribe(update);
+    const update = () => setCount(Object.keys(channel.presenceState()).length);
+    channel.on("presence", { event: "sync" }, update).on("presence", { event: "join" }, update).on("presence", { event: "leave" }, update).subscribe((status) => {
+      if (status === "SUBSCRIBED") update();
+    });
     return () => { void supabase.removeChannel(channel); };
   }, [channelName]);
   return <div className="flex items-center gap-2 rounded-lg border bg-card px-3 py-2 text-sm text-muted-foreground"><Wifi className="h-4 w-4 text-emerald-500" /><span>{count} usuário(s) online</span></div>;
