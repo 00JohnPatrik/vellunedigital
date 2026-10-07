@@ -349,12 +349,12 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra }: { h: Bl
   const ungroupSelected = useCallback(() => {
     if (!selectedIds.length) return;
     h.set((items) => items.map((item: any) =>
-      selectedIds.includes(item.id) ? { ...item, groupId: undefined } : item
+      selectedIds.includes(item.id) && !item.locked ? { ...item, groupId: undefined } : item
     ), "selection:ungroup");
   }, [h, selectedIds]);
   const duplicateByIds = (ids: string[]) => {
     if (!ids.length) return;
-    const sourceBlocks = blocks.filter((block: any) => ids.includes(block.id) && block.type !== "rsvp");
+    const sourceBlocks = blocks.filter((block: any) => ids.includes(block.id) && block.type !== "rsvp" && !block.locked);
     if (!sourceBlocks.length) return;
 
     const groupIds = new Map<string, string>();
@@ -390,7 +390,7 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra }: { h: Bl
   };
   const removeByIds = (ids: string[]) => {
     if (!ids.length) return;
-    h.set((current) => current.filter((block: any) => !ids.includes(block.id)));
+    h.set((current) => current.filter((block: any) => !ids.includes(block.id) || block.locked));
     setSelectedIds((current) => current.filter((id) => !ids.includes(id)));
   };
 
@@ -688,11 +688,11 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra }: { h: Bl
   const canvasHeight = Math.max(640, ...blocks.map((block: any, index: number) => getPosition(block, index).y + getSize(block, index).height + 32));
   const updateSelectedBlock = (patch: Record<string, unknown>) => {
     if (!selected.length) return;
-    h.set((items) => items.map((item: any) => selectedIds.includes(item.id) ? { ...item, ...patch } : item), "selection:properties");
+    h.set((items) => items.map((item: any) => selectedIds.includes(item.id) && !item.locked ? { ...item, ...patch } : item), "selection:properties");
   };
   const updateSelectedProp = (key: string, value: string) => {
     if (!selected.length) return;
-    h.set((items) => items.map((item: any) => selectedIds.includes(item.id) ? { ...item, props: { ...(item.props ?? {}), [key]: value } } : item), "selection:properties");
+    h.set((items) => items.map((item: any) => selectedIds.includes(item.id) && !item.locked ? { ...item, props: { ...(item.props ?? {}), [key]: value } } : item), "selection:properties");
   };
   return (
     <div className="vellune-editor-root flex min-h-[calc(100dvh-7rem)] flex-col overflow-hidden rounded-[1.25rem] border border-primary/10 bg-background/95 pb-20 shadow-2xl shadow-black/15 ring-1 ring-black/5 lg:min-h-[680px] lg:pb-0">
