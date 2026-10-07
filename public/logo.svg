@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 80" role="img" aria-labelledby="title desc">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 330 80" role="img" aria-labelledby="title desc">
   <title id="title">Vellune Digital</title>
   <desc id="desc">Logotipo Vellune Digital com monograma V geométrico tridimensional em dourado.</desc>
   <defs>
@@ -27,6 +27,6 @@
     <path d="M33.5 57L40 43L46.5 57L40 69L33.5 57Z" fill="url(#goldDeep)"/>
     <path d="M40 43L46.5 57L40 69V43Z" fill="#D0A12D" opacity=".75"/>
   </g>
-  <text x="89" y="35" fill="#0B1220" font-family="Sora,Manrope,Arial,sans-serif" font-size="22" font-weight="600" letter-spacing="3.2">VELLUNE</text>
-  <text x="91" y="56" fill="#0B1220" font-family="Manrope,Arial,sans-serif" font-size="9.5" font-weight="600" letter-spacing="5.6" opacity=".62">DIGITAL</text>
+  <text x="84" y="35" fill="#0B1220" font-family="Sora,Manrope,Arial,sans-serif" font-size="22" font-weight="600" letter-spacing="3.2">VELLUNE</text>
+  <text x="86" y="56" fill="#0B1220" font-family="Manrope,Arial,sans-serif" font-size="9.5" font-weight="600" letter-spacing="5.6" opacity=".62">DIGITAL</text>
 </svg>
