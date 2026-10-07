@@ -170,7 +170,7 @@ function FirstAccessPage() {
           </div>
 
           {error && (
-            <div id="first-access-error" role="alert" aria-live="assertive" className="flex items-start gap-3 rounded-xl border border-red-300/15 bg-red-400/[0.07] px-4 py-3 text-[13px] leading-5 text-red-200">
+            <div id="first-access-error" role="alert" aria-live="assertive" className="flex items-start gap-3 rounded-xl border border-red-300/15 bg-red-400/[0.07] px-3.5 py-2.5 text-[12.5px] leading-5 text-red-200">
               <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-red-200/10 bg-red-200/[0.06]">
                 <AlertCircle className="h-3.5 w-3.5" />
               </span>
