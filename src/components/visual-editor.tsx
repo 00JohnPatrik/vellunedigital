@@ -594,6 +594,19 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra }: { h: Bl
               onChange={(update, group) => h.set(update, group)}
               onDuplicate={duplicateByIds}
               onDelete={removeByIds}
+              onGroup={(ids) => {
+                if (ids.length < 2) return;
+                const groupId = `group-${crypto.randomUUID()}`;
+                h.set((items) => items.map((item: any) =>
+                  ids.includes(item.id) && !item.locked ? { ...item, groupId } : item
+                ), "selection:group");
+              }}
+              onUngroup={(ids) => {
+                if (!ids.length) return;
+                h.set((items) => items.map((item: any) =>
+                  ids.includes(item.id) ? { ...item, groupId: undefined } : item
+                ), "selection:ungroup");
+              }}
               onImageAction={openImageAction}
               startEditingId={startEditingTextId}
               onStartEditingHandled={handleStartEditingHandled}
