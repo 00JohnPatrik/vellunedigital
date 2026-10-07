@@ -779,7 +779,6 @@ export function VisualTransformCanvas({ blocks, selectedIds: selectedIdsProp, zo
             onBlur={stopTextEditing}
           />
         )}
-        {isSelected && !isEditingText && }
       </div>;
     })}
     {selectedBounds && <div className="pointer-events-none absolute z-[80] rounded-[2px] border-2 border-primary shadow-[0_0_0_1px_hsl(var(--primary)/.12),0_4px_14px_hsl(var(--primary)/.08)]" style={{ left: selectedBounds.left, top: selectedBounds.top, width: selectedBounds.width, height: selectedBounds.height }}>
