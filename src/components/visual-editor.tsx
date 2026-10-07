@@ -150,7 +150,7 @@ type EditorPointer = { clientX: number; clientY: number };
 
 export type EditorPoint = { x: number; y: number };
 
-export function VisualEditor({ h, ctx, assets, bg, onBg }: { h: BlocksHistory; ctx?: unknown; assets?: unknown; bg?: unknown; onBg?: (value: any) => void }) {
+export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra }: { h: BlocksHistory; ctx?: unknown; assets?: unknown; bg?: unknown; onBg?: (value: any) => void; toolbarExtra?: React.ReactNode }) {
   const canvasRef = useRef<HTMLDivElement>(null);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [zoom, setZoom] = useState(100);
