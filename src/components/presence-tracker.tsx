@@ -18,12 +18,12 @@ export function PresenceTracker() {
       if (!userId || disposed) return;
       const now = Date.now();
       if (!login && now - lastWrite.current < ACTIVITY_THROTTLE_MS) return;
-      lastWrite.current = now;
       const payload: { last_seen_at: string; last_login_at?: string } = {
         last_seen_at: new Date(now).toISOString(),
       };
       if (login) payload.last_login_at = payload.last_seen_at;
-      await supabase.from("users").update(payload).eq("auth_user_id", userId);
+      const { error } = await supabase.from("users").update(payload).eq("auth_user_id", userId);
+      if (!error) lastWrite.current = now;
     };
 
     const start = async () => {
