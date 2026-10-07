@@ -83,7 +83,10 @@ function EditorForm({ inv }: { inv: Invitation }) {
 
   const save = useCallback(async (manual = false): Promise<boolean> => {
     if (timer.current) { clearTimeout(timer.current); timer.current = null; }
-    if (inFlight.current) { timer.current = setTimeout(() => void save(manual), 300); return false; }
+    if (inFlight.current) {
+      await new Promise<void>((resolve) => setTimeout(resolve, 100));
+      return save(manual);
+    }
     const { v: ev, customerId: cid, blocks, bg: background } = snap.current;
     const e = validateEvent(ev); setErrors(e);
     if (Object.keys(e).length) { setState("error"); setErrMsg("Dados do evento incompletos"); if (manual) { toast.error("Verifique os dados do evento."); setEventOpen(true); } return false; }
@@ -132,7 +135,7 @@ function EditorForm({ inv }: { inv: Invitation }) {
   const publish = async () => {
     const e = validateEvent(snap.current.v);
     if (Object.keys(e).length) { setErrors(e); toast.error("Preencha nome, data e hora do evento antes de publicar."); setEventOpen(true); return; }
-    if (!snap.current.blocks.some((b) => !b.hidden)) { toast.error("Adicione ao menos um bloco visível antes de publicar."); return; }
+    if (!snap.current.blocks.some((b) => b.visibility !== false && !b.hidden)) { toast.error("Adicione ao menos um bloco visível antes de publicar."); return; }
     setPublishing(true);
     try {
       if (!(await save(true))) return;
