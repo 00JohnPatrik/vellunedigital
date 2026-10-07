@@ -33,7 +33,7 @@ function InvitationsPage() {
 
   const rows = useMemo(() => {
     const s = search.trim().toLowerCase();
-    return (q.data ?? []).filter((i) => (filter === "all" || i.status === filter) && (!s || i.name.toLowerCase().includes(s)));
+    return (q.data ?? []).filter((i) => (filter === "all" || i.status === filter) && (!s || i.name.toLowerCase().includes(s) || i.customer?.name?.toLowerCase().includes(s)));
   }, [q.data, search, filter]);
 
   const statusCounts = useMemo(() => {
@@ -94,7 +94,7 @@ function InvitationsPage() {
       <div className="mb-5 flex flex-col gap-3 rounded-xl border bg-card p-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="relative min-w-0 flex-1 sm:max-w-sm">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input className="pl-9" placeholder="Buscar por nome do convite" value={search} onChange={(e) => setSearch(e.target.value)} aria-label="Buscar convites" />
+          <Input className="pl-9" placeholder="Buscar convite ou cliente" value={search} onChange={(e) => setSearch(e.target.value)} aria-label="Buscar convites" />
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <div className="flex flex-wrap gap-1 rounded-lg bg-muted/60 p-1" role="group" aria-label="Filtrar convites">
