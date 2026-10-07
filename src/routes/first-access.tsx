@@ -33,6 +33,7 @@ function FirstAccessPage() {
   const [resendCooldown, setResendCooldown] = useState(0);
   const [authUnavailable, setAuthUnavailable] = useState(false);
   const emailRef = useRef<HTMLInputElement | null>(null);
+  const requestLockRef = useRef(false);
 
   useEffect(() => {
     if (resendCooldown <= 0) return;
@@ -41,7 +42,8 @@ function FirstAccessPage() {
   }, [resendCooldown]);
 
   async function resendLink() {
-    if (loading || resendCooldown > 0) return;
+    if (loading || resendCooldown > 0 || requestLockRef.current) return;
+    requestLockRef.current = true;
     const normalizedEmail = email.trim().toLowerCase();
     const parsed = z.string().email().max(255).safeParse(normalizedEmail);
     if (!parsed.success) {
@@ -60,11 +62,13 @@ function FirstAccessPage() {
       if (isAuthServiceUnavailable(err)) setAuthUnavailable(true);
     } finally {
       setLoading(false);
+      requestLockRef.current = false;
     }
   }
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (requestLockRef.current) return;
     const normalizedEmail = email.trim().toLowerCase();
     const parsed = z.string().email().max(255).safeParse(normalizedEmail);
     if (!parsed.success) {
@@ -91,6 +95,7 @@ function FirstAccessPage() {
       setError("Não foi possível processar agora. Tente novamente.");
     } finally {
       setLoading(false);
+      requestLockRef.current = false;
     }
   }
 
