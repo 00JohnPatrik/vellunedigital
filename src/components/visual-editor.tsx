@@ -321,7 +321,7 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra }: { h: Bl
 
   const replaceSelectedImage = (url: string) => {
     if (!imageReplaceId || !url) return;
-    h.set((items) => items.map((item: any) => item.id === imageReplaceId && item.type === "image"
+    h.set((items) => items.map((item: any) => item.id === imageReplaceId && item.type === "image" && !item.locked
       ? { ...item, props: { ...(item.props || {}), url } }
       : item), "image:replace");
     setSelectedIds([imageReplaceId]);
