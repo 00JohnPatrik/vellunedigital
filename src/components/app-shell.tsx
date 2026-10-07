@@ -62,7 +62,16 @@ export function AppShell({ base, nav, appUser, children }: Props) {
   const navigate = useNavigate();
   const qc = useQueryClient();
 
-  useEffect(() => applyTheme(theme), [theme]);
+  useEffect(() => {
+    applyTheme(theme);
+    if (theme) {
+      try {
+        window.localStorage.setItem("vellune-theme", theme);
+      } catch {
+        // Ignore storage restrictions.
+      }
+    }
+  }, [theme]);
 
   useEffect(() => {
     const handleOnline = () => setIsOnline(true);
