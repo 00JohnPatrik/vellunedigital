@@ -12,7 +12,7 @@ import { canUseAdminArea, friendlyAuthError, homeFor, loadAppUser } from "@/lib/
 import Logo from "@/components/Logo";
 
 export const Route = createFileRoute("/login")({
-  validateSearch: z.object({ error: z.enum(["inactive"]).optional() }),
+  validateSearch: z.object({ error: z.enum(["inactive"]).optional(), mode: z.enum(["recovery"]).optional() }),
   head: () => ({
     meta: [
       { title: "Entrar — Vellune Digital" },
@@ -25,7 +25,7 @@ export const Route = createFileRoute("/login")({
 });
 
 function LoginPage() {
-  const { error: reason } = Route.useSearch();
+  const { error: reason, mode: requestedMode } = Route.useSearch();
   const navigate = useNavigate();
   const phoneSignIn = useServerFn(signInWithPhone);
   const resetPassword = useServerFn(requestPasswordReset);
@@ -33,7 +33,7 @@ function LoginPage() {
   const [password, setPassword] = useState("");
   const [recoveryEmail, setRecoveryEmail] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [mode, setMode] = useState<"login" | "recovery">("login");
+  const [mode, setMode] = useState<"login" | "recovery">(requestedMode === "recovery" ? "recovery" : "login");
   const [recoverySent, setRecoverySent] = useState(false);
   const [error, setError] = useState<string | null>(
     reason === "inactive" ? "Sua conta está inativa. Fale com o administrador." : null,
@@ -231,7 +231,7 @@ function LoginPage() {
                     <Label htmlFor="identifier" className="text-xs font-medium text-white/65">E-mail ou telefone</Label>
                     <div className="relative">
                       <UserRound className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-white/25" />
-                      <Input id="identifier" autoFocus autoComplete="username" value={identifier} maxLength={255} onChange={(e) => setIdentifier(e.target.value)} onBlur={() => setTouched(true)} placeholder="voce@empresa.com" aria-invalid={identifierInvalid} aria-describedby="identifier-help" className="h-12 rounded-xl border-white/[0.08] bg-white/[0.035] pl-10 text-white placeholder:text-white/20 focus-visible:border-[#d4af37]/50 focus-visible:ring-[#d4af37]/10" />
+                      <Input id="identifier" autoComplete="username" value={identifier} maxLength={255} onChange={(e) => setIdentifier(e.target.value)} onBlur={() => setTouched(true)} placeholder="voce@empresa.com" aria-invalid={identifierInvalid} aria-describedby="identifier-help" className="h-12 rounded-xl border-white/[0.08] bg-white/[0.035] pl-10 text-white placeholder:text-white/20 focus-visible:border-[#d4af37]/50 focus-visible:ring-[#d4af37]/10" />
                     </div>
                     <p id="identifier-help" className="text-[11px] text-white/25">Use os dados vinculados à sua conta.</p>
                   </div>
@@ -239,7 +239,7 @@ function LoginPage() {
                   <div className="space-y-2">
                     <div className="flex items-center justify-between gap-3">
                       <Label htmlFor="password" className="text-xs font-medium text-white/65">Senha</Label>
-                      <button type="button" onClick={() => { setMode("recovery"); setError(null); setTouched(false); }} className="text-xs font-medium text-[#d4af37] transition-colors hover:text-[#e5c66b] hover:underline">Esqueci minha senha</button>
+                      <button type="button" onClick={() => { setMode("recovery"); setRecoveryEmail(identifier.includes("@") ? identifier.trim() : ""); setError(null); setTouched(false); }} className="text-xs font-medium text-[#d4af37] transition-colors hover:text-[#e5c66b] hover:underline">Esqueci minha senha</button>
                     </div>
                     <div className="relative">
                       <LockKeyhole className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-white/25" />
