@@ -69,6 +69,21 @@ function FirstAccessPage() {
           </p>
         </div>
       ) : (
+        <div className="grid grid-cols-3 gap-2" aria-label="Etapas do primeiro acesso">
+          <div className="rounded-xl border border-[#d4af37]/20 bg-[#d4af37]/[0.06] px-2.5 py-2 text-center">
+            <span className="mx-auto flex h-5 w-5 items-center justify-center rounded-full bg-[#d4af37] text-[#16130b]">1</span>
+            <p className="mt-1.5 text-[8px] font-semibold uppercase tracking-[0.12em] text-white/45">Solicitar</p>
+          </div>
+          <div className="rounded-xl border border-white/[0.07] bg-white/[0.02] px-2.5 py-2 text-center">
+            <span className="mx-auto flex h-5 w-5 items-center justify-center rounded-full border border-white/[0.10] text-[9px] text-white/35">2</span>
+            <p className="mt-1.5 text-[8px] font-semibold uppercase tracking-[0.12em] text-white/35">Verificar</p>
+          </div>
+          <div className="rounded-xl border border-white/[0.07] bg-white/[0.02] px-2.5 py-2 text-center">
+            <span className="mx-auto flex h-5 w-5 items-center justify-center rounded-full border border-white/[0.10] text-[9px] text-white/35">3</span>
+            <p className="mt-1.5 text-[8px] font-semibold uppercase tracking-[0.12em] text-white/35">Criar senha</p>
+          </div>
+        </div>
+
         <form onSubmit={onSubmit} className="space-y-4 sm:space-y-5" noValidate>
           <div className="rounded-2xl border border-white/[0.06] bg-white/[0.025] px-4 py-3.5">
             <div className="flex items-center gap-2 text-xs font-medium text-white/75 sm:text-sm">
