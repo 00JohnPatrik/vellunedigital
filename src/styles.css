@@ -157,9 +157,21 @@
     color: var(--color-foreground);
   }
 
+  .vellune-login-root,
+  .vellune-auth-root {
+    background-color: #08090d;
+    min-height: 100svh;
+    overscroll-behavior: none;
+  }
+
   .vellune-login-root {
     contain: layout paint;
   }
+}
+
+.vellune-login-root,
+.vellune-auth-root {
+  scrollbar-gutter: stable;
 }
 
 @utility bg-auth {
