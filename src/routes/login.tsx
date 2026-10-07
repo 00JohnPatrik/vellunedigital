@@ -287,6 +287,7 @@ function LoginPage() {
     try {
       await resetPassword({ data: { email: parsed.data } });
       setRecoveryCooldown(30);
+      try { window.sessionStorage.setItem("vellune-recovery-cooldown-until", String(Date.now() + 30000)); } catch {}
     } catch (err) {
       if (isAuthServiceUnavailable(err)) setAuthUnavailable(true);
     } finally {
