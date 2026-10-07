@@ -18,9 +18,6 @@ type Props = {
   onChange: (update: (blocks: Block[]) => Block[], group?: string) => void;
   onDuplicate?: (ids: string[]) => void;
   onDelete?: (ids: string[]) => void;
-  onUndo?: () => void;
-  onRedo?: () => void;
-  onClearSelection?: () => void;
   onAdvanced?: () => void;
   onLayer?: (direction: "front" | "back", ids: string[]) => void;
   onGroup?: (ids: string[]) => void;
@@ -345,48 +342,18 @@ export function VisualTransformCanvas({ blocks, selectedIds: selectedIdsProp, zo
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
-      if (isTextInput(event.target)) return;
-      const groupCommand = event.ctrlKey || event.metaKey;
-      if (groupCommand && event.key.toLowerCase() === "z" && !event.shiftKey) {
-        event.preventDefault();
-        onUndo?.();
-        return;
-      }
-      if (groupCommand && ((event.key.toLowerCase() === "z" && event.shiftKey) || event.key.toLowerCase() === "y")) {
-        event.preventDefault();
-        onRedo?.();
-        return;
-      }
-      if (!selectedIds.length) return;
+      if (isTextInput(event.target) || !selectedIds.length) return;
       const activeText = selectedIds.length === 1
         ? blocks.find((block: any) => block.id === selectedIds[0])
         : undefined;
+
       if (event.key === "Enter" && activeText?.type === "text" && !activeText.locked) {
         event.preventDefault();
         startTextEditing(activeText);
         return;
       }
 
-      if (event.key === "Escape") {
-        finish();
-        onClearSelection?.();
-        return;
-      }
-      if (groupCommand && event.key.toLowerCase() === "d") {
-        event.preventDefault();
-        onDuplicate?.(selectedIds);
-        return;
-      }
-      if (event.key === "Delete" || event.key === "Backspace") {
-        const deletableIds = selectedIds.filter((id) => !blocks.find((block: any) => block.id === id)?.locked);
-        if (deletableIds.length) {
-          event.preventDefault();
-          onDelete?.(deletableIds);
-        }
-        return;
-      }
-      const movable = blocks.filter((block: any) => selectedIds.includes(block.id) && !block.locked);
-      if (!movable.length) return;
+      const groupCommand = event.ctrlKey || event.metaKey;
       if (groupCommand && event.key.toLowerCase() === "g" && !event.shiftKey) {
         event.preventDefault();
         if (selectedIds.length > 1) onGroup?.(selectedIds);
@@ -406,9 +373,22 @@ export function VisualTransformCanvas({ blocks, selectedIds: selectedIdsProp, zo
         }
         return;
       }
+
+      const movable = blocks.filter((block: any) => selectedIds.includes(block.id) && !block.locked);
+      if (!movable.length) return;
+
       const step = event.shiftKey ? 10 : 1;
-      const delta = event.key === "ArrowLeft" ? { x: -step, y: 0 } : event.key === "ArrowRight" ? { x: step, y: 0 } : event.key === "ArrowUp" ? { x: 0, y: -step } : event.key === "ArrowDown" ? { x: 0, y: step } : null;
+      const delta = event.key === "ArrowLeft"
+        ? { x: -step, y: 0 }
+        : event.key === "ArrowRight"
+          ? { x: step, y: 0 }
+          : event.key === "ArrowUp"
+            ? { x: 0, y: -step }
+            : event.key === "ArrowDown"
+              ? { x: 0, y: step }
+              : null;
       if (!delta) return;
+
       event.preventDefault();
       const size = canvasSize();
       onChange((items: any[]) => items.map((item: any) => {
@@ -422,7 +402,7 @@ export function VisualTransformCanvas({ blocks, selectedIds: selectedIdsProp, zo
     };
     document.addEventListener("keydown", onKeyDown);
     return () => document.removeEventListener("keydown", onKeyDown);
-  }, [blocks, selectedIds, onChange, onSelect, onUndo, onRedo, onClearSelection, onDelete, onDuplicate, onGroup, onUngroup]);
+  }, [blocks, selectedIds, onChange, onSelect, onGroup, onUngroup]);
 
   const begin = (event: React.PointerEvent, mode: Interaction["mode"], handle?: string, block?: any) => {
     event.stopPropagation();
