@@ -173,7 +173,7 @@ function LoginPage() {
   }
 
   return (
-    <main className="fixed inset-0 h-[100dvh] w-full overflow-hidden overscroll-none bg-[#08090d] text-white selection:bg-[#d4af37]/25">
+    <main className="vellune-login-root fixed inset-0 h-[100dvh] w-full max-w-full overflow-hidden overflow-x-clip overscroll-none bg-[#08090d] text-white selection:bg-[#d4af37]/25">
       <style>{`
         @keyframes velluneFadeUp {
           from { opacity: 0; transform: translateY(10px); }
@@ -299,19 +299,25 @@ function LoginPage() {
                       <UserRound className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-white/25" />
                       <Input
                         id="identifier"
+                        type="text"
                         autoComplete="username"
-                        inputMode="text"
+                        inputMode="email"
+                        enterKeyHint="next"
                         autoCapitalize="none"
                         autoCorrect="off"
                         spellCheck={false}
                         value={identifier}
                         maxLength={255}
-                        onChange={(e) => {
-                          const nextValue = e.target.value;
-                          setIdentifier(/[A-Za-zÀ-ÿ@]/.test(nextValue) ? nextValue : formatBrazilianPhone(nextValue));
-                        }}
+                        onChange={(e) => setIdentifier(e.target.value)}
                         onFocus={() => setFocusedField("identifier")}
-                        onBlur={() => { setFocusedField(null); setTouched(true); }}
+                        onBlur={() => {
+                          setFocusedField(null);
+                          const value = identifier.trim();
+                          if (value && !value.includes("@")) {
+                            setIdentifier(formatBrazilianPhone(value));
+                          }
+                          setTouched(true);
+                        }}
                         onKeyDown={(event) => {
                           if (event.key === "Enter" && !password) {
                             event.preventDefault();
