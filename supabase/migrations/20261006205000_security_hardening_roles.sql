@@ -1,6 +1,6 @@
 -- Vellune Digital — security hardening
--- Idempotent live-database hardening: restrict administrative policies to authenticated
--- callers and remove direct EXECUTE from trigger-only SECURITY DEFINER functions.
+-- Incremental role hardening based on the live database definitions inspected on 2026-10-06.
+-- No data, tables, triggers, constraints or function bodies are changed here.
 
 BEGIN;
 
@@ -57,12 +57,5 @@ ALTER POLICY "subscription_plans_super_admin_update"
 REVOKE EXECUTE ON FUNCTION public.prevent_company_admin_privilege_changes() FROM PUBLIC, anon, authenticated;
 REVOKE EXECUTE ON FUNCTION public.validate_guest_checkin_company() FROM PUBLIC, anon, authenticated;
 REVOKE EXECUTE ON FUNCTION public.validate_invitation_guest_company() FROM PUBLIC, anon, authenticated;
-
-
--- Additional verified live-database hardening.
-ALTER POLICY "users_company_isolation_restrictive" ON public.users TO authenticated;
-REVOKE EXECUTE ON FUNCTION public.set_updated_at() FROM PUBLIC, anon, authenticated;
-REVOKE EXECUTE ON FUNCTION public.prevent_invitation_access_token_update() FROM PUBLIC, anon, authenticated;
-REVOKE EXECUTE ON FUNCTION public.prevent_guest_identity_update() FROM PUBLIC, anon, authenticated;
 
 COMMIT;
