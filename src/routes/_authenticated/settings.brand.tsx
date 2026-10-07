@@ -16,7 +16,7 @@ import { getDemoBranding, isDemoMode, saveDemoBranding, type DemoBranding } from
 export const Route = createFileRoute("/_authenticated/settings/brand")({ component: BrandPage });
 
 function BrandPage() {
-  const { appUser! } = Route.useRouteContext();
+  const { appUser } = Route.useRouteContext();
   const companyId = appUser!.company?.id;
   const qc = useQueryClient();
   const brand = useQuery({ queryKey: companyId ? brandKey(companyId) : ["brand-identity", "none"], queryFn: () => getBrandIdentity(companyId!), enabled: !!companyId });
