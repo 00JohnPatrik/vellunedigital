@@ -1,4 +1,4 @@
-import { AlignCenter, AlignLeft, AlignRight, Bold, BringToFront, Copy, Crop, Italic, MoreHorizontal, SendToBack, SlidersHorizontal, Trash2, Image as ImageIcon, Lock, Unlock, Underline, Strikethrough } from "lucide-react";
+import { AlignCenter, AlignLeft, AlignRight, AlignStartVertical, AlignVerticalJustifyCenter, AlignEndVertical, Bold, BringToFront, Copy, Crop, Italic, MoreHorizontal, SendToBack, SlidersHorizontal, Trash2, Image as ImageIcon, Lock, Unlock, Underline, Strikethrough } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { FONTS } from "@/lib/blocks";
@@ -15,6 +15,7 @@ export function EditorQuickToolbar({ selected, onProp, onDuplicate, onDelete, on
   onImage: (action: ImageAction) => void;
   onLock: () => void;
   onLayer?: (direction: "front" | "back") => void;
+  onAlign?: (mode: "left" | "center" | "right" | "top" | "middle" | "bottom") => void;
 }) {
   const primary = selected[0];
   if (!primary) return null;
@@ -97,7 +98,18 @@ export function EditorQuickToolbar({ selected, onProp, onDuplicate, onDelete, on
       </div>
       <Button size="sm" variant="ghost" disabled={locked} onClick={() => onImage("adjust")}><SlidersHorizontal />Ajustes</Button>
     </>}
-    {selected.length > 1 && !text && <span className="px-2 text-xs text-muted-foreground">{selected.length} elementos</span>}
+    {selected.length > 1 && !text && onAlign && <div className="flex items-center rounded-md border border-input bg-background" role="group" aria-label="Alinhamento da seleção">
+      <Button variant="ghost" size="icon" className="h-8 w-8 rounded-r-none" aria-label="Alinhar à esquerda" title="Alinhar à esquerda" onClick={() => onAlign("left")}><AlignLeft /></Button>
+      <Button variant="ghost" size="icon" className="h-8 w-8 rounded-none border-l" aria-label="Centralizar horizontalmente" title="Centralizar horizontalmente" onClick={() => onAlign("center")}><AlignCenter /></Button>
+      <Button variant="ghost" size="icon" className="h-8 w-8 rounded-none border-l" aria-label="Alinhar à direita" title="Alinhar à direita" onClick={() => onAlign("right")}><AlignRight /></Button>
+      <Button variant="ghost" size="icon" className="h-8 w-8 rounded-none border-l" aria-label="Alinhar ao topo" title="Alinhar ao topo" onClick={() => onAlign("top")}><AlignStartVertical /></Button>
+      <Button variant="ghost" size="icon" className="h-8 w-8 rounded-none border-l" aria-label="Centralizar verticalmente" title="Centralizar verticalmente" onClick={() => onAlign("middle")}><AlignVerticalJustifyCenter /></Button>
+      <Button variant="ghost" size="icon" className="h-8 w-8 rounded-l-none border-l" aria-label="Alinhar à base" title="Alinhar à base" onClick={() => onAlign("bottom")}><AlignEndVertical /></Button>
+    </div>}
+    {selected.length > 2 && !text && onAlign && <div className="flex items-center rounded-md border border-input bg-background" role="group" aria-label="Distribuição da seleção">
+      <Button variant="ghost" size="sm" className="h-8 px-2 text-[10px]" title="Distribuir horizontalmente" onClick={() => onAlign("center")} aria-label="Distribuir horizontalmente">Distribuir X</Button>
+      <Button variant="ghost" size="sm" className="h-8 rounded-l-none border-l px-2 text-[10px]" title="Distribuir verticalmente" onClick={() => onAlign("middle")} aria-label="Distribuir verticalmente">Distribuir Y</Button>
+    </div>}
     <span className="mx-1 h-5 w-px bg-border" />
     {onLayer && <div className="flex items-center rounded-md border border-input bg-background" role="group" aria-label="Ordem das camadas">
       <Button variant="ghost" size="icon" className="h-8 w-8 rounded-r-none" disabled={locked} aria-label="Enviar seleção para trás" title="Enviar para trás" onClick={() => onLayer("back")}><SendToBack /></Button>
