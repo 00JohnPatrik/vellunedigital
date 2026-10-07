@@ -692,6 +692,9 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra }: { h: Bl
               onChange={(update, group) => h.set(update, group)}
               onDuplicate={duplicateByIds}
               onDelete={removeByIds}
+              onUndo={h.undo}
+              onRedo={h.redo}
+              onClearSelection={() => setSelectedIds([])}
               onLayer={(direction, ids) => reorderSelectedLayers(direction, ids)}
               onGroup={(ids) => {
                 if (ids.length < 2) return;
