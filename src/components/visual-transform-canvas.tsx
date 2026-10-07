@@ -348,10 +348,23 @@ export function VisualTransformCanvas({ blocks, selectedIds: selectedIdsProp, zo
         return;
       }
 
-      const movable = blocks.filter((block: any) => selectedIds.includes(block.id) && !block.locked);
-      if (!movable.length) return;
       if (event.key === "Escape") { finish(); return; }
       const groupCommand = event.ctrlKey || event.metaKey;
+      if (groupCommand && event.key.toLowerCase() === "d") {
+        event.preventDefault();
+        onDuplicate?.(selectedIds);
+        return;
+      }
+      if (event.key === "Delete" || event.key === "Backspace") {
+        const deletableIds = selectedIds.filter((id) => !blocks.find((block: any) => block.id === id)?.locked);
+        if (deletableIds.length) {
+          event.preventDefault();
+          onDelete?.(deletableIds);
+        }
+        return;
+      }
+      const movable = blocks.filter((block: any) => selectedIds.includes(block.id) && !block.locked);
+      if (!movable.length) return;
       if (groupCommand && event.key.toLowerCase() === "g" && !event.shiftKey) {
         event.preventDefault();
         if (selectedIds.length > 1) onGroup?.(selectedIds);
