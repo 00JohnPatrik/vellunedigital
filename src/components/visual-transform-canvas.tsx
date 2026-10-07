@@ -21,6 +21,8 @@ type Props = {
   onAdvanced?: () => void;
   onLayer?: (direction: "front" | "back", ids: string[]) => void;
   onAlign?: (mode: "left" | "center" | "right" | "top" | "middle" | "bottom" | "distributeX" | "distributeY", ids: string[]) => void;
+  onOpacity?: (value: number, ids: string[]) => void;
+  onRotate?: (amount: number, ids: string[]) => void;
   onGroup?: (ids: string[]) => void;
   onUngroup?: (ids: string[]) => void;
   onImageAction?: (id: string, action: ImageAction) => void;
@@ -611,6 +613,8 @@ export function VisualTransformCanvas({ blocks, selectedIds: selectedIdsProp, zo
           onLock={toggleLockSelected}
           onLayer={(direction) => onLayer?.(direction, selectedIds)}
           onAlign={(mode) => onAlign?.(mode, selectedIds)}
+          onOpacity={(value) => onOpacity?.(value, selectedIds)}
+          onRotate={(amount) => onRotate?.(amount, selectedIds)}
         />
       </div>
     )}
