@@ -41,7 +41,7 @@ export type SmartFunctionalConfig = {
   images?: SmartGalleryImage[];
   socialLinks?: SmartSocialLink[];
   gifts?: SmartGift[];
-  hosts?: Array<{ name: string; role?: string; image?: string }>;
+  hosts?: SmartHost[];
   story?: string;
   rsvpTitle?: string;
   rsvpLabel?: string;
