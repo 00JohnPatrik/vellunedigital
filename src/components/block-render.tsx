@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { AlertTriangle, CalendarDays, ChevronLeft, ChevronRight, Clock, Maximize2, MapPin, MessageCircle, Navigation, X } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
-import { PreviewImage } from "@/components/template-ui";
 import { RsvpForm } from "@/components/rsvp-form";
 import { BLOCKS, getBlockGeometry, type Background, type Block } from "@/lib/templates";
 import { fontCss, formatDate, formatTime, isKnownType, pick, type EventCtx } from "@/lib/blocks";
@@ -19,6 +18,14 @@ const BTN_STYLE: Record<string, string> = {
   outline: "border border-primary text-primary",
   soft: "bg-secondary text-secondary-foreground",
 };
+
+function MediaFallback({ name = "Imagem" }: { name?: string }) {
+  return (
+    <div className="flex aspect-video w-full items-center justify-center rounded-lg border border-dashed bg-muted px-4 text-center text-xs text-muted-foreground">
+      {name || "Imagem indisponível"}
+    </div>
+  );
+}
 
 function Row({ align = "center", children }: { align?: string | undefined; children: ReactNode }) {
   return <div className={cn("flex w-full", ALIGN[align] ?? ALIGN["center"])}>{children}</div>;
@@ -449,7 +456,7 @@ function ImageBlock({ p }: { p: Record<string, string> }) {
   return (
     <Row align={p["align"]}>
       <div className={frameClass}>
-        {src ? <img src={src} alt={p["alt"] ?? ""} className={cn("h-full w-full", p["height"] === "auto" && "h-auto")} loading="lazy" style={imageStyle} /> : <PreviewImage src={src} name={p["alt"] ?? ""} className={cn(IMG_HEIGHT[p["height"] ?? "wide"] || "aspect-video", IMG_POS[p["position"] ?? "center"])} />}
+        {src ? <img src={src} alt={p["alt"] ?? ""} className={cn("h-full w-full", p["height"] === "auto" && "h-auto")} loading="lazy" style={imageStyle} /> : <MediaFallback name={p["alt"] ?? "Imagem indisponível"} />}
       </div>
     </Row>
   );
