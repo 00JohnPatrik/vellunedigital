@@ -100,14 +100,14 @@ function LoginPage() {
   }
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-[#070b16] text-white selection:bg-cyan-300/30">
+    <main className="relative min-h-[100dvh] w-full overflow-x-hidden overflow-y-auto bg-[#070b16] text-white selection:bg-cyan-300/30">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_15%_10%,rgba(34,211,238,0.14),transparent_32%),radial-gradient(circle_at_88%_82%,rgba(129,96,255,0.18),transparent_35%),linear-gradient(135deg,#070b16_0%,#0b1224_52%,#080b17_100%)]" />
       <div className="pointer-events-none absolute -left-24 top-20 h-80 w-80 rounded-full border border-cyan-300/10 bg-cyan-300/[0.03] blur-sm" />
       <div className="pointer-events-none absolute right-[-8rem] top-[-5rem] h-[30rem] w-[30rem] rounded-full border border-violet-300/10 bg-violet-400/[0.04] blur-3xl" />
       <div className="pointer-events-none absolute bottom-[-12rem] left-1/3 h-96 w-96 rounded-full bg-cyan-500/[0.06] blur-3xl" />
       <div className="pointer-events-none absolute inset-0 opacity-[0.045] [background-image:linear-gradient(rgba(255,255,255,0.8)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.8)_1px,transparent_1px)] [background-size:72px_72px]" />
 
-      <div className="relative z-10 mx-auto grid min-h-screen w-full max-w-7xl items-center gap-12 px-5 py-8 sm:px-8 lg:grid-cols-[minmax(0,1fr)_minmax(390px,470px)] lg:gap-20 lg:px-12 lg:py-12">
+      <div className="relative z-10 mx-auto grid min-h-[100dvh] w-full max-w-7xl items-center gap-12 px-4 py-6 sm:px-8 sm:py-8 lg:grid-cols-[minmax(0,1fr)_minmax(390px,470px)] lg:gap-20 lg:px-12 lg:py-12">
         <section className="hidden max-w-xl lg:block" aria-label="Vellune Digital">
           <div className="mb-20 flex items-center">
             <Logo className="h-14 w-[250px] text-white" />
@@ -134,10 +134,10 @@ function LoginPage() {
 
         <section className="w-full max-w-[470px] justify-self-center">
           <div className="mb-8 flex items-center justify-center lg:hidden">
-            <Logo className="h-11 w-[205px] text-white" />
+            <Logo className="h-12 w-[220px] text-white" />
           </div>
 
-          <div className="rounded-[2rem] border border-white/[0.14] bg-white/[0.075] p-6 shadow-[0_24px_90px_rgba(0,0,0,0.42)] backdrop-blur-2xl sm:p-9">
+          <div className="rounded-[2rem] border border-white/[0.08] bg-white/[0.075] p-5 shadow-[0_24px_90px_rgba(0,0,0,0.42)] backdrop-blur-2xl sm:p-9">
             {mode === "recovery" ? (
               <div>
                 <button type="button" onClick={showLogin} className="mb-8 text-xs font-medium text-slate-400 transition-colors hover:text-cyan-200">← Voltar ao login</button>
