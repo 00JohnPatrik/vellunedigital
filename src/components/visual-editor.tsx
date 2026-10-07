@@ -422,13 +422,10 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra }: { h: Bl
     interaction.current = null; setMarquee(null);
   };
   const addElement = (type: BlockType) => {
-    const block = newBlock(type);
-    const size = getBlockDefaultSize(type);
-    h.set((items) => {
-      const y = Math.min(1200, Math.max(24, ...items.map((item: any, index: number) => getPosition(item, index).y + getSize(item, index).height + 24)));
-      return [...items, { ...block, x: 32, y, width: size.width, height: size.height, zIndex: getNextBlockZIndex(items) }];
-    });
-    setSelectedIds([block.id]);
+    // Keep every insertion path on the same flow so text/images behave
+    // identically whether added from desktop shortcuts, mobile drawer,
+    // category bar or the element library.
+    addBlockByType(type);
   };
   const duplicate = () => {
     if (!selectedIds.length) return;
@@ -445,6 +442,13 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra }: { h: Bl
       if (target.closest("input, textarea, [contenteditable=true], [role=combobox]")) return;
       const command = event.ctrlKey || event.metaKey;
       const key = event.key.toLowerCase();
+      // Canva-style quick text insertion: T creates a text element and
+      // immediately enters text editing while the canvas is focused.
+      if (!command && !event.altKey && key === "t") {
+        event.preventDefault();
+        addBlockByType("text");
+        return;
+      }
       if (command && key === "z") { event.preventDefault(); event.shiftKey ? h.redo() : h.undo(); }
       else if (command && key === "y") { event.preventDefault(); h.redo(); }
       else if (command && key === "c" && selectedIds.length) {
@@ -591,7 +595,9 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra }: { h: Bl
               onDuplicate={duplicateByIds}
               onDelete={removeByIds}
               onImageAction={openImageAction}
-              onAdvanced={() => {
+              startEditingId={startEditingTextId}
+              onStartEditingHandled={handleStartEditingHandled}
+              onAdvanced={() => {}
                 if (compact) {
                   setMobileSheet("properties");
                   return;
