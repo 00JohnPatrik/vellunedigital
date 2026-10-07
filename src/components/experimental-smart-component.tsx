@@ -156,7 +156,7 @@ export function SmartComponentPreview({ element }: { element: any }): React.Reac
       case "hosts": return <div className="grid gap-3 sm:grid-cols-2">{(f.hosts || []).map((host: SmartHost) => <div key={host.name} className="flex items-center gap-2 text-left">{host.image ? <img src={host.image} alt="" className="h-10 w-10 rounded-full object-cover" /> : <UsersRound className="h-8 w-8 text-primary" />}<span><strong className="block text-sm">{host.name}</strong><small className="text-muted-foreground">{host.role}</small></span></div>)}</div>;
       case "special_text":
       case "story": return <p className="whitespace-pre-wrap text-left leading-relaxed">{f.story || "Escreva aqui a história do evento."}</p>;
-      case "social": return <div className="flex flex-wrap justify-center gap-2">{(f.socialLinks || []).map((link) => <ActionLink key={link.label} href={link.url} className="variant-outline"><ExternalLink className="mr-2 h-4 w-4" />{link.label}</ActionLink>)}</div>;
+      case "social": return <div className="flex flex-wrap justify-center gap-2">{(f.socialLinks || []).map((link: SmartSocialLink) => <ActionLink key={link.label} href={link.url} className="variant-outline"><ExternalLink className="mr-2 h-4 w-4" />{link.label}</ActionLink>)}</div>;
       default: return null;
     }
   })();
