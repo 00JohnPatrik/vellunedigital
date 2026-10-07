@@ -67,14 +67,14 @@ export function AuthCard({
           </div>
         </section>
 
-        <section className="flex h-full min-h-0 items-center justify-center overflow-hidden px-3 py-2 sm:px-8 sm:py-5 lg:border-l lg:border-white/[0.045] lg:bg-white/[0.012] xl:px-16">
-          <div className="flex max-h-full w-full max-w-[430px] min-h-0 flex-col py-0.5 sm:py-2">
+        <section className="flex h-full min-h-0 items-center justify-center overflow-hidden px-3 py-2 sm:px-8 sm:py-5 lg:overflow-visible lg:border-l lg:border-white/[0.045] lg:bg-white/[0.012] xl:px-16">
+          <div className="flex w-full max-w-[430px] min-h-0 shrink-0 flex-col py-0.5 sm:py-2">
             <div className="mb-3 flex w-full shrink-0 justify-center lg:hidden sm:mb-7">
               <Logo className="h-10 w-auto max-w-[72vw] text-white transition-opacity duration-500 hover:opacity-90 sm:h-14" />
             </div>
 
             <div
-              className="relative max-h-full w-full overflow-hidden rounded-[20px] border border-white/[0.075] bg-[#111318]/94 p-4 shadow-[0_30px_100px_rgba(0,0,0,0.46),inset_0_1px_0_rgba(255,255,255,0.035)] ring-1 ring-white/[0.018] backdrop-blur-xl sm:rounded-[28px] sm:p-9"
+              className="relative w-full overflow-hidden rounded-[20px] border border-white/[0.075] bg-[#111318]/94 p-4 shadow-[0_30px_100px_rgba(0,0,0,0.46),inset_0_1px_0_rgba(255,255,255,0.035)] ring-1 ring-white/[0.018] backdrop-blur-xl sm:rounded-[28px] sm:p-9"
               style={{ animation: "velluneAuthFadeUp 800ms cubic-bezier(.22,1,.36,1)" }}
             >
               <div className="pointer-events-none absolute inset-x-10 top-0 h-px bg-gradient-to-r from-transparent via-[#d4af37]/35 to-transparent" />
