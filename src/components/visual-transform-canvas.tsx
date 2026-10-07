@@ -20,6 +20,7 @@ type Props = {
   onDelete?: (ids: string[]) => void;
   onAdvanced?: () => void;
   onLayer?: (direction: "front" | "back", ids: string[]) => void;
+  onAlign?: (mode: "left" | "center" | "right" | "top" | "middle" | "bottom" | "distributeX" | "distributeY", ids: string[]) => void;
   onGroup?: (ids: string[]) => void;
   onUngroup?: (ids: string[]) => void;
   onImageAction?: (id: string, action: ImageAction) => void;
@@ -609,6 +610,7 @@ export function VisualTransformCanvas({ blocks, selectedIds: selectedIdsProp, zo
           onImage={imageAction}
           onLock={toggleLockSelected}
           onLayer={(direction) => onLayer?.(direction, selectedIds)}
+          onAlign={(mode) => onAlign?.(mode, selectedIds)}
         />
       </div>
     )}
