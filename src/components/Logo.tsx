@@ -9,7 +9,7 @@ type LogoProps = {
 export function Logo({ className, markOnly = false, title = "Vellune Digital" }: LogoProps) {
   return (
     <svg
-      viewBox={markOnly ? "0 0 80 80" : "0 0 360 80"}
+      viewBox={markOnly ? "0 0 80 80" : "0 0 330 80"}
       role="img"
       aria-label={title}
       className={cn("block h-auto w-auto", className)}
@@ -46,7 +46,7 @@ export function Logo({ className, markOnly = false, title = "Vellune Digital" }:
       {!markOnly && (
         <>
           <text
-            x="89"
+            x="84"
             y="35"
             fill="currentColor"
             fontFamily="Sora, Manrope, Arial, sans-serif"
@@ -57,7 +57,7 @@ export function Logo({ className, markOnly = false, title = "Vellune Digital" }:
             VELLUNE
           </text>
           <text
-            x="91"
+            x="86"
             y="56"
             fill="currentColor"
             fontFamily="Manrope, Arial, sans-serif"
