@@ -160,6 +160,7 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra }: { h: Bl
   const [toolCategory, setToolCategory] = useState("Elementos");
   const [templateOpen, setTemplateOpen] = useState(false);
   const [startEditingTextId, setStartEditingTextId] = useState<string | null>(null);
+  const [imageReplaceId, setImageReplaceId] = useState<string | null>(null);
   const compact = useIsCompact();
   const [marquee, setMarquee] = useState<{ x: number; y: number; width: number; height: number } | null>(null);
   const interaction = useRef<{ mode: "drag" | "resize" | "marquee" | "background"; id?: string; startX: number; startY: number; originX?: number; originY?: number; originWidth?: number; originHeight?: number; selected?: string[] } | null>(null);
@@ -201,11 +202,32 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra }: { h: Bl
     h.set((current) => [...current, block]);
     setSelectedIds([block.id]);
     setStartEditingTextId(type === "text" ? block.id : null);
+    setImageReplaceId(null);
   };
   const addImageByUrl = (url: string) => {
     if (!url) return;
     addBlockByType("image", { url });
   };
+  const replaceSelectedImage = (url: string) => {
+    if (!imageReplaceId || !url) return;
+    h.set((items) => items.map((item: any) => item.id === imageReplaceId && item.type === "image"
+      ? { ...item, props: { ...(item.props || {}), url } }
+      : item), "image:replace");
+    setSelectedIds([imageReplaceId]);
+    setImageReplaceId(null);
+    if (compact) setMobileSheet(null);
+  };
+  const openImageAction = (id: string, action: "replace" | "crop" | "adjust") => {
+    setSelectedIds([id]);
+    if (action === "replace") {
+      setImageReplaceId(id);
+      setToolCategory("Imagens");
+      setContextPanel("elements");
+      if (compact) setMobileSheet("elements");
+      requestAnimationFrame(() => document.getElementById("editor-elements-library")?.scrollIntoView({ behavior: "smooth", block: "nearest" }));
+    }
+  };
+  const cancelImageReplace = () => setImageReplaceId(null);
   const handleStartEditingHandled = useCallback(() => setStartEditingTextId(null), []);
   const duplicateByIds = (ids: string[]) => {
     if (!ids.length) return;
@@ -559,6 +581,7 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra }: { h: Bl
               onChange={(update, group) => h.set(update, group)}
               onDuplicate={duplicateByIds}
               onDelete={removeByIds}
+              onImageAction={openImageAction}
               onAdvanced={() => {
                 if (compact) {
                   setMobileSheet("properties");
@@ -611,13 +634,16 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra }: { h: Bl
             </div>
           )}
           {mobileSheet === "elements" && (
-            <div className="grid grid-cols-2 gap-2">
-              {(Object.keys(BLOCKS) as BlockType[]).map((type) => (
-                <button key={type} type="button" className="rounded-lg border px-3 py-2 text-left text-xs" onClick={() => { addElement(type); setMobileSheet(null); }}>
-                  + {BLOCKS[type].label}
-                </button>
-              ))}
-            </div>
+            <ElementsLibrary
+              id="editor-elements-library-mobile"
+              availableTypes={(Object.keys(BLOCKS) as BlockType[])}
+              assets={assets as any}
+              onAdd={(type) => { addBlockByType(type); setMobileSheet(null); }}
+              onAddImage={addImageByUrl}
+              imageMode={imageReplaceId ? "replace" : "add"}
+              onSelectImage={replaceSelectedImage}
+              onCancelImageReplace={cancelImageReplace}
+            />
           )}
           {mobileSheet === "layers" && (
             <div className="space-y-2">
@@ -737,7 +763,7 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra }: { h: Bl
               <button type="button" className="rounded px-1.5 py-1 text-[11px] text-destructive hover:bg-destructive/10" aria-label={`Excluir ${getBlockLabel(block)}`} onClick={() => removeByIds([block.id])}>Excluir</button>
             </div>)}
           </div>
-        </div> : <ElementsLibrary availableTypes={(toolCategory === "Texto" ? ["text"] : toolCategory === "Imagens" ? ["image", "gallery"] : toolCategory === "Botões" ? ["button", "whatsapp"] : toolCategory === "RSVP" ? ["rsvp"] : toolCategory === "QR Code" ? ["qr_code"] : Object.keys(BLOCKS)) as BlockType[]} assets={assets as any} onAdd={addBlockByType} onAddImage={addImageByUrl} />}
+        </div> : <ElementsLibrary id="editor-elements-library" availableTypes={(toolCategory === "Texto" ? ["text"] : toolCategory === "Imagens" ? ["image", "gallery"] : toolCategory === "Botões" ? ["button", "whatsapp"] : toolCategory === "RSVP" ? ["rsvp"] : toolCategory === "QR Code" ? ["qr_code"] : Object.keys(BLOCKS)) as BlockType[]} assets={assets as any} onAdd={addBlockByType} onAddImage={addImageByUrl} imageMode={imageReplaceId ? "replace" : "add"} onSelectImage={replaceSelectedImage} onCancelImageReplace={cancelImageReplace} />}
       </section>
       <p className="text-xs text-muted-foreground">Arraste com mouse ou toque, use Shift para snap, Shift/Ctrl para múltipla seleção, Ctrl/Cmd+C para copiar, Ctrl/Cmd+V para colar e arraste o fundo para selecionar uma área. Alterações são persistidas pelo autosave existente.</p>
       <TemplateGallery open={templateOpen} onClose={() => setTemplateOpen(false)} onApply={applyStarterTemplate} hasContent={blocks.length > 0} />
