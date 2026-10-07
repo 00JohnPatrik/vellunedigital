@@ -175,7 +175,7 @@
 }
 
 .dark .vellune-editor-root {
-  --vellune-editor-line: color-mix(in oklch, white 8%, transparent);
+  --vellune-editor-line: color-mix(in oklch, oklch(1 0 0 / 8%), transparent);
   --vellune-editor-line-strong: color-mix(in oklch, var(--color-primary) 34%, transparent);
   --vellune-editor-surface: oklch(0.155 0.035 254);
   --vellune-editor-panel: oklch(0.175 0.035 254);
