@@ -45,7 +45,7 @@ function LoginPage() {
   const [loginSuccess, setLoginSuccess] = useState(false);
   const [focusedField, setFocusedField] = useState<string | null>(null);
   const [capsLockOn, setCapsLockOn] = useState(false);
-  const [phoneCooldown, setPhoneCooldown] = useState(0);
+  const [loginCooldown, setLoginCooldown] = useState(0);
   const passwordRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
@@ -61,10 +61,10 @@ function LoginPage() {
   }, []);
 
   useEffect(() => {
-    if (phoneCooldown <= 0) return;
-    const timer = window.setTimeout(() => setPhoneCooldown((value) => Math.max(0, value - 1)), 1000);
+    if (loginCooldown <= 0) return;
+    const timer = window.setTimeout(() => setLoginCooldown((value) => Math.max(0, value - 1)), 1000);
     return () => window.clearTimeout(timer);
-  }, [phoneCooldown]);
+  }, [loginCooldown]);
 
   function formatBrazilianPhone(value: string) {
     const digits = value.replace(/\D/g, "").slice(0, 11);
@@ -108,6 +108,7 @@ function LoginPage() {
       (id.includes("@") && !z.string().email().safeParse(id).success) ||
       (!id.includes("@") && (localDigits.length < 10 || localDigits.length > 11));
     if (invalidIdentifier || !password) return;
+    if (loginCooldown > 0) return;
 
     setLoading(true);
     try {
@@ -141,9 +142,7 @@ function LoginPage() {
       navigate({ to: homeFor(appUser), replace: true });
     } catch (err) {
       const message = err instanceof Error && err.message ? err.message : friendlyAuthError();
-      if (!id.includes("@")) {
-        setPhoneCooldown(/muitas|rate|too many/i.test(message) ? 15 : 2);
-      }
+      setLoginCooldown(/muitas|rate|too many/i.test(message) ? 15 : 2);
       setError(message);
     } finally {
       setLoading(false);
@@ -392,13 +391,13 @@ function LoginPage() {
 
                   {error && <div role="alert" className="rounded-xl border border-red-300/15 bg-red-400/[0.07] px-4 py-3 text-sm leading-6 text-red-200">{error}</div>}
 
-                  <Button type="submit" disabled={loading || phoneCooldown > 0} className="group mt-2 h-12 w-full rounded-xl bg-[#d4af37] font-semibold text-[#16130b] shadow-[0_12px_34px_rgba(212,175,55,0.10)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#e5c66b] hover:shadow-[0_16px_38px_rgba(212,175,55,0.16)] active:translate-y-0 disabled:cursor-default disabled:opacity-100">
+                  <Button type="submit" disabled={loading || loginCooldown > 0} className="group mt-2 h-12 w-full rounded-xl bg-[#d4af37] font-semibold text-[#16130b] shadow-[0_12px_34px_rgba(212,175,55,0.10)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#e5c66b] hover:shadow-[0_16px_38px_rgba(212,175,55,0.16)] active:translate-y-0 disabled:cursor-default disabled:opacity-100">
                     {loginSuccess ? (
                       <span className="flex items-center justify-center gap-2">
                         <CheckCircle2 className="h-4 w-4" style={{ animation: "velluneSuccess 260ms cubic-bezier(.22,1,.36,1)" }} />
                         Acesso confirmado
                       </span>
-                    ) : loading ? "Entrando..." : phoneCooldown > 0 ? `Aguarde ${phoneCooldown}s...` : <span className="flex items-center justify-center gap-2">Entrar na conta <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" /></span>}
+                    ) : loading ? "Entrando..." : loginCooldown > 0 ? `Aguarde ${loginCooldown}s...` : <span className="flex items-center justify-center gap-2">Entrar na conta <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" /></span>}
                   </Button>
 
                   <p className="text-center text-xs text-white/35">Primeira vez aqui? <a href="/first-access" className="font-semibold text-white/65 transition-colors hover:text-[#e5c66b]">Faça seu primeiro acesso</a></p>
