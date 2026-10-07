@@ -1,6 +1,6 @@
 // @ts-nocheck
 import { useCallback, useEffect, useRef, useState, type ComponentType } from "react";
-import { BackgroundLayers, BlockView } from "@/components/block-render";
+import { BackgroundLayers } from "@/components/block-render";
 import { VisualTransformCanvas } from "@/components/visual-transform-canvas";
 
 import { BackgroundPropertiesPanel, ContextualPropertiesPanel } from "@/components/contextual-properties-panel";
@@ -123,26 +123,11 @@ const CONTROLS: Record<BlockType, Ctl[]> = {
 
 const SWITCH_DEFAULT_ON = new Set(["show_name", "show_address", "show_city", "show_directions"]);
 
-export const BLOCK_ICONS: Record<string, unknown> = {};
-
-const blockLabel = (b: Block) => (isKnownType(b.type) ? BLOCKS[b.type].label : `Desconhecido (${String(b.type)})`);
 
 /* ---------------- Editor ---------------- */
 
 type Device = "mobile" | "tablet" | "desktop";
 const DEVICE_W: Record<Device, string> = { mobile: "max-w-[390px]", tablet: "max-w-[768px]", desktop: "max-w-[1024px]" };
-
-const EDITOR_CATEGORIES: Record<string, BlockType[]> = {
-  Elementos: ["date", "time", "location", "countdown", "divider"],
-  Texto: ["text"],
-  Imagens: ["image", "gallery"],
-  Botões: ["button", "whatsapp"],
-  RSVP: ["rsvp"],
-  "QR Code": ["qr_code"],
-  Camadas: [],
-  Fundo: [],
-  Exibir: [],
-};
 
 const RSVP_DUP = "Este convite já possui confirmação de presença.";
 const ELEMENT_ICONS: Partial<Record<BlockType, ComponentType<{ className?: string }>>> = {
@@ -154,17 +139,14 @@ const ELEMENT_ICONS: Partial<Record<BlockType, ComponentType<{ className?: strin
   rsvp: CheckCircle2,
 };
 const GRID_UNIT = 16;
-type EditorPointer = { clientX: number; clientY: number };
-
 export type EditorPoint = { x: number; y: number };
 
-export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra }: { h: BlocksHistory; ctx?: unknown; assets?: unknown; bg?: unknown; onBg?: (value: any) => void; toolbarExtra?: React.ReactNode }) {
+export function VisualEditor({ h, ctx, assets, bg, onBg }: { h: BlocksHistory; ctx?: unknown; assets?: unknown; bg?: unknown; onBg?: (value: any) => void }) {
   const canvasRef = useRef<HTMLDivElement>(null);
   const viewportRef = useRef<HTMLDivElement>(null);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [zoom, setZoom] = useState(100);
   const [showGrid, setShowGrid] = useState(true);
-  const [contextPanel, setContextPanel] = useState<"elements" | "layers" | "background" | "view" | null>("elements");
   const [mobileSheet, setMobileSheet] = useState<"elements" | "layers" | "properties" | "background" | "view" | null>(null);
   const [toolCategory, setToolCategory] = useState("Modelos");
   const [templateOpen, setTemplateOpen] = useState(false);
@@ -195,8 +177,6 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra }: { h: Bl
   const clipboard = useRef<any[]>([]);
   const blocks = Array.isArray(h?.blocks) ? h.blocks : [];
   const selected = blocks.filter((block: any) => selectedIds.includes(block.id));
-  const editorCategories = EDITOR_CATEGORIES;
-  const categoryGroups = editorCategories;
   const applyStarterTemplate = (content: any) => {
     h.set(structuredClone(content.blocks ?? []), "template:apply");
     onBg?.(structuredClone(content.settings?.background ?? {}));
