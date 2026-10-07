@@ -265,6 +265,7 @@ export function VisualTransformCanvas({ blocks, selectedIds: selectedIdsProp, zo
   const [selectAllOnTextEdit, setSelectAllOnTextEdit] = useState(true);
   const editingTextRef = useRef<HTMLTextAreaElement | null>(null);
   const textLongPress = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lastTextTap = useRef<{ id: string; at: number; x: number; y: number } | null>(null);
   const groupMembers = (ids: string[]) => {
     const groups = new Set(
       blocks
@@ -693,8 +694,33 @@ export function VisualTransformCanvas({ blocks, selectedIds: selectedIdsProp, zo
           }
         }}
         onPointerMove={move}
-        onPointerUp={end}
-        onPointerCancel={end}
+        onPointerUp={(event) => {
+          if (event.pointerType === "touch" && block.type === "text" && !block.locked) {
+            const point = pointerPoint(event, canvasRef.current, zoom);
+            const previous = lastTextTap.current;
+            const isDoubleTap = previous
+              && previous.id === block.id
+              && Date.now() - previous.at < 360
+              && Math.hypot(point.x - previous.x, point.y - previous.y) < 18;
+            if (isDoubleTap) {
+              cancelTextLongPress();
+              interaction.current = null;
+              setGuides([]);
+              lastTextTap.current = null;
+              startTextEditing(block, true);
+              event.preventDefault();
+              event.stopPropagation();
+              return;
+            }
+            lastTextTap.current = { id: block.id, at: Date.now(), x: point.x, y: point.y };
+          }
+          end(event);
+        }}
+        onPointerCancel={(event) => {
+          cancelTextLongPress();
+          lastTextTap.current = null;
+          end(event);
+        }}
         onClick={(event) => {
           event.stopPropagation();
           const additive = event.shiftKey || event.ctrlKey || event.metaKey;
