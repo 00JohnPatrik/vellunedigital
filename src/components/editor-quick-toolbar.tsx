@@ -24,6 +24,14 @@ export function EditorQuickToolbar({ selected, onProp, onDuplicate, onDelete, on
   const bold = p.fontWeight === "bold" || Number(p.fontWeight) >= 600 || (!p.fontWeight && p.bold === "1");
   return <div className="editor-quick-toolbar flex max-w-full flex-wrap items-center gap-1 rounded-lg border border-border bg-popover p-1.5 text-popover-foreground shadow-elevated" role="toolbar" aria-label="Ações do elemento selecionado" onPointerDown={(event) => event.stopPropagation()}>
     {text && <fieldset disabled={locked} className="flex min-w-0 flex-wrap items-center gap-1">
+      {selected.length === 1 && <Input
+        aria-label="Conteúdo do texto"
+        title="Editar texto"
+        value={p.text ?? ""}
+        onChange={(event) => onProp("text", event.target.value)}
+        placeholder="Digite o texto..."
+        className="h-8 w-44 text-xs"
+      />}
       <select aria-label="Fonte do texto" value={p.font || "display"} onChange={(event) => onProp("font", event.target.value)} className="h-8 w-28 rounded-md border border-input bg-background px-2 text-xs">{FONTS.map((font) => <option key={font.value} value={font.value}>{font.label.replace(" (padrão)", "")}</option>)}</select>
       <Input type="number" aria-label="Tamanho do texto" min={1} max={240} className="h-8 w-16 px-2 text-xs" value={p.fontSize ?? ({ sm: 14, md: 16, lg: 20, xl: 30, "2xl": 36 } as Record<string, number>)[p.size ?? "lg"] ?? 20} onChange={(event) => { const size = Number(event.target.value); if (size >= 1 && size <= 240) onProp("fontSize", String(size)); }} />
       <Button size="icon" variant={bold ? "secondary" : "ghost"} className="h-8 w-8" title="Negrito" aria-label="Negrito" aria-pressed={bold} onClick={() => onProp("fontWeight", bold ? "normal" : "bold")}><Bold /></Button>
