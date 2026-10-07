@@ -329,7 +329,7 @@ function LoginPage() {
   }
 
   return (
-    <main className="vellune-login-root fixed inset-0 h-[100dvh] w-full max-w-full overflow-hidden overflow-x-clip overscroll-none bg-[#08090d] text-white selection:bg-[#d4af37]/25" style={{ colorScheme: "dark" }}>
+    <main className="vellune-login-root relative min-h-[100svh] w-full max-w-full overflow-x-clip bg-[#08090d] overscroll-y-auto lg:fixed lg:inset-0 lg:h-[100dvh] lg:overflow-hidden lg:overscroll-none text-white selection:bg-[#d4af37]/25" style={{ colorScheme: "dark" }}>
       <style>{`
         @keyframes velluneFadeUp {
           from { opacity: 0; transform: translateY(10px); }
@@ -361,11 +361,11 @@ function LoginPage() {
       <div className="pointer-events-none absolute -right-40 -bottom-40 h-[34rem] w-[34rem] rounded-full border border-white/[0.035]" />
       <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(90deg,transparent_0%,rgba(255,255,255,0.018)_50%,transparent_100%)]" />
 
-      <div className="relative z-10 mx-auto grid h-full min-h-0 w-full max-w-[1440px] grid-cols-1 lg:h-full lg:grid-cols-[1.15fr_0.85fr] vellune-motion" style={{ animation: "velluneFadeUp 650ms cubic-bezier(.22,1,.36,1)" }}>
+      <div className="relative z-10 mx-auto grid min-h-[100svh] w-full max-w-[1440px] grid-cols-1 lg:h-full lg:min-h-0 lg:grid-cols-[1.15fr_0.85fr] vellune-motion" style={{ animation: "velluneFadeUp 650ms cubic-bezier(.22,1,.36,1)" }}>
         <AuthPremiumVisual />
 
         {/* Authentication side */}
-        <section ref={authScrollRef} className="flex h-full min-h-0 items-stretch justify-start overflow-y-auto overflow-x-clip overscroll-contain bg-[#08090d] px-3 pt-[max(1rem,env(safe-area-inset-top))] pb-[max(1rem,env(safe-area-inset-bottom))] sm:px-8 sm:py-5 lg:h-full lg:min-h-0 lg:items-stretch lg:justify-start lg:overflow-y-auto lg:border-l lg:border-white/[0.045] lg:bg-white/[0.012] xl:px-16">
+        <section ref={authScrollRef} className="flex min-h-[100svh] items-stretch justify-start overflow-x-clip bg-[#08090d] lg:h-full lg:min-h-0 lg:overflow-y-auto lg:overscroll-contain px-3 pt-[max(1rem,env(safe-area-inset-top))] pb-[max(1rem,env(safe-area-inset-bottom))] sm:px-8 sm:py-5 lg:h-full lg:min-h-0 lg:items-stretch lg:justify-start lg:overflow-y-auto lg:border-l lg:border-white/[0.045] lg:bg-white/[0.012] xl:px-16">
           <div className="my-auto mx-auto w-full max-w-[430px] shrink-0 py-1 sm:py-2">
             <div className="mb-4 flex w-full shrink-0 flex-col items-center justify-center lg:hidden sm:mb-9">
               <Logo className="h-12 w-auto max-w-[78vw] text-white transition-opacity duration-500 hover:opacity-90 sm:h-16" />
@@ -378,7 +378,7 @@ function LoginPage() {
               <div key={`${mode}-${recoverySent ? "sent" : "form"}`} className="vellune-auth-panel-motion">
               {mode === "recovery" ? (
                 <div>
-                  <button type="button" onClick={showLogin} className="mb-5 text-xs font-medium text-white/40 transition-colors hover:text-[#e5c66b]">
+                  <button type="button" onClick={showLogin} className="mb-5 text-xs font-medium text-white/40 transition-colors hover:text-[#e5c66b] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d4af37]/20 rounded-md px-1 py-1">
                     ← Voltar ao login
                   </button>
                   {recoverySent ? (
@@ -507,7 +507,7 @@ function LoginPage() {
                   <div className="space-y-2">
                     <div className="flex items-center justify-between gap-3">
                       <Label htmlFor="password" className="text-xs font-medium text-white/65">Senha</Label>
-                      <button type="button" onClick={() => { setMode("recovery"); setRecoveryEmail(identifier.includes("@") ? identifier.trim() : ""); setError(null); setTouched(false); setAuthUnavailable(false); }} className="rounded-md px-1.5 py-1 text-xs font-medium text-[#d4af37] transition-[color,background-color] duration-200 hover:bg-[#d4af37]/[0.06] hover:text-[#e5c66b] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d4af37]/20">Esqueci minha senha</button>
+                      <button type="button" onClick={() => { setMode("recovery"); setRecoveryEmail(identifier.includes("@") ? identifier.trim() : ""); setError(null); setTouched(false); setAuthUnavailable(false); window.requestAnimationFrame(() => window.scrollTo({ top: 0, behavior: "smooth" })); }} className="rounded-md px-1.5 py-1 text-xs font-medium text-[#d4af37] transition-[color,background-color] duration-200 hover:bg-[#d4af37]/[0.06] hover:text-[#e5c66b] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d4af37]/20">Esqueci minha senha</button>
                     </div>
                     <div className="relative">
                       <span className={`pointer-events-none absolute -inset-1 rounded-2xl bg-[radial-gradient(circle_at_18%_50%,rgba(212,175,55,0.12),transparent_58%)] blur-md transition-opacity duration-300 ${focusedField === "password" ? "opacity-100" : "opacity-0"}`} />
