@@ -110,7 +110,7 @@ function LoginPage() {
       <div className="relative z-10 mx-auto grid min-h-screen w-full max-w-7xl items-center gap-12 px-5 py-8 sm:px-8 lg:grid-cols-[minmax(0,1fr)_minmax(390px,470px)] lg:gap-20 lg:px-12 lg:py-12">
         <section className="hidden max-w-xl lg:block" aria-label="Vellune Digital">
           <div className="mb-20 flex items-center">
-            <Logo className="h-12 text-white" />
+            <Logo className="h-14 w-[250px] text-white" />
           </div>
 
           <div className="space-y-7">
@@ -134,7 +134,7 @@ function LoginPage() {
 
         <section className="w-full max-w-[470px] justify-self-center">
           <div className="mb-8 flex items-center justify-center lg:hidden">
-            <Logo className="h-9 text-white" />
+            <Logo className="h-11 w-[205px] text-white" />
           </div>
 
           <div className="rounded-[2rem] border border-white/[0.14] bg-white/[0.075] p-6 shadow-[0_24px_90px_rgba(0,0,0,0.42)] backdrop-blur-2xl sm:p-9">
