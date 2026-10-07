@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useCallback, useEffect, useRef, useState, type ComponentType } from "react";
 import { BackgroundLayers } from "@/components/block-render";
 import { VisualTransformCanvas } from "@/components/visual-transform-canvas";
