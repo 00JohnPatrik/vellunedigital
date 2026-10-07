@@ -27,7 +27,7 @@ function InvitationsPage() {
   const q = useQuery({ queryKey: invitationsKey, queryFn: listInvitations });
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<Filter>("all");
-  const isSuper = Route.useRouteContext().appUser.role === "super_admin";
+  const isSuper = Route.useRouteContext().appUser!.role === "super_admin";
   const [toDelete, setToDelete] = useState<Invitation | null>(null);
   const [busy, setBusy] = useState(false);
 
