@@ -171,9 +171,13 @@ function RootComponent() {
     let signingOut = false;
 
     const readLastActivity = () => {
-      const raw = window.sessionStorage.getItem(SESSION_ACTIVITY_KEY);
-      const value = raw ? Number(raw) : 0;
-      return Number.isFinite(value) ? value : 0;
+      try {
+        const raw = window.sessionStorage.getItem(SESSION_ACTIVITY_KEY);
+        const value = raw ? Number(raw) : 0;
+        return Number.isFinite(value) ? value : 0;
+      } catch {
+        return 0;
+      }
     };
 
     const endSessionForIdle = () => {
@@ -194,7 +198,11 @@ function RootComponent() {
         return;
       }
       lastWrite = now;
-      window.sessionStorage.setItem(SESSION_ACTIVITY_KEY, String(now));
+      try {
+        window.sessionStorage.setItem(SESSION_ACTIVITY_KEY, String(now));
+      } catch {
+        // Ignore storage restrictions; Supabase remains the source of session truth.
+      }
     };
 
     const activityEvents = ["pointerdown", "keydown", "touchstart", "scroll"] as const;
@@ -208,10 +216,18 @@ function RootComponent() {
 
     const { data } = supabase.auth.onAuthStateChange((event) => {
       if (event === "SIGNED_IN") {
-        window.sessionStorage.setItem(SESSION_ACTIVITY_KEY, String(Date.now()));
+        try {
+          window.sessionStorage.setItem(SESSION_ACTIVITY_KEY, String(Date.now()));
+        } catch {
+          // Ignore storage restrictions.
+        }
       }
       if (event === "SIGNED_OUT") {
-        window.sessionStorage.removeItem(SESSION_ACTIVITY_KEY);
+        try {
+          window.sessionStorage.removeItem(SESSION_ACTIVITY_KEY);
+        } catch {
+          // Ignore storage restrictions.
+        }
       }
       if (event !== "SIGNED_IN" && event !== "SIGNED_OUT" && event !== "USER_UPDATED" && event !== "TOKEN_REFRESHED") return;
       router.invalidate();
