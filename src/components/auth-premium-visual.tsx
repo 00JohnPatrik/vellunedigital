@@ -7,8 +7,11 @@ export function AuthPremiumVisual() {
       <style>{`
         @media (max-height: 840px) and (min-width: 1024px) {
           .vellune-auth-visual { padding-top: 1.5rem; padding-bottom: 1.5rem; }
-          .vellune-auth-visual-content { padding-bottom: .75rem; }
+          .vellune-auth-visual-content { padding-bottom: .75rem; scrollbar-width: none; }
+        .vellune-auth-visual-content::-webkit-scrollbar { display: none; }
           .vellune-auth-visual-headline { font-size: clamp(2.65rem, 4.2vw, 4.35rem); }
+        .vellune-auth-visual-preview { margin-top: 1rem; }
+        .vellune-auth-visual-footer { gap: 1.15rem; font-size: 9px; }
           .vellune-auth-visual-copy { margin-top: 1rem; max-width: 28rem; line-height: 1.55; }
           .vellune-auth-visual-pills { margin-top: 1.1rem; }
           .vellune-auth-visual-preview { margin-top: 1.15rem; transform: scale(.86); transform-origin: left bottom; margin-bottom: -1.6rem; }
@@ -32,7 +35,7 @@ export function AuthPremiumVisual() {
           <p className="mt-1 text-[9px] font-semibold uppercase tracking-[0.3em] text-white/25">Seu espaço de criação</p>
         </div>
       </div>
-      <div className="vellune-auth-visual-content relative flex min-h-0 flex-1 items-center max-w-[650px] overflow-visible pb-3 xl:pb-5">
+      <div className="vellune-auth-visual-content relative flex min-h-0 flex-1 items-center max-w-[650px] overflow-y-auto overflow-x-visible overscroll-contain pb-3 xl:pb-5">
         <div className="pointer-events-none absolute -left-28 -top-24 h-64 w-64 rounded-full bg-[#d4af37]/[0.035] blur-3xl" />
         <div className="relative">
           
