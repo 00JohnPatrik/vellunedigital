@@ -117,8 +117,8 @@ export function ImagePropertiesPanel({ selected, assets, onChange }: ImagePanelP
           <div className="space-y-1">
             <Label className="text-[11px] text-muted-foreground">Ajuste</Label>
             <select value={fit} onChange={(event) => update("objectFit", event.target.value)} className="flex h-8 w-full rounded-md border border-input bg-background px-2 text-xs text-foreground">
-              <option value="cover">Cover · cobrir</option>
-              <option value="contain">Contain · conter</option>
+              <option value="cover">Preencher</option>
+              <option value="contain">Mostrar inteira</option>
               <option value="original">Original</option>
             </select>
           </div>
@@ -139,8 +139,12 @@ export function ImagePropertiesPanel({ selected, assets, onChange }: ImagePanelP
         </label>
       </div>
 
-      <div className="space-y-2 rounded-lg border bg-background/40 p-2">
-        <p className="text-[11px] font-semibold text-foreground">Ajustes da imagem</p>
+      <details className="group rounded-lg border border-primary/10 bg-background/35">
+        <summary className="flex cursor-pointer list-none items-center justify-between p-2.5 text-[11px] font-semibold text-foreground [&::-webkit-details-marker]:hidden">
+          Mais ajustes da imagem
+          <span className="text-muted-foreground transition-transform group-open:rotate-180">⌄</span>
+        </summary>
+        <div className="space-y-2 border-t border-border/60 p-2">
         <label className="block space-y-1 text-[11px] text-muted-foreground">
           Brilho: {brightness}%
           <input type="range" min="0" max="200" value={brightness} onChange={(event) => updateNumber("imageBrightness", Number(event.target.value), 0, 200)} className="w-full accent-primary" />
@@ -153,7 +157,8 @@ export function ImagePropertiesPanel({ selected, assets, onChange }: ImagePanelP
           Saturação: {saturate}%
           <input type="range" min="0" max="200" value={saturate} onChange={(event) => updateNumber("imageSaturate", Number(event.target.value), 0, 200)} className="w-full accent-primary" />
         </label>
-      </div>
+        </div>
+      </details>
     </section>
   );
 }
