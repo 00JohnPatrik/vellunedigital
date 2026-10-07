@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, type ComponentType } from "react";
 import { BackgroundLayers, BlockView } from "@/components/block-render";
 import { VisualTransformCanvas } from "@/components/visual-transform-canvas";
 
@@ -145,7 +145,7 @@ const EDITOR_CATEGORIES: Record<string, BlockType[]> = {
 };
 
 const RSVP_DUP = "Este convite já possui confirmação de presença.";
-const ELEMENT_ICONS: Partial<Record<BlockType, React.ComponentType<{ className?: string }>>> = {
+const ELEMENT_ICONS: Partial<Record<BlockType, ComponentType<{ className?: string }>>> = {
   text: Type,
   image: ImageIcon,
   date: CalendarDays,
