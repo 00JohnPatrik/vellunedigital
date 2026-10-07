@@ -137,7 +137,7 @@ function LoginPage() {
             <Logo className="h-13 w-[232px] text-white" />
           </div>
 
-          <div className="rounded-[2rem] border border-white/[0.08] bg-white/[0.075] p-5 shadow-[0_24px_90px_rgba(0,0,0,0.42)] backdrop-blur-2xl sm:p-9">
+          <div className="rounded-[2rem] bg-white/[0.075] p-5 shadow-[0_24px_90px_rgba(0,0,0,0.42)] backdrop-blur-2xl sm:p-9">
             {mode === "recovery" ? (
               <div>
                 <button type="button" onClick={showLogin} className="mb-8 text-xs font-medium text-slate-400 transition-colors hover:text-cyan-200">← Voltar ao login</button>
