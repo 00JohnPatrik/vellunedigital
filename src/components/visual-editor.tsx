@@ -217,6 +217,61 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra }: { h: Bl
     if (!url) return;
     addBlockByType("image", { url });
   };
+
+  const alignSelectedOnCanvas = (mode: "left" | "center" | "right" | "top" | "middle" | "bottom" | "distributeX" | "distributeY", ids: string[]) => {
+    const targetIds = Array.from(new Set(ids));
+    if (targetIds.length < 2) return;
+    h.set((items) => {
+      const selectedItems = items
+        .map((block: any, index: number) => ({ block, index, position: getPosition(block, index), size: getSize(block, index) }))
+        .filter(({ block }) => targetIds.includes(block.id) && !block.locked);
+      if (selectedItems.length < 2) return items;
+
+      if (mode === "distributeX" || mode === "distributeY") {
+        if (selectedItems.length < 3) return items;
+        const axis = mode === "distributeX" ? "x" : "y";
+        const sizeKey = mode === "distributeX" ? "width" : "height";
+        const ordered = [...selectedItems].sort((a, b) => a.position[axis] - b.position[axis]);
+        const first = ordered[0];
+        const last = ordered[ordered.length - 1];
+        const firstStart = first.position[axis];
+        const lastEnd = last.position[axis] + last.size[sizeKey];
+        const totalSize = ordered.reduce((sum, entry) => sum + entry.size[sizeKey], 0);
+        const gap = (lastEnd - firstStart - totalSize) / Math.max(1, ordered.length - 1);
+        let cursor = firstStart;
+        const next = new Map<string, number>();
+        ordered.forEach((entry) => {
+          next.set(entry.block.id, Math.round(cursor));
+          cursor += entry.size[sizeKey] + gap;
+        });
+        return items.map((block: any) => {
+          const value = next.get(block.id);
+          return value === undefined ? block : { ...block, [axis]: value };
+        });
+      }
+
+      const left = Math.min(...selectedItems.map((entry) => entry.position.x));
+      const right = Math.max(...selectedItems.map((entry) => entry.position.x + entry.size.width));
+      const top = Math.min(...selectedItems.map((entry) => entry.position.y));
+      const bottom = Math.max(...selectedItems.map((entry) => entry.position.y + entry.size.height));
+      const centerX = (left + right) / 2;
+      const centerY = (top + bottom) / 2;
+
+      return items.map((block: any) => {
+        const entry = selectedItems.find((item) => item.block.id === block.id);
+        if (!entry) return block;
+        const nextX = mode === "left" ? left
+          : mode === "center" ? centerX - entry.size.width / 2
+          : mode === "right" ? right - entry.size.width
+          : entry.position.x;
+        const nextY = mode === "top" ? top
+          : mode === "middle" ? centerY - entry.size.height / 2
+          : mode === "bottom" ? bottom - entry.size.height
+          : entry.position.y;
+        return { ...block, x: Math.round(nextX), y: Math.round(nextY) };
+      });
+    }, `selection:align:${mode}`);
+  };
   const replaceSelectedImage = (url: string) => {
     if (!imageReplaceId || !url) return;
     h.set((items) => items.map((item: any) => item.id === imageReplaceId && item.type === "image"
@@ -696,6 +751,7 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra }: { h: Bl
               onRedo={h.redo}
               onClearSelection={() => setSelectedIds([])}
               onLayer={(direction, ids) => reorderSelectedLayers(direction, ids)}
+              onAlign={(mode, ids) => alignSelectedOnCanvas(mode, ids)}
               onGroup={(ids) => {
                 if (ids.length < 2) return;
                 const groupId = `group-${crypto.randomUUID()}`;
