@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { AlertCircle, CheckCircle2, LoaderCircle, Mail, MailCheck, Sparkles } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { z } from "zod";
 import { AuthCard } from "@/components/auth-card";
 import { Button } from "@/components/ui/button";
@@ -32,6 +32,7 @@ function FirstAccessPage() {
   const [loading, setLoading] = useState(false);
   const [resendCooldown, setResendCooldown] = useState(0);
   const [authUnavailable, setAuthUnavailable] = useState(false);
+  const emailRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     if (resendCooldown <= 0) return;
@@ -152,6 +153,8 @@ function FirstAccessPage() {
               <Input
                 id="email"
                 type="email"
+                ref={emailRef}
+                enterKeyHint="send"
                 inputMode="email"
                 autoComplete="email"
                 autoCapitalize="none"
@@ -162,20 +165,27 @@ function FirstAccessPage() {
                 onBlur={() => { if (email.trim() && !z.string().email().safeParse(email.trim()).success) { setError("Digite um e-mail válido, como voce@empresa.com."); setErrorIsValidation(true); } }}
                 maxLength={255}
                 placeholder="voce@empresa.com"
-                aria-invalid={Boolean(error)}
-                aria-describedby={error ? "first-access-error" : undefined}
+                aria-invalid={errorIsValidation}
+                aria-describedby={errorIsValidation ? "first-access-error" : undefined}
                 className="peer relative z-10 h-12 rounded-xl border-white/[0.08] bg-[#111318]/90 pl-10 text-white placeholder:text-white/20 transition-[border-color,box-shadow,background-color] duration-300 focus-visible:border-[#d4af37]/55 focus-visible:ring-2 focus-visible:ring-[#d4af37]/12 focus-visible:shadow-[0_0_0_1px_rgba(212,175,55,0.14),0_10px_35px_rgba(212,175,55,0.05)]"
               />
             </div>
           </div>
 
-          {error && (
-            <div id="first-access-error" role="alert" aria-live="assertive" className="flex items-start gap-3 rounded-xl border border-red-300/15 bg-red-400/[0.07] px-3.5 py-2.5 text-[12.5px] leading-5 text-red-200">
-              <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-red-200/10 bg-red-200/[0.06]">
-                <AlertCircle className="h-3.5 w-3.5" />
+          {error && errorIsValidation && (
+            <p id="first-access-error" role="alert" aria-live="assertive" className="flex items-center gap-1.5 text-[11px] leading-5 text-red-300/90">
+              <AlertCircle className="h-3.5 w-3.5 shrink-0" />
+              {error}
+            </p>
+          )}
+
+          {error && !errorIsValidation && (
+            <div id="first-access-error" role="alert" aria-live="assertive" className="vellune-auth-error flex items-start gap-2.5 rounded-xl border border-red-300/15 bg-red-400/[0.07] px-3.5 py-2.5 text-[12.5px] leading-5 text-red-200">
+              <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-red-200/10 bg-red-200/[0.06]">
+                <AlertCircle className="h-3 w-3" />
               </span>
               <div>
-                <p className="font-medium text-red-100/95">{errorIsValidation ? "Confira o e-mail" : "Não foi possível enviar"}</p>
+                <p className="font-medium text-red-100/95">Não foi possível enviar</p>
                 <p className="mt-0.5 text-[12px] text-red-200/75">{error}</p>
               </div>
             </div>
