@@ -59,6 +59,27 @@ function LoginPage() {
   const requestLockRef = useRef(false);
 
   useEffect(() => {
+    const html = document.documentElement;
+    const body = document.body;
+    const previous = {
+      htmlBackground: html.style.backgroundColor,
+      bodyBackground: body.style.backgroundColor,
+      htmlColorScheme: html.style.colorScheme,
+      bodyColorScheme: body.style.colorScheme,
+    };
+    html.style.backgroundColor = "#08090d";
+    body.style.backgroundColor = "#08090d";
+    html.style.colorScheme = "dark";
+    body.style.colorScheme = "dark";
+    return () => {
+      html.style.backgroundColor = previous.htmlBackground;
+      body.style.backgroundColor = previous.bodyBackground;
+      html.style.colorScheme = previous.htmlColorScheme;
+      body.style.colorScheme = previous.bodyColorScheme;
+    };
+  }, []);
+
+  useEffect(() => {
     if (requestedMode === "recovery") return;
 
     let cancelled = false;
@@ -340,7 +361,7 @@ function LoginPage() {
       <div className="pointer-events-none absolute -right-40 -bottom-40 h-[34rem] w-[34rem] rounded-full border border-white/[0.035]" />
       <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(90deg,transparent_0%,rgba(255,255,255,0.018)_50%,transparent_100%)]" />
 
-      <div className="relative z-10 mx-auto grid min-h-full w-full max-w-[1440px] grid-cols-1 lg:h-full lg:grid-cols-[1.15fr_0.85fr] vellune-motion" style={{ animation: "velluneFadeUp 650ms cubic-bezier(.22,1,.36,1)" }}>
+      <div className="relative z-10 mx-auto grid h-full min-h-0 w-full max-w-[1440px] grid-cols-1 lg:h-full lg:grid-cols-[1.15fr_0.85fr] vellune-motion" style={{ animation: "velluneFadeUp 650ms cubic-bezier(.22,1,.36,1)" }}>
         <AuthPremiumVisual />
 
         {/* Authentication side */}
