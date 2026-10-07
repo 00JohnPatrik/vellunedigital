@@ -85,13 +85,14 @@ export function NotificationCenter({ appUser }: { appUser: AppUser }) {
 
 export function CompanyDashboardEnhancements({ companyId }: { companyId: string }) {
   const invitations = useQuery({ queryKey: ["phase7", "recent-invitations"], queryFn: listInvitations, staleTime: 30_000 });
+  const storagePrefix = `vellune-company-${companyId}`;
   const [favorites, setFavorites] = useState<string[]>([]);
   const [onboardingDone, setOnboardingDone] = useState(false);
 
   useEffect(() => {
     try {
-      setFavorites(JSON.parse(window.localStorage.getItem("vellune-favorite-invitations") ?? "[]"));
-      setOnboardingDone(window.localStorage.getItem("vellune-onboarding-complete") === "true");
+      setFavorites(JSON.parse(window.localStorage.getItem(`${storagePrefix}-favorite-invitations`) ?? "[]"));
+      setOnboardingDone(window.localStorage.getItem(`${storagePrefix}-onboarding-complete`) === "true");
     } catch { /* armazenamento local indisponível não impede o dashboard */ }
   }, []);
 
@@ -99,11 +100,11 @@ export function CompanyDashboardEnhancements({ companyId }: { companyId: string 
   const toggleFavorite = (id: string) => {
     const next = favorites.includes(id) ? favorites.filter((value) => value !== id) : [...favorites, id];
     setFavorites(next);
-    window.localStorage.setItem("vellune-favorite-invitations", JSON.stringify(next));
+    window.localStorage.setItem(`${storagePrefix}-favorite-invitations`, JSON.stringify(next));
   };
   const completeOnboarding = () => {
     setOnboardingDone(true);
-    window.localStorage.setItem("vellune-onboarding-complete", "true");
+    window.localStorage.setItem(`${storagePrefix}-onboarding-complete`, "true");
   };
 
   return <div className="mt-6 grid gap-6 xl:grid-cols-[1.35fr_1fr]">
