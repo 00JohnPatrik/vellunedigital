@@ -168,7 +168,7 @@ export function TemplateGallery({ open, onClose, onApply, hasContent }: Template
             {filtered.length > 0 ? (
               <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
                 {filtered.map((item) => (
-                  <button key={item.id} type="button" onClick={() => select(item.id)} className={cn("group rounded-xl border bg-card p-2 text-left transition-all hover:-translate-y-0.5 hover:border-primary/60 hover:shadow-md", selected?.id === item.id && "border-primary ring-2 ring-primary/20")}>
+                  <button key={item.id} type="button" onClick={() => select(item.id)} className={cn("group touch-manipulation rounded-xl border bg-card p-2 text-left shadow-sm transition-all active:scale-[.99] hover:-translate-y-0.5 hover:border-primary/60 hover:shadow-lg", selected?.id === item.id && "border-primary ring-2 ring-primary/20 shadow-md shadow-primary/10")}>
                     <PreviewCanvas content={item.content} />
                     <div className="p-1.5">
                       <div className="flex items-start gap-2">
