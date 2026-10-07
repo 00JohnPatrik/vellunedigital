@@ -39,7 +39,7 @@ export type SmartFunctionalConfig = {
   calendarUrl?: string;
   qrValue?: string;
   images?: SmartGalleryImage[];
-  socialLinks?: Array<{ label: string; url: string }>;
+  socialLinks?: SmartSocialLink[];
   gifts?: Array<{ name: string; url: string; claimed?: boolean }>;
   hosts?: Array<{ name: string; role?: string; image?: string }>;
   story?: string;
