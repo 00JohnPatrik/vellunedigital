@@ -18,10 +18,12 @@ export const sendAccessInvite = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: row } = await supabaseAdmin
       .from("users")
-      .select("id, email, auth_user_id, status, role")
+      .select("id, email, auth_user_id, status, role, deleted_at")
       .eq("id", data.userId)
       .maybeSingle();
-    if (!row || row.role !== "company_admin") return { ok: false as const, error: "Usuário não encontrado." };
+    if (!row || row.role !== "company_admin" || row.deleted_at) {
+      return { ok: false as const, error: "Usuário não encontrado." };
+    }
     if (row.status !== "active") return { ok: false as const, error: "Ative o usuário antes de enviar o acesso." };
 
     if (!row.auth_user_id) {
@@ -34,7 +36,19 @@ export const sendAccessInvite = createServerFn({ method: "POST" })
         console.error("invite createUser", error?.message);
         return { ok: false as const, error: "Não foi possível criar a conta de acesso." };
       }
-      await supabaseAdmin.from("users").update({ auth_user_id: created.user.id }).eq("id", row.id);
+
+      const { error: linkError } = await supabaseAdmin
+        .from("users")
+        .update({ auth_user_id: created.user.id })
+        .eq("id", row.id);
+
+      if (linkError) {
+        console.error("invite linkUser", linkError.message);
+        await supabaseAdmin.auth.admin.deleteUser(created.user.id).catch((cleanupError) => {
+          console.error("invite cleanupUser", cleanupError?.message);
+        });
+        return { ok: false as const, error: "Não foi possível vincular a conta de acesso." };
+      }
     }
 
     const { createClient } = await import("@supabase/supabase-js");
