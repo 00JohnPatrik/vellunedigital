@@ -94,7 +94,7 @@ export function CompanyDashboardEnhancements({ companyId }: { companyId: string 
       setFavorites(JSON.parse(window.localStorage.getItem(`${storagePrefix}-favorite-invitations`) ?? "[]"));
       setOnboardingDone(window.localStorage.getItem(`${storagePrefix}-onboarding-complete`) === "true");
     } catch { /* armazenamento local indisponível não impede o dashboard */ }
-  }, []);
+  }, [storagePrefix]);
 
   const rows = (invitations.data ?? []).slice(0, 6);
   const toggleFavorite = (id: string) => {
@@ -117,7 +117,7 @@ export function CompanyDashboardEnhancements({ companyId }: { companyId: string 
 }
 
 export function AdminPresence({ channelName = "presence:super-admin" }: { channelName?: string }) {
-  const [count, setCount] = useState(0);
+  const [count, setCount] = useState<number | null>(null);
   useEffect(() => {
     const channel = supabase.channel(channelName);
     const update = () => setCount(Object.keys(channel.presenceState()).length);
@@ -126,7 +126,7 @@ export function AdminPresence({ channelName = "presence:super-admin" }: { channe
     });
     return () => { void supabase.removeChannel(channel); };
   }, [channelName]);
-  return <div className="flex items-center gap-2 rounded-lg border bg-card px-3 py-2 text-sm text-muted-foreground"><Wifi className="h-4 w-4 text-emerald-500" /><span>{count} usuário(s) online</span></div>;
+  return <div className="flex items-center gap-2 rounded-lg border bg-card px-3 py-2 text-sm text-muted-foreground"><Wifi className="h-4 w-4 text-emerald-500" /><span>{count === null ? "Conectando à presença..." : `${count} usuário(s) online`}</span></div>;
 }
 
 export function ActivitySummary() {
