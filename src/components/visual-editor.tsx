@@ -164,6 +164,9 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra }: { h: Bl
   const [device, setDevice] = useState<"mobile" | "tablet" | "desktop">("tablet");
   const [canvasDragOver, setCanvasDragOver] = useState(false);
   const compact = useIsCompact();
+  useEffect(() => {
+    if (compact) setDevice("mobile");
+  }, [compact]);
   const [marquee, setMarquee] = useState<{ x: number; y: number; width: number; height: number } | null>(null);
   const interaction = useRef<{ mode: "drag" | "resize" | "marquee" | "background"; id?: string; startX: number; startY: number; originX?: number; originY?: number; originWidth?: number; originHeight?: number; selected?: string[] } | null>(null);
   const clipboard = useRef<any[]>([]);
@@ -669,7 +672,7 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra }: { h: Bl
     h.set((items) => items.map((item: any) => selectedIds.includes(item.id) ? { ...item, props: { ...(item.props ?? {}), [key]: value } } : item), "selection:properties");
   };
   return (
-    <div className="flex min-h-[680px] flex-col overflow-hidden rounded-2xl border border-border/70 bg-background shadow-2xl shadow-black/10">
+    <div className="flex min-h-[680px] flex-col overflow-hidden rounded-2xl border border-border/70 bg-background pb-20 shadow-2xl shadow-black/10 lg:pb-0">
       <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border/70 bg-card/95 px-3 py-2.5" role="toolbar" aria-label="Barra principal do editor">
         <div className="flex min-w-0 items-center gap-2">
           <div className="hidden items-center gap-0.5 rounded-lg border border-border/70 bg-background p-0.5 sm:flex" role="group" aria-label="Tamanho da tela do convite">
@@ -817,11 +820,32 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra }: { h: Bl
         </main>
         <aside id="editor-contextual-properties" className="hidden w-[320px] shrink-0 overflow-y-auto rounded-2xl border border-primary/15 bg-card/90 p-3 shadow-xl shadow-black/10 backdrop-blur-xl lg:block" aria-label="Painel contextual de propriedades"><div className="mb-3 flex items-center gap-2 border-b border-border/70 pb-3"><div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary/10 text-primary"><PanelRight className="h-3.5 w-3.5" /></div><div className="min-w-0"><p className="text-xs font-semibold text-foreground">Painel contextual</p><p className="text-[10px] text-muted-foreground">Ajustes do elemento selecionado</p></div></div><ContextualPropertiesPanel blocks={blocks} selectedIds={selectedIds} assets={assets as any} onChange={(update, group) => h.set(update, group)} onDuplicate={duplicateByIds} onDelete={removeByIds} /></aside>
       </div>
-      <div className="flex items-center justify-between gap-1.5 rounded-2xl border border-primary/15 bg-card/95 p-2 shadow-2xl shadow-black/25 backdrop-blur-xl lg:hidden" role="toolbar" aria-label="Ferramentas móveis do editor"><button type="button" className="flex flex-1 flex-col items-center gap-0.5 rounded-xl px-1 py-1.5 text-[10px] text-muted-foreground transition hover:bg-primary/10 hover:text-primary" onClick={() => setMobileSheet("elements")}><PanelLeft className="h-4 w-4" />Elementos</button><button type="button" className="flex flex-1 flex-col items-center gap-0.5 rounded-xl px-1 py-1.5 text-[10px] text-muted-foreground transition hover:bg-primary/10 hover:text-primary" onClick={() => setMobileSheet("layers")}><Grid3X3 className="h-4 w-4" />Camadas</button><button type="button" className="flex flex-1 flex-col items-center gap-0.5 rounded-xl px-1 py-1.5 text-[10px] text-muted-foreground transition hover:bg-primary/10 hover:text-primary" onClick={() => setMobileSheet("properties")}><PanelRight className="h-4 w-4" />Propriedades</button><button type="button" className="flex flex-1 flex-col items-center gap-0.5 rounded-xl px-1 py-1.5 text-[10px] text-muted-foreground transition hover:bg-primary/10 hover:text-primary" onClick={() => setMobileSheet("background")}><Sparkles className="h-4 w-4" />Fundo</button><button type="button" className="flex flex-1 flex-col items-center gap-0.5 rounded-xl px-1 py-1.5 text-[10px] text-muted-foreground transition hover:bg-primary/10 hover:text-primary" onClick={() => setMobileSheet("view")}><Grid3X3 className="h-4 w-4" />Exibir</button></div>
+      <div className="fixed inset-x-2 bottom-2 z-[70] lg:hidden">
+        {selectedIds.length > 0 && (
+          <div className="mb-2 flex items-center gap-1 overflow-x-auto rounded-2xl border border-primary/20 bg-card/95 p-2 shadow-2xl shadow-black/30 backdrop-blur-xl" role="toolbar" aria-label="Ações da seleção no mobile">
+            <button type="button" className="flex min-w-[64px] flex-col items-center gap-1 rounded-xl bg-primary/10 px-2 py-1.5 text-[10px] font-medium text-primary" onClick={() => setMobileSheet("properties")}><PanelRight className="h-4 w-4" />Editar</button>
+            <button type="button" className="flex min-w-[64px] flex-col items-center gap-1 rounded-xl px-2 py-1.5 text-[10px] text-muted-foreground hover:bg-primary/10 hover:text-primary" onClick={duplicate}><Plus className="h-4 w-4" />Duplicar</button>
+            <button type="button" className="flex min-w-[64px] flex-col items-center gap-1 rounded-xl px-2 py-1.5 text-[10px] text-muted-foreground hover:bg-primary/10 hover:text-primary" onClick={() => setMobileSheet("layers")}><Grid3X3 className="h-4 w-4" />Camadas</button>
+            <button type="button" className="flex min-w-[64px] flex-col items-center gap-1 rounded-xl px-2 py-1.5 text-[10px] text-muted-foreground hover:bg-primary/10 hover:text-primary" onClick={() => setMobileSheet("elements")}><Plus className="h-4 w-4" />Adicionar</button>
+            <button type="button" className="flex min-w-[64px] flex-col items-center gap-1 rounded-xl px-2 py-1.5 text-[10px] text-destructive hover:bg-destructive/10" onClick={remove}><PanelLeft className="h-4 w-4" />Excluir</button>
+            <button type="button" className="flex min-w-[64px] flex-col items-center gap-1 rounded-xl px-2 py-1.5 text-[10px] text-muted-foreground hover:bg-primary/10 hover:text-primary" onClick={() => setSelectedIds([])}><Undo2 className="h-4 w-4" />Fechar</button>
+          </div>
+        )}
+        <div className="flex items-center justify-between gap-1 rounded-2xl border border-primary/15 bg-card/95 p-2 shadow-2xl shadow-black/25 backdrop-blur-xl" role="toolbar" aria-label="Ferramentas móveis do editor">
+          <button type="button" className="flex min-w-0 flex-1 flex-col items-center gap-0.5 rounded-xl px-1 py-1.5 text-[10px] text-muted-foreground transition hover:bg-primary/10 hover:text-primary" onClick={() => setMobileSheet("elements")}><PanelLeft className="h-4 w-4" />Elementos</button>
+          <button type="button" className="flex min-w-0 flex-1 flex-col items-center gap-0.5 rounded-xl px-1 py-1.5 text-[10px] text-muted-foreground transition hover:bg-primary/10 hover:text-primary" onClick={() => setMobileSheet("layers")}><Grid3X3 className="h-4 w-4" />Camadas</button>
+          <button type="button" className="flex min-w-0 flex-1 flex-col items-center gap-0.5 rounded-xl px-1 py-1.5 text-[10px] text-muted-foreground transition hover:bg-primary/10 hover:text-primary" onClick={() => setTemplateOpen(true)}><Sparkles className="h-4 w-4" />Modelos</button>
+          <button type="button" className="flex min-w-0 flex-1 flex-col items-center gap-0.5 rounded-xl px-1 py-1.5 text-[10px] text-muted-foreground transition hover:bg-primary/10 hover:text-primary" onClick={() => setMobileSheet("view")}><Tablet className="h-4 w-4" />Zoom</button>
+          <button type="button" className="flex min-w-0 flex-1 flex-col items-center gap-0.5 rounded-xl px-1 py-1.5 text-[10px] text-muted-foreground transition hover:bg-primary/10 hover:text-primary" onClick={() => setMobileSheet("background")}><Sparkles className="h-4 w-4" />Fundo</button>
+        </div>
+      </div>
       {compact && mobileSheet && (
-        <div className="fixed inset-x-2 bottom-2 z-50 max-h-[70vh] overflow-y-auto rounded-2xl border border-border/80 bg-card p-4 shadow-2xl">
-          <div className="mb-3 flex items-center justify-between gap-3">
-            <p className="text-sm font-semibold">
+        <div className="fixed inset-0 z-[80] lg:hidden">
+          <button type="button" aria-label="Fechar painel" className="absolute inset-0 bg-background/55 backdrop-blur-[2px]" onClick={() => setMobileSheet(null)} />
+          <div className="absolute inset-x-0 bottom-0 max-h-[78vh] overflow-y-auto rounded-t-3xl border border-border/80 bg-card px-4 pb-[calc(env(safe-area-inset-bottom)+6.5rem)] pt-2 shadow-2xl">
+            <div className="mx-auto mb-3 mt-1 h-1 w-10 rounded-full bg-muted-foreground/30" aria-hidden="true" />
+            <div className="mb-3 flex items-center justify-between gap-3">
+              <p className="text-sm font-semibold">
               {mobileSheet === "properties" ? "Propriedades" : mobileSheet === "background" ? "Fundo" : mobileSheet === "view" ? "Exibição" : "Elementos"}
             </p>
             <button type="button" className="rounded-md border px-2 py-1 text-xs" onClick={() => setMobileSheet(null)}>Fechar</button>
