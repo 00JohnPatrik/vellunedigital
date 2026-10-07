@@ -162,6 +162,7 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra }: { h: Bl
   const [startEditingTextId, setStartEditingTextId] = useState<string | null>(null);
   const [imageReplaceId, setImageReplaceId] = useState<string | null>(null);
   const [device, setDevice] = useState<"mobile" | "tablet" | "desktop">("tablet");
+  const [canvasDragOver, setCanvasDragOver] = useState(false);
   const compact = useIsCompact();
   const [marquee, setMarquee] = useState<{ x: number; y: number; width: number; height: number } | null>(null);
   const interaction = useRef<{ mode: "drag" | "resize" | "marquee" | "background"; id?: string; startX: number; startY: number; originX?: number; originY?: number; originWidth?: number; originHeight?: number; selected?: string[] } | null>(null);
