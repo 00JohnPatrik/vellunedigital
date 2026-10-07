@@ -37,15 +37,25 @@ export const getPublicInvitation = createServerFn({ method: "GET" })
     const { data: res, error } = await supabaseAdmin.rpc("get_public_invitation" as never, { _slug: data.slug } as never);
     if (error) { console.error("get_public_invitation", error.message); throw new Error("Falha ao carregar o convite."); }
     const out = res as unknown as PublicInvitationResult;
-    if (out.state === "ok" && out.invitation.company_id) {
-      const { data: subscription } = await supabaseAdmin
-        .from("company_subscriptions")
-        .select("plan_id, status, expires_at")
-        .eq("company_id", out.invitation.company_id)
-        .eq("status", "active")
-        .order("created_at", { ascending: false })
-        .limit(1)
+    // The public SQL function intentionally does not expose company_id.
+    // Resolve the tenant internally on the server so custom branding can still be applied.
+    if (out.state === "ok") {
+      const { data: tenant } = await supabaseAdmin
+        .from("invitations")
+        .select("company_id")
+        .eq("slug", out.invitation.slug)
+        .in("status", ["published", "closed"])
         .maybeSingle();
+
+      if (tenant?.company_id) {
+        const { data: subscription } = await supabaseAdmin
+          .from("company_subscriptions")
+          .select("plan_id, status, expires_at")
+          .eq("company_id", tenant.company_id)
+          .eq("status", "active")
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
 
       const subscriptionIsActive =
         subscription &&
@@ -61,12 +71,12 @@ export const getPublicInvitation = createServerFn({ method: "GET" })
 
         const features = plan?.features as { custom_branding?: unknown } | null;
         if (features?.custom_branding === true) {
-          const { data: branding } = await supabaseAdmin
+            const { data: branding } = await supabaseAdmin
             .from("company_branding")
             .select("brand_name, logo_url, favicon_url, primary_color, secondary_color, accent_color, show_vellune_branding, whatsapp_number, contact_email, website_url")
             .eq("company_id", out.invitation.company_id)
             .maybeSingle();
-          out.invitation.branding = (branding ?? null) as NonNullable<PublicInvitation["branding"]> | null;
+            out.invitation.branding = (branding ?? null) as NonNullable<PublicInvitation["branding"]> | null;
         }
       }
     }
