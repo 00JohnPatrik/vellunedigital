@@ -642,20 +642,35 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra }: { h: Bl
         <main className="relative min-w-0 flex-1 overflow-hidden rounded-2xl border border-primary/10 bg-[radial-gradient(circle_at_top,hsl(var(--primary)/.1),transparent_36%),linear-gradient(145deg,hsl(var(--muted)/.5),hsl(var(--background)/.9))] p-2 shadow-inner sm:p-4 lg:p-5">
           <div className="mb-3 flex items-center justify-between gap-2 rounded-xl border border-primary/15 bg-card/85 px-3 py-2.5 shadow-lg shadow-black/10 backdrop-blur-xl lg:hidden"><div className="flex min-w-0 items-center gap-2"><div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary"><Sparkles className="h-3.5 w-3.5" /></div><div className="min-w-0"><p className="truncate text-xs font-semibold">Editor visual</p><p className="truncate text-[10px] text-muted-foreground">Composição livre e responsiva</p></div></div><span className="rounded-md bg-muted/70 px-2 py-1 text-xs font-medium text-muted-foreground">{zoom}%</span></div>
           <div className="h-full overflow-auto rounded-2xl border border-primary/10 bg-background/35 p-2 shadow-inner sm:p-4 lg:p-6"><div className="mx-auto origin-top transition-transform" style={{ width: `${100 / (zoom / 100)}%`, minHeight: canvasHeight / (zoom / 100) }}><div ref={canvasRef} className={`relative isolate mx-auto w-full ${DEVICE_W[device]} overflow-hidden rounded-2xl border bg-card shadow-sm ${showGrid ? "[background-image:linear-gradient(to_right,hsl(var(--border)/.25)_1px,transparent_1px),linear-gradient(to_bottom,hsl(var(--border)/.25)_1px,transparent_1px)] [background-size:16px_16px]" : ""}`} style={{ minHeight: canvasHeight, backgroundColor: bg && (bg as any).color ? (bg as any).color : undefined, transform: `scale(${zoom / 100})`, transformOrigin: "top center" }} onPointerDown={(event) => { if (event.target === event.currentTarget) { const p = canvasPoint(event); interaction.current = { mode: "marquee", startX: p.x, startY: p.y }; setSelectedIds([]); } }} onPointerMove={moveInteraction} onPointerUp={stopInteraction} onPointerCancel={stopInteraction}
+              onDragEnter={(event) => {
+                if (event.dataTransfer.types.includes("application/x-vellune-block-type")) {
+                  canvasDragDepth.current += 1;
+                  setCanvasDragOver(true);
+                }
+              }}
+              onDragLeave={(event) => {
+                if (!event.dataTransfer.types.includes("application/x-vellune-block-type")) return;
+                canvasDragDepth.current = Math.max(0, canvasDragDepth.current - 1);
+                if (canvasDragDepth.current === 0) setCanvasDragOver(false);
+              }}
               onDragOver={(event) => {
                 if (event.dataTransfer.types.includes("application/x-vellune-block-type")) {
                   event.preventDefault();
                   event.dataTransfer.dropEffect = "copy";
+                  setCanvasDragOver(true);
                 }
               }}
               onDrop={(event) => {
                 const type = event.dataTransfer.getData("application/x-vellune-block-type") as BlockType;
+                canvasDragDepth.current = 0;
+                setCanvasDragOver(false);
                 if (!type || !(Object.keys(BLOCKS) as string[]).includes(type)) return;
                 event.preventDefault();
                 const point = canvasPoint(event);
                 addBlockByType(type, undefined, point);
               }}
               aria-label="Área de edição do convite"><BackgroundLayers bg={bg as any} />
+              {canvasDragOver && <div className="pointer-events-none absolute inset-3 z-[120] flex items-center justify-center rounded-xl border-2 border-dashed border-primary bg-primary/10 backdrop-blur-[2px]"><div className="rounded-full border border-primary/20 bg-background/90 px-4 py-2 text-xs font-semibold text-primary shadow-lg">Solte para adicionar ao convite</div></div>}
               {(bg as any)?.image && (
                 <div
                   className="absolute inset-0 z-[1] cursor-grab active:cursor-grabbing"
@@ -902,6 +917,7 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra }: { h: Bl
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [selected, setSelectedValue] = useState<string | null>(null);
   const [device, setDevice] = useState<Device>("mobile");
+  const canvasDragDepth = useRef(0);
   const [zoom, setZoom] = useState(100);
   const [previewOnly, setPreviewOnly] = useState(false);
   const [focusMode, setFocusMode] = useState(false);
