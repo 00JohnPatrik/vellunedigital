@@ -15,6 +15,9 @@ type Props = {
   ctx?: unknown;
   onSelect: (id: string, additive: boolean) => void;
   onChange: (update: (blocks: Block[]) => Block[], group?: string) => void;
+  onDuplicate?: (ids: string[]) => void;
+  onDelete?: (ids: string[]) => void;
+  onAdvanced?: () => void;
 };
 
 type Bounds = {
@@ -178,7 +181,7 @@ function isTextInput(target: EventTarget | null) {
   return element.tagName === "INPUT" || element.tagName === "TEXTAREA" || element.tagName === "SELECT" || element.isContentEditable;
 }
 
-export function VisualTransformCanvas({ blocks, selectedIds: selectedIdsProp, zoom, canvasRef, ctx, onSelect, onChange }: Props) {
+export function VisualTransformCanvas({ blocks, selectedIds: selectedIdsProp, zoom, canvasRef, ctx, onSelect, onChange, onDuplicate, onDelete, onAdvanced }: Props) {
   const interaction = useRef<Interaction | null>(null);
   const [guides, setGuides] = useState<Guide[]>([]);
   const groupMembers = (ids: string[]) => {
@@ -342,23 +345,42 @@ export function VisualTransformCanvas({ blocks, selectedIds: selectedIdsProp, zo
   };
   const duplicateSelected = () => {
     if (!selectedBlocks.length) return;
-    const duplicated = selectedBlocks.map((block: any, index: number) => ({
-      ...structuredClone(block),
-      id: typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
-        ? crypto.randomUUID()
-        : `${block.id}-copy-${Date.now()}-${index}`,
-      x: number(block.x, 0) + 24,
-      y: number(block.y, 0) + 24,
-      zIndex: number(block.zIndex, 0) + 1,
-      groupId: block.groupId ? `group-${Date.now()}-${index}` : undefined,
-    }));
+    if (onDuplicate) {
+      onDuplicate(selectedIds);
+      return;
+    }
+    const duplicatedGroupId = selectedBlocks.some((block: any) => block.groupId)
+      ? `group-${Date.now()}-${Math.random().toString(36).slice(2)}`
+      : undefined;
+    const duplicated = selectedBlocks.map((block: any) => {
+      const index = blocks.indexOf(block);
+      const value = geometry(block, index);
+      return {
+        ...structuredClone(block),
+        id: typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
+          ? crypto.randomUUID()
+          : `${block.id}-copy-${Date.now()}-${index}`,
+        x: Math.round(value.x + 24),
+        y: Math.round(value.y + 24),
+        width: Math.round(value.width),
+        height: Math.round(value.height),
+        rotation: value.rotation,
+        scale: value.scale,
+        zIndex: value.zIndex + 1,
+        ...(duplicatedGroupId ? { groupId: duplicatedGroupId } : { groupId: undefined }),
+      };
+    });
     onChange((items: any[]) => [...items, ...duplicated], "quick-toolbar:duplicate");
   };
   const deleteSelected = () => {
     if (!selectedBlocks.length) return;
+    if (onDelete) {
+      onDelete(selectedIds);
+      return;
+    }
     onChange((items: any[]) => items.filter((item: any) => !selectedIds.includes(item.id)), "quick-toolbar:delete");
     selectedIds.forEach((id) => onSelect(id, true));
-  };
+  }; 
   const toggleLockSelected = () => {
     if (!selectedBlocks.length) return;
     const locked = selectedBlocks.some((block: any) => block.locked);
@@ -369,18 +391,9 @@ export function VisualTransformCanvas({ blocks, selectedIds: selectedIdsProp, zo
   const imageAction = (action: ImageAction) => {
     const image = selectedBlocks.find((block: any) => block.type === "image");
     if (!image || selectedBlocks.length !== 1) return;
-    if (action === "replace") {
-      const value = window.prompt("Cole a URL da nova imagem", String(image.props?.url ?? ""));
-      if (value !== null && value.trim()) updateSelectedProps("url", value.trim());
-      return;
+    if (action === "replace" || action === "crop" || action === "adjust") {
+      onAdvanced?.();
     }
-    if (action === "crop") {
-      const fit = image.props?.objectFit === "contain" ? "cover" : "contain";
-      updateSelectedProps("objectFit", fit);
-      return;
-    }
-    const brightness = Number(image.props?.imageBrightness ?? 100);
-    updateSelectedProps("imageBrightness", String(brightness >= 110 ? 100 : 110));
   };
 
   return <>
@@ -395,7 +408,7 @@ export function VisualTransformCanvas({ blocks, selectedIds: selectedIdsProp, zo
           onProp={updateSelectedProps}
           onDuplicate={duplicateSelected}
           onDelete={deleteSelected}
-          onAdvanced={() => undefined}
+          onAdvanced={() => onAdvanced?.()}
           onImage={imageAction}
           onLock={toggleLockSelected}
         />
