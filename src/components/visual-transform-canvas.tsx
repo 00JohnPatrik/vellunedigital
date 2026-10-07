@@ -154,7 +154,14 @@ function nearestSnap(anchors: SnapAnchor[], candidates: number[], threshold = 8)
   return best;
 }
 
-function resizeBounds(start: Interaction, point: Point, proportional: boolean, canvasWidth: number, canvasHeight: number) {
+function resizeBounds(
+  start: Interaction,
+  point: Point,
+  proportional: boolean,
+  centered: boolean,
+  canvasWidth: number,
+  canvasHeight: number,
+) {
   const original = start.bounds;
   let left = original.left;
   let top = original.top;
@@ -164,21 +171,60 @@ function resizeBounds(start: Interaction, point: Point, proportional: boolean, c
   const dy = point.y - start.start.y;
   const handle = start.handle || "se";
 
-  if (handle.includes("w")) left += dx;
-  if (handle.includes("e")) right += dx;
-  if (handle.includes("n")) top += dy;
-  if (handle.includes("s")) bottom += dy;
+  // Alt/Option resizes from the center, matching the familiar behavior
+  // users expect from professional design tools.
+  if (handle.includes("w")) {
+    left += dx;
+    if (centered) right -= dx;
+  }
+  if (handle.includes("e")) {
+    right += dx;
+    if (centered) left -= dx;
+  }
+  if (handle.includes("n")) {
+    top += dy;
+    if (centered) bottom -= dy;
+  }
+  if (handle.includes("s")) {
+    bottom += dy;
+    if (centered) top -= dy;
+  }
 
   let width = Math.max(MIN_SIZE, Math.min(MAX_SIZE, right - left));
   let height = Math.max(MIN_SIZE, Math.min(MAX_SIZE, bottom - top));
+
   if (proportional) {
     const ratio = start.aspect || 1;
-    if (Math.abs(dx) >= Math.abs(dy)) height = Math.max(MIN_SIZE, Math.min(MAX_SIZE, width / ratio));
-    else width = Math.max(MIN_SIZE, Math.min(MAX_SIZE, height * ratio));
-    if (handle.includes("w")) left = right - width;
-    else right = left + width;
-    if (handle.includes("n")) top = bottom - height;
-    else bottom = top + height;
+    if (Math.abs(dx) >= Math.abs(dy)) {
+      height = Math.max(MIN_SIZE, Math.min(MAX_SIZE, width / ratio));
+    } else {
+      width = Math.max(MIN_SIZE, Math.min(MAX_SIZE, height * ratio));
+    }
+
+    if (centered) {
+      const centerX = (original.left + original.right) / 2;
+      const centerY = (original.top + original.bottom) / 2;
+      left = centerX - width / 2;
+      right = centerX + width / 2;
+      top = centerY - height / 2;
+      bottom = centerY + height / 2;
+    } else {
+      if (handle.includes("w")) left = right - width;
+      else right = left + width;
+      if (handle.includes("n")) top = bottom - height;
+      else bottom = top + height;
+    }
+  } else if (centered) {
+    const centerX = (original.left + original.right) / 2;
+    const centerY = (original.top + original.bottom) / 2;
+    if (handle.includes("w") || handle.includes("e")) {
+      left = centerX - width / 2;
+      right = centerX + width / 2;
+    }
+    if (handle.includes("n") || handle.includes("s")) {
+      top = centerY - height / 2;
+      bottom = centerY + height / 2;
+    }
   }
 
   if (handle.includes("w")) left = clamp(left, 0, Math.max(0, right - MIN_SIZE));
@@ -436,8 +482,10 @@ export function VisualTransformCanvas({ blocks, selectedIds: selectedIdsProp, zo
       return;
     }
 
+    // Shift keeps the aspect ratio. Alt/Option keeps the resize centered.
     const proportional = event.shiftKey || (current.ids.length === 1 && ["image", "gallery"].includes(blocks.find((block: any) => block.id === current.ids[0])?.type));
-    const resized = resizeBounds(current, point, proportional, size.width, size.height);
+    const centered = event.altKey;
+    const resized = resizeBounds(current, point, proportional, centered, size.width, size.height);
     const sx = resized.width / Math.max(MIN_SIZE, current.bounds.width);
     const sy = resized.height / Math.max(MIN_SIZE, current.bounds.height);
     onChange((items: any[]) => items.map((item: any) => {
