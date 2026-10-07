@@ -343,9 +343,9 @@ function LoginPage() {
                         value={password}
                         maxLength={200}
                         onChange={(e) => setPassword(e.target.value)}
-                        onFocus={(event) => {
+                        onFocus={() => {
                           setFocusedField("password");
-                          setCapsLockOn(event.getModifierState("CapsLock"));
+                          setCapsLockOn(false);
                         }}
                         onBlur={() => {
                           setFocusedField(null);
@@ -373,9 +373,11 @@ function LoginPage() {
                         className="peer absolute inset-0 z-10 h-4 w-4 cursor-pointer opacity-0"
                       />
                       <span className="flex h-4 w-4 items-center justify-center rounded-[5px] border border-white/[0.12] bg-white/[0.035] transition-all peer-checked:border-[#d4af37]/70 peer-checked:bg-[#d4af37] peer-focus-visible:ring-2 peer-focus-visible:ring-[#d4af37]/25">
-                        <svg viewBox="0 0 16 16" className="h-3 w-3 scale-0 text-[#16130b] transition-transform peer-checked:scale-100" aria-hidden="true">
-                          <path d="M3.2 8.2 6.6 11.3 12.8 4.8" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                        </svg>
+                        {rememberAccess && (
+                          <svg viewBox="0 0 16 16" className="h-3 w-3 text-[#16130b]" aria-hidden="true">
+                            <path d="M3.2 8.2 6.6 11.3 12.8 4.8" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                          </svg>
+                        )}
                       </span>
                     </span>
                     <span>Lembrar e-mail ou telefone neste dispositivo</span>
