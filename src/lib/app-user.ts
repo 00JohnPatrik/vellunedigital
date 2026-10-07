@@ -54,7 +54,7 @@ export function isAuthServiceUnavailable(error: unknown) {
 
 export function friendlyAuthError(msg?: string) {
   if (!msg) return "Algo deu errado. Tente novamente.";
-  if (/invalid login/i.test(msg)) return "E-mail ou senha inválidos.";
+  if (/invalid login/i.test(msg)) return "E-mail, telefone ou senha inválidos.";
   if (/rate|too many/i.test(msg)) return "Muitas tentativas. Aguarde alguns minutos.";
   if (/weak|pwned|leaked/i.test(msg)) return "Senha fraca ou já exposta em vazamentos. Escolha outra.";
   if (/same.*password|different from the old/i.test(msg)) return "A nova senha deve ser diferente da anterior.";
