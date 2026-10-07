@@ -3,6 +3,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { BlockView } from "@/components/block-render";
 import { EditorQuickToolbar, type ImageAction } from "@/components/editor-quick-toolbar";
 import { resolveBlockGeometry, type Block } from "@/lib/templates";
+import { fontCss } from "@/lib/blocks";
 
 type Point = { x: number; y: number };
 type Guide = { axis: "x" | "y"; value: number; kind?: "edge" | "center" | "grid" };
@@ -184,6 +185,9 @@ function isTextInput(target: EventTarget | null) {
 export function VisualTransformCanvas({ blocks, selectedIds: selectedIdsProp, zoom, canvasRef, ctx, onSelect, onChange, onDuplicate, onDelete, onAdvanced }: Props) {
   const interaction = useRef<Interaction | null>(null);
   const [guides, setGuides] = useState<Guide[]>([]);
+  const [editingTextId, setEditingTextId] = useState<string | null>(null);
+  const [editingTextValue, setEditingTextValue] = useState("");
+  const editingTextRef = useRef<HTMLTextAreaElement | null>(null);
   const groupMembers = (ids: string[]) => {
     const groups = new Set(
       blocks
@@ -208,9 +212,54 @@ export function VisualTransformCanvas({ blocks, selectedIds: selectedIdsProp, zo
     setGuides([]);
   };
 
+  const startTextEditing = (block: Block) => {
+    if (block.type !== "text" || block.locked || block.hidden || block.visibility === false) return;
+    setEditingTextId(block.id);
+    setEditingTextValue(block.props?.text ?? "");
+  };
+
+  const stopTextEditing = () => {
+    setEditingTextId(null);
+    setEditingTextValue("");
+  };
+
+  const updateEditingText = (value: string) => {
+    if (!editingTextId) return;
+    setEditingTextValue(value);
+    onChange((items) => items.map((item) =>
+      item.id === editingTextId
+        ? { ...item, props: { ...item.props, text: value } }
+        : item
+    ), "text:edit");
+  };
+
+  useEffect(() => {
+    if (!editingTextId) return;
+    const frame = requestAnimationFrame(() => {
+      editingTextRef.current?.focus();
+      editingTextRef.current?.select();
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [editingTextId]);
+
+  useEffect(() => {
+    if (editingTextId && !blocks.some((block) => block.id === editingTextId && block.type === "text")) {
+      stopTextEditing();
+    }
+  }, [blocks, editingTextId]);
+
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
       if (!selectedIds.length || isTextInput(event.target)) return;
+      const activeText = selectedIds.length === 1
+        ? blocks.find((block: any) => block.id === selectedIds[0])
+        : undefined;
+      if (event.key === "Enter" && activeText?.type === "text" && !activeText.locked) {
+        event.preventDefault();
+        startTextEditing(activeText);
+        return;
+      }
+
       const movable = blocks.filter((block: any) => selectedIds.includes(block.id) && !block.locked);
       if (!movable.length) return;
       if (event.key === "Escape") { finish(); return; }
@@ -421,6 +470,7 @@ export function VisualTransformCanvas({ blocks, selectedIds: selectedIdsProp, zo
       const value = geometry(block, index);
       const isSelected = selectedIds.includes(block.id);
       const hidden = block.hidden === true || block.visibility === false;
+      const isEditingText = editingTextId === block.id && block.type === "text";
       const hit = isSelected ? 10 : 6;
       return <div
         key={block.id || index}
@@ -462,11 +512,53 @@ export function VisualTransformCanvas({ blocks, selectedIds: selectedIdsProp, zo
             memberIds.slice(1).forEach((id) => onSelect(id, true));
           }
         }}
+        onDoubleClick={(event) => {
+          if (block.type !== "text" || block.locked) return;
+          event.preventDefault();
+          event.stopPropagation();
+          startTextEditing(block);
+        }}
       >
         <div className="pointer-events-none h-full w-full rounded-lg">
           <BlockView block={block} ctx={ctx as any} interactive={false} index={index} />
         </div>
-        {isSelected && <div className="pointer-events-none absolute -top-7 left-0 max-w-full truncate rounded bg-primary px-2 py-1 text-[10px] text-primary-foreground">{String(block.type)}</div>}
+        {isEditingText && (
+          <textarea
+            ref={editingTextRef}
+            value={editingTextValue}
+            aria-label="Editar texto do convite"
+            className="absolute z-[100] resize-none overflow-hidden rounded-md border-2 border-primary bg-background/95 px-2 py-1.5 text-foreground shadow-lg outline-none"
+            style={{
+              left: hit,
+              top: hit,
+              width: value.width,
+              height: value.height,
+              fontFamily: fontCss(block.props?.font),
+              fontSize: Number(block.props?.fontSize) > 0 ? `${Number(block.props.fontSize)}px` : undefined,
+              fontWeight: block.props?.fontWeight || (block.props?.bold === "1" ? "700" : "normal"),
+              fontStyle: block.props?.fontStyle || "normal",
+              textDecoration: block.props?.textDecoration || "none",
+              letterSpacing: Number.isFinite(Number(block.props?.letterSpacing)) ? `${Number(block.props.letterSpacing)}px` : undefined,
+              lineHeight: Number(block.props?.lineHeight) > 0 ? Number(block.props.lineHeight) : undefined,
+              textAlign: block.props?.align || "center",
+              color: block.props?.color || undefined,
+              textTransform: block.props?.textTransform || undefined,
+              whiteSpace: "pre-wrap",
+            }}
+            onPointerDown={(event) => event.stopPropagation()}
+            onClick={(event) => event.stopPropagation()}
+            onChange={(event) => updateEditingText(event.target.value)}
+            onKeyDown={(event) => {
+              event.stopPropagation();
+              if (event.key === "Escape" || ((event.ctrlKey || event.metaKey) && event.key === "Enter")) {
+                event.preventDefault();
+                stopTextEditing();
+              }
+            }}
+            onBlur={stopTextEditing}
+          />
+        )}
+        {isSelected && !isEditingText && <div className="pointer-events-none absolute -top-7 left-0 max-w-full truncate rounded bg-primary px-2 py-1 text-[10px] text-primary-foreground">{block.type === "text" ? "Duplo clique para editar" : String(block.type)}</div>}
       </div>;
     })}
     {selectedBounds && <div className="pointer-events-none absolute z-[80] border-2 border-primary" style={{ left: selectedBounds.left, top: selectedBounds.top, width: selectedBounds.width, height: selectedBounds.height }}>
