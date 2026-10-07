@@ -14,6 +14,7 @@ import appCss from "@/styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { supabase } from "@/integrations/supabase/client";
 import { Toaster } from "@/components/ui/sonner";
+import { AuthUnavailableState } from "@/components/auth-unavailable-state";
 
 function NotFoundComponent() {
   return (
@@ -43,6 +44,25 @@ function ErrorComponent({ error, reset }: ErrorComponentProps) {
   useEffect(() => {
     reportLovableError(error, { boundary: "tanstack_root_error_component" });
   }, [error]);
+
+  const isAuthRoute =
+    typeof window !== "undefined" &&
+    ["/login", "/first-access", "/reset-password"].includes(window.location.pathname);
+
+  if (isAuthRoute) {
+    return (
+      <main className="fixed inset-0 h-[100dvh] w-full overflow-hidden bg-[#08090d] text-white">
+        <AuthUnavailableState
+          title="Não conseguimos abrir a área segura"
+          description="O Vellune encontrou uma falha inesperada ao carregar a autenticação. Tente novamente; seu acesso continua protegido."
+          onRetry={() => {
+            router.invalidate();
+            reset();
+          }}
+        />
+      </main>
+    );
+  }
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
