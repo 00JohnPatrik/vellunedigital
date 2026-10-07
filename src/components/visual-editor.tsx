@@ -201,13 +201,37 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra }: { h: Bl
   };
   const duplicateByIds = (ids: string[]) => {
     if (!ids.length) return;
-    const copies = blocks.filter((block: any) => ids.includes(block.id) && block.type !== "rsvp").map((block: any) => ({
-      ...structuredClone(block),
-      id: crypto.randomUUID(),
-      x: typeof block.x === "number" ? block.x + 24 : block.x,
-      y: typeof block.y === "number" ? block.y + 24 : block.y,
-      props: { ...(block.props || {}) },
-    }));
+    const sourceBlocks = blocks.filter((block: any) => ids.includes(block.id) && block.type !== "rsvp");
+    if (!sourceBlocks.length) return;
+
+    const groupIds = new Map<string, string>();
+    sourceBlocks.forEach((block: any) => {
+      if (block.groupId && !groupIds.has(block.groupId)) {
+        groupIds.set(block.groupId, `group-${crypto.randomUUID()}`);
+      }
+    });
+
+    const copies = sourceBlocks.map((block: any) => {
+      const index = blocks.indexOf(block);
+      const value = resolveBlockGeometry(block as Block, index);
+      const nextId = typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
+        ? crypto.randomUUID()
+        : `${block.id}-copy-${Date.now()}-${index}`;
+      return {
+        ...structuredClone(block),
+        id: nextId,
+        x: Math.round(value.x + 24),
+        y: Math.round(value.y + 24),
+        width: Math.round(value.width),
+        height: Math.round(value.height),
+        rotation: value.rotation,
+        scale: value.scale,
+        zIndex: Math.round(value.zIndex + 1),
+        groupId: block.groupId ? groupIds.get(block.groupId) : undefined,
+        props: { ...(block.props || {}) },
+      };
+    });
+
     h.set((current) => [...current, ...copies]);
     setSelectedIds(copies.map((block: any) => block.id));
   };
@@ -474,10 +498,18 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra }: { h: Bl
               onChange={(update, group) => h.set(update, group)}
               onDuplicate={duplicateByIds}
               onDelete={removeByIds}
-              onAdvanced={() => setMobileSheet("properties")}
+              onAdvanced={() => {
+                if (compact) {
+                  setMobileSheet("properties");
+                  return;
+                }
+                requestAnimationFrame(() => {
+                  document.getElementById("editor-contextual-properties")?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+                });
+              }}
             /></div></div></div>
         </main>
-        <aside className="hidden w-[320px] shrink-0 overflow-y-auto rounded-2xl border border-primary/15 bg-card/90 p-3 shadow-xl shadow-black/10 backdrop-blur-xl lg:block" aria-label="Painel contextual de propriedades"><div className="mb-3 flex items-center gap-2 border-b border-border/70 pb-3"><div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary/10 text-primary"><PanelRight className="h-3.5 w-3.5" /></div><div className="min-w-0"><p className="text-xs font-semibold text-foreground">Painel contextual</p><p className="text-[10px] text-muted-foreground">Ajustes do elemento selecionado</p></div></div><ContextualPropertiesPanel blocks={blocks} selectedIds={selectedIds} assets={assets as any} onChange={(update, group) => h.set(update, group)} onDuplicate={duplicateByIds} onDelete={removeByIds} /></aside>
+        <aside id="editor-contextual-properties" className="hidden w-[320px] shrink-0 overflow-y-auto rounded-2xl border border-primary/15 bg-card/90 p-3 shadow-xl shadow-black/10 backdrop-blur-xl lg:block" aria-label="Painel contextual de propriedades"><div className="mb-3 flex items-center gap-2 border-b border-border/70 pb-3"><div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary/10 text-primary"><PanelRight className="h-3.5 w-3.5" /></div><div className="min-w-0"><p className="text-xs font-semibold text-foreground">Painel contextual</p><p className="text-[10px] text-muted-foreground">Ajustes do elemento selecionado</p></div></div><ContextualPropertiesPanel blocks={blocks} selectedIds={selectedIds} assets={assets as any} onChange={(update, group) => h.set(update, group)} onDuplicate={duplicateByIds} onDelete={removeByIds} /></aside>
       </div>
       <div className="flex items-center justify-between gap-1.5 rounded-2xl border border-primary/15 bg-card/95 p-2 shadow-2xl shadow-black/25 backdrop-blur-xl lg:hidden" role="toolbar" aria-label="Ferramentas móveis do editor"><button type="button" className="flex flex-1 flex-col items-center gap-0.5 rounded-xl px-1 py-1.5 text-[10px] text-muted-foreground transition hover:bg-primary/10 hover:text-primary" onClick={() => setMobileSheet("elements")}><PanelLeft className="h-4 w-4" />Elementos</button><button type="button" className="flex flex-1 flex-col items-center gap-0.5 rounded-xl px-1 py-1.5 text-[10px] text-muted-foreground transition hover:bg-primary/10 hover:text-primary" onClick={() => setMobileSheet("layers")}><Grid3X3 className="h-4 w-4" />Camadas</button><button type="button" className="flex flex-1 flex-col items-center gap-0.5 rounded-xl px-1 py-1.5 text-[10px] text-muted-foreground transition hover:bg-primary/10 hover:text-primary" onClick={() => setMobileSheet("properties")}><PanelRight className="h-4 w-4" />Propriedades</button><button type="button" className="flex flex-1 flex-col items-center gap-0.5 rounded-xl px-1 py-1.5 text-[10px] text-muted-foreground transition hover:bg-primary/10 hover:text-primary" onClick={() => setMobileSheet("background")}><Sparkles className="h-4 w-4" />Fundo</button><button type="button" className="flex flex-1 flex-col items-center gap-0.5 rounded-xl px-1 py-1.5 text-[10px] text-muted-foreground transition hover:bg-primary/10 hover:text-primary" onClick={() => setMobileSheet("view")}><Grid3X3 className="h-4 w-4" />Exibir</button></div>
       {compact && mobileSheet && (
