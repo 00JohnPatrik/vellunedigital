@@ -258,7 +258,7 @@ function isTextInput(target: EventTarget | null) {
   return element.tagName === "INPUT" || element.tagName === "TEXTAREA" || element.tagName === "SELECT" || element.isContentEditable;
 }
 
-export function VisualTransformCanvas({ blocks, selectedIds: selectedIdsProp, zoom, canvasRef, ctx, onSelect, onChange, onDuplicate, onDelete, onAdvanced, onGroup, onUngroup, onImageAction, startEditingId, onStartEditingHandled, showGrid = true }: Props) {
+export function VisualTransformCanvas({ blocks, selectedIds: selectedIdsProp, zoom, canvasRef, ctx, onSelect, onChange, onDuplicate, onDelete, onAdvanced, onLayer, onAlign, onOpacity, onRotate, onGroup, onUngroup, onImageAction, startEditingId, onStartEditingHandled, showGrid = true }: Props) {
   const interaction = useRef<Interaction | null>(null);
   const [guides, setGuides] = useState<Guide[]>([]);
   const [editingTextId, setEditingTextId] = useState<string | null>(null);
