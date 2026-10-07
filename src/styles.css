@@ -167,6 +167,29 @@
   .vellune-login-root {
     contain: layout paint;
   }
+
+  /*
+   * Auth screens are fixed to the mobile viewport. When the browser exposes
+   * a few pixels outside that fixed viewport (notably during mobile
+   * overscroll/toolbar changes), the page background must stay dark too.
+   * Without this, the global light theme background can leak as a white strip
+   * below the login panel.
+   */
+  html:has(.vellune-login-root),
+  body:has(.vellune-login-root),
+  #root:has(.vellune-login-root),
+  html:has(.vellune-auth-root),
+  body:has(.vellune-auth-root),
+  #root:has(.vellune-auth-root) {
+    background-color: #08090d;
+    color-scheme: dark;
+    overscroll-behavior-y: none;
+  }
+
+  #root:has(.vellune-login-root),
+  #root:has(.vellune-auth-root) {
+    min-height: 100dvh;
+  }
 }
 
 .vellune-login-root,
