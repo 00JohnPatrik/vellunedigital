@@ -104,7 +104,7 @@ function FirstAccessPage() {
   return (
     <AuthCard
       title="Comece seu primeiro acesso"
-      subtitle="Informe o e-mail cadastrado pelo administrador para ativar sua conta."
+      subtitle="Use o e-mail cadastrado pelo administrador para ativar sua conta."
     >
       {sent ? (
         <div role="status" aria-live="polite">
@@ -115,7 +115,7 @@ function FirstAccessPage() {
             </div>
             <div className="space-y-2">
               <p className="text-[10px] font-semibold uppercase tracking-[0.25em] text-[#d4af37]">Etapa 2 · Verificação</p>
-              <h2 className="font-display text-[24px] font-medium tracking-[-0.03em] text-white sm:text-[26px]">Confira seu e-mail</h2>
+              <h2 className="font-display text-[23px] font-medium leading-[1.12] tracking-[-0.03em] text-white sm:text-[26px]">Confira seu e-mail</h2>
               <p className="text-[13px] leading-5 text-white/45 sm:text-sm sm:leading-6">Enviamos um link seguro para o e-mail informado pelo administrador. Abra-o para continuar e criar sua senha.</p>
             </div>
             <p className="flex items-center gap-2 text-[11px] text-white/35 sm:text-xs">
@@ -135,13 +135,13 @@ function FirstAccessPage() {
         <>
         <AuthJourneySteps activeStep={1} labels={["Solicitar", "Verificar", "Criar senha"]} />
 
-<form onSubmit={onSubmit} className="space-y-4 pt-1 sm:space-y-5 sm:pt-2" noValidate>
-          <div className="rounded-2xl border border-white/[0.06] bg-white/[0.025] px-4 py-3.5">
+<form onSubmit={onSubmit} className="space-y-3.5 pt-1 sm:space-y-5 sm:pt-2" noValidate>
+          <div className="rounded-2xl border border-white/[0.06] bg-white/[0.025] px-3.5 py-3 sm:px-4 sm:py-3.5">
             <div className="flex items-center gap-2 text-xs font-medium text-white/75 sm:text-sm">
               <Sparkles className="h-4 w-4 shrink-0 text-[#d4af37]" />
-              Sua conta já está esperando por você
+              Conta criada pelo administrador
             </div>
-            <p className="mt-1.5 text-[11px] leading-5 text-white/35 sm:text-xs">Use o mesmo e-mail informado pelo administrador.</p>
+            <p className="mt-1.5 text-[11px] leading-5 text-white/35 sm:text-xs">Use o mesmo e-mail informado no cadastro.</p>
           </div>
 
           <div className="space-y-2">
@@ -201,7 +201,7 @@ function FirstAccessPage() {
 
       <Link
         to="/login"
-        className="mt-4 block text-center text-xs font-semibold text-white/45 transition-colors hover:text-[#e5c66b] hover:underline sm:mt-6 sm:text-sm"
+        className="mt-3 block text-center text-xs font-semibold text-white/45 transition-colors hover:text-[#e5c66b] hover:underline sm:mt-6 sm:text-sm"
       >
         Voltar ao login
       </Link>
