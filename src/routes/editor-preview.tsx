@@ -163,7 +163,7 @@ export function EditorPreviewPage() {
 function LocalEditorDemo() {
   const history = useBlocksHistory(normalizeBlocks(demoContent));
   const [background, setBackground] = useState<Background>(() =>
-    structuredClone(demoContent.settings.background as Background),
+    structuredClone(demoContent.settings?.background as Background),
   );
   const context = useMemo(() => invitationCtx(demoInvitation, demoEvent), []);
 
