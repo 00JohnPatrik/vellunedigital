@@ -274,7 +274,10 @@ export function AppShell({ base, nav, appUser, children }: Props) {
             <span className="truncate transition-colors group-hover:text-foreground">Buscar no painel...</span>
             <kbd className="ml-auto hidden rounded-lg border border-border/70 bg-muted/60 px-2 py-1 text-[10px] font-medium text-muted-foreground lg:inline-flex">Ctrl K</kbd>
           </button>
-          <div className="min-w-0 flex-1 truncate text-sm text-muted-foreground sm:hidden">{appUser.company?.name ?? "Administração global"}</div>
+          <div className="flex min-w-0 flex-1 items-center gap-2 sm:hidden">
+            <Logo markOnly className="h-9 w-9 shrink-0" />
+            <div className="min-w-0 truncate text-sm text-muted-foreground">{appUser.company?.name ?? "Administração global"}</div>
+          </div>
           <div
             className={cn("hidden items-center gap-2 text-xs lg:flex", isOnline ? "text-muted-foreground" : "text-destructive")}
             title={!isOnline ? "Sem conexão com a internet" : onlineCount === null ? "Conectando à presença" : `${onlineCount} usuário(s) online`}
