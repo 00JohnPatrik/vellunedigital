@@ -154,6 +154,7 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra }: { h: Bl
   const [imageReplaceId, setImageReplaceId] = useState<string | null>(null);
   const [device, setDevice] = useState<"mobile" | "tablet" | "desktop">("tablet");
   const [canvasDragOver, setCanvasDragOver] = useState(false);
+  const canvasDragDepth = useRef(0);
   const compact = useIsCompact();
   const fitCanvasToViewport = useCallback(() => {
     if (!compact) return;
@@ -190,7 +191,7 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra }: { h: Bl
     setSelectedIds([]);
     setToolCategory("Elementos");
   };
-  const addBlockByType = (type: BlockType, initialProps?: Record<string, unknown>, dropPoint?: { x: number; y: number }) => {
+  const addBlockByType = (type: BlockType, initialProps?: Record<string, string>, dropPoint?: { x: number; y: number }) => {
     if (type === "rsvp" && blocks.some((block: any) => block.type === "rsvp")) {
       window.alert(RSVP_DUP);
       return;
@@ -217,7 +218,7 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra }: { h: Bl
     if (type === "text") {
       const textCount = blocks.filter((current: any) => current.type === "text").length;
       const textPresets = ["Título", "Subtítulo", "Texto"];
-      block.props = { ...(block.props || {}), text: textPresets[Math.min(textCount, textPresets.length - 1)] };
+      block.props = { ...(block.props || {}), text: textPresets[Math.min(textCount, textPresets.length - 1)] ?? "Texto" };
     }
     if (initialProps) block.props = { ...(block.props || {}), ...initialProps };
     h.set((current) => [...current, block]);
@@ -262,8 +263,8 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra }: { h: Bl
         const axis = mode === "distributeX" ? "x" : "y";
         const sizeKey = mode === "distributeX" ? "width" : "height";
         const ordered = [...selectedItems].sort((a, b) => a.position[axis] - b.position[axis]);
-        const first = ordered[0];
-        const last = ordered[ordered.length - 1];
+        const first = ordered[0]!;
+        const last = ordered[ordered.length - 1]!;
         const firstStart = first.position[axis];
         const lastEnd = last.position[axis] + last.size[sizeKey];
         const totalSize = ordered.reduce((sum, entry) => sum + entry.size[sizeKey], 0);
@@ -332,7 +333,6 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra }: { h: Bl
     if (action === "replace") {
       setImageReplaceId(id);
       setToolCategory("Imagens");
-      setContextPanel("elements");
       if (compact) setMobileSheet("elements");
       requestAnimationFrame(() => document.getElementById("editor-elements-library")?.scrollIntoView({ behavior: "smooth", block: "nearest" }));
     }
@@ -590,7 +590,6 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra }: { h: Bl
       originX: Number((bg as any).imageOffsetX) || 0,
       originY: Number((bg as any).imageOffsetY) || 0,
     };
-    setContextPanel("background");
     setMobileSheet(compact ? "background" : mobileSheet);
     event.currentTarget.setPointerCapture(event.pointerId);
     event.stopPropagation();
@@ -636,7 +635,9 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra }: { h: Bl
       else if (command && key === "y") { event.preventDefault(); h.redo(); }
       else if (command && key === "c" && selectedIds.length) {
         event.preventDefault();
-        const copyIds = selectionGroupIds(selectedIds[0]);
+        const firstSelectedId = selectedIds[0];
+        if (!firstSelectedId) return;
+        const copyIds = selectionGroupIds(firstSelectedId);
         const allIds = selectedIds.length > 1
           ? Array.from(new Set([...copyIds, ...selectedIds]))
           : copyIds;
@@ -745,7 +746,9 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra }: { h: Bl
               ["Elementos", PanelLeft, "Data, local, botões e mais"],
               ["Fundo", Palette, "Cor e imagem de fundo"],
               ["Mais", MoreHorizontal, "Camadas e ajustes avançados"],
-            ].map(([key, Icon, description]) => (
+            ].map(([key, Icon, description]) => {
+              const IconComponent = Icon ?? MoreHorizontal;
+              return (
               <button
                 key={key as string}
                 type="button"
@@ -759,10 +762,11 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra }: { h: Bl
                 aria-pressed={toolCategory === key}
                 title={description as string}
               >
-                <Icon className="h-4 w-4" />
+                <IconComponent className="h-4 w-4" />
                 <span className="text-[11px] font-medium">{key as string}</span>
               </button>
-            ))}
+              );
+            })}
           </nav>
 
           <div className="min-h-0 flex-1 overflow-y-auto p-3.5">
@@ -1042,8 +1046,8 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra }: { h: Bl
                       {index + 1}. {getBlockLabel(block)}
                     </button>
                     <div className="mt-2 flex flex-wrap gap-1.5">
-                      <button type="button" disabled={index === blocks.length - 1} onClick={() => h.set((items) => reorderSelectedLayers("up", [block.id]), "mobile:layers:up")} className="rounded border px-2 py-1 text-[10px] disabled:opacity-40">Subir</button>
-                      <button type="button" disabled={index === 0} onClick={() => h.set((items) => reorderSelectedLayers("down", [block.id]), "mobile:layers:down")} className="rounded border px-2 py-1 text-[10px] disabled:opacity-40">Descer</button>
+                      <button type="button" disabled={index === blocks.length - 1} onClick={() => reorderSelectedLayers("up", [block.id])} className="rounded border px-2 py-1 text-[10px] disabled:opacity-40">Subir</button>
+                      <button type="button" disabled={index === 0} onClick={() => reorderSelectedLayers("down", [block.id])} className="rounded border px-2 py-1 text-[10px] disabled:opacity-40">Descer</button>
                       <button type="button" onClick={() => { select(block.id, false); duplicate(); }} className="rounded border px-2 py-1 text-[10px]">Duplicar</button>
                       <button type="button" onClick={() => { select(block.id, false); remove(); }} className="rounded border border-destructive/30 px-2 py-1 text-[10px] text-destructive">Excluir</button>
                     </div>
