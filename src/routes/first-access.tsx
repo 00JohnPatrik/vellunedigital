@@ -59,6 +59,7 @@ function FirstAccessPage() {
     if (!parsed.success) {
       setError("Digite um e-mail válido, como voce@empresa.com.");
       setErrorIsValidation(true);
+      window.setTimeout(() => emailRef.current?.focus(), 0);
       return;
     }
     setEmail(parsed.data);
