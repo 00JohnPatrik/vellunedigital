@@ -23,7 +23,7 @@ export const Route = createFileRoute("/_authenticated/invitations/new")({
 const STEPS = ["Cliente", "Evento", "Modelo", "Criar"];
 
 function NewInvitationPage() {
-  const { appUser! } = Route.useRouteContext();
+  const { appUser } = Route.useRouteContext();
   const companyId = appUser!.company?.id;
   const navigate = useNavigate();
   const qc = useQueryClient();
