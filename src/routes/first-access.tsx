@@ -36,10 +36,21 @@ function FirstAccessPage() {
   const requestLockRef = useRef(false);
 
   useEffect(() => {
-    if (resendCooldown <= 0) return;
-    const timer = window.setTimeout(() => setResendCooldown((value) => Math.max(0, value - 1)), 1000);
-    return () => window.clearTimeout(timer);
-  }, [resendCooldown]);
+    const key = "vellune-first-access-cooldown-until";
+    const refreshCooldown = () => {
+      try {
+        const until = Number(window.sessionStorage.getItem(key) ?? "0");
+        const remaining = Math.max(0, Math.ceil((until - Date.now()) / 1000));
+        setResendCooldown(remaining);
+        if (!remaining) window.sessionStorage.removeItem(key);
+      } catch {
+        // Session storage may be unavailable; the local cooldown still works.
+      }
+    };
+    refreshCooldown();
+    const timer = window.setInterval(refreshCooldown, 1000);
+    return () => window.clearInterval(timer);
+  }, []);
 
   async function resendLink() {
     if (loading || resendCooldown > 0 || requestLockRef.current) return;
@@ -57,7 +68,7 @@ function FirstAccessPage() {
     setErrorIsValidation(false);
     try {
       await request({ data: { email: parsed.data } });
-      setResendCooldown(30);
+      setResendCooldown(30); try { window.sessionStorage.setItem("vellune-first-access-cooldown-until", String(Date.now() + 30000)); } catch {}
     } catch (err) {
       if (isAuthServiceUnavailable(err)) setAuthUnavailable(true);
     } finally {
@@ -133,7 +144,7 @@ function FirstAccessPage() {
                 {loading ? <LoaderCircle className="h-4 w-4 animate-spin" /> : null}
                 {resendCooldown > 0 ? `Reenviar em ${resendCooldown}s` : "Reenviar link"}
               </button>
-              <button type="button" onClick={() => { setSent(false); setResendCooldown(0); setError(null); setErrorIsValidation(false); }} className="inline-flex h-11 flex-1 items-center justify-center rounded-xl border border-white/[0.07] bg-white/[0.02] px-4 text-xs font-semibold text-white/50 transition-colors hover:border-white/[0.12] hover:text-white/75">Usar outro e-mail</button>
+              <button type="button" onClick={() => { setSent(false); setResendCooldown(0); try { window.sessionStorage.removeItem("vellune-first-access-cooldown-until"); } catch {} setError(null); setErrorIsValidation(false); }} className="inline-flex h-11 flex-1 items-center justify-center rounded-xl border border-white/[0.07] bg-white/[0.02] px-4 text-xs font-semibold text-white/50 transition-colors hover:border-white/[0.12] hover:text-white/75">Usar outro e-mail</button>
             </div>
           </div>
         </div>
