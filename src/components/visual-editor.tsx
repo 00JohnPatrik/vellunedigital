@@ -277,7 +277,20 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra }: { h: Bl
     const rect = canvasRef.current?.getBoundingClientRect();
     return rect ? { x: (event.clientX - rect.left) / (zoom / 100), y: (event.clientY - rect.top) / (zoom / 100) } : { x: 0, y: 0 };
   };
-  const select = (id: string, additive: boolean) => setSelectedIds((current) => additive ? current.includes(id) ? current.filter((item) => item !== id) : [...current, id] : [id]);
+  const selectionGroupIds = (id: string) => {
+    const block = blocks.find((item: any) => item.id === id);
+    if (!block?.groupId) return [id];
+    return blocks.filter((item: any) => item.groupId === block.groupId).map((item: any) => item.id);
+  };
+  const select = (id: string, additive: boolean) => {
+    const targetIds = selectionGroupIds(id);
+    setSelectedIds((current) => {
+      if (!additive) return targetIds;
+      const fullySelected = targetIds.every((targetId) => current.includes(targetId));
+      if (fullySelected) return current.filter((item) => !targetIds.includes(item));
+      return [...current, ...targetIds.filter((targetId) => !current.includes(targetId))];
+    });
+  };
   const startDrag = (event: React.PointerEvent<HTMLDivElement>, block: any, index: number) => {
     if (block.locked) return;
     const additive = event.shiftKey || event.ctrlKey || event.metaKey;
@@ -394,8 +407,14 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra }: { h: Bl
     });
     setSelectedIds([block.id]);
   };
-  const duplicate = () => { if (!selected.length) return; const copies = selected.filter((block: any) => block.type !== "rsvp").map((block: any) => ({ ...structuredClone(block), id: crypto.randomUUID(), x: (block.x ?? 24) + 24, y: (block.y ?? 24) + 24 })); if (!copies.length) { window.alert(RSVP_DUP); return; } h.set((items) => [...items, ...copies]); setSelectedIds(copies.map((block: any) => block.id)); };
-  const remove = () => { if (!selected.length) return; h.set((items) => items.filter((block: any) => !selectedIds.includes(block.id) || block.locked)); setSelectedIds([]); };
+  const duplicate = () => {
+    if (!selectedIds.length) return;
+    duplicateByIds(selectedIds);
+  };
+  const remove = () => {
+    if (!selectedIds.length) return;
+    removeByIds(selectedIds);
+  };
   const rotate = (amount: number) => h.set((items) => items.map((block: any) => selectedIds.includes(block.id) && !block.locked ? { ...block, rotation: (block.rotation ?? 0) + amount } : block), "selection:rotation");
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
@@ -405,18 +424,52 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra }: { h: Bl
       const key = event.key.toLowerCase();
       if (command && key === "z") { event.preventDefault(); event.shiftKey ? h.redo() : h.undo(); }
       else if (command && key === "y") { event.preventDefault(); h.redo(); }
-      else if (command && key === "c" && selectedIds.length) { event.preventDefault(); clipboard.current = blocks.filter((block: any) => selectedIds.includes(block.id)).map((block: any) => structuredClone(block)); }
+      else if (command && key === "c" && selectedIds.length) {
+        event.preventDefault();
+        const copyIds = selectionGroupIds(selectedIds[0]);
+        const allIds = selectedIds.length > 1
+          ? Array.from(new Set([...copyIds, ...selectedIds]))
+          : copyIds;
+        clipboard.current = blocks
+          .filter((block: any) => allIds.includes(block.id))
+          .map((block: any) => structuredClone(block));
+      }
       else if (command && key === "v" && clipboard.current.length) {
         event.preventDefault();
-        const pasted = clipboard.current
-          .filter((block: any) => block.type !== "rsvp")
-          .map((block: any, index: number) => ({ ...structuredClone(block), id: crypto.randomUUID(), x: (block.x ?? 24) + 24 + index * 8, y: (block.y ?? 24) + 24 + index * 8 }));
-        if (!pasted.length) { window.alert(RSVP_DUP); return; }
+        const pastedIds = clipboard.current.filter((block: any) => block.type !== "rsvp").map((block: any) => block.id);
+        if (!pastedIds.length) { window.alert(RSVP_DUP); return; }
+        const before = blocks;
+        const source = clipboard.current.filter((block: any) => block.type !== "rsvp");
+        const groupMap = new Map<string, string>();
+        source.forEach((block: any) => {
+          if (block.groupId && !groupMap.has(block.groupId)) groupMap.set(block.groupId, `group-${crypto.randomUUID()}`);
+        });
+        const pasted = source.map((block: any, index: number) => {
+          const originalIndex = before.findIndex((item: any) => item.id === block.id);
+          const value = resolveBlockGeometry(block as Block, Math.max(0, originalIndex));
+          return {
+            ...structuredClone(block),
+            id: typeof crypto !== "undefined" && typeof crypto.randomUUID === "function" ? crypto.randomUUID() : `${block.id}-paste-${Date.now()}-${index}`,
+            x: Math.round(value.x + 24 + index * 8),
+            y: Math.round(value.y + 24 + index * 8),
+            width: Math.round(value.width),
+            height: Math.round(value.height),
+            rotation: value.rotation,
+            scale: value.scale,
+            zIndex: Math.round(value.zIndex + 1),
+            groupId: block.groupId ? groupMap.get(block.groupId) : undefined,
+            props: { ...(block.props || {}) },
+          };
+        });
         h.set((items) => [...items, ...pasted]);
         setSelectedIds(pasted.map((block: any) => block.id));
       }
-      else if (event.key === "Delete" || event.key === "Backspace") { if (selectedIds.length) { event.preventDefault(); remove(); } }
-      else if (command && key === "d") { event.preventDefault(); duplicate(); }
+      else if (event.key === "Delete" || event.key === "Backspace") {
+        if (selectedIds.length) { event.preventDefault(); removeByIds(selectedIds); }
+      }
+      else if (command && key === "d") {
+        if (selectedIds.length) { event.preventDefault(); duplicateByIds(selectedIds); }
+      }
       else if (event.key === "Escape") setSelectedIds([]);
     };
     window.addEventListener("keydown", onKey); return () => window.removeEventListener("keydown", onKey);
