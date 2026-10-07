@@ -47,19 +47,56 @@ export const signInWithPhone = createServerFn({ method: "POST" })
   )
   .handler(async ({ data }) => {
     const generic = { ok: false as const, error: "Telefone ou senha inválidos." };
+    const phone = normalizePhone(data.phone);
+    if (phone.length < 10 || phone.length > 15) return generic;
+
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    // Extra protection around our custom phone -> email resolution path.
+    // Failed attempts are tracked server-side; successful logins clear the counter.
+    const { data: blocked, error: rateLimitError } = await supabaseAdmin.rpc("check_phone_login_rate_limit", {
+      p_phone: phone,
+      p_limit: 8,
+      p_window_seconds: 900,
+    });
+    if (!rateLimitError && blocked === true) {
+      return { ok: false as const, error: "Muitas tentativas. Aguarde alguns minutos e tente novamente." };
+    }
+    if (rateLimitError) {
+      console.error("phone-login rate-limit check", rateLimitError.message);
+    }
+
     const { data: row } = await supabaseAdmin
       .from("users")
       .select("email")
-      .eq("phone", normalizePhone(data.phone))
+      .eq("phone", phone)
       .maybeSingle();
     if (!row) return generic;
+
     const client = await publicAuthClient();
     const { data: s, error } = await client.auth.signInWithPassword({
       email: row.email,
       password: data.password,
     });
-    if (error || !s.session) return generic;
+    if (error || !s.session) {
+      const { error: rateWriteError } = await supabaseAdmin.rpc("record_phone_login_failure", {
+        p_phone: phone,
+        p_limit: 8,
+        p_window_seconds: 900,
+      });
+      if (rateWriteError) {
+        console.error("phone-login rate-limit record", rateWriteError.message);
+      }
+      return generic;
+    }
+
+    const { error: rateClearError } = await supabaseAdmin.rpc("clear_phone_login_failures", {
+      p_phone: phone,
+    });
+    if (rateClearError) {
+      console.error("phone-login rate-limit clear", rateClearError.message);
+    }
+
     await supabaseAdmin
       .from("users")
       .update({ last_login_at: new Date().toISOString(), last_seen_at: new Date().toISOString() })
