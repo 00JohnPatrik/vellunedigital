@@ -124,8 +124,8 @@ export function EditorQuickToolbar({ selected, onProp, onDuplicate, onDelete, on
     </div>}
     {onOpacity && <div className="flex h-8 items-center gap-1 rounded-md border border-input bg-background px-2" title="Opacidade da seleção" role="group" aria-label="Opacidade da seleção">
       <span className="text-[10px] text-muted-foreground">Opacidade</span>
-      <input type="range" min="0" max="100" step="5" value={Math.round((Number(primary.opacity) || 1) * 100)} disabled={locked} aria-label="Opacidade" onChange={(event) => onOpacity(Number(event.target.value) / 100)} className="w-16 accent-primary sm:w-20" />
-      <span className="min-w-8 text-right text-[10px] tabular-nums text-muted-foreground">{Math.round((Number(primary.opacity) || 1) * 100)}%</span>
+      <input type="range" min="0" max="100" step="5" value={Math.round((Number.isFinite(Number(primary.opacity)) ? Number(primary.opacity) : 1) * 100)} disabled={locked} aria-label="Opacidade" onChange={(event) => onOpacity(Number(event.target.value) / 100)} className="w-16 accent-primary sm:w-20" />
+      <span className="min-w-8 text-right text-[10px] tabular-nums text-muted-foreground">{Math.round((Number.isFinite(Number(primary.opacity)) ? Number(primary.opacity) : 1) * 100)}%</span>
     </div>}
     <Button variant="ghost" size="icon" className="h-8 w-8" aria-label={locked ? "Desbloquear seleção" : "Bloquear seleção"} title={locked ? "Desbloquear" : "Bloquear"} onClick={onLock}>{locked ? <Unlock /> : <Lock />}</Button>
     <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" disabled={locked} aria-label="Excluir seleção" title="Excluir" onClick={onDelete}><Trash2 /></Button>
