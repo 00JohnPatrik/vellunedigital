@@ -101,9 +101,9 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "icon", href: "/favicon.svg", type: "image/svg+xml" },
       { rel: "manifest", href: "/manifest.webmanifest" },
       { rel: "apple-touch-icon", href: "/favicon.svg" },
-      { rel: "preconnect", href: "https://fonts.googleapis.com" },
+      { rel: "preconnect", href: "https://fonts.googleapis.com", crossOrigin: "anonymous" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
-      { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Sora:wght@500;600;700&display=swap" },
+      { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Sora:wght@500;600;700&display=optional" },
     ],
   }),
   shellComponent: RootShell,
@@ -117,6 +117,11 @@ function RootShell({ children }: { children: ReactNode }) {
     <html lang="pt-BR">
       <head>
         <HeadContent />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `try{var t=localStorage.getItem("vellune-theme");if(t==="dark")document.documentElement.classList.add("dark");else if(t==="light")document.documentElement.classList.remove("dark")}catch(e){}`,
+          }}
+        />
       </head>
       <body>
         {children}
@@ -126,17 +131,98 @@ function RootShell({ children }: { children: ReactNode }) {
   );
 }
 
+const SESSION_IDLE_LIMIT_MS = 12 * 60 * 60 * 1000;
+const SESSION_ACTIVITY_KEY = "vellune-session-last-activity";
+
+function runAuthRuntimeChecks() {
+  if (typeof window === "undefined") return;
+  const isLocal = ["localhost", "127.0.0.1"].includes(window.location.hostname);
+
+  if (!isLocal && window.location.protocol !== "https:") {
+    console.error("[Vellune Auth] Production authentication must run over HTTPS.");
+  }
+
+  const configuredUrl = import.meta.env["VITE_SUPABASE_URL"];
+  if (configuredUrl) {
+    try {
+      const parsed = new URL(configuredUrl);
+      if (parsed.protocol !== "https:" && !isLocal) {
+        console.error("[Vellune Auth] Supabase URL must use HTTPS in production.");
+      }
+    } catch {
+      console.error("[Vellune Auth] VITE_SUPABASE_URL is not a valid URL.");
+    }
+  } else {
+    console.error("[Vellune Auth] VITE_SUPABASE_URL is missing.");
+  }
+
+  if (!import.meta.env["VITE_SUPABASE_PUBLISHABLE_KEY"]) {
+    console.error("[Vellune Auth] VITE_SUPABASE_PUBLISHABLE_KEY is missing.");
+  }
+}
+
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const router = useRouter();
 
   useEffect(() => {
+    runAuthRuntimeChecks();
+    let lastWrite = 0;
+    let signingOut = false;
+
+    const readLastActivity = () => {
+      const raw = window.sessionStorage.getItem(SESSION_ACTIVITY_KEY);
+      const value = raw ? Number(raw) : 0;
+      return Number.isFinite(value) ? value : 0;
+    };
+
+    const endSessionForIdle = () => {
+      if (signingOut) return;
+      signingOut = true;
+      void supabase.auth.signOut().finally(() => {
+        window.sessionStorage.removeItem(SESSION_ACTIVITY_KEY);
+        window.location.assign("/login?error=inactive");
+      });
+    };
+
+    const markActivity = () => {
+      const now = Date.now();
+      if (now - lastWrite < 15_000) return;
+      const last = readLastActivity();
+      if (last && now - last > SESSION_IDLE_LIMIT_MS) {
+        endSessionForIdle();
+        return;
+      }
+      lastWrite = now;
+      window.sessionStorage.setItem(SESSION_ACTIVITY_KEY, String(now));
+    };
+
+    const activityEvents = ["pointerdown", "keydown", "touchstart", "scroll"] as const;
+    activityEvents.forEach((eventName) => window.addEventListener(eventName, markActivity, { passive: true }));
+
+    const checkIdle = () => {
+      const last = readLastActivity();
+      if (last && Date.now() - last > SESSION_IDLE_LIMIT_MS) endSessionForIdle();
+    };
+    const idleTimer = window.setInterval(checkIdle, 60_000);
+
     const { data } = supabase.auth.onAuthStateChange((event) => {
-      if (event !== "SIGNED_IN" && event !== "SIGNED_OUT" && event !== "USER_UPDATED") return;
+      if (event === "SIGNED_IN") {
+        window.sessionStorage.setItem(SESSION_ACTIVITY_KEY, String(Date.now()));
+      }
+      if (event === "SIGNED_OUT") {
+        window.sessionStorage.removeItem(SESSION_ACTIVITY_KEY);
+      }
+      if (event !== "SIGNED_IN" && event !== "SIGNED_OUT" && event !== "USER_UPDATED" && event !== "TOKEN_REFRESHED") return;
       router.invalidate();
       if (event !== "SIGNED_OUT") queryClient.invalidateQueries();
     });
-    return () => data.subscription.unsubscribe();
+
+    return () => {
+      window.clearInterval(idleTimer);
+      activityEvents.forEach((eventName) => window.removeEventListener(eventName, markActivity));
+      data.subscription.unsubscribe();
+    };
   }, [router, queryClient]);
 
   return (
