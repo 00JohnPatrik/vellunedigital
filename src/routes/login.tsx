@@ -467,7 +467,7 @@ function LoginPage() {
                         id="identifier"
                         type="text"
                         autoComplete="username"
-                        inputMode={isPhoneLike ? "tel" : "email"}
+                        inputMode="text"
                         enterKeyHint="next"
                         autoCapitalize="none"
                         autoCorrect="off"
