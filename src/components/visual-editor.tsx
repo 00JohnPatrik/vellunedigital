@@ -852,7 +852,7 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra }: { h: Bl
       {compact && mobileSheet && (
         <div className="fixed inset-0 z-[80] lg:hidden">
           <button type="button" aria-label="Fechar painel" className="absolute inset-0 bg-background/55 backdrop-blur-[2px]" onClick={() => setMobileSheet(null)} />
-          <div className="absolute inset-x-0 bottom-0 max-h-[78vh] overflow-y-auto overscroll-contain rounded-t-3xl border border-border/80 bg-card px-4 pb-[calc(env(safe-area-inset-bottom)+6.5rem)] pt-2 shadow-2xl">
+          <div className="absolute inset-x-0 bottom-0 max-h-[78vh] overflow-y-auto overscroll-contain rounded-t-3xl border border-border/80 bg-card px-4 pb-[calc(env(safe-area-inset-bottom)+6.5rem)] pt-2 shadow-2xl [&_input]:text-base [&_select]:text-base [&_textarea]:text-base sm:[&_input]:text-xs sm:[&_select]:text-xs sm:[&_textarea]:text-xs">
             <div className="mx-auto mb-3 mt-1 h-1 w-10 rounded-full bg-muted-foreground/30" aria-hidden="true" />
             <div className="mb-3 flex items-center justify-between gap-3">
               <p className="text-sm font-semibold">
