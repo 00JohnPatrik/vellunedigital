@@ -272,6 +272,22 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra }: { h: Bl
       });
     }, `selection:align:${mode}`);
   };
+  const updateSelectedOpacity = (value: number, ids: string[]) => {
+    const safe = Math.min(1, Math.max(0, Number(value) || 0));
+    h.set((items) => items.map((block: any) =>
+      ids.includes(block.id) && !block.locked ? { ...block, opacity: safe } : block
+    ), "selection:opacity");
+  };
+
+  const rotateSelectedBy = (amount: number, ids: string[]) => {
+    if (!ids.length) return;
+    h.set((items) => items.map((block: any) =>
+      ids.includes(block.id) && !block.locked
+        ? { ...block, rotation: (Number(block.rotation) || 0) + amount }
+        : block
+    ), "selection:rotation");
+  };
+
   const replaceSelectedImage = (url: string) => {
     if (!imageReplaceId || !url) return;
     h.set((items) => items.map((item: any) => item.id === imageReplaceId && item.type === "image"
@@ -752,6 +768,8 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra }: { h: Bl
               onClearSelection={() => setSelectedIds([])}
               onLayer={(direction, ids) => reorderSelectedLayers(direction, ids)}
               onAlign={(mode, ids) => alignSelectedOnCanvas(mode, ids)}
+              onOpacity={(value, ids) => updateSelectedOpacity(value, ids)}
+              onRotate={(amount, ids) => rotateSelectedBy(amount, ids)}
               onGroup={(ids) => {
                 if (ids.length < 2) return;
                 const groupId = `group-${crypto.randomUUID()}`;
