@@ -718,7 +718,6 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra }: { h: Bl
               </button>
             ))}
           </div>
-        </div>
           <div className="min-w-0">
             <p className="truncate text-xs font-semibold text-foreground sm:text-sm">Editor visual</p>
             <p className="hidden text-[10px] text-muted-foreground sm:block">Crie, organize e refine o convite diretamente no canvas.</p>
