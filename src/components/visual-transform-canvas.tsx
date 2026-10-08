@@ -1002,6 +1002,9 @@ export function VisualTransformCanvas({ blocks, selectedIds: selectedIdsProp, zo
       </div>;
     })}
     {selectedBounds && <div className="pointer-events-none absolute z-[80] rounded-[2px] border-2 border-primary shadow-[0_0_0_1px_hsl(var(--primary)/.12),0_4px_14px_hsl(var(--primary)/.08)]" style={{ left: selectedBounds.left, top: selectedBounds.top, width: selectedBounds.width, height: selectedBounds.height }}>
+      {selected.length === 1 && <span className="pointer-events-none absolute -left-0.5 -top-8 rounded-full border border-primary/20 bg-primary px-2 py-1 text-[9px] font-semibold text-primary-foreground shadow-lg shadow-primary/20">
+        {selected[0]?.type === "text" ? "Texto" : selected[0]?.type === "image" ? "Imagem" : selected[0]?.type === "gallery" ? "Galeria" : selected[0]?.type === "shape" ? "Forma" : selected[0]?.type === "decoration" ? "Decoração" : "Elemento"}
+      </span>}
       <div className="pointer-events-none absolute -bottom-8 left-1/2 hidden -translate-x-1/2 items-center gap-1.5 whitespace-nowrap rounded-full border border-primary/20 bg-card/95 px-2.5 py-1 text-[9px] font-medium text-foreground shadow-lg backdrop-blur-sm sm:flex">
         <span>{Math.round(selectedBounds.width)} × {Math.round(selectedBounds.height)} px</span>
         {selected.length === 1 && <><span className="text-muted-foreground">·</span><span>{Math.round(selected[0]?.rotation ?? 0)}°</span></>}
