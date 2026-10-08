@@ -1068,7 +1068,7 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHe
     h.set((items) => items.map((item: any) => selectedIds.includes(item.id) && !item.locked ? { ...item, props: { ...(item.props ?? {}), [key]: value } } : item), "selection:properties");
   };
   return (
-    <div className={cn("vellune-editor-root flex flex-col overflow-hidden border border-primary/10 bg-background/95 shadow-2xl shadow-black/15 ring-1 ring-black/5", fullHeight ? "h-full min-h-0 rounded-none border-0 pb-0 shadow-none ring-0" : "min-h-[calc(100dvh-7rem)] rounded-[1.25rem] pb-20 lg:min-h-[680px] lg:pb-0", experimentalLayout && "vellune-editor-experimental")} style={{ "--color-primary": experimentalLayout ? "#8B5CF6" : "#d4af37", "--color-primary-foreground": experimentalLayout ? "#F5F7FA" : "#16130b" } as React.CSSProperties}>
+    <div className={cn("vellune-editor-root flex flex-col overflow-hidden border border-primary/10 bg-background/95 shadow-2xl shadow-black/15 ring-1 ring-black/5", fullHeight ? "h-full min-h-0 rounded-none border-0 pb-0 shadow-none ring-0" : "min-h-[calc(100dvh-7rem)] rounded-[1.25rem] pb-20 lg:min-h-[680px] lg:pb-0", experimentalLayout && "vellune-editor-experimental pt-14 sm:pt-16")} style={{ "--color-primary": experimentalLayout ? "#8B5CF6" : "#d4af37", "--color-primary-foreground": experimentalLayout ? "#F5F7FA" : "#16130b" } as React.CSSProperties}>
       {!experimentalLayout && <div className="hidden h-14 shrink-0 items-center gap-3 border-b border-white/[0.07] bg-[#0b0d12]/95 px-4 shadow-[0_8px_30px_rgba(0,0,0,0.18)] backdrop-blur-xl lg:flex" role="toolbar" aria-label="Barra principal do editor">
         <div className="min-w-0 flex-1">
           {desktopHeaderLeft ?? (
