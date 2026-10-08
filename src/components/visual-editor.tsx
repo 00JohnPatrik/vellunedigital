@@ -9,7 +9,7 @@ import { EditorCommandPalette } from "@/components/editor-command-palette";
 import { TemplateGallery } from "@/components/template-gallery";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-import { CalendarDays, CheckCircle2, Eye, EyeOff, Grid3X3, Minus, Plus, Redo2, Undo2, PanelLeft, PanelRight, Sparkles, Smartphone, Tablet, Monitor, BringToFront, SendToBack, Trash2, X, Pencil, RotateCcw, RotateCw, Lock, Unlock, AlignCenterHorizontal, AlignCenterVertical, Link2, Unlink2, MapPin, Type, Image as ImageIcon, Palette, MoreHorizontal, Maximize2, Minimize2, Search, LayoutGrid } from "lucide-react";
+import { CalendarDays, CheckCircle2, Eye, EyeOff, Grid3X3, Minus, Plus, Redo2, Undo2, PanelLeft, PanelRight, Sparkles, Smartphone, Tablet, Monitor, BringToFront, SendToBack, Trash2, X, Pencil, RotateCcw, RotateCw, Lock, Unlock, AlignCenterHorizontal, AlignCenterVertical, Link2, Unlink2, MapPin, Type, Image as ImageIcon, Palette, MoreHorizontal, Maximize2, Minimize2, Search, LayoutGrid, Magnet } from "lucide-react";
 
 function useIsCompact() {
   const [compact, setCompact] = useState(false);
@@ -26,6 +26,7 @@ type EditorViewPreferences = {
   device?: "mobile" | "tablet" | "desktop";
   zoom?: number;
   sidebarOpen?: boolean;
+  snapEnabled?: boolean;
 };
 
 const EDITOR_VIEW_PREFERENCES_KEY = "vellune:invitation-editor:view-preferences:v1";
@@ -38,7 +39,8 @@ function readEditorViewPreferences(): EditorViewPreferences {
     const device = value.device === "mobile" || value.device === "tablet" || value.device === "desktop" ? value.device : undefined;
     const zoom = Number.isFinite(Number(value.zoom)) ? Math.min(150, Math.max(50, Number(value.zoom))) : undefined;
     const sidebarOpen = typeof value.sidebarOpen === "boolean" ? value.sidebarOpen : undefined;
-    return { device, zoom, sidebarOpen };
+    const snapEnabled = typeof value.snapEnabled === "boolean" ? value.snapEnabled : undefined;
+    return { device, zoom, sidebarOpen, snapEnabled };
   } catch {
     return {};
   }
@@ -306,6 +308,7 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHe
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [zoom, setZoom] = useState(() => viewPreferences.current?.zoom ?? 60);
   const [showGrid, setShowGrid] = useState(false);
+  const [snapEnabled, setSnapEnabled] = useState(() => viewPreferences.current?.snapEnabled ?? true);
   const [mobileSheet, setMobileSheet] = useState<"elements" | "layers" | "properties" | "background" | "view" | null>(null);
   const [toolCategory, setToolCategory] = useState("Modelos");
   const [templateOpen, setTemplateOpen] = useState(false);
@@ -379,8 +382,8 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHe
   }, [compact, device, fitCanvasToViewport]);
 
   useEffect(() => {
-    writeEditorViewPreferences({ device, zoom, sidebarOpen });
-  }, [device, zoom, sidebarOpen]);
+    writeEditorViewPreferences({ device, zoom, sidebarOpen, snapEnabled });
+  }, [device, zoom, sidebarOpen, snapEnabled]);
 
   useEffect(() => {
     const syncCanvasToViewport = () => {
@@ -971,6 +974,9 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHe
             ))}
           </div>
 
+          <button type="button" onClick={() => setSnapEnabled((value) => !value)} className={cn("hidden h-9 items-center gap-2 rounded-lg border px-2.5 text-[10px] font-medium transition xl:inline-flex", snapEnabled ? "border-primary/25 bg-primary/10 text-primary" : "border-white/[0.08] bg-white/[0.025] text-white/45 hover:bg-white/[0.06] hover:text-white")} title={snapEnabled ? "Desativar magnetismo de alinhamento" : "Ativar magnetismo de alinhamento"} aria-label={snapEnabled ? "Desativar magnetismo de alinhamento" : "Ativar magnetismo de alinhamento"} aria-pressed={snapEnabled}>
+            <Magnet className="h-3.5 w-3.5" /><span>Magnetismo</span>
+          </button>
           <button type="button" onClick={() => setCommandOpen(true)} className="hidden h-9 items-center gap-2 rounded-lg border border-white/[0.08] bg-white/[0.025] px-2.5 text-[10px] font-medium text-white/50 transition hover:border-white/[0.12] hover:bg-white/[0.06] hover:text-white xl:inline-flex" title="Buscar e adicionar (Ctrl/Cmd+K)" aria-label="Buscar e adicionar">
             <Search className="h-3.5 w-3.5" /><span>Buscar / adicionar</span><kbd className="rounded border border-white/[0.08] bg-black/10 px-1.5 py-0.5 text-[9px] text-white/30">⌘K</kbd>
           </button>
@@ -1009,6 +1015,7 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHe
           <button type="button" aria-label="Aumentar zoom" title="Aumentar zoom" onClick={() => setZoom((value) => Math.min(150, value + 10))} className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-border/70 text-muted-foreground transition hover:bg-accent hover:text-foreground"><Plus className="h-3.5 w-3.5" /></button>
           <button type="button" aria-label="Ajustar canvas à área disponível" title="Ajustar canvas" onClick={fitCanvas} className="inline-flex h-8 items-center justify-center gap-1.5 rounded-md border border-border/70 px-2 text-[11px] text-muted-foreground transition hover:bg-accent hover:text-foreground"><Maximize2 className="h-3.5 w-3.5" /><span className="hidden md:inline">Ajustar</span></button>
           <button type="button" aria-label="Buscar e adicionar" title="Buscar e adicionar" onClick={() => setCommandOpen(true)} className="inline-flex h-8 items-center justify-center rounded-md border border-border/70 px-2 text-[11px] text-muted-foreground transition hover:bg-accent hover:text-foreground sm:px-2.5"><Search className="h-3.5 w-3.5" /><span className="ml-1.5 hidden sm:inline">Adicionar</span></button>
+          <button type="button" aria-pressed={snapEnabled} title={snapEnabled ? "Desativar magnetismo" : "Ativar magnetismo"} onClick={() => setSnapEnabled((value) => !value)} className={`inline-flex h-8 items-center gap-1.5 rounded-md border px-2.5 text-[11px] transition ${snapEnabled ? "border-primary/25 bg-primary/10 text-primary" : "border-border/70 text-muted-foreground hover:bg-accent hover:text-foreground"}`}><Magnet className="h-3.5 w-3.5" /><span className="hidden sm:inline">Magnetismo</span></button>
           <button type="button" aria-pressed={showGrid} title={showGrid ? "Ocultar guias" : "Mostrar guias"} onClick={() => setShowGrid((value) => !value)} className={`inline-flex h-8 items-center gap-1.5 rounded-md border px-2.5 text-[11px] transition ${showGrid ? "border-primary/25 bg-primary/10 text-primary" : "border-border/70 text-muted-foreground hover:bg-accent hover:text-foreground"}`}><Grid3X3 className="h-3.5 w-3.5" /><span className="hidden sm:inline">Guias</span></button>
           </div>
         </div>
@@ -1319,6 +1326,7 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHe
               startEditingId={startEditingTextId}
               onStartEditingHandled={handleStartEditingHandled}
               showGrid={showGrid}
+              snapEnabled={snapEnabled}
               onAdvanced={() => {
                 if (compact) {
                   setMobileSheet("properties");
@@ -1416,9 +1424,14 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHe
                 <button type="button" className="rounded-xl border px-3 py-2.5" onClick={() => setZoom((value) => Math.min(150, value + 10))} aria-label="Aumentar zoom">+</button>
                 <button type="button" className="rounded-xl border px-3 py-2.5 text-[10px]" onClick={fitCanvasToViewport}>Ajustar</button>
               </div>
-              <button type="button" className={cn("w-full rounded-xl border px-3 py-2.5 text-[11px] font-medium", showGrid ? "border-primary/20 bg-primary/10 text-primary" : "text-muted-foreground")} onClick={() => setShowGrid((value) => !value)}>
-                {showGrid ? "Guias ativas" : "Ativar guias"}
-              </button>
+              <div className="grid grid-cols-2 gap-2">
+                <button type="button" className={cn("rounded-xl border px-3 py-2.5 text-[11px] font-medium", showGrid ? "border-primary/20 bg-primary/10 text-primary" : "text-muted-foreground")} onClick={() => setShowGrid((value) => !value)}>
+                  {showGrid ? "Guias ativas" : "Ativar guias"}
+                </button>
+                <button type="button" className={cn("rounded-xl border px-3 py-2.5 text-[11px] font-medium", snapEnabled ? "border-primary/20 bg-primary/10 text-primary" : "text-muted-foreground")} onClick={() => setSnapEnabled((value) => !value)}>
+                  {snapEnabled ? "Magnetismo ativo" : "Magnetismo desligado"}
+                </button>
+              </div>
             </div>
           )}
           {mobileSheet === "elements" && (
