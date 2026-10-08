@@ -218,10 +218,12 @@ type CompositionBuildOptions = {
 };
 
 const compositionTone = {
-  ink: "hsl(var(--foreground))",
-  muted: "hsl(var(--muted-foreground))",
-  accent: "hsl(var(--primary))",
-  primaryForeground: "hsl(var(--primary-foreground))",
+  // Persist real colors in invitation content so published invites do not depend
+  // on the dashboard/app CSS theme variables.
+  ink: "#342d27",
+  muted: "#6d6258",
+  accent: "#9a7a58",
+  primaryForeground: "#ffffff",
 } as const;
 
 function compositionFrame(canvasWidth: number) {
