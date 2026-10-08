@@ -237,16 +237,99 @@
     0 24px 60px oklch(0 0 0 / 34%);
 }
 
+/* Premium interaction polish: calm surfaces, deliberate focus states and
+ * clearer hierarchy without altering editor behavior or data contracts. */
 .vellune-editor-topbar {
-  min-height: 4.1rem;
+  position: relative;
+  min-height: 3.6rem;
   border-color: var(--vellune-editor-line);
   background:
     linear-gradient(
       180deg,
-      color-mix(in oklch, var(--color-card) 96%, transparent),
-      color-mix(in oklch, var(--color-card) 82%, transparent)
+      color-mix(in oklch, var(--color-card) 98%, transparent),
+      color-mix(in oklch, var(--color-card) 86%, transparent)
     );
+  box-shadow:
+    0 1px 0 oklch(1 0 0 / 3%),
+    0 12px 28px oklch(0 0 0 / 14%);
+  backdrop-filter: blur(20px);
 }
+
+.vellune-editor-topbar button {
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease,
+    color 160ms ease,
+    box-shadow 160ms ease,
+    transform 160ms ease;
+}
+
+.vellune-editor-topbar button:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.vellune-editor-topbar button:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.vellune-editor-topbar button:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 2px color-mix(in oklch, var(--color-primary) 16%, transparent),
+    0 0 0 4px color-mix(in oklch, var(--color-background) 92%, transparent);
+}
+
+.vellune-editor-sidebar nav button,
+.vellune-editor-mobile-bar button {
+  transition:
+    background-color 170ms ease,
+    border-color 170ms ease,
+    color 170ms ease,
+    transform 170ms ease,
+    box-shadow 170ms ease;
+}
+
+.vellune-editor-sidebar nav button:hover:not(:disabled),
+.vellune-editor-mobile-bar button:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.vellune-editor-sidebar nav button:focus-visible,
+.vellune-editor-mobile-bar button:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px color-mix(in oklch, var(--color-primary) 20%, transparent);
+}
+
+.vellune-editor-sidebar nav button[aria-pressed="true"] {
+  box-shadow:
+    inset 0 0 0 1px color-mix(in oklch, var(--color-primary) 14%, transparent),
+    0 8px 20px color-mix(in oklch, var(--color-primary) 7%, transparent);
+}
+
+.vellune-editor-inspector {
+  box-shadow:
+    inset 1px 0 0 oklch(1 0 0 / 2%),
+    -10px 0 28px oklch(0 0 0 / 10%);
+}
+
+.vellune-editor-workspace {
+  min-width: 0;
+}
+
+@media (min-width: 1024px) {
+  .vellune-editor-topbar {
+    min-height: 3.6rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .vellune-editor-topbar button,
+  .vellune-editor-sidebar nav button,
+  .vellune-editor-mobile-bar button {
+    transition: none !important;
+  }
+}
+
 
 .vellune-editor-topbar::after {
   content: "";
