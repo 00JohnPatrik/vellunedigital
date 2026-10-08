@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 
 import { AlertTriangle, CalendarDays, ChevronLeft, ChevronRight, Clock, Maximize2, MapPin, MessageCircle, Navigation, X } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import { RsvpForm } from "@/components/rsvp-form";
+import { Button } from "@/components/ui/button";
 import { BLOCKS, getBlockGeometry, type Background, type Block } from "@/lib/templates";
 import { fontCss, formatDate, formatTime, isKnownType, pick, resolvePublicText, type EventCtx } from "@/lib/blocks";
 import { cn } from "@/lib/utils";
