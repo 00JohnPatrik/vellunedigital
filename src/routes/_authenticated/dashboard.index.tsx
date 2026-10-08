@@ -4,6 +4,7 @@ import { LoadingState, PageHeader } from "@/components/admin-ui";
 import { RecentResponses, Section, StatCard, StatGrid, UpcomingList } from "@/components/reports-ui";
 import { fetchReport, recentResponses, totals, upcoming } from "@/lib/reports";
 import { CompanyDashboardEnhancements } from "@/components/phase7-ui";
+import { ExperimentalCompanyDashboard } from "@/components/experimental-company-dashboard";
 
 export const Route = createFileRoute("/_authenticated/dashboard/")({
   component: CompanyDashboard,
@@ -11,6 +12,7 @@ export const Route = createFileRoute("/_authenticated/dashboard/")({
 
 function CompanyDashboard() {
   const { appUser } = Route.useRouteContext();
+  const experimentalLayout = typeof window !== "undefined" && new URLSearchParams(window.location.search).get("experimental") === "1";
   const report = useQuery({ queryKey: ["reports", "company"], queryFn: () => fetchReport() });
   const recent = useQuery({ queryKey: ["reports", "recent"], queryFn: () => recentResponses(5) });
   if (report.isLoading) return <LoadingState />;
@@ -24,6 +26,17 @@ function CompanyDashboard() {
   }
   const rows = report.data ?? [];
   const t = totals(rows);
+
+  if (experimentalLayout) {
+    return (
+      <ExperimentalCompanyDashboard
+        appUser={appUser!}
+        reportRows={rows}
+        recentResponses={recent.data ?? []}
+      />
+    );
+  }
+
   return (
     <div>
       <PageHeader title="Dashboard" description="Resumo da sua empresa." />
