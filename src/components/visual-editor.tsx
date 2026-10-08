@@ -266,7 +266,7 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHe
   const canvasRef = useRef<HTMLDivElement>(null);
   const viewportRef = useRef<HTMLDivElement>(null);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
-  const [zoom, setZoom] = useState(100);
+  const [zoom, setZoom] = useState(60);
   const [showGrid, setShowGrid] = useState(false);
   const [mobileSheet, setMobileSheet] = useState<"elements" | "layers" | "properties" | "background" | "view" | null>(null);
   const [toolCategory, setToolCategory] = useState("Modelos");
@@ -337,13 +337,12 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHe
 
   useEffect(() => {
     if (!compact) return;
+    if (device === "mobile") {
+      setZoom(60);
+      return;
+    }
     requestAnimationFrame(fitCanvasToViewport);
-    const node = viewportRef.current;
-    if (!node || typeof ResizeObserver === "undefined") return;
-    const observer = new ResizeObserver(() => requestAnimationFrame(fitCanvasToViewport));
-    observer.observe(node);
-    return () => observer.disconnect();
-  }, [compact, fitCanvasToViewport]);
+  }, [compact, device, fitCanvasToViewport]);
   useEffect(() => {
     if (selectedIds.length > 0) setInspectorOpen(true);
   }, [selectedIds]);
