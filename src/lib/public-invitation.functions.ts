@@ -19,10 +19,16 @@ export type PublicInvitationBranding = {
   website_url: string | null;
 };
 
+export type PublicInvitationGuest = {
+  name: string;
+  people_count: number;
+  status: string;
+};
+
 export type PublicInvitation = {
   slug: string; name: string; status: "published" | "closed"; event_date: string; event_time: string;
   venue_name: string | null; address: string | null; city: string | null; state: string | null; message: string | null;
-  content: TemplateContent; rsvp?: PublicRsvp; branding?: PublicInvitationBranding | null;
+  content: TemplateContent; rsvp?: PublicRsvp; branding?: PublicInvitationBranding | null; guest?: PublicInvitationGuest | null;
 };
 export type PublicInvitationResult = { state: "ok"; invitation: PublicInvitation } | { state: "not_found" | "unavailable" };
 
@@ -31,7 +37,7 @@ export type PublicInvitationResult = { state: "ok"; invitation: PublicInvitation
  * and returns safe fields only when status is published/closed — no company/customer/internal ids.
  */
 export const getPublicInvitation = createServerFn({ method: "GET" })
-  .validator((d) => z.object({ slug: z.string().min(1).max(120) }).parse(d))
+  .validator((d) => z.object({ slug: z.string().min(1).max(120), guestToken: z.string().trim().min(1).max(120).optional() }).parse(d))
   .handler(async ({ data }): Promise<PublicInvitationResult> => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: res, error } = await supabaseAdmin.rpc("get_public_invitation" as never, { _slug: data.slug } as never);
@@ -57,6 +63,21 @@ export const getPublicInvitation = createServerFn({ method: "GET" })
 
       if (tenant?.company_id) {
         publicCompanyId = tenant.company_id;
+        if (data.guestToken) {
+          const { data: guest } = await supabaseAdmin
+            .from("invitation_guests")
+            .select("name, people_count, status")
+            .eq("invitation_id", tenant.id)
+            .eq("qr_token", data.guestToken)
+            .neq("status", "deleted")
+            .is("deleted_at", null)
+            .maybeSingle();
+          out.invitation.guest = guest ? {
+            name: guest.name,
+            people_count: guest.people_count,
+            status: guest.status,
+          } : null;
+        }
         publicInvitationId = tenant.id;
         publicTemplateId = tenant.template_id;
         const { data: subscription } = await supabaseAdmin
