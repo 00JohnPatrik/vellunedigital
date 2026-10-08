@@ -338,12 +338,34 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHe
 
   useEffect(() => {
     if (!compact) return;
-    if (device === "mobile") {
-      setZoom(60);
-      return;
-    }
     requestAnimationFrame(fitCanvasToViewport);
   }, [compact, device, fitCanvasToViewport]);
+
+  useEffect(() => {
+    const syncCanvasToViewport = () => {
+      requestAnimationFrame(() => {
+        if (compact) {
+          fitCanvasToViewport();
+        } else {
+          fitCanvas();
+        }
+      });
+    };
+
+    const viewport = viewportRef.current;
+    const observer = typeof ResizeObserver !== "undefined" && viewport
+      ? new ResizeObserver(syncCanvasToViewport)
+      : null;
+
+    observer?.observe(viewport);
+    window.addEventListener("resize", syncCanvasToViewport);
+
+    return () => {
+      observer?.disconnect();
+      window.removeEventListener("resize", syncCanvasToViewport);
+    };
+  }, [compact, device, fitCanvas, fitCanvasToViewport]);
+
   useEffect(() => {
     if (selectedIds.length > 0) setInspectorOpen(true);
   }, [selectedIds]);
