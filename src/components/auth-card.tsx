@@ -46,7 +46,7 @@ export function AuthCard({
       const active = document.activeElement;
       if (!(active instanceof HTMLElement) || !section.contains(active)) return;
       window.requestAnimationFrame(() => {
-        active.scrollIntoView({ block: "nearest", inline: "nearest", behavior: "smooth" });
+        active.scrollIntoView({ block: "nearest", inline: "nearest", behavior: "auto" });
       });
     };
 
