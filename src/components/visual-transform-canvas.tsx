@@ -275,7 +275,7 @@ function isTextInput(target: EventTarget | null) {
   );
 }
 
-export function VisualTransformCanvas({ blocks, selectedIds: selectedIdsProp, zoom, canvasRef, ctx, onSelect, onAddBlock, onChange, onDuplicate, onDelete, onAdvanced, onLayer, onAlign, onOpacity, onRotate, onAutoArrange, onMagicArrange, onSmartAlign, onGroup, onUngroup, onImageAction, startEditingId, onStartEditingHandled, showGrid = true, snapEnabled = true }: Props) {
+export function VisualTransformCanvas({ blocks, selectedIds: selectedIdsProp, zoom, canvasRef, ctx, onSelect, onAddBlock, onChange, onDuplicate, onDelete, onAdvanced, onLayer, onAlign, onOpacity, onRotate, onAutoArrange, onMagicArrange, onSmartAlign, onGroup, onUngroup, onToggleLock, onCopyStyle, onPasteStyle, canPasteStyle = false, onImageAction, startEditingId, onStartEditingHandled, showGrid = true, snapEnabled = true }: Props) {
   const interaction = useRef<Interaction | null>(null);
   const [guides, setGuides] = useState<Guide[]>([]);
   const [marquee, setMarquee] = useState<{ start: Point; current: Point; additive: boolean } | null>(null);
@@ -750,7 +750,7 @@ export function VisualTransformCanvas({ blocks, selectedIds: selectedIdsProp, zo
     if (!selectedBlocks.length) return;
     if (selectedBlocks.length === 1) {
       const target = selectedBlocks[0];
-      if (target?.locked) return;
+      if (!target || target.locked) return;
       const index = blocks.indexOf(target);
       const value = geometry(target, index);
       const size = canvasSize();
