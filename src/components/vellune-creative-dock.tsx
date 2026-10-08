@@ -21,7 +21,7 @@ export function VelluneCreativeDock({
 }: VelluneCreativeDockProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   type Item = { id: CreativeDockItem; label: string; Icon: typeof Home };
-  const completeMenu = companyNav.filter((item): item is typeof item & { to: string } => Boolean(item.to));
+  const completeMenu = companyNav.filter((item) => Boolean(item.to)).map((item) => ({ label: item.label, to: item.to!, icon: item.icon }));
   const items: [Item, Item, Item, Item] = [
     { id: "home", label: "Início", Icon: Home },
     { id: "projects", label: "Projetos", Icon: FolderOpen },
