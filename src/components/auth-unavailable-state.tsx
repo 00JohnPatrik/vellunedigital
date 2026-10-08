@@ -24,7 +24,7 @@ export function AuthUnavailableState({
           </div>
           <div className="mt-6 flex flex-col items-center">
             <Logo markOnly className="h-12 w-12 opacity-90" title="Vellune Digital" />
-            <p className="mt-5 text-[9px] font-semibold uppercase tracking-[0.28em] text-[#d4af37]">Vellune Secure</p>
+            <p className="mt-5 text-[9px] font-semibold uppercase tracking-[0.28em] text-[#d4af37]">Acesso protegido</p>
             <h1 className="mt-2 max-w-[460px] font-display text-[25px] font-medium leading-tight tracking-[-0.035em] text-white sm:text-[30px]">{title}</h1>
             <p className="mt-3 max-w-[460px] text-[13px] leading-6 text-white/45 sm:text-sm">{description}</p>
           </div>
@@ -33,7 +33,7 @@ export function AuthUnavailableState({
             <p className="mt-1.5 text-[11px] leading-5 text-white/35">Não é necessário repetir seus dados enquanto verificamos o serviço.</p>
           </div>
           <div className="mt-5 flex flex-col gap-2.5 sm:flex-row sm:justify-center">
-            <button type="button" onClick={onRetry ?? (() => window.location.reload())} className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-[#d4af37] px-5 text-sm font-semibold text-[#16130b] shadow-[0_12px_34px_rgba(212,175,55,0.10)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#e5c66b] hover:shadow-[0_16px_38px_rgba(212,175,55,0.16)] active:translate-y-0">
+            <button type="button" onClick={onRetry ?? (() => window.location.reload())} className="vellune-auth-cta inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-[#d4af37] px-5 text-sm font-semibold text-[#16130b] shadow-[0_12px_34px_rgba(212,175,55,0.10)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#e5c66b] hover:shadow-[0_16px_38px_rgba(212,175,55,0.16)] active:translate-y-0">
               <RefreshCw className="h-4 w-4" />Tentar novamente
             </button>
             <Link to="/login" className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-white/[0.08] bg-white/[0.025] px-5 text-sm font-semibold text-white/65 transition-colors hover:border-[#d4af37]/20 hover:text-[#e5c66b]">Voltar ao acesso<ArrowRight className="h-4 w-4" /></Link>
