@@ -14,6 +14,8 @@ import {
   Layers3,
   Mail,
   MapPin,
+  MoreHorizontal,
+  Pencil,
   Plus,
   Sparkles,
   Users,
@@ -106,6 +108,8 @@ function ProjectThumbnail({ invitation }: { invitation: Invitation }) {
 
 export function ExperimentalCompanyDashboard({ appUser, reportRows, recentResponses }: Props) {
   const [search, setSearch] = useState("");
+  const [createSheetOpen, setCreateSheetOpen] = useState(false);
+  const [openProjectMenu, setOpenProjectMenu] = useState<string | null>(null);
   const navigate = useNavigate();
   const invitations = useQuery({ queryKey: [...invitationsKey, "dashboard-experimental"], queryFn: listInvitations, staleTime: 30_000 });
   const rows = invitations.data ?? [];
@@ -195,6 +199,25 @@ export function ExperimentalCompanyDashboard({ appUser, reportRows, recentRespon
             </div>
           </div>
         </section>
+
+        {filteredInvitations[0] && (
+          <section className="mt-6">
+            <div className="rounded-[24px] border border-[#292F3A] bg-[#171B23] p-4 shadow-[0_20px_70px_-52px_rgba(139,92,246,0.55)] sm:p-5">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+                <div className="w-full shrink-0 sm:w-[180px]"><ProjectThumbnail invitation={filteredInvitations[0]} /></div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#A9B1BF]">Continuar trabalhando</p>
+                  <h2 className="mt-1 truncate font-display text-xl font-semibold tracking-[-0.03em] text-[#F5F7FA]">{filteredInvitations[0].name}</h2>
+                  <p className="mt-1 truncate text-xs text-[#A9B1BF]">{filteredInvitations[0].customer?.name ?? "Sem cliente"} · atualizado em {new Date(filteredInvitations[0].updated_at).toLocaleDateString("pt-BR")}</p>
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    <Link to="/invitations/$id/editor" params={{ id: filteredInvitations[0].id }} className="inline-flex h-10 items-center gap-2 rounded-full bg-[#8B5CF6] px-4 text-xs font-semibold text-[#F5F7FA] shadow-[0_14px_32px_-18px_rgba(139,92,246,0.85)] transition hover:bg-[#9D74F8] active:scale-[0.98]">Continuar edição<ArrowUpRight className="h-3.5 w-3.5" /></Link>
+                    <Link to="/invitations/$id/preview" params={{ id: filteredInvitations[0].id }} className="inline-flex h-10 items-center gap-2 rounded-full border border-[#292F3A] bg-[#0B0D12] px-4 text-xs font-semibold text-[#F5F7FA] transition hover:border-[#8B5CF6]/45"><Eye className="h-3.5 w-3.5" />Prévia</Link>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+        )}
 
         <section className="mt-8">
           <div className="mb-4 flex items-end justify-between gap-3">
@@ -353,7 +376,7 @@ export function ExperimentalCompanyDashboard({ appUser, reportRows, recentRespon
 
       <VelluneCreativeDock
         activeItem="home"
-        onCreate={() => navigate({ to: "/invitations/new" })}
+        onCreate={() => setCreateSheetOpen(true)}
         onNavigate={(item) => {
           if (item === "home") return;
           if (item === "projects") navigate({ to: "/invitations" });
@@ -361,6 +384,31 @@ export function ExperimentalCompanyDashboard({ appUser, reportRows, recentRespon
           if (item === "settings") navigate({ to: "/settings" });
         }}
       />
+      {createSheetOpen && (
+        <div className="fixed inset-0 z-[240] flex items-end justify-center bg-[#0B0D12]/72 p-3 backdrop-blur-sm sm:items-center sm:p-6" role="presentation" onMouseDown={() => setCreateSheetOpen(false)}>
+          <section className="w-full max-w-lg rounded-[28px] border border-[#292F3A] bg-[#171B23] p-4 shadow-[0_30px_90px_-28px_rgba(11,13,18,0.98)] sm:p-5" role="dialog" aria-modal="true" aria-label="Criar novo" onMouseDown={(event) => event.stopPropagation()}>
+            <div className="mx-auto mb-3 h-1.5 w-12 rounded-full bg-[#292F3A]" aria-hidden="true" />
+            <div className="flex items-start justify-between gap-3">
+              <div><p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[#A9B1BF]">Criação rápida</p><h2 className="mt-1 font-display text-xl font-semibold text-[#F5F7FA]">O que vamos criar?</h2></div>
+              <button type="button" onClick={() => setCreateSheetOpen(false)} className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-[#292F3A] bg-[#0B0D12] text-[#A9B1BF] hover:text-[#F5F7FA]" aria-label="Fechar">×</button>
+            </div>
+            <div className="mt-5 grid grid-cols-1 gap-2.5 sm:grid-cols-3">
+              {[
+                ["Novo convite", "Começar do zero", "/invitations/new"],
+                ["Usar modelo", "Escolher composição pronta", "/templates"],
+                ["Ver projetos", "Abrir seus convites", "/invitations"],
+              ].map(([title, description, to]) => (
+                <Link key={to} to={to as any} onClick={() => setCreateSheetOpen(false)} className="rounded-2xl border border-[#292F3A] bg-[#0B0D12]/55 p-4 transition hover:-translate-y-0.5 hover:border-[#8B5CF6]/45">
+                  <span className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-[#8B5CF6]/10 text-[#8B5CF6]"><Plus className="h-4 w-4" /></span>
+                  <p className="mt-3 text-sm font-semibold text-[#F5F7FA]">{title}</p>
+                  <p className="mt-1 text-[10px] leading-4 text-[#A9B1BF]">{description}</p>
+                </Link>
+              ))}
+            </div>
+          </section>
+        </div>
+      )}
+
     </div>
   );
 }
