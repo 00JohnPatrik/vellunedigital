@@ -16,11 +16,8 @@ export function VelluneCreativeDock({
   onCreate,
   className,
 }: VelluneCreativeDockProps) {
-  const items: Array<{
-    id: CreativeDockItem;
-    label: string;
-    Icon: typeof Home;
-  }> = [
+  type Item = { id: CreativeDockItem; label: string; Icon: typeof Home };
+  const items: [Item, Item, Item, Item] = [
     { id: "home", label: "Início", Icon: Home },
     { id: "projects", label: "Projetos", Icon: FolderOpen },
     { id: "templates", label: "Modelos", Icon: LayoutTemplate },
