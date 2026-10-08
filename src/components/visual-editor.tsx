@@ -1004,7 +1004,7 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHe
                     <Sparkles className="h-4 w-4 text-primary" aria-hidden="true" />
                   </div>
                   <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-                    {EDITOR_THEMES.map((theme) => <ThemeSwatch key={theme.id} theme={theme} onClick={() => applyEditorTheme(theme)} />)}
+                    {EDITOR_THEMES.map((theme) => <ThemeSwatch key={theme.id} theme={theme} active={String((bg as Record<string, unknown>)?.gradient || "") === theme.background.gradient} onClick={() => applyEditorTheme(theme)} />)}
                   </div>
                 </div>
 
@@ -1233,7 +1233,7 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHe
                 </div>
                 <div className="flex gap-2 overflow-x-auto pb-1">
                   {EDITOR_THEMES.map((theme) => <div key={theme.id} className="min-w-[126px] flex-1">
-                    <ThemeSwatch theme={theme} onClick={() => applyEditorTheme(theme)} />
+                    <ThemeSwatch theme={theme} active={String((bg as Record<string, unknown>)?.gradient || "") === theme.background.gradient} onClick={() => applyEditorTheme(theme)} />
                   </div>)}
                 </div>
               </div>
