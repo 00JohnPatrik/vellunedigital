@@ -425,6 +425,42 @@ export type Database = {
           },
         ]
       }
+      invitation_favorites: {
+        Row: {
+          created_at: string
+          id: string
+          invitation_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          invitation_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          invitation_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invitation_favorites_invitation_id_fkey"
+            columns: ["invitation_id"]
+            isOneToOne: false
+            referencedRelation: "invitations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invitation_favorites_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       invitation_guests: {
         Row: {
           company_id: string
@@ -625,78 +661,6 @@ export type Database = {
           },
         ]
       }
-      invitation_favorites: {
-        Row: {
-          created_at: string
-          id: string
-          invitation_id: string
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          invitation_id: string
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          invitation_id?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "invitation_favorites_invitation_id_fkey"
-            columns: ["invitation_id"]
-            isOneToOne: false
-            referencedRelation: "invitations"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "invitation_favorites_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      template_favorites: {
-        Row: {
-          created_at: string
-          id: string
-          template_id: string
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          template_id: string
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          template_id?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "template_favorites_template_id_fkey"
-            columns: ["template_id"]
-            isOneToOne: false
-            referencedRelation: "templates"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "template_favorites_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       notification_read_markers: {
         Row: {
           created_at: string
@@ -886,6 +850,42 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      template_favorites: {
+        Row: {
+          created_at: string
+          id: string
+          template_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          template_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          template_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "template_favorites_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "templates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "template_favorites_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       templates: {
         Row: {
