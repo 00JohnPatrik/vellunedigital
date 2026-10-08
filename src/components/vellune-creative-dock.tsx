@@ -9,7 +9,6 @@ export type VelluneCreativeDockProps = {
   activeItem?: CreativeDockItem;
   onNavigate?: (item: CreativeDockItem) => void;
   onCreate?: () => void;
-  menuItems?: Array<{ label: string; to: string }>;
   className?: string;
 };
 
@@ -17,7 +16,6 @@ export function VelluneCreativeDock({
   activeItem = "projects",
   onNavigate,
   onCreate,
-  menuItems,
   className,
 }: VelluneCreativeDockProps) {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -32,7 +30,7 @@ export function VelluneCreativeDock({
     { label: "Sua marca", to: "/settings/brand", icon: Palette },
     { label: "Configurações", to: "/dashboard/configuracoes", icon: Settings2 },
   ] as const;
-  const completeMenu = menuItems?.length ? menuItems : defaultMenuItems;
+  const completeMenu = defaultMenuItems;
   const items: [Item, Item, Item, Item] = [
     { id: "home", label: "Início", Icon: Home },
     { id: "projects", label: "Projetos", Icon: FolderOpen },
