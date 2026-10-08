@@ -666,6 +666,33 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHe
     .sort((a, b) => b.zIndex - a.zIndex || b.sourceIndex - a.sourceIndex)
     .map((entry, layerIndex) => ({ ...entry, layerIndex }));
 
+  const autoArrangeSelected = (ids: string[]) => {
+    const targetIds = Array.from(new Set(ids));
+    if (targetIds.length < 2) return;
+    h.set((items) => {
+      const entries = items
+        .map((block: any, index: number) => ({ block, index, position: getPosition(block, index), size: getSize(block, index) }))
+        .filter(({ block }) => targetIds.includes(block.id) && !block.locked)
+        .sort((a, b) => a.position.y - b.position.y || a.position.x - b.position.x);
+
+      if (entries.length < 2) return items;
+
+      const canvasWidth = canvasRef.current?.clientWidth || 390;
+      const firstY = Math.min(...entries.map((entry) => entry.position.y));
+      const gap = 24;
+      let cursorY = firstY;
+
+      return items.map((block: any) => {
+        const entry = entries.find((item) => item.block.id === block.id);
+        if (!entry) return block;
+        const nextX = Math.max(12, Math.round((canvasWidth - entry.size.width) / 2));
+        const next = { ...block, x: nextX, y: Math.round(cursorY) };
+        cursorY += entry.size.height + gap;
+        return next;
+      });
+    }, "arrange:auto");
+  };
+
   // Geometry is resolved exclusively through the canonical resolver used by the
   // interactive canvas and the read-only invitation renderer. This prevents the
   // editor's placement/height calculations from disagreeing with what is rendered.
@@ -1189,6 +1216,7 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHe
               onAlign={(mode, ids) => alignSelectedOnCanvas(mode, ids)}
               onOpacity={(value, ids) => updateSelectedOpacity(value, ids)}
               onRotate={(amount, ids) => rotateSelectedBy(amount, ids)}
+              onAutoArrange={(ids) => autoArrangeSelected(ids)}
               onGroup={(ids) => {
                 if (ids.length < 2) return;
                 groupSelected();
