@@ -32,7 +32,8 @@ function EditorPage() {
   if (!q.data) {
     return <div className="mx-auto flex min-h-[50vh] max-w-lg flex-col items-center justify-center rounded-2xl border border-dashed bg-card/60 px-6 py-12 text-center"><BackLink /><EmptyState>Convite não encontrado.</EmptyState></div>;
   }
-  return <EditorForm key={q.data.id} inv={q.data} />;
+  const experimentalLayout = typeof window !== "undefined" && new URLSearchParams(window.location.search).get("experimental") === "1";
+  return <EditorForm key={q.data.id} inv={q.data} experimentalLayout={experimentalLayout} />;
 }
 
 const BackLink = () => <Link to="/invitations" className="mb-4 inline-flex items-center rounded-md px-2 py-1 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"><ArrowLeft className="mr-1 h-4 w-4" />Convites</Link>;
@@ -40,7 +41,7 @@ const BackLink = () => <Link to="/invitations" className="mb-4 inline-flex items
 type SaveState = "saved" | "dirty" | "saving" | "error";
 const AUTOSAVE_MS = 1500;
 
-function EditorForm({ inv }: { inv: Invitation }) {
+function EditorForm({ inv, experimentalLayout = false }: { inv: Invitation; experimentalLayout?: boolean }) {
   const qc = useQueryClient();
   const customers = useQuery({ queryKey: customersKey, queryFn: listCustomers });
   const [v, setV] = useState<EventValues>(() => toEventValues(inv));
@@ -252,7 +253,20 @@ function EditorForm({ inv }: { inv: Invitation }) {
         desktopHeaderLeft={desktopHeaderLeft}
         desktopHeaderRight={desktopHeaderRight}
         fullHeight
+        experimentalLayout={experimentalLayout}
       />
+
+      {experimentalLayout && (
+        <div className="pointer-events-none fixed inset-x-0 top-2 z-[300] flex justify-center px-3">
+          <div className="pointer-events-auto flex items-center gap-2 rounded-full border border-white/10 bg-[#11141B]/85 px-3 py-1.5 text-[10px] font-medium text-white/70 shadow-2xl backdrop-blur-xl">
+            <span className="h-1.5 w-1.5 rounded-full bg-[#8B5CF6] shadow-[0_0_12px_rgba(139,92,246,0.8)]" />
+            Layout experimental · Mobile-first
+            <Link to="/invitations/$id/editor" params={{ id: inv.id }} className="rounded-full border border-white/10 bg-white/[0.06] px-2 py-1 text-white hover:bg-white/[0.12]">
+              Voltar ao editor atual
+            </Link>
+          </div>
+        </div>
+      )}
 
       <ShareDialog slug={inv.slug} open={shareOpen} onOpenChange={setShareOpen} />
       <RsvpPanel invitationId={inv.id} open={rsvpOpen} onOpenChange={setRsvpOpen} />
