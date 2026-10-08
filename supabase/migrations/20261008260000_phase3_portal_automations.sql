@@ -66,6 +66,11 @@ DECLARE
   auto_close_at timestamptz;
   portal_expires_at timestamptz;
 BEGIN
+  IF NOT public.is_super_admin()
+     AND public.invitation_company(_invitation_id) IS DISTINCT FROM public.current_company_id() THEN
+    RETURN jsonb_build_object('state', 'not_found');
+  END IF;
+
   SELECT * INTO i
   FROM public.invitations
   WHERE id = _invitation_id;
