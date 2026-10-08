@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -111,6 +111,20 @@ export function ExperimentalCompanyDashboard({ appUser, reportRows, recentRespon
   const [createSheetOpen, setCreateSheetOpen] = useState(false);
   const [openProjectMenu, setOpenProjectMenu] = useState<string | null>(null);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      const isShortcut = (event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k";
+      if (!isShortcut) return;
+      event.preventDefault();
+      const input = document.querySelector('header[aria-label="Menu superior da Vellune Digital"] input[aria-label="Buscar"]') as HTMLInputElement | null;
+      input?.focus();
+      input?.select();
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, []);
+
   const invitations = useQuery({ queryKey: [...invitationsKey, "dashboard-experimental"], queryFn: listInvitations, staleTime: 30_000 });
   const rows = invitations.data ?? [];
   const totals = useMemo(
@@ -145,7 +159,7 @@ export function ExperimentalCompanyDashboard({ appUser, reportRows, recentRespon
   }, [reportRows]);
 
   return (
-    <div className="dark min-h-[100dvh] bg-[#08090d] text-[#F5F7FA]">
+    <div className="vellune-platform-root dark min-h-[100dvh] bg-[#08090d] text-[#F5F7FA]">
       <VelluneTopBar
         avatarFallback={initials(appUser.name)}
         searchValue={search}
