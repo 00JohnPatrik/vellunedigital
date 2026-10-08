@@ -954,6 +954,83 @@
   background: color-mix(in oklch, var(--color-primary) 4%, transparent);
 }
 
+.vellune-platform-root input,
+.vellune-platform-root textarea,
+.vellune-platform-root select {
+  border-radius: 0.78rem;
+  border-color: var(--vellune-platform-line) !important;
+  background: color-mix(in oklch, var(--color-background) 62%, var(--color-card)) !important;
+  box-shadow: inset 0 1px 0 oklch(1 0 0 / 2%);
+  transition:
+    border-color 160ms ease,
+    background-color 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.vellune-platform-root input:hover,
+.vellune-platform-root textarea:hover,
+.vellune-platform-root select:hover {
+  border-color: var(--vellune-platform-line-strong) !important;
+}
+
+.vellune-platform-root input:focus-visible,
+.vellune-platform-root textarea:focus-visible,
+.vellune-platform-root select:focus-visible {
+  outline: none;
+  border-color: color-mix(in oklch, var(--color-primary) 42%, var(--vellune-platform-line)) !important;
+  box-shadow:
+    0 0 0 3px color-mix(in oklch, var(--color-primary) 10%, transparent),
+    inset 0 1px 0 oklch(1 0 0 / 3%);
+}
+
+.vellune-platform-root button {
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease,
+    color 160ms ease,
+    box-shadow 160ms ease,
+    transform 160ms ease;
+}
+
+.vellune-platform-root button:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.vellune-platform-root button:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.vellune-platform-root table th {
+  letter-spacing: 0.01em;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+}
+
+.vellune-platform-root table td,
+.vellune-platform-root table th {
+  border-color: var(--vellune-platform-line);
+}
+
+.vellune-platform-root .border-dashed {
+  border-color: var(--vellune-platform-line-strong) !important;
+  background:
+    radial-gradient(circle at 50% 0%, color-mix(in oklch, var(--color-primary) 5%, transparent), transparent 58%),
+    color-mix(in oklch, var(--color-card) 48%, transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .vellune-platform-root button,
+  .vellune-platform-root input,
+  .vellune-platform-root textarea,
+  .vellune-platform-root select {
+    transition: none !important;
+  }
+
+  .vellune-platform-root button:hover:not(:disabled) {
+    transform: none;
+  }
+}
+
 @media (max-width: 767px) {
   .vellune-page-header {
     margin-bottom: 1.2rem;
