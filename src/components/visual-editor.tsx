@@ -5,9 +5,10 @@ import { VisualTransformCanvas } from "@/components/visual-transform-canvas";
 import { BackgroundPropertiesPanel, ContextualPropertiesPanel } from "@/components/contextual-properties-panel";
 import { BLOCKS, getBlockDefaultSize, getNextBlockZIndex, newBlock, resolveBlockGeometry, type Block, type BlockType } from "@/lib/templates";
 import { ElementsLibrary } from "@/components/elements-library";
+import { EditorCommandPalette } from "@/components/editor-command-palette";
 import { TemplateGallery } from "@/components/template-gallery";
 import { cn } from "@/lib/utils";
-import { CalendarDays, CheckCircle2, Eye, EyeOff, Grid3X3, Minus, Plus, Redo2, Undo2, PanelLeft, PanelRight, Sparkles, Smartphone, Tablet, Monitor, BringToFront, SendToBack, Trash2, X, Pencil, RotateCcw, RotateCw, Lock, Unlock, AlignCenterHorizontal, AlignCenterVertical, Link2, Unlink2, MapPin, Type, Image as ImageIcon, Palette, MoreHorizontal, Maximize2 } from "lucide-react";
+import { CalendarDays, CheckCircle2, Eye, EyeOff, Grid3X3, Minus, Plus, Redo2, Undo2, PanelLeft, PanelRight, Sparkles, Smartphone, Tablet, Monitor, BringToFront, SendToBack, Trash2, X, Pencil, RotateCcw, RotateCw, Lock, Unlock, AlignCenterHorizontal, AlignCenterVertical, Link2, Unlink2, MapPin, Type, Image as ImageIcon, Palette, MoreHorizontal, Maximize2, Minimize2, Search } from "lucide-react";
 
 function useIsCompact() {
   const [compact, setCompact] = useState(false);
@@ -155,6 +156,8 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHe
   const [canvasDragOver, setCanvasDragOver] = useState(false);
   const [inspectorOpen, setInspectorOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [commandOpen, setCommandOpen] = useState(false);
+  const [focusMode, setFocusMode] = useState(false);
   const canvasDragDepth = useRef(0);
   const compact = useIsCompact();
   const fitCanvasToViewport = useCallback(() => {
@@ -538,6 +541,11 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHe
       if (target.closest("input, textarea, [contenteditable=true], [role=combobox]")) return;
       const command = event.ctrlKey || event.metaKey;
       const key = event.key.toLowerCase();
+      if (command && key === "k") {
+        event.preventDefault();
+        setCommandOpen(true);
+        return;
+      }
       // Canva-style quick text insertion: T creates a text element and
       // immediately enters text editing while the canvas is focused.
       if (!command && !event.altKey && key === "t") {
@@ -648,6 +656,13 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHe
               </button>
             ))}
           </div>
+
+          <button type="button" onClick={() => setCommandOpen(true)} className="hidden h-9 items-center gap-2 rounded-lg border border-white/[0.08] bg-white/[0.025] px-2.5 text-[10px] font-medium text-white/50 transition hover:border-white/[0.12] hover:bg-white/[0.06] hover:text-white xl:inline-flex" title="Buscar e adicionar (Ctrl/Cmd+K)" aria-label="Buscar e adicionar">
+            <Search className="h-3.5 w-3.5" /><span>Buscar / adicionar</span><kbd className="rounded border border-white/[0.08] bg-black/10 px-1.5 py-0.5 text-[9px] text-white/30">⌘K</kbd>
+          </button>
+          <button type="button" onClick={() => setFocusMode((value) => !value)} className={cn("inline-flex h-9 w-9 items-center justify-center rounded-lg border text-white/50 transition hover:bg-white/[0.06] hover:text-white", focusMode ? "border-primary/25 bg-primary/10 text-primary" : "border-white/[0.08] bg-white/[0.025]")} title={focusMode ? "Sair do modo foco" : "Modo foco"} aria-label={focusMode ? "Sair do modo foco" : "Ativar modo foco"} aria-pressed={focusMode}>
+            {focusMode ? <Minimize2 className="h-3.5 w-3.5" /> : <Maximize2 className="h-3.5 w-3.5" />}
+          </button>
         </div>
 
         <div className="flex min-w-0 flex-1 items-center justify-end gap-1.5">
@@ -679,13 +694,14 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHe
           <span className="min-w-12 text-center text-[11px] font-medium tabular-nums text-foreground">{zoom}%</span>
           <button type="button" aria-label="Aumentar zoom" title="Aumentar zoom" onClick={() => setZoom((value) => Math.min(150, value + 10))} className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-border/70 text-muted-foreground transition hover:bg-accent hover:text-foreground"><Plus className="h-3.5 w-3.5" /></button>
           <button type="button" aria-label="Ajustar canvas à área disponível" title="Ajustar canvas" onClick={fitCanvas} className="inline-flex h-8 items-center justify-center gap-1.5 rounded-md border border-border/70 px-2 text-[11px] text-muted-foreground transition hover:bg-accent hover:text-foreground"><Maximize2 className="h-3.5 w-3.5" /><span className="hidden md:inline">Ajustar</span></button>
+          <button type="button" aria-label="Buscar e adicionar" title="Buscar e adicionar" onClick={() => setCommandOpen(true)} className="inline-flex h-8 items-center justify-center rounded-md border border-border/70 px-2 text-[11px] text-muted-foreground transition hover:bg-accent hover:text-foreground sm:px-2.5"><Search className="h-3.5 w-3.5" /><span className="ml-1.5 hidden sm:inline">Adicionar</span></button>
           <button type="button" aria-pressed={showGrid} title={showGrid ? "Ocultar guias" : "Mostrar guias"} onClick={() => setShowGrid((value) => !value)} className={`inline-flex h-8 items-center gap-1.5 rounded-md border px-2.5 text-[11px] transition ${showGrid ? "border-primary/25 bg-primary/10 text-primary" : "border-border/70 text-muted-foreground hover:bg-accent hover:text-foreground"}`}><Grid3X3 className="h-3.5 w-3.5" /><span className="hidden sm:inline">Guias</span></button>
           </div>
         </div>
         {toolbarExtra && <div className="mt-2 flex items-center justify-end gap-1.5 border-t border-primary/10 pt-2 md:hidden">{toolbarExtra}</div>}
       </div>
       <div className="vellune-editor-body flex min-h-0 flex-1 flex-col lg:flex-row">
-        <aside className={cn("vellune-editor-sidebar hidden shrink-0 grid-rows-[auto_minmax(0,1fr)] border-r border-white/[0.06] bg-[#0d0f14]/95 backdrop-blur-xl lg:grid", sidebarOpen ? "w-[330px] grid-cols-[74px_minmax(0,1fr)]" : "w-[74px] grid-cols-[74px]")} aria-label="Ferramentas do editor">
+        <aside className={cn("vellune-editor-sidebar hidden shrink-0 grid-rows-[auto_minmax(0,1fr)] border-r border-white/[0.06] bg-[#0d0f14]/95 backdrop-blur-xl", sidebarOpen ? "w-[330px] grid-cols-[74px_minmax(0,1fr)] lg:grid" : "w-[74px] grid-cols-[74px] lg:grid", focusMode && "lg:hidden")} aria-label="Ferramentas do editor">
           <div className={cn("border-b border-white/[0.06] bg-[#101217]/80 p-3.5", sidebarOpen ? "col-span-2" : "hidden")}>
             <div className="flex items-center gap-2">
               <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary"><Sparkles className="h-4 w-4" /></div>
@@ -935,7 +951,7 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHe
               }}
             /></div></div></div>
         </main>
-        {inspectorOpen && <aside id="editor-contextual-properties" className="vellune-editor-inspector hidden w-[300px] shrink-0 overflow-y-auto rounded-2xl border border-primary/10 bg-card/75 p-3 shadow-xl shadow-black/10 backdrop-blur-xl lg:block" aria-label="Ajustes avançados do elemento">
+        {inspectorOpen && <aside id="editor-contextual-properties" className={cn("vellune-editor-inspector hidden w-[300px] shrink-0 overflow-y-auto rounded-2xl border border-primary/10 bg-card/75 p-3 shadow-xl shadow-black/10 backdrop-blur-xl lg:block", focusMode && "!hidden")} aria-label="Ajustes avançados do elemento">
           <div className="mb-2 flex items-center justify-between gap-2 rounded-xl border border-primary/10 bg-background/35 px-3 py-2.5">
             <div className="flex min-w-0 items-center gap-2">
               <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary"><PanelRight className="h-3.5 w-3.5" /></div>
@@ -1021,6 +1037,26 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHe
           </div>
         </>
       )}
+      <EditorCommandPalette
+        open={commandOpen}
+        selectedCount={selectedIds.length}
+        onClose={() => setCommandOpen(false)}
+        onAdd={(type) => {
+          addBlockByType(type);
+          if (compact) setMobileSheet(null);
+        }}
+        onOpenTemplates={() => {
+          setToolCategory("Modelos");
+          setSidebarOpen(true);
+          setTemplateOpen(true);
+          if (compact) setMobileSheet(null);
+        }}
+        onOpenBackground={() => {
+          setToolCategory("Fundo");
+          setSidebarOpen(true);
+          if (compact) setMobileSheet("background");
+        }}
+      />
     </div>
   );
 }
