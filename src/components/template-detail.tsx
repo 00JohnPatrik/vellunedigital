@@ -56,7 +56,14 @@ export function TemplateDetail({ id, canEdit, back, extraActions, startEditing =
           </div>
         } />
       <div className="grid gap-6 md:grid-cols-[280px_1fr]">
-        <div className="overflow-hidden rounded-xl border"><PreviewImage src={t.preview_image} name={t.name} /></div>
+        <div className="overflow-hidden rounded-xl border">
+        <PreviewImage
+          src={t.preview_image}
+          name={t.name}
+          blocks={t.content?.blocks ?? []}
+          background={t.content?.settings?.background}
+        />
+      </div>
         <BlocksPreview blocks={t.content?.blocks ?? []} background={t.content?.settings?.background} />
       </div>
     </div>
