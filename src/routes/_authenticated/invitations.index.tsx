@@ -27,16 +27,16 @@ const FILTERS: [Filter, string][] = [["all", "Todos"], ["draft", "Rascunhos"], [
 function InvitationsPage() {
   const qc = useQueryClient();
   const navigate = useNavigate();
+  const { appUser } = useRouteContext({ from: "/_authenticated" });
   const q = useQuery({ queryKey: invitationsKey, queryFn: listInvitations });
   const favoritesQuery = useQuery({
-    queryKey: invitationFavoritesKey(appUser.id),
-    queryFn: () => listInvitationFavorites(appUser.id),
+    queryKey: invitationFavoritesKey(appUser!.id),
+    queryFn: () => listInvitationFavorites(appUser!.id),
     staleTime: 60_000,
   });
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<Filter>("all");
-  const { appUser } = useRouteContext({ from: "/_authenticated" });
-  const isSuper = appUser?.role === "super_admin";
+  const isSuper = appUser!.role === "super_admin";
   const [toDelete, setToDelete] = useState<Invitation | null>(null);
   const [busy, setBusy] = useState(false);
   const [duplicatingId, setDuplicatingId] = useState<string | null>(null);
@@ -65,7 +65,7 @@ function InvitationsPage() {
 
   async function toggleFavorite(i: Invitation) {
     const wasFavorite = favoriteIds.has(i.id);
-    qc.setQueryData<string[]>(invitationFavoritesKey(appUser.id), (current) => {
+    qc.setQueryData<string[]>(invitationFavoritesKey(appUser!.id), (current) => {
       const ids = new Set(current ?? []);
       if (wasFavorite) ids.delete(i.id);
       else ids.add(i.id);
