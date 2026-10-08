@@ -6,7 +6,7 @@ import type { Block } from "@/lib/templates";
 
 export type ImageAction = "replace" | "crop" | "adjust";
 
-export function EditorQuickToolbar({ selected, onProp, onDuplicate, onDelete, onAdvanced, onImage, onLock, onLayer, onAlign, onOpacity, onRotate }: {
+export function EditorQuickToolbar({ selected, onProp, onDuplicate, onDelete, onAdvanced, onImage, onLock, onLayer, onAlign, onOpacity, onRotate, onAutoArrange }: {
   selected: Block[];
   onProp: (key: string, value: string) => void;
   onDuplicate: () => void;
