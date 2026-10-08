@@ -9,7 +9,6 @@ import {
   ChevronRight,
   Clock3,
   Eye,
-  FileText,
   FolderOpen,
   Image as ImageIcon,
   Layers3,
@@ -351,7 +350,7 @@ export function ExperimentalCompanyDashboard({ appUser, reportRows, recentRespon
 
       <VelluneCreativeDock
         activeItem="home"
-        onCreate={() => undefined}
+        onCreate={() => window.location.assign("/invitations/new")}
         onNavigate={(item) => {
           if (item === "home") return;
           if (item === "projects") window.location.assign("/invitations");
