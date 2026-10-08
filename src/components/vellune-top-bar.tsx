@@ -12,6 +12,9 @@ export type VelluneTopBarProps = {
   notificationCount?: number;
   leadingAction?: ReactNode;
   trailingActions?: ReactNode;
+  mobileActions?: ReactNode;
+  readOnlySearch?: boolean;
+  onSearchActivate?: () => void;
   className?: string;
 };
 
@@ -25,6 +28,9 @@ export function VelluneTopBar({
   notificationCount = 0,
   leadingAction,
   trailingActions,
+  mobileActions,
+  readOnlySearch = false,
+  onSearchActivate,
   className,
 }: VelluneTopBarProps) {
   return (
@@ -60,6 +66,9 @@ export function VelluneTopBar({
           <Search className="h-4 w-4 shrink-0 text-[#A9B1BF]" aria-hidden="true" />
           <input
             value={searchValue}
+            readOnly={readOnlySearch}
+            onClick={onSearchActivate}
+            onFocus={onSearchActivate}
             onChange={(event) => onSearchChange?.(event.target.value)}
             placeholder={searchPlaceholder}
             className="min-w-0 flex-1 bg-transparent text-xs text-[#F5F7FA] outline-none placeholder:text-[#A9B1BF]"
@@ -72,6 +81,7 @@ export function VelluneTopBar({
       </div>
 
       <div className="flex min-w-0 flex-1 items-center justify-end gap-1.5 sm:gap-2">
+        <div className="hidden items-center gap-1 sm:flex lg:gap-1.5">{mobileActions}</div>
         {trailingActions}
         <button
           type="button"
