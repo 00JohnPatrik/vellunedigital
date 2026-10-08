@@ -1,5 +1,4 @@
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
-import { AppShell } from "@/components/app-shell";
 import { VelluneCompanyShell } from "@/components/vellune-company-shell";
 
 // PermissionGuard + CompanyScopeGuard: company_admin with active company only.

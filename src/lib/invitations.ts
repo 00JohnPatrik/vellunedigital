@@ -1,5 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
-import type { TemplateContent } from "@/lib/templates";
+import { cloneContent, type TemplateContent } from "@/lib/templates";
 
 // Invitations go through the browser client under RLS. The DB trigger `invitations_guard` sets company_id,
 // generates the stable slug, copies template content and validates customer/template ownership.
@@ -55,6 +55,27 @@ export async function createInvitation(customerId: string, templateId: string | 
     ...eventRow(v), customer_id: customerId, template_id: templateId,
     content: { version: 1, blocks: [] } as never, company_id: "00000000-0000-0000-0000-000000000000", slug: "pending",
   }).select("id").single();
+  if (error) throw error;
+  return data.id as string;
+}
+
+/** Creates a new draft from the current invitation content and event data. */
+export async function duplicateInvitation(id: string) {
+  const source = await getInvitation(id);
+  if (!source) throw new Error("Convite não encontrado.");
+
+  const copyName = (source.name.trim() ? `${source.name.trim()} — cópia` : "Novo convite").slice(0, 150);
+  const content = cloneContent(source.content ?? { version: 1, blocks: [] });
+
+  const { data, error } = await supabase.from("invitations").insert({
+    ...eventRow({ ...toEventValues(source), name: copyName }),
+    customer_id: source.customer_id,
+    template_id: null,
+    content: content as never,
+    company_id: "00000000-0000-0000-0000-000000000000",
+    slug: "pending",
+  }).select("id").single();
+
   if (error) throw error;
   return data.id as string;
 }

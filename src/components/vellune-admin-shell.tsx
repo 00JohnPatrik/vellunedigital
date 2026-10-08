@@ -1,10 +1,12 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Link, useMatchRoute, useNavigate } from "@tanstack/react-router";
-import { Search, X } from "lucide-react";
+import { FileText, LayoutTemplate, Search, UserRound, X } from "lucide-react";
 import { VelluneTopBar } from "@/components/vellune-top-bar";
 import { NotificationCenter } from "@/components/phase7-ui";
 import type { AppUser } from "@/lib/app-user";
 import { adminNav } from "@/lib/nav";
+import { searchWorkspaceContent } from "@/lib/global-search";
 import { cn } from "@/lib/utils";
 
 const MODULES = adminNav.map((item) => ({
@@ -20,6 +22,7 @@ function initials(name: string) {
 
 export function VelluneAdminShell({ appUser, children, className }: { appUser: AppUser; children: ReactNode; className?: string }) {
   const [search, setSearch] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const navigate = useNavigate();
@@ -46,6 +49,19 @@ export function VelluneAdminShell({ appUser, children, className }: { appUser: A
     return term ? MODULES.filter((item) => item.label.toLowerCase().includes(term)) : MODULES;
   }, [search]);
 
+  useEffect(() => {
+    const timer = window.setTimeout(() => setSearchTerm(search.trim().toLowerCase()), 220);
+    return () => window.clearTimeout(timer);
+  }, [search]);
+
+  const contentSearch = useQuery({
+    queryKey: ["global-search", appUser.role, appUser.id, searchTerm],
+    queryFn: () => searchWorkspaceContent(searchTerm, appUser.role),
+    enabled: searchOpen && searchTerm.length >= 2,
+    staleTime: 30_000,
+    retry: 1,
+  });
+
   const go = (to: string) => {
     setMenuOpen(false);
     void navigate({ to });
@@ -57,7 +73,7 @@ export function VelluneAdminShell({ appUser, children, className }: { appUser: A
         avatarFallback={initials(appUser.name)}
         searchValue={search}
         onSearchChange={setSearch}
-        searchPlaceholder="Buscar área administrativa"
+        searchPlaceholder="Buscar empresas, clientes, convites ou áreas"
         onSearchActivate={() => setSearchOpen(true)}
         onAvatarClick={() => go("/admin/configuracoes")}
         showNotifications={false}
@@ -118,21 +134,57 @@ export function VelluneAdminShell({ appUser, children, className }: { appUser: A
 
       {searchOpen && (
         <div className="fixed inset-0 z-[240] flex items-start justify-center bg-[#08090d]/76 p-3 pt-20 backdrop-blur-sm sm:pt-28" role="presentation" onMouseDown={() => setSearchOpen(false)}>
-          <section className="w-full max-w-xl overflow-hidden rounded-[26px] border border-[#2a2b31] bg-[#111318] shadow-[0_32px_100px_-30px_rgba(0,0,0,0.98)]" role="dialog" aria-modal="true" aria-label="Busca administrativa" onMouseDown={(event) => event.stopPropagation()}>
+          <section className="w-full max-w-xl overflow-hidden rounded-[26px] border border-[#2a2b31] bg-[#111318] shadow-[0_32px_100px_-30px_rgba(0,0,0,0.98)]" role="dialog" aria-modal="true" aria-label="Busca global administrativa" onMouseDown={(event) => event.stopPropagation()}>
             <div className="flex items-center gap-3 border-b border-[#2a2b31] px-4 py-3">
               <Search className="h-4 w-4 text-[#A9B1BF]" />
-              <input autoFocus value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Buscar área administrativa..." className="min-w-0 flex-1 bg-transparent text-sm text-[#F5F7FA] outline-none placeholder:text-[#A9B1BF]" aria-label="Buscar área administrativa" />
+              <input autoFocus value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Buscar empresas, clientes, convites, modelos ou áreas..." className="min-w-0 flex-1 bg-transparent text-sm text-[#F5F7FA] outline-none placeholder:text-[#A9B1BF]" aria-label="Buscar empresas, clientes, convites, modelos ou áreas" />
               <button type="button" onClick={() => setSearchOpen(false)} className="inline-flex h-8 w-8 items-center justify-center rounded-full text-[#A9B1BF] hover:bg-[#17181e] hover:text-[#F5F7FA]" aria-label="Fechar busca">
                 <X className="h-4 w-4" />
               </button>
             </div>
-            <div className="max-h-[min(60vh,30rem)] overflow-y-auto p-2">
-              {filtered.length ? filtered.map((item) => (
-                <Link key={item.to} to={item.to as any} onClick={() => setSearchOpen(false)} className="flex items-center gap-3 rounded-2xl px-3 py-3 text-sm text-[#A9B1BF] transition hover:bg-[#17181e] hover:text-[#F5F7FA]">
+            <div className="max-h-[min(68vh,36rem)] overflow-y-auto p-2">
+              {filtered.length > 0 && <div className="mb-2 px-3 pt-1 text-[9px] font-semibold uppercase tracking-[0.14em] text-[#A9B1BF]">Áreas administrativas</div>}
+              {filtered.map((item) => (
+                <Link key={item.to} to={item.to as any} onClick={() => { setSearchOpen(false); setSearch(""); }} className="flex items-center gap-3 rounded-2xl px-3 py-3 text-sm text-[#A9B1BF] transition hover:bg-[#17181e] hover:text-[#F5F7FA]">
                   <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#d4af37]/10 text-[#d4af37]"><item.icon className="h-4 w-4" /></span>
                   <span className="font-medium">{item.label}</span>
                 </Link>
-              )) : <div className="px-4 py-8 text-center text-sm text-[#A9B1BF]">Nenhuma área encontrada.</div>}
+              ))}
+
+              {search.trim().length < 2 ? (
+                <div className="px-4 py-10 text-center">
+                  <Search className="mx-auto h-5 w-5 text-[#d4af37]/70" />
+                  <p className="mt-2 text-sm font-medium text-[#F5F7FA]">Busque em toda a plataforma</p>
+                  <p className="mt-1 text-xs leading-5 text-[#A9B1BF]">Encontre empresas, clientes, convites e modelos usando os dados disponíveis para sua conta.</p>
+                </div>
+              ) : contentSearch.isLoading ? (
+                <div className="px-4 py-10 text-center text-sm text-[#A9B1BF]">Pesquisando...</div>
+              ) : contentSearch.isError ? (
+                <div className="px-4 py-10 text-center text-sm text-[#A9B1BF]">Não foi possível pesquisar agora.</div>
+              ) : contentSearch.data?.length ? (
+                <div className="mt-2">
+                  <div className="mb-2 px-3 pt-1 text-[9px] font-semibold uppercase tracking-[0.14em] text-[#A9B1BF]">Resultados de conteúdo</div>
+                  {contentSearch.data.map((item) => {
+                    const Icon = item.type === "invitation" ? FileText : item.type === "customer" ? UserRound : LayoutTemplate;
+                    return (
+                      <Link key={`${item.type}-${item.id}`} to={item.to as any} onClick={() => { setSearchOpen(false); setSearch(""); }} className="group flex items-center gap-3 rounded-2xl px-3 py-3 text-sm text-[#A9B1BF] transition hover:bg-[#17181e] hover:text-[#F5F7FA]">
+                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#08090d] text-[#d4af37] transition group-hover:bg-[#d4af37]/10"><Icon className="h-4 w-4" /></span>
+                        <span className="min-w-0 flex-1">
+                          <span className="block truncate font-medium text-[#F5F7FA]">{item.title}</span>
+                          <span className="mt-0.5 block truncate text-[11px] text-[#A9B1BF]">{item.subtitle}</span>
+                        </span>
+                        {item.meta && <span className="shrink-0 rounded-full border border-[#2a2b31] px-2 py-1 text-[9px] text-[#A9B1BF]">{item.meta}</span>}
+                      </Link>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="px-4 py-10 text-center text-sm text-[#A9B1BF]">Nenhum conteúdo encontrado para “{search.trim()}”.</div>
+              )}
+
+              {filtered.length === 0 && search.trim().length >= 2 && !contentSearch.data?.length && !contentSearch.isLoading && (
+                <div className="px-4 pb-4 text-center text-[10px] text-[#A9B1BF]">Tente nome da empresa, cliente, convite, modelo ou texto do design.</div>
+              )}
             </div>
           </section>
         </div>

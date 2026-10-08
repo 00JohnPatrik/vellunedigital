@@ -156,33 +156,38 @@ function ErrorComponent({ error, reset }: ErrorComponentProps) {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4">
-      <div className="max-w-md text-center">
-        <h1 className="text-xl font-semibold tracking-tight text-foreground">
-          This page didn't load
-        </h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Something went wrong on our end. You can try refreshing or head back home.
-        </p>
-        <div className="mt-6 flex flex-wrap justify-center gap-2">
-          <button
-            onClick={() => {
-              router.invalidate();
-              reset();
-            }}
-            className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-          >
-            Try again
-          </button>
-          <a
-            href="/"
-            className="inline-flex items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent"
-          >
-            Go home
-          </a>
-        </div>
+    <main className="vellune-platform-root min-h-[100svh] overflow-hidden bg-background px-5 py-10 text-foreground">
+      <div className="mx-auto flex min-h-[calc(100svh-5rem)] w-full max-w-2xl items-center justify-center">
+        <section className="w-full rounded-[28px] border border-border/70 bg-[#111318]/92 p-7 text-center shadow-[0_30px_90px_-34px_rgba(8,9,13,0.98)] backdrop-blur-xl sm:p-10">
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl border border-primary/20 bg-primary/10 text-primary">
+            <Sparkles className="h-5 w-5" />
+          </div>
+          <p className="mt-5 text-[10px] font-semibold uppercase tracking-[0.24em] text-primary">Vellune Digital</p>
+          <h1 className="mt-3 font-display text-2xl font-semibold tracking-[-0.03em] sm:text-3xl">Não foi possível carregar esta tela.</h1>
+          <p className="mx-auto mt-3 max-w-lg text-sm leading-6 text-muted-foreground">
+            Ocorreu uma falha inesperada ao abrir a página. Atualize a tela para tentar novamente ou volte ao início.
+          </p>
+          <div className="mt-7 flex flex-wrap justify-center gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                router.invalidate();
+                reset();
+              }}
+              className="inline-flex h-11 items-center justify-center rounded-xl bg-primary px-5 text-sm font-semibold text-primary-foreground shadow-[0_12px_32px_-14px_hsl(var(--primary)/.8)] transition hover:brightness-105"
+            >
+              Tentar novamente
+            </button>
+            <a
+              href="/"
+              className="inline-flex h-11 items-center justify-center rounded-xl border border-border/70 bg-background/45 px-5 text-sm font-medium text-foreground transition hover:bg-accent"
+            >
+              Voltar ao início
+            </a>
+          </div>
+        </section>
       </div>
-    </div>
+    </main>
   );
 }
 

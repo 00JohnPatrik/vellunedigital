@@ -2,20 +2,43 @@ import { useState, type ReactNode } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { Heart } from "lucide-react";
 import { DeleteButton, EmptyState, fmtDate, LoadingState, PageHeader, StatusBadge, StatusToggle } from "@/components/admin-ui";
 import { BlocksPreview, PreviewImage, TemplateForm, templateError, toValues } from "@/components/template-ui";
 import { softDelete } from "@/lib/trash";
 import { categoryLabel, getTemplate, isTemplateId, setTemplateStatus, templatesKey, updateTemplate, type Template } from "@/lib/templates";
+import { listTemplateFavorites, setTemplateFavorite, templateFavoritesKey } from "@/lib/template-favorites";
 
 /** Shared view/edit page. `canEdit` is UI only — RLS + triggers enforce it in the database. */
-export function TemplateDetail({ id, canEdit, back, extraActions, startEditing = false, onDeleted }: {
-  onDeleted?: (() => void) | undefined; id: string; canEdit: (t: Template) => boolean; back: ReactNode; extraActions?: (t: Template) => ReactNode; startEditing?: boolean;
+export function TemplateDetail({ id, canEdit, back, extraActions, startEditing = false, favoriteUserId, onDeleted }: {
+  onDeleted?: (() => void) | undefined; id: string; canEdit: (t: Template) => boolean; back: ReactNode; extraActions?: (t: Template) => ReactNode; startEditing?: boolean; favoriteUserId?: string;
 }) {
   const qc = useQueryClient();
   const key = [...templatesKey, id];
   const q = useQuery({ queryKey: key, queryFn: () => (isTemplateId(id) ? getTemplate(id) : Promise.resolve(null)) });
   const [editing, setEditing] = useState(startEditing);
+  const favoritesQ = useQuery({
+    queryKey: templateFavoritesKey(favoriteUserId ?? "guest"),
+    queryFn: () => listTemplateFavorites(favoriteUserId!),
+    enabled: Boolean(favoriteUserId),
+  });
+  const favorite = Boolean(favoritesQ.data?.includes(id));
   const refresh = () => qc.invalidateQueries({ queryKey: templatesKey });
+  const toggleFavorite = async () => {
+    if (!favoriteUserId) return;
+    qc.setQueryData<string[]>(templateFavoritesKey(favoriteUserId), (current) => {
+      const ids = new Set(current ?? []);
+      if (ids.has(id)) ids.delete(id); else ids.add(id);
+      return [...ids];
+    });
+    try {
+      await setTemplateFavorite(favoriteUserId, id, !favorite);
+      toast.success(favorite ? "Removido dos favoritos." : "Adicionado aos favoritos.");
+    } catch {
+      void qc.invalidateQueries({ queryKey: templateFavoritesKey(favoriteUserId) });
+      toast.error("Não foi possível atualizar o favorito.");
+    }
+  };
 
   if (q.isLoading) return <LoadingState />;
   const t = q.data;
@@ -43,6 +66,7 @@ export function TemplateDetail({ id, canEdit, back, extraActions, startEditing =
         action={
           <div className="flex flex-wrap items-center gap-2">
             <StatusBadge status={t.status} />
+            {favoriteUserId && <Button type="button" variant="outline" size="icon" className="h-9 w-9 rounded-xl" onClick={() => void toggleFavorite()} aria-label={favorite ? "Remover dos favoritos" : "Adicionar aos favoritos"} title={favorite ? "Remover dos favoritos" : "Adicionar aos favoritos"}><Heart className="h-4 w-4" fill={favorite ? "currentColor" : "none"} /></Button>}
             {extraActions?.(t)}
             {editable && <Button variant="outline" onClick={() => setEditing(true)}>Editar</Button>}
             {editable && <StatusToggle status={t.status} name={t.name} onConfirm={async () => {

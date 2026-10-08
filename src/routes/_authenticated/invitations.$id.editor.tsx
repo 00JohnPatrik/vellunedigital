@@ -17,6 +17,7 @@ import { useBlocksHistory, VisualEditor } from "@/components/visual-editor";
 import { customersKey, listCustomers } from "@/lib/customers-data";
 import { getInvitation, invitationError, invitationsKey, publishInvitation, toEventValues, updateInvitation, validateEvent, type EventValues, type Invitation } from "@/lib/invitations";
 import { normalizeBlocks, validateContent } from "@/lib/blocks";
+import { companyHasFeature } from "@/lib/subscriptions";
 
 export const Route = createFileRoute("/_authenticated/invitations/$id/editor")({
   head: () => ({ meta: [{ title: "Editor do convite — Vellune Digital" }] }),
@@ -25,7 +26,14 @@ export const Route = createFileRoute("/_authenticated/invitations/$id/editor")({
 
 function EditorPage() {
   const { id } = Route.useParams();
+  const { appUser } = Route.useRouteContext();
   const q = useQuery({ queryKey: [...invitationsKey, id], queryFn: () => getInvitation(id), refetchOnWindowFocus: false });
+  const checkinFeature = useQuery({
+    queryKey: ["subscription-feature", "checkin", q.data?.company_id],
+    queryFn: () => companyHasFeature(q.data!.company_id, "checkin"),
+    enabled: !!q.data && appUser?.role === "company_admin",
+    staleTime: 60_000,
+  });
   if (q.isLoading) {
     return <div className="flex min-h-[50vh] items-center justify-center rounded-2xl border bg-card/50 p-8"><LoadingState /></div>;
   }
@@ -33,7 +41,8 @@ function EditorPage() {
     return <div className="mx-auto flex min-h-[50vh] max-w-lg flex-col items-center justify-center rounded-2xl border border-dashed bg-card/60 px-6 py-12 text-center"><BackLink /><EmptyState>Convite não encontrado.</EmptyState></div>;
   }
   const experimentalLayout = typeof window !== "undefined" && new URLSearchParams(window.location.search).get("legacy") !== "1";
-  return <EditorForm key={q.data.id} inv={q.data} experimentalLayout={experimentalLayout} />;
+  const checkinEnabled = appUser?.role === "super_admin" || checkinFeature.data === true;
+  return <EditorForm key={q.data.id} inv={q.data} experimentalLayout={experimentalLayout} checkinEnabled={checkinEnabled} />;
 }
 
 const BackLink = () => <Link to="/invitations" className="mb-4 inline-flex items-center rounded-md px-2 py-1 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"><ArrowLeft className="mr-1 h-4 w-4" />Convites</Link>;
@@ -41,7 +50,7 @@ const BackLink = () => <Link to="/invitations" className="mb-4 inline-flex items
 type SaveState = "saved" | "dirty" | "saving" | "error";
 const AUTOSAVE_MS = 1500;
 
-function EditorForm({ inv, experimentalLayout = false }: { inv: Invitation; experimentalLayout?: boolean }) {
+function EditorForm({ inv, experimentalLayout = false, checkinEnabled = false }: { inv: Invitation; experimentalLayout?: boolean; checkinEnabled?: boolean }) {
   const qc = useQueryClient();
   const customers = useQuery({ queryKey: customersKey, queryFn: listCustomers });
   const [v, setV] = useState<EventValues>(() => toEventValues(inv));
@@ -81,6 +90,72 @@ function EditorForm({ inv, experimentalLayout = false }: { inv: Invitation; expe
   const inFlight = useRef(false);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const first = useRef(true);
+  const recoveryChecked = useRef(false);
+  const draftTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const localDraftKey = `vellune:editor-draft:${inv.id}`;
+
+  useEffect(() => {
+    if (recoveryChecked.current) return;
+    recoveryChecked.current = true;
+
+    try {
+      const raw = localStorage.getItem(localDraftKey);
+      if (!raw) return;
+      const draft = JSON.parse(raw) as {
+        savedAt?: number;
+        blocks?: unknown;
+        background?: unknown;
+        event?: EventValues;
+        customerId?: string;
+      };
+      const draftSavedAt = Number(draft.savedAt || 0);
+      const serverUpdatedAt = new Date(inv.updated_at).getTime();
+      if (!draftSavedAt || draftSavedAt <= serverUpdatedAt || !Array.isArray(draft.blocks) || !draft.event) {
+        localStorage.removeItem(localDraftKey);
+        return;
+      }
+
+      setV(draft.event);
+      setCustomerId(draft.customerId ?? inv.customer_id);
+      h.set(normalizeBlocks({ version: 1, blocks: draft.blocks } as Invitation["content"]), "recovery:local-draft");
+      setBg((draft.background && typeof draft.background === "object" ? structuredClone(draft.background) : {}) as Background);
+      toast.info("Recuperamos alterações locais ainda não sincronizadas deste convite.");
+    } catch {
+      // A recuperação local é opcional; falhas de armazenamento não impedem o editor.
+    }
+  }, [h, inv.customer_id, inv.id, inv.updated_at, localDraftKey]);
+
+  useEffect(() => {
+    if (JSON.stringify(snap.current) === initial.current) return;
+    if (draftTimer.current) clearTimeout(draftTimer.current);
+    draftTimer.current = setTimeout(() => {
+      try {
+        localStorage.setItem(localDraftKey, JSON.stringify({
+          savedAt: Date.now(),
+          blocks: snap.current.blocks,
+          background: snap.current.bg,
+          event: snap.current.v,
+          customerId: snap.current.customerId,
+        }));
+      } catch {
+        // Limitações de armazenamento não impedem o autosave remoto.
+      }
+    }, 500);
+    return () => {
+      if (draftTimer.current) {
+        clearTimeout(draftTimer.current);
+        draftTimer.current = null;
+      }
+    };
+  }, [bg, customerId, h.blocks, localDraftKey, v]);
+
+  const clearLocalDraft = useCallback(() => {
+    try {
+      localStorage.removeItem(localDraftKey);
+    } catch {
+      // Ignora indisponibilidade de armazenamento local.
+    }
+  }, [localDraftKey]);
 
   const save = useCallback(async (manual = false): Promise<boolean> => {
     if (timer.current) { clearTimeout(timer.current); timer.current = null; }
@@ -99,6 +174,7 @@ function EditorForm({ inv, experimentalLayout = false }: { inv: Invitation; expe
     try {
       await updateInvitation(inv.id, cid, ev, content);
       savedVersion.current = target;
+      clearLocalDraft();
       setState(version.current === target ? "saved" : "dirty");
       if (manual) toast.success("Convite salvo.");
       void qc.invalidateQueries({ queryKey: invitationsKey });
@@ -111,7 +187,7 @@ function EditorForm({ inv, experimentalLayout = false }: { inv: Invitation; expe
       inFlight.current = false;
       if (version.current !== target && !timer.current) timer.current = setTimeout(() => void save(), AUTOSAVE_MS);
     }
-  }, [inv.id, qc]);
+  }, [clearLocalDraft, inv.id, qc]);
 
   const initial = useRef(JSON.stringify(snap.current));
   useEffect(() => {
@@ -149,6 +225,20 @@ function EditorForm({ inv, experimentalLayout = false }: { inv: Invitation; expe
     };
   }, [state]);
 
+  // Mobile browsers may suspend or discard a tab without giving the user another
+  // interaction opportunity. Flush a pending autosave when the document becomes
+  // hidden so the editor has a better chance of persisting the latest changes.
+  useEffect(() => {
+    const onVisibilityChange = () => {
+      if (document.visibilityState !== "hidden") return;
+      if (version.current === savedVersion.current) return;
+      if (state === "saving") return;
+      void save();
+    };
+    document.addEventListener("visibilitychange", onVisibilityChange);
+    return () => document.removeEventListener("visibilitychange", onVisibilityChange);
+  }, [save, state]);
+
   const publish = async () => {
     const e = validateEvent(snap.current.v);
     if (Object.keys(e).length) { setErrors(e); toast.error("Preencha nome, data e hora do evento antes de publicar."); setEventOpen(true); return; }
@@ -179,7 +269,7 @@ function EditorForm({ inv, experimentalLayout = false }: { inv: Invitation; expe
         <Button type="button" variant="ghost" size="sm" className="justify-start" onClick={() => setEventOpen(true)}><Settings2 className="h-4 w-4" />Dados do evento</Button>
         <Button type="button" variant="ghost" size="sm" className="justify-start" onClick={() => setRsvpOpen(true)}><UserCheck className="h-4 w-4" />RSVP</Button>
         <Button type="button" variant="ghost" size="sm" className="justify-start" asChild><Link to="/invitations/$id/guests" params={{ id: inv.id }}><Users className="h-4 w-4" />Convidados</Link></Button>
-        <Button type="button" variant="ghost" size="sm" className="justify-start" asChild><Link to="/invitations/$id/checkin" params={{ id: inv.id }}><QrCode className="h-4 w-4" />Check-in</Link></Button>
+        {checkinEnabled && <Button type="button" variant="ghost" size="sm" className="justify-start" asChild><Link to="/invitations/$id/checkin" params={{ id: inv.id }}><QrCode className="h-4 w-4" />Check-in</Link></Button>}
       </div>
     </details>
   </>;
@@ -242,7 +332,7 @@ function EditorForm({ inv, experimentalLayout = false }: { inv: Invitation; expe
           type="button"
           onClick={() => void publish()}
           disabled={publishing}
-          className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-[#8B5CF6] text-[#F5F7FA] shadow-[0_8px_22px_-10px_rgba(139,92,246,0.8)] transition hover:bg-[#9D74F8] disabled:opacity-40"
+          className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-[#d4af37] text-[#16130b] shadow-[0_8px_22px_-10px_rgba(212,175,55,0.28)] transition hover:bg-[#e5c66b] disabled:opacity-40"
           aria-label="Publicar convite"
           title="Publicar"
         >

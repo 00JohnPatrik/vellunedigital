@@ -1,9 +1,10 @@
-import { useEffect, useState, type CSSProperties } from "react";
+import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { Check, Copy, ExternalLink, Loader2, MailX, MessageCircle, Share2 } from "lucide-react";
+import { Check, Copy, ExternalLink, Loader2, MailX, MessageCircle, Share2, Sparkles } from "lucide-react";
 import { InvitationCanvas } from "@/components/block-render";
 import { Button } from "@/components/ui/button";
 import { getPublicInvitation, recordInvitationView } from "@/lib/public-invitation.functions";
+import { requestMotionPermission } from "@/lib/invitation-editor-animation";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/convite/$slug")({
@@ -60,10 +61,23 @@ function PublicInvitationPage() {
   const res = Route.useLoaderData();
   const { slug } = Route.useParams();
   const [copied, setCopied] = useState(false);
+  const [motionReady, setMotionReady] = useState(false);
   const ok = res.state === "ok";
 
   useEffect(() => {
     if (!ok || viewed.has(slug)) return;
+
+    const storageKey = `vellune:invitation-viewed:${slug}`;
+    try {
+      if (window.sessionStorage.getItem(storageKey) === "1") {
+        viewed.add(slug);
+        return;
+      }
+      window.sessionStorage.setItem(storageKey, "1");
+    } catch {
+      // The in-memory guard remains as a fallback when storage is unavailable.
+    }
+
     viewed.add(slug);
     recordInvitationView({ data: { slug } }).catch(() => {});
   }, [ok, slug]);
@@ -73,6 +87,10 @@ function PublicInvitationPage() {
 
   const i = res.invitation;
   const branding = i.branding;
+  const hasSensorAnimation = useMemo(
+    () => (i.content?.blocks ?? []).some((block) => block.animation?.enabled !== false && block.animation?.sensor === true),
+    [i.content?.blocks],
+  );
   const publicUrl = typeof window !== "undefined" ? `${window.location.origin}/convite/${slug}` : `/convite/${slug}`;
   const whatsappNumber = branding?.whatsapp_number?.replace(/\D/g, "");
   const whatsappMessage = `${i.name} — ${publicUrl}`;
@@ -102,6 +120,16 @@ function PublicInvitationPage() {
     }
   };
 
+  const enableMotion = async () => {
+    const granted = await requestMotionPermission();
+    if (granted) {
+      setMotionReady(true);
+      toast.success("Movimento do convite ativado.");
+    } else {
+      toast.error("O movimento não pôde ser ativado neste dispositivo.");
+    }
+  };
+
   const share = async () => {
     if (typeof navigator.share !== "function") {
       await copyLink();
@@ -115,33 +143,40 @@ function PublicInvitationPage() {
   };
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-muted/60 via-background to-muted/40 px-4 py-8 sm:py-14" style={{ "--brand-primary": branding?.primary_color ?? undefined, "--brand-accent": branding?.accent_color ?? undefined } as CSSProperties} aria-label="Convite digital">
+    <main className="min-h-screen bg-[#08090d] px-4 py-8 text-[#F5F7FA] sm:py-14" style={{ "--brand-primary": branding?.primary_color ?? undefined, "--brand-accent": branding?.accent_color ?? undefined } as CSSProperties} aria-label="Convite digital">
       <div className="mx-auto w-full max-w-2xl">
-        <div className="mb-5 flex flex-wrap items-center justify-center gap-2" aria-label="Compartilhar convite">
-          <Button type="button" variant="outline" size="sm" onClick={copyLink}>
+        <div className="mb-5 flex flex-wrap items-center justify-center gap-2" aria-label="Ações do convite">
+          <Button type="button" variant="outline" size="sm" className="rounded-full border-[#2a2b31] bg-[#111318] text-[#F5F7FA] hover:bg-[#171a20]" onClick={copyLink}>
             {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
             {copied ? "Copiado" : "Copiar link"}
           </Button>
-          <Button type="button" variant="outline" size="sm" onClick={() => void share()}>
+          <Button type="button" variant="outline" size="sm" className="rounded-full border-[#2a2b31] bg-[#111318] text-[#F5F7FA] hover:bg-[#171a20]" onClick={() => void share()}>
             <Share2 className="h-4 w-4" />Compartilhar
           </Button>
-          <Button type="button" variant="outline" size="sm" asChild>
+          <Button type="button" variant="outline" size="sm" className="rounded-full border-[#2a2b31] bg-[#111318] text-[#F5F7FA] hover:bg-[#171a20]" asChild>
             <a href={whatsappUrl} target="_blank" rel="noopener noreferrer"><MessageCircle className="h-4 w-4" />WhatsApp</a>
           </Button>
-          <Button type="button" variant="ghost" size="sm" asChild>
+          <Button type="button" variant="ghost" size="sm" className="rounded-full text-[#A9B1BF] hover:bg-[#111318] hover:text-[#F5F7FA]" asChild>
             <a href={publicUrl} target="_blank" rel="noopener noreferrer" aria-label="Abrir convite em uma nova aba"><ExternalLink className="h-4 w-4" /></a>
           </Button>
         </div>
+        {hasSensorAnimation && !motionReady && (
+          <div className="mb-5 flex items-center justify-center">
+            <Button type="button" size="sm" onClick={() => void enableMotion()} className="rounded-full bg-[#d4af37] text-[#16130b] hover:bg-[#e5c66b]">
+              <Sparkles className="h-4 w-4" />Ativar movimento do convite
+            </Button>
+          </div>
+        )}
         {(branding?.logo_url || branding?.brand_name) && (
-          <div className="mb-5 flex flex-col items-center gap-2 text-center">
+          <div className="mb-5 flex flex-col items-center gap-2 rounded-2xl border border-[#2a2b31] bg-[#111318]/80 p-4 text-center backdrop-blur-md">
             {branding.logo_url && <img src={branding.logo_url} alt={branding.brand_name ?? "Logo da empresa"} className="max-h-16 max-w-48 object-contain" />}
             {branding.brand_name && <span className="text-sm font-medium text-foreground">{branding.brand_name}</span>}
           </div>
         )}
         <InvitationCanvas background={i.content?.settings?.background} blocks={i.content?.blocks ?? []} ctx={ctx} className="mx-auto max-w-lg gap-6 border-border/60 p-5 shadow-xl sm:p-10" />
-        <footer className="mt-8 flex flex-col items-center gap-2 text-center text-[11px] tracking-wide text-muted-foreground">
-          {branding?.whatsapp_number && <a className="text-primary hover:underline" href={`https://wa.me/${branding.whatsapp_number.replace(/\D/g, "")}`} target="_blank" rel="noopener noreferrer">Fale conosco pelo WhatsApp</a>}
-          {branding?.contact_email && <a className="hover:underline" href={`mailto:${branding.contact_email}`}>{branding.contact_email}</a>}
+        <footer className="mt-8 flex flex-col items-center gap-2 text-center text-[11px] tracking-wide text-[#A9B1BF]">
+          {branding?.whatsapp_number && <a className="text-[#d4af37] hover:text-[#e5c66b] hover:underline" href={`https://wa.me/${branding.whatsapp_number.replace(/\D/g, "")}`} target="_blank" rel="noopener noreferrer">Fale conosco pelo WhatsApp</a>}
+          {branding?.contact_email && <a className="text-[#A9B1BF] hover:text-[#F5F7FA] hover:underline" href={`mailto:${branding.contact_email}`}>{branding.contact_email}</a>}
           {(branding?.show_vellune_branding ?? true) && <span>Convite digital · Vellune Digital</span>}
           {!branding?.show_vellune_branding && branding?.brand_name && <span>{branding.brand_name}</span>}
         </footer>

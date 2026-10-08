@@ -1,7 +1,7 @@
-import { createFileRoute, Link, useRouteContext } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate, useRouteContext } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
-import { AlertCircle, BarChart3, CalendarDays, CheckCircle2, CircleDashed, Copy, Eye, Link2, Mail, MessageCircle, MoreHorizontal, Pencil, Plus, Search, Trash2 } from "lucide-react";
+import { AlertCircle, BarChart3, CalendarDays, CheckCircle2, CircleDashed, Copy, Eye, Heart, Link2, Mail, MessageCircle, MoreHorizontal, Pencil, Plus, Search, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,7 +11,8 @@ import {
 } from "@/components/ui/alert-dialog";
 import { EmptyState, fmtDate, LoadingState, PageHeader } from "@/components/admin-ui";
 import { InvitationRender, InvitationStatusBadge } from "@/components/invitation-ui";
-import { deleteInvitation, fmtEventDate, invitationsKey, listInvitations, publicUrl, whatsappShareUrl, type Invitation } from "@/lib/invitations";
+import { deleteInvitation, duplicateInvitation, fmtEventDate, invitationsKey, listInvitations, publicUrl, whatsappShareUrl, type Invitation } from "@/lib/invitations";
+import { invitationFavoritesKey, listInvitationFavorites, setInvitationFavorite } from "@/lib/invitation-favorites";
 import { cn } from "@/lib/utils";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
@@ -20,23 +21,37 @@ export const Route = createFileRoute("/_authenticated/invitations/")({
   component: InvitationsPage,
 });
 
-type Filter = "all" | "draft" | "published" | "closed";
+type Filter = "all" | "draft" | "published" | "closed" | "favorites";
 const FILTERS: [Filter, string][] = [["all", "Todos"], ["draft", "Rascunhos"], ["published", "Publicados"], ["closed", "Fechados"]];
 
 function InvitationsPage() {
   const qc = useQueryClient();
+  const navigate = useNavigate();
+  const { appUser } = useRouteContext({ from: "/_authenticated" });
   const q = useQuery({ queryKey: invitationsKey, queryFn: listInvitations });
+  const favoritesQuery = useQuery({
+    queryKey: invitationFavoritesKey(appUser!.id),
+    queryFn: () => listInvitationFavorites(appUser!.id),
+    staleTime: 60_000,
+  });
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<Filter>("all");
-  const { appUser } = useRouteContext({ from: "/_authenticated" });
-  const isSuper = appUser?.role === "super_admin";
+  const isSuper = appUser!.role === "super_admin";
   const [toDelete, setToDelete] = useState<Invitation | null>(null);
   const [busy, setBusy] = useState(false);
+  const [duplicatingId, setDuplicatingId] = useState<string | null>(null);
+
+  const favoriteIds = useMemo(() => new Set(favoritesQuery.data ?? []), [favoritesQuery.data]);
 
   const rows = useMemo(() => {
     const s = search.trim().toLowerCase();
-    return (q.data ?? []).filter((i) => { const name = String(i.name ?? ""); const customer = String(i.customer?.name ?? ""); return (filter === "all" || i.status === filter) && (!s || name.toLowerCase().includes(s) || customer.toLowerCase().includes(s)); });
-  }, [q.data, search, filter]);
+    return (q.data ?? []).filter((i) => {
+      const name = String(i.name ?? "");
+      const customer = String(i.customer?.name ?? "");
+      const matchesFilter = filter === "favorites" ? favoriteIds.has(i.id) : filter === "all" || i.status === filter;
+      return matchesFilter && (!s || name.toLowerCase().includes(s) || customer.toLowerCase().includes(s));
+    });
+  }, [q.data, search, filter, favoriteIds]);
 
   const statusCounts = useMemo(() => {
     const all = q.data ?? [];
@@ -47,6 +62,38 @@ function InvitationsPage() {
       closed: all.filter((i) => i.status === "closed").length,
     };
   }, [q.data]);
+
+  async function toggleFavorite(i: Invitation) {
+    const wasFavorite = favoriteIds.has(i.id);
+    qc.setQueryData<string[]>(invitationFavoritesKey(appUser!.id), (current) => {
+      const ids = new Set(current ?? []);
+      if (wasFavorite) ids.delete(i.id);
+      else ids.add(i.id);
+      return [...ids];
+    });
+    try {
+      await setInvitationFavorite(appUser!.id, i.id, !wasFavorite);
+      toast.success(wasFavorite ? "Removido dos favoritos." : "Adicionado aos favoritos.");
+    } catch {
+      await qc.invalidateQueries({ queryKey: invitationFavoritesKey(appUser!.id) });
+      toast.error("Não foi possível atualizar o favorito.");
+    }
+  }
+
+  async function duplicate(i: Invitation) {
+    if (duplicatingId) return;
+    setDuplicatingId(i.id);
+    try {
+      const id = await duplicateInvitation(i.id);
+      await qc.invalidateQueries({ queryKey: invitationsKey });
+      toast.success("Convite duplicado. Abrindo a nova cópia.");
+      navigate({ to: "/invitations/$id/editor", params: { id } });
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Não foi possível duplicar o convite.");
+    } finally {
+      setDuplicatingId(null);
+    }
+  }
 
   async function confirmDelete() {
     if (!toDelete) return;
@@ -71,6 +118,17 @@ function InvitationsPage() {
     const shareable = i.status === "published";
     return (
       <div className="flex items-center gap-1.5">
+        <Button
+          variant={variant}
+          size="icon"
+          aria-pressed={favoriteIds.has(i.id)}
+          aria-label={favoriteIds.has(i.id) ? `Remover ${i.name} dos favoritos` : `Favoritar ${i.name}`}
+          title={favoriteIds.has(i.id) ? "Remover dos favoritos" : "Favoritar"}
+          onClick={() => void toggleFavorite(i)}
+          className={cn(favoriteIds.has(i.id) && "text-[#d4af37] hover:text-[#e5c66b]")}
+        >
+          <Heart className={cn("h-4 w-4", favoriteIds.has(i.id) && "fill-current")} />
+        </Button>
         <Button variant={variant} size="sm" asChild>
           <Link to="/invitations/$id/editor" params={{ id: i.id }}>
             <Pencil className="h-4 w-4" />Editar
@@ -107,6 +165,13 @@ function InvitationsPage() {
                 <DropdownMenuSeparator />
               </>
             )}
+            <DropdownMenuItem onSelect={() => void toggleFavorite(i)}>
+              <Heart className={cn("h-4 w-4", favoriteIds.has(i.id) && "fill-current text-[#d4af37]")} />{favoriteIds.has(i.id) ? "Remover dos favoritos" : "Adicionar aos favoritos"}
+            </DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => void duplicate(i)} disabled={duplicatingId === i.id}>
+              <Copy className="h-4 w-4" />{duplicatingId === i.id ? "Duplicando..." : "Duplicar convite"}
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
               <Link to="/invitations/$id/report" params={{ id: i.id }}>
                 <BarChart3 className="h-4 w-4" />Ver relatório
@@ -139,7 +204,7 @@ function InvitationsPage() {
           ["closed", "Fechados", statusCounts.closed, AlertCircle],
         ] as const).map(([key, label, count, Icon]) => (
           <button key={key} type="button" onClick={() => setFilter(key)} aria-pressed={filter === key}
-            className={cn("flex items-center gap-3 rounded-xl border bg-card p-4 text-left transition-colors hover:border-primary/50 hover:bg-accent/40", filter === key && "border-primary bg-primary/5 ring-1 ring-primary/20")}>
+            className={cn("vellune-platform-card flex items-center gap-3 p-4 text-left", filter === key && "border-[#d4af37]/55")}>
             <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-muted text-muted-foreground"><Icon className="h-4 w-4" /></span>
             <span className="min-w-0"><span className="block text-2xl font-semibold tabular-nums">{count}</span><span className="text-xs text-muted-foreground">{label}</span></span>
           </button>
@@ -158,6 +223,12 @@ function InvitationsPage() {
                 className={cn("rounded-md px-3 py-1.5 text-sm transition-colors", filter === k ? "bg-background font-medium text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground")}>{l}</button>
             ))}
           </div>
+                      <button type="button" onClick={() => setFilter("favorites")} aria-pressed={filter === "favorites"}
+              className={cn("inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-sm transition-colors", filter === "favorites" ? "border-[#d4af37]/50 bg-[#d4af37]/10 font-medium text-[#e5c66b]" : "border-transparent text-muted-foreground hover:border-[#2a2b31] hover:text-foreground")}>
+              <Heart className={cn("h-3.5 w-3.5", filter === "favorites" && "fill-current")} />
+              Favoritos
+              <span className="text-[10px] opacity-70">({favoritesQuery.data?.length ?? 0})</span>
+            </button>
           {(search || filter !== "all") && (
             <Button type="button" variant="ghost" size="sm" onClick={() => { setSearch(""); setFilter("all"); }}>
               Limpar filtros

@@ -25,9 +25,9 @@ function DashboardLayout() {
     return <AppShell base="/dashboard" nav={companyNav} appUser={appUser}><Outlet /></AppShell>;
   }
 
-  if (isDashboardHome) {
-    return <div className="dark min-h-[100dvh] w-full bg-[#08090d] text-[#F5F7FA]"><Outlet /></div>;
-  }
-
-  return <VelluneCompanyShell appUser={appUser} activeItem="projects"><Outlet /></VelluneCompanyShell>;
+  return (
+    <VelluneCompanyShell appUser={appUser} activeItem={isDashboardHome ? "home" : "projects"}>
+      <Outlet />
+    </VelluneCompanyShell>
+  );
 }

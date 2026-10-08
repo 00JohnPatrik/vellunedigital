@@ -66,8 +66,8 @@ function InvitationReport() {
         <Card>
           <CardHeader><CardTitle>Distribuição das respostas</CardTitle></CardHeader>
           <CardContent className="space-y-4">
-            <Bar label="Confirmados" value={confirmed.length} total={Math.max(guests.length, 1)} className="bg-emerald-500" />
-            <Bar label="Recusaram" value={declined.length} total={Math.max(guests.length, 1)} className="bg-rose-500" />
+            <Bar label="Confirmados" value={confirmed.length} total={Math.max(guests.length, 1)} className="bg-primary" />
+            <Bar label="Recusaram" value={declined.length} total={Math.max(guests.length, 1)} className="bg-foreground/35" />
             <Bar label="Sem resposta" value={Math.max(0, guests.length - responseTotal)} total={Math.max(guests.length, 1)} className="bg-muted-foreground/40" />
           </CardContent>
         </Card>
@@ -97,5 +97,5 @@ function Bar({ label, value, total, className }: { label: string; value: number;
 }
 
 function Metric({ icon, label, value, detail }: { icon: React.ReactNode; label: string; value: number; detail: string }) {
-  return <Card><CardContent className="flex items-center gap-4 p-5"><div className="rounded-xl bg-primary/10 p-3 text-primary">{icon}</div><div><p className="text-sm text-muted-foreground">{label}</p><p className="text-2xl font-semibold text-foreground">{value}</p><p className="text-xs text-muted-foreground">{detail}</p></div></CardContent></Card>;
+  return <Card className="vellune-platform-card"><CardContent className="flex items-center gap-4 p-5"><div className="rounded-xl bg-primary/10 p-3 text-primary">{icon}</div><div><p className="text-sm text-muted-foreground">{label}</p><p className="text-2xl font-semibold text-foreground">{value}</p><p className="text-xs text-muted-foreground">{detail}</p></div></CardContent></Card>;
 }

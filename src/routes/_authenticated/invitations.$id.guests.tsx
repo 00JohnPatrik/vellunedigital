@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { EmptyState, LoadingState, PageHeader } from "@/components/admin-ui";
 import { createGuest, deleteGuest, emptyGuest, getInvitationForGuests, guestsKey, guestsToCsv, guestToValues, listAllInvitationGuests, listInvitationGuests, parseGuestsCsv, updateGuest, type GuestValues, type InvitationGuest } from "@/lib/guests";
+import { companyHasFeature } from "@/lib/subscriptions";
 
 export const Route = createFileRoute("/_authenticated/invitations/$id/guests")({
   head: () => ({ meta: [{ title: "Convidados — Vellune Digital" }] }),
@@ -19,8 +20,15 @@ export const Route = createFileRoute("/_authenticated/invitations/$id/guests")({
 
 function GuestsPage() {
   const { id } = Route.useParams();
+  const { appUser } = Route.useRouteContext();
   const qc = useQueryClient();
   const invitation = useQuery({ queryKey: ["invitation-for-guests", id], queryFn: () => getInvitationForGuests(id) });
+  const checkinFeature = useQuery({
+    queryKey: ["subscription-feature", "checkin", invitation.data?.company_id],
+    queryFn: () => companyHasFeature(invitation.data!.company_id, "checkin"),
+    enabled: !!invitation.data && appUser?.role === "company_admin",
+    staleTime: 60_000,
+  });
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const guests = useQuery({ queryKey: [...guestsKey(id), search, page], queryFn: () => listInvitationGuests(id, search, page), enabled: !!invitation.data });
@@ -33,6 +41,7 @@ function GuestsPage() {
   const rows = guests.data?.rows ?? [];
   const totalPages = Math.max(1, Math.ceil((guests.data?.total ?? 0) / 20));
   const qrUrl = qrGuest?.qr_token ?? "";
+  const checkinEnabled = appUser?.role === "super_admin" || checkinFeature.data === true;
 
   const downloadCsv = async () => {
     try {
@@ -66,9 +75,9 @@ function GuestsPage() {
   return (
     <div className="space-y-5">
       <PageHeader title="Convidados" description={`Gerencie os convidados de ${invitation.data.name}.`} action={<Button onClick={() => setEditing(null)}><Plus className="h-4 w-4" />Adicionar convidado</Button>} />
-      <div className="flex flex-wrap gap-2"><Button variant="outline" asChild><Link to="/invitations/$id/checkin" params={{ id }}><QrCode className="h-4 w-4" />Abrir check-in</Link></Button><Button variant="outline" onClick={downloadCsv}><Download className="h-4 w-4" />Exportar CSV</Button><Button variant="outline" onClick={() => fileRef.current?.click()}><FileUp className="h-4 w-4" />Importar CSV</Button><input ref={fileRef} type="file" accept=".csv,text/csv" className="hidden" onChange={(e) => { const file = e.target.files?.[0]; if (file) void importCsv(file); }} /></div>
+      <div className="flex flex-wrap gap-2">{checkinEnabled && <Button variant="outline" asChild><Link to="/invitations/$id/checkin" params={{ id }}><QrCode className="h-4 w-4" />Abrir check-in</Link></Button>}<Button variant="outline" onClick={downloadCsv}><Download className="h-4 w-4" />Exportar CSV</Button><Button variant="outline" onClick={() => fileRef.current?.click()}><FileUp className="h-4 w-4" />Importar CSV</Button><input ref={fileRef} type="file" accept=".csv,text/csv" className="hidden" onChange={(e) => { const file = e.target.files?.[0]; if (file) void importCsv(file); }} /></div>
       <div className="flex items-center gap-2 rounded-xl border bg-card p-3"><Search className="h-4 w-4 text-muted-foreground" /><Input value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} placeholder="Buscar por nome" className="border-0 shadow-none focus-visible:ring-0" /><span className="text-sm text-muted-foreground">{guests.data?.total ?? 0}</span></div>
-      {guests.isLoading ? <LoadingState /> : guests.isError ? <div className="rounded-xl border border-destructive/30 p-8 text-center text-sm text-destructive">Não foi possível carregar os convidados.</div> : rows.length === 0 ? <div className="rounded-xl border border-dashed p-10 text-center"><Users className="mx-auto h-8 w-8 text-muted-foreground" /><p className="mt-3 font-medium">Nenhum convidado encontrado.</p><p className="mt-1 text-sm text-muted-foreground">Adicione um convidado ou importe um arquivo CSV.</p></div> : <div className="overflow-x-auto rounded-xl border"><table className="w-full text-sm"><thead className="bg-muted/50 text-left"><tr><th className="px-4 py-3">Nome</th><th className="px-4 py-3">Contato</th><th className="px-4 py-3">Pessoas</th><th className="px-4 py-3 text-right">Ações</th></tr></thead><tbody>{rows.map((guest) => <tr key={guest.id} className="border-t"><td className="px-4 py-3 font-medium">{guest.name}</td><td className="px-4 py-3 text-muted-foreground">{guest.phone || guest.email || "—"}</td><td className="px-4 py-3">{guest.people_count}</td><td className="px-4 py-3"><div className="flex justify-end gap-1"><Button size="icon" variant="ghost" title="QR Code" onClick={() => setQrGuest(guest)}><QrCode className="h-4 w-4" /></Button><Button size="icon" variant="ghost" title="Editar" onClick={() => setEditing(guest)}><Edit3 className="h-4 w-4" /></Button><Button size="icon" variant="ghost" title="Excluir" className="text-destructive" onClick={() => setDeleting(guest)}><Trash2 className="h-4 w-4" /></Button></div></td></tr>)}</tbody></table></div>}
+      {guests.isLoading ? <LoadingState /> : guests.isError ? <div className="rounded-xl border border-destructive/30 p-8 text-center text-sm text-destructive">Não foi possível carregar os convidados.</div> : rows.length === 0 ? <div className="rounded-xl border border-dashed p-10 text-center"><Users className="mx-auto h-8 w-8 text-muted-foreground" /><p className="mt-3 font-medium">Nenhum convidado encontrado.</p><p className="mt-1 text-sm text-muted-foreground">Adicione um convidado ou importe um arquivo CSV.</p></div> : <div className="overflow-x-auto rounded-xl border"><table className="w-full text-sm"><thead className="bg-muted/50 text-left"><tr><th className="px-4 py-3">Nome</th><th className="px-4 py-3">Contato</th><th className="px-4 py-3">Pessoas</th><th className="px-4 py-3 text-right">Ações</th></tr></thead><tbody>{rows.map((guest) => <tr key={guest.id} className="border-t"><td className="px-4 py-3 font-medium">{guest.name}</td><td className="px-4 py-3 text-muted-foreground">{guest.phone || guest.email || "—"}</td><td className="px-4 py-3">{guest.people_count}</td><td className="px-4 py-3"><div className="flex justify-end gap-1">{checkinEnabled && <Button size="icon" variant="ghost" title="QR Code de entrada" onClick={() => setQrGuest(guest)}><QrCode className="h-4 w-4" /></Button>}<Button size="icon" variant="ghost" title="Editar" onClick={() => setEditing(guest)}><Edit3 className="h-4 w-4" /></Button><Button size="icon" variant="ghost" title="Excluir" className="text-destructive" onClick={() => setDeleting(guest)}><Trash2 className="h-4 w-4" /></Button></div></td></tr>)}</tbody></table></div>}
       {totalPages > 1 && <div className="flex items-center justify-between"><Button variant="outline" disabled={page <= 1} onClick={() => setPage((current) => current - 1)}>Anterior</Button><span className="text-sm text-muted-foreground">Página {page} de {totalPages}</span><Button variant="outline" disabled={page >= totalPages} onClick={() => setPage((current) => current + 1)}>Próxima</Button></div>}
       <GuestDialog invitationId={id} guest={editing} onClose={() => setEditing(undefined)} onSaved={() => { setEditing(undefined); void qc.invalidateQueries({ queryKey: guestsKey(id) }); }} />
       <Dialog open={!!qrGuest} onOpenChange={(open) => !open && setQrGuest(null)}><DialogContent className="sm:max-w-sm"><DialogHeader><DialogTitle>QR Code de {qrGuest?.name}</DialogTitle></DialogHeader>{qrGuest && <div className="space-y-4 text-center"><div ref={qrRef} className="mx-auto w-fit rounded-xl border bg-white p-4"><QRCodeSVG value={qrUrl} size={220} /></div><p className="break-all text-xs text-muted-foreground">{qrGuest.qr_token}</p><div className="flex justify-center gap-2"><Button variant="outline" onClick={() => window.print()}><Printer className="h-4 w-4" />Imprimir</Button><Button onClick={() => { const svg = qrRef.current?.querySelector("svg"); if (!svg) return; const a = document.createElement("a"); a.href = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg.outerHTML)}`; a.download = `${qrGuest.name}-qr.svg`; a.click(); }}><Download className="h-4 w-4" />Baixar</Button></div></div>}</DialogContent></Dialog>

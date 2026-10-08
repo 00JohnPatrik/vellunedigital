@@ -1,12 +1,13 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
-import { Plus } from "lucide-react";
+import { Heart, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { EmptyState, LoadingState, PageHeader, StatusToggle } from "@/components/admin-ui";
 import { TemplateCard, TemplateFilters, templateError } from "@/components/template-ui";
 import { duplicateTemplate, listTemplates, setTemplateStatus, templatesKey, useOfficialTemplate, type Template } from "@/lib/templates";
+import { listTemplateFavorites, setTemplateFavorite, templateFavoritesKey } from "@/lib/template-favorites";
 
 export const Route = createFileRoute("/_authenticated/templates/")({
   head: () => ({ meta: [{ title: "Modelos — Vellune Digital" }] }),
@@ -18,13 +19,34 @@ const grid = "grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-
 function CompanyTemplates() {
   const qc = useQueryClient();
   const navigate = useNavigate();
+  const { appUser } = Route.useRouteContext();
   const q = useQuery({ queryKey: templatesKey, queryFn: listTemplates });
+  const favoritesQ = useQuery({ queryKey: templateFavoritesKey(appUser!.id), queryFn: () => listTemplateFavorites(appUser!.id) });
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("all");
-  const match = (t: Template) => (category === "all" || t.category === category) && t.name.toLowerCase().includes(search.trim().toLowerCase());
-  const official = useMemo(() => (q.data ?? []).filter((t) => t.type === "official" && t.status === "active" && match(t)), [q.data, search, category]);
+  const [favoritesOnly, setFavoritesOnly] = useState(false);
+  const favoriteIds = new Set(favoritesQ.data ?? []);
+  const match = (t: Template) => (category === "all" || t.category === category)
+    && t.name.toLowerCase().includes(search.trim().toLowerCase())
+    && (!favoritesOnly || favoriteIds.has(t.id));
+  const official = useMemo(() => (q.data ?? []).filter((t) => t.type === "official" && t.status === "active" && match(t)), [q.data, search, category, favoritesOnly, favoritesQ.data]);
   const mine = useMemo(() => (q.data ?? []).filter((t) => t.type === "company" && match(t)), [q.data, search, category]);
   const refresh = () => qc.invalidateQueries({ queryKey: templatesKey });
+  const toggleFavorite = async (t: Template) => {
+    const favorite = favoriteIds.has(t.id);
+    qc.setQueryData<string[]>(templateFavoritesKey(appUser!.id), (current) => {
+      const ids = new Set(current ?? []);
+      if (favorite) ids.delete(t.id); else ids.add(t.id);
+      return [...ids];
+    });
+    try {
+      await setTemplateFavorite(appUser!.id, t.id, !favorite);
+      toast.success(favorite ? "Removido dos favoritos." : "Adicionado aos favoritos.");
+    } catch {
+      void qc.invalidateQueries({ queryKey: templateFavoritesKey(appUser!.id) });
+      toast.error("Não foi possível atualizar o favorito.");
+    }
+  };
   const open = (id: string) => navigate({ to: "/templates/$id", params: { id } });
 
   const use = async (t: Template) => {
@@ -51,7 +73,14 @@ function CompanyTemplates() {
         </div>
       ) : (
         <>
-          <section aria-labelledby="official-templates-title">
+          <div className="mb-5 flex flex-wrap items-center gap-2">
+        <Button type="button" variant={favoritesOnly ? "default" : "outline"} size="sm" className="rounded-full" onClick={() => setFavoritesOnly((value) => !value)}>
+          <Heart className="h-4 w-4" fill={favoritesOnly ? "currentColor" : "none"} />
+          {favoritesOnly ? "Favoritos" : "Todos os modelos"}
+          <span className="ml-1 text-[10px] opacity-70">{favoriteIds.size}</span>
+        </Button>
+      </div>
+      <section aria-labelledby="official-templates-title">
             <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
               <div>
                 <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#A9B1BF]">Biblioteca Vellune</p>
@@ -62,6 +91,9 @@ function CompanyTemplates() {
             {official.length === 0 ? <EmptyState>Nenhum modelo oficial encontrado.</EmptyState> : (
               <div className={grid}>{official.map((t) => (
                 <TemplateCard key={t.id} t={t} actions={<>
+                  <Button type="button" size="icon" variant="outline" className="h-9 w-9 rounded-xl" onClick={() => void toggleFavorite(t)} aria-label={favoriteIds.has(t.id) ? "Remover dos favoritos" : "Adicionar aos favoritos"} title={favoriteIds.has(t.id) ? "Remover dos favoritos" : "Adicionar aos favoritos"}>
+                    <Heart className="h-4 w-4" fill={favoriteIds.has(t.id) ? "currentColor" : "none"} />
+                  </Button>
                   <Button size="sm" variant="outline" asChild><Link to="/templates/$id" params={{ id: t.id }}>Visualizar</Link></Button>
                   <Button size="sm" onClick={() => use(t)}>Usar modelo</Button>
                 </>} />
@@ -79,6 +111,9 @@ function CompanyTemplates() {
             {mine.length === 0 ? <EmptyState>Você ainda não tem modelos. Crie um ou use um modelo oficial.</EmptyState> : (
               <div className={grid}>{mine.map((t) => (
                 <TemplateCard key={t.id} t={t} actions={<>
+                  <Button type="button" size="icon" variant="outline" className="h-9 w-9 rounded-xl" onClick={() => void toggleFavorite(t)} aria-label={favoriteIds.has(t.id) ? "Remover dos favoritos" : "Adicionar aos favoritos"} title={favoriteIds.has(t.id) ? "Remover dos favoritos" : "Adicionar aos favoritos"}>
+                    <Heart className="h-4 w-4" fill={favoriteIds.has(t.id) ? "currentColor" : "none"} />
+                  </Button>
                   <Button size="sm" variant="outline" asChild><Link to="/templates/$id" params={{ id: t.id }}>Visualizar</Link></Button>
                   <Button size="sm" variant="outline" asChild><Link to="/templates/$id" params={{ id: t.id }} search={{ edit: true }}>Editar</Link></Button>
                   <Button size="sm" variant="outline" onClick={() => dup(t)}>Duplicar</Button>
