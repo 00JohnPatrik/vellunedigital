@@ -1,5 +1,6 @@
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 import { AppShell } from "@/components/app-shell";
+import { VelluneCompanyShell } from "@/components/vellune-company-shell";
 import { companyNav } from "@/lib/nav";
 
 // Company reports: company_admin with active company only (super admin uses /admin/reports).
@@ -17,8 +18,8 @@ function ReportsLayout() {
   const { appUser: routeAppUser } = Route.useRouteContext();
   const appUser = routeAppUser!;
   return (
-    <AppShell base="/dashboard" nav={companyNav} appUser={appUser}>
+    <VelluneCompanyShell appUser={appUser} activeItem="projects">
       <Outlet />
-    </AppShell>
+    </VelluneCompanyShell>
   );
 }
