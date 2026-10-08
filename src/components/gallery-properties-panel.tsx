@@ -31,7 +31,7 @@ function parseImages(value: string | undefined): GalleryImage[] {
   }
 }
 
-function GalleryThumb({ image, index, onRemove, onMove }: { image: GalleryImage; index: number; onRemove: () => void; onMove: (direction: -1 | 1) => void }) {
+function GalleryThumb({ image, index, total, onRemove, onMove }: { image: GalleryImage; index: number; total: number; onRemove: () => void; onMove: (direction: -1 | 1) => void }) {
   const src = useAssetUrl(image.url);
   return (
     <div className="group rounded-xl border border-border/70 bg-background/40 p-2">
@@ -51,7 +51,7 @@ function GalleryThumb({ image, index, onRemove, onMove }: { image: GalleryImage;
       </div>
       <div className="mt-2 grid grid-cols-2 gap-1.5">
         <Button type="button" size="sm" variant="outline" className="h-7 px-2 text-[10px]" disabled={index === 0} onClick={() => onMove(-1)}>← Subir</Button>
-        <Button type="button" size="sm" variant="outline" className="h-7 px-2 text-[10px]" disabled={index === 0 || index === images.length - 1} onClick={() => onMove(1)}>Descer →</Button>
+        <Button type="button" size="sm" variant="outline" className="h-7 px-2 text-[10px]" disabled={index === total - 1} onClick={() => onMove(1)}>Descer →</Button>
       </div>
     </div>
   );
@@ -139,7 +139,7 @@ export function GalleryPropertiesPanel({ selected, assets, onChange }: GalleryPa
         <div className="space-y-2">
           {images.map((image, index) => (
             <div key={`${image.url}-${index}`} className="space-y-2">
-              <GalleryThumb image={image} index={index} onRemove={() => removeImage(index)} onMove={(direction) => moveImage(index, direction)} />
+              <GalleryThumb image={image} index={index} total={images.length} onRemove={() => removeImage(index)} onMove={(direction) => moveImage(index, direction)} />
               <div className="grid grid-cols-1 gap-2">
                 <div className="space-y-1">
                   <Label htmlFor={`gallery-alt-${index}`} className="text-[10px] text-muted-foreground">Descrição acessível</Label>
