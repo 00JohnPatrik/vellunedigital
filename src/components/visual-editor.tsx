@@ -1152,7 +1152,40 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHe
           setSidebarOpen(true);
           if (compact) setMobileSheet("background");
         }}
+      />      <EditorCommandPalette
+        open={commandOpen}
+        selectedCount={selectedIds.length}
+        onClose={() => setCommandOpen(false)}
+        onAdd={(type) => {
+          addBlockByType(type);
+          if (compact) setMobileSheet(null);
+        }}
+        onOpenTemplates={() => {
+          setToolCategory("Modelos");
+          setSidebarOpen(true);
+          setTemplateOpen(true);
+          if (compact) setMobileSheet(null);
+        }}
+        onOpenBackground={() => {
+          setToolCategory("Fundo");
+          setSidebarOpen(true);
+          if (compact) setMobileSheet("background");
+        }}
       />
+      <TemplateGallery
+        open={templateOpen}
+        onClose={() => setTemplateOpen(false)}
+        hasContent={h.blocks.length > 0}
+        onApply={(content) => {
+          h.set(structuredClone(content.blocks ?? []), "template:apply");
+          onBg?.(structuredClone(content.settings?.background ?? {}));
+          setSelectedIds([]);
+          setInspectorOpen(false);
+          setMobileSheet(null);
+          setTemplateOpen(false);
+        }}
+      />
+
     </div>
   );
 }
