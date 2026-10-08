@@ -91,7 +91,7 @@ function Preview({ kind }: { kind: PreviewKind }) {
     return <div className="flex h-20 items-center justify-center rounded-xl bg-muted/40 px-5"><span className="h-px w-full bg-gradient-to-r from-transparent via-primary to-transparent" /> </div>;
   }
   if (kind === "image") {
-    return <div className="flex h-20 items-center justify-center rounded-xl bg-gradient-to-br from-sky-500/20 via-background to-violet-500/20"><ImageIcon className="h-8 w-8 text-primary" /> </div>;
+    return <div className="flex h-20 items-center justify-center rounded-xl bg-gradient-to-br from-primary/12 via-background to-primary/5"><ImageIcon className="h-8 w-8 text-primary" /> </div>;
   }
   if (kind === "event") {
     return <div className="flex h-20 items-center justify-center rounded-xl bg-muted/40"><div className="flex items-center gap-2 rounded-lg border bg-background px-3 py-2 shadow-sm"><CalendarDays className="h-4 w-4 text-primary" /><span className="text-xs font-medium text-foreground">15 de outubro</span></div></div>;
@@ -102,7 +102,7 @@ function Preview({ kind }: { kind: PreviewKind }) {
   if (kind === "qr") {
     return <div className="flex h-20 items-center justify-center rounded-xl bg-muted/40"><div className="rounded-lg border-4 border-foreground/80 p-1"><QrCode className="h-9 w-9 text-foreground" /></div></div>;
   }
-  return <div className="flex h-20 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-500/15 to-background"><Users className="h-8 w-8 text-emerald-600" /></div>;
+  return <div className="flex h-20 items-center justify-center rounded-xl bg-gradient-to-br from-primary/10 to-background"><Users className="h-8 w-8 text-emerald-600" /></div>;
 }
 
 function typeLabel(type: BlockType) {
