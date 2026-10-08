@@ -485,10 +485,17 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHe
     if (dropPoint) {
       block.x = Math.round(Math.max(24, Math.min(dropPoint.x - size.width / 2, canvasWidth - size.width - 24)));
       block.y = Math.round(Math.max(24, Math.min(dropPoint.y - size.height / 2, canvasHeight - size.height - 24)));
+    } else if (selectedIds.length === 1 && selected[0]) {
+      // Inserção inteligente: com um único elemento selecionado, o novo bloco
+      // entra logo abaixo dele e alinhado ao seu centro, preservando o contexto.
+      const anchor = selected[0];
+      const anchorIndex = blocks.indexOf(anchor);
+      const anchorPosition = getPosition(anchor, anchorIndex);
+      const anchorSize = getSize(anchor, anchorIndex);
+      const anchorCenter = anchorPosition.x + anchorSize.width / 2;
+      block.x = Math.round(Math.max(24, Math.min(anchorCenter - size.width / 2, canvasWidth - size.width - 24)));
+      block.y = Math.round(Math.max(24, anchorPosition.y + anchorSize.height + 24));
     } else {
-      // The free canvas grows with its content, so adding a block should continue
-      // below the current last block instead of clamping to the current height.
-      // Clamping here could place a new element on top of existing content.
       block.x = Math.round(Math.max(24, Math.min((canvasWidth - size.width) / 2, canvasWidth - size.width - 24)));
       block.y = Math.round(Math.max(24, lastY + 24));
     }
@@ -771,55 +778,108 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHe
     .sort((a, b) => b.zIndex - a.zIndex || b.sourceIndex - a.sourceIndex)
     .map((entry, layerIndex) => ({ ...entry, layerIndex }));
 
-  const autoArrangeSelected = (ids: string[]) => {
+  const magicArrangeSelected = (ids: string[], preset: "balanced" | "editorial" | "minimal" | "romantic" = "balanced") => {
     const targetIds = Array.from(new Set(ids));
     if (targetIds.length < 2) return;
     h.set((items) => {
       const entries = items
         .map((block: any, index: number) => ({ block, index, position: getPosition(block, index), size: getSize(block, index) }))
         .filter(({ block }) => targetIds.includes(block.id) && !block.locked);
-
       if (entries.length < 2) return items;
 
       const canvasWidth = canvasRef.current?.clientWidth || 390;
       const centers = entries.map((entry) => entry.position.y + entry.size.height / 2);
       const avgHeight = entries.reduce((sum, entry) => sum + entry.size.height, 0) / entries.length;
       const centerSpread = Math.max(...centers) - Math.min(...centers);
-      const rowTolerance = Math.max(48, avgHeight * 0.45);
-      const rowWidth = entries.reduce((sum, entry) => sum + entry.size.width, 0) + 24 * (entries.length - 1);
-      const canKeepRow = centerSpread <= rowTolerance && rowWidth <= canvasWidth - 24;
+      const gap = preset === "minimal" ? 16 : preset === "editorial" ? 34 : preset === "romantic" ? 28 : 24;
+      const rowWidth = entries.reduce((sum, entry) => sum + entry.size.width, 0) + gap * (entries.length - 1);
+      const canKeepRow = preset === "balanced" && centerSpread <= Math.max(48, avgHeight * 0.45) && rowWidth <= canvasWidth - 24;
 
       if (canKeepRow) {
         const sorted = [...entries].sort((a, b) => a.position.x - b.position.x);
-        const firstY = Math.round(centers.reduce((sum, value) => sum + value, 0) / centers.length);
+        const centerY = centers.reduce((sum, value) => sum + value, 0) / centers.length;
         let cursorX = Math.max(12, Math.round((canvasWidth - rowWidth) / 2));
         return items.map((block: any) => {
           const entry = sorted.find((item) => item.block.id === block.id);
           if (!entry) return block;
-          const next = {
-            ...block,
-            x: Math.round(cursorX),
-            y: Math.round(firstY - entry.size.height / 2),
-          };
-          cursorX += entry.size.width + 24;
+          const next = { ...block, x: Math.round(cursorX), y: Math.round(centerY - entry.size.height / 2) };
+          cursorX += entry.size.width + gap;
           return next;
         });
       }
 
       const sorted = [...entries].sort((a, b) => a.position.y - b.position.y || a.position.x - b.position.x);
       const firstY = Math.min(...sorted.map((entry) => entry.position.y));
-      const gap = 24;
+      const groupCenterX = entries.reduce((sum, entry) => sum + entry.position.x + entry.size.width / 2, 0) / entries.length;
       let cursorY = firstY;
 
       return items.map((block: any) => {
         const entry = sorted.find((item) => item.block.id === block.id);
         if (!entry) return block;
-        const nextX = Math.max(12, Math.round((canvasWidth - entry.size.width) / 2));
+        const baseX = Math.max(12, Math.round(groupCenterX - entry.size.width / 2));
+        const index = sorted.findIndex((item) => item.block.id === entry.block.id);
+        const romanticOffset = preset === "romantic" ? (index % 2 === 0 ? -8 : 8) : 0;
+        const nextX = Math.max(12, Math.min(baseX + romanticOffset, canvasWidth - entry.size.width - 12));
         const next = { ...block, x: nextX, y: Math.round(cursorY) };
         cursorY += entry.size.height + gap;
         return next;
       });
-    }, "arrange:auto");
+    }, "arrange:magic:" + preset);
+  };
+
+  const autoArrangeSelected = (ids: string[]) => magicArrangeSelected(ids, "balanced");
+
+  const smartAlignSelected = (ids: string[]) => {
+    const targetIds = Array.from(new Set(ids));
+    if (targetIds.length < 2) return;
+    h.set((items) => {
+      const entries = items
+        .map((block: any, index: number) => ({ block, index, position: getPosition(block, index), size: getSize(block, index) }))
+        .filter(({ block }) => targetIds.includes(block.id) && !block.locked);
+      if (entries.length < 2) return items;
+
+      const left = Math.min(...entries.map((entry) => entry.position.x));
+      const right = Math.max(...entries.map((entry) => entry.position.x + entry.size.width));
+      const top = Math.min(...entries.map((entry) => entry.position.y));
+      const bottom = Math.max(...entries.map((entry) => entry.position.y + entry.size.height));
+      const spanX = right - left;
+      const spanY = bottom - top;
+
+      if (entries.length === 2) {
+        const horizontal = spanX >= spanY;
+        const center = horizontal ? (top + bottom) / 2 : (left + right) / 2;
+        return items.map((block: any) => {
+          const entry = entries.find((item) => item.block.id === block.id);
+          if (!entry) return block;
+          return horizontal
+            ? { ...block, y: Math.round(center - entry.size.height / 2) }
+            : { ...block, x: Math.round(center - entry.size.width / 2) };
+        });
+      }
+
+      const horizontal = spanX >= spanY;
+      const ordered = [...entries].sort((a, b) => horizontal ? a.position.x - b.position.x : a.position.y - b.position.y);
+      const first = ordered[0]!;
+      const last = ordered[ordered.length - 1]!;
+      const start = horizontal ? first.position.x : first.position.y;
+      const end = horizontal ? last.position.x + last.size.width : last.position.y + last.size.height;
+      const total = ordered.reduce((sum, entry) => sum + (horizontal ? entry.size.width : entry.size.height), 0);
+      const gap = (end - start - total) / Math.max(1, ordered.length - 1);
+      const crossCenter = horizontal ? (top + bottom) / 2 : (left + right) / 2;
+      let cursor = start;
+      const nextById = new Map<string, { x: number; y: number }>();
+      ordered.forEach((entry) => {
+        const mainSize = horizontal ? entry.size.width : entry.size.height;
+        const x = horizontal ? cursor : crossCenter - entry.size.width / 2;
+        const y = horizontal ? crossCenter - entry.size.height / 2 : cursor;
+        nextById.set(entry.block.id, { x: Math.round(x), y: Math.round(y) });
+        cursor += mainSize + gap;
+      });
+      return items.map((block: any) => {
+        const next = nextById.get(block.id);
+        return next ? { ...block, ...next } : block;
+      });
+    }, "selection:smart-align");
   };
 
   // Geometry is resolved exclusively through the canonical resolver used by the
