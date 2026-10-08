@@ -396,6 +396,16 @@ export function ExperimentalCompanyDashboard({ appUser, reportRows, recentRespon
 
       <VelluneCreativeDock
         activeItem="home"
+        menuItems={[
+          { label: "Dashboard", to: "/dashboard" },
+          { label: "Convites", to: "/invitations" },
+          { label: "Clientes", to: "/customers" },
+          { label: "Modelos", to: "/templates" },
+          { label: "Resultados", to: "/reports" },
+          { label: "Plano", to: "/dashboard/assinatura" },
+          { label: "Sua marca", to: "/settings/brand" },
+          { label: "Configurações", to: "/dashboard/configuracoes" },
+        ]}
         onCreate={() => setCreateSheetOpen(true)}
         onNavigate={(item) => {
           if (item === "home") return;
