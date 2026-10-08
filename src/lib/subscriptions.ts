@@ -272,8 +272,7 @@ export async function companyHasFeature(companyId: string, feature: string) {
     .from("company_subscriptions")
     .select("status, expires_at, plan_id")
     .eq("company_id", companyId)
-    .in("status", ["active", "suspended"])
-    .order("created_at", { ascending: false })
+    .order("updated_at", { ascending: false })
     .limit(1)
     .maybeSingle();
   if (error) throw error;

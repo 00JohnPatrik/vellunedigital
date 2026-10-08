@@ -55,17 +55,6 @@ export const getPublicInvitation = createServerFn({ method: "GET" })
       throw new Error("Falha ao validar o estado do convite.");
     }
 
-    if (tenant?.status === "published") {
-      const { error: automationError } = await supabaseAdmin.rpc(
-        "apply_invitation_automation" as never,
-        { _invitation_id: tenant.id } as never,
-      );
-      if (automationError) {
-        console.error("get_public_invitation automation", automationError.message);
-        throw new Error("Falha ao validar o estado do convite.");
-      }
-    }
-
     const { data: res, error } = await supabaseAdmin.rpc("get_public_invitation" as never, { _slug: data.slug } as never);
     if (error) { console.error("get_public_invitation", error.message); throw new Error("Falha ao carregar o convite."); }
     const out = res as unknown as PublicInvitationResult;
