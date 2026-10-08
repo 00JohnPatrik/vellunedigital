@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { AlertTriangle, ArrowUpRight, Building2, CalendarClock, CheckCircle2, CreditCard, ExternalLink, FileText, Gauge, Users, Eye, UserCheck } from "lucide-react";
 import { LoadingState, PageHeader } from "@/components/admin-ui";
@@ -8,14 +9,14 @@ import { ActivitySummary } from "@/components/phase7-ui";
 import { fetchReport, globalCounts, totals } from "@/lib/reports";
 import { listUsersPresence, type PresenceUser } from "@/lib/admin-data";
 import { getPresenceStatus, presenceClass, presenceLabel } from "@/components/presence-tracker";
-import { listCompanySubscriptions, type CompanySubscription } from "@/lib/subscriptions";
+import { formatMoney, listCompanySubscriptions, type CompanySubscription } from "@/lib/subscriptions";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/_authenticated/admin/")({
   component: AdminDashboard,
 });
 
-function MetricCard({ label, value, description, icon: Icon, accent }: { label: string; value: number; description: string; icon: typeof Building2; accent: string }) {
+function MetricCard({ label, value, description, icon: Icon, accent, formatValue = (item) => item.toLocaleString("pt-BR") }: { label: string; value: number; description: string; icon: typeof Building2; accent: string; formatValue?: (value: number) => string }) {
   return (
     <Card className="overflow-hidden transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
       <CardContent className="relative p-5">
@@ -23,7 +24,7 @@ function MetricCard({ label, value, description, icon: Icon, accent }: { label: 
         <div className="relative flex items-start justify-between gap-3">
           <div>
             <p className="text-sm font-medium text-muted-foreground">{label}</p>
-            <p className="mt-3 text-3xl font-semibold tracking-tight">{value.toLocaleString("pt-BR")}</p>
+            <p className="mt-3 text-3xl font-semibold tracking-tight">{formatValue(value)}</p>
             <p className="mt-1 text-xs text-muted-foreground">{description}</p>
           </div>
           <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${accent} bg-opacity-10`}>
@@ -139,7 +140,7 @@ function AdminDashboard() {
           <MetricCard label="Assinaturas ativas" value={commercial.active.length} description="Inclui as que vencem em até 7 dias" icon={CreditCard} accent="bg-emerald-500 text-emerald-600" />
           <MetricCard label="Vencem em 7 dias" value={commercial.expiring.length} description="Renovações que merecem contato" icon={CalendarClock} accent="bg-amber-500 text-amber-600" />
           <MetricCard label="Sem assinatura ativa" value={commercial.companiesWithoutActivePlan.length} description="Empresas prontas para conversão" icon={AlertTriangle} accent="bg-[#d4af37] text-[#d4af37]" />
-          <MetricCard label="Valor mensal contratado" value={commercial.monthlyValue} description="Soma dos planos ativos; não é receita recebida" icon={CreditCard} accent="bg-[#d4af37] text-[#d4af37]" />
+          <MetricCard label="Valor mensal contratado" value={commercial.monthlyValue} description="Soma dos planos ativos; não é receita recebida" icon={CreditCard} accent="bg-[#d4af37] text-[#d4af37]" formatValue={formatMoney} />
         </div>
 
         <div className="grid gap-6 xl:grid-cols-2">
