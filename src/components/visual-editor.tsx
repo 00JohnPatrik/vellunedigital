@@ -3,7 +3,7 @@ import { BackgroundLayers } from "@/components/block-render";
 import { VisualTransformCanvas } from "@/components/visual-transform-canvas";
 
 import { BackgroundPropertiesPanel, ContextualPropertiesPanel } from "@/components/contextual-properties-panel";
-import { BLOCKS, getBlockDefaultSize, getNextBlockZIndex, newBlock, resolveBlockGeometry, type Block, type BlockType } from "@/lib/templates";
+import { BLOCKS, buildComposition, getBlockDefaultSize, getNextBlockZIndex, newBlock, resolveBlockGeometry, type Block, type BlockType, type CompositionKind } from "@/lib/templates";
 import { ElementsLibrary } from "@/components/elements-library";
 import { EditorCommandPalette } from "@/components/editor-command-palette";
 import { TemplateGallery } from "@/components/template-gallery";
@@ -404,6 +404,27 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHe
   const addImageByUrl = (url: string) => {
     if (!url) return;
     addBlockByType("image", { url });
+  };
+  const addComposition = (kind: CompositionKind) => {
+    const canvasWidth = canvasRef.current?.clientWidth || 390;
+    const lastBottom = blocks.reduce((maxY: number, item: any, index: number) => {
+      const pos = getPosition(item, index);
+      const size = getSize(item, index);
+      return Math.max(maxY, pos.y + size.height);
+    }, 24);
+    const baseY = Math.max(24, Math.round(lastBottom + (blocks.length ? 32 : 24)));
+    const created = buildComposition(kind, {
+      baseY,
+      canvasWidth,
+      zIndexStart: getNextBlockZIndex(blocks),
+      includeRsvp: !blocks.some((block: any) => block.type === "rsvp"),
+    });
+    if (!created.length) return;
+    h.set((current) => [...current, ...created], "composition:" + kind);
+    setSelectedIds(created.map((block) => block.id));
+    setStartEditingTextId(null);
+    setImageReplaceId(null);
+    setToolCategory("Elementos");
   };
 
   const alignSelectedOnCanvas = (mode: "left" | "center" | "right" | "top" | "middle" | "bottom" | "distributeX" | "distributeY" | "canvasCenterX" | "canvasCenterY", ids: string[]) => {
@@ -982,6 +1003,7 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHe
                 availableTypes={(Object.keys(BLOCKS) as BlockType[]).filter((type) => !["text", "image", "gallery"].includes(type))}
                 assets={assets as any}
                 onAdd={(type) => { addBlockByType(type); }}
+                onAddComposition={addComposition}
                 onAddImage={addImageByUrl}
                 imageMode="add"
               />
@@ -1287,6 +1309,7 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHe
               availableTypes={(Object.keys(BLOCKS) as BlockType[])}
               assets={assets as any}
               onAdd={(type) => { addBlockByType(type); setMobileSheet(null); }}
+              onAddComposition={(kind) => { addComposition(kind); setMobileSheet(null); }}
               onAddImage={addImageByUrl}
               imageMode={imageReplaceId ? "replace" : "add"}
               onSelectImage={replaceSelectedImage}
