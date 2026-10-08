@@ -591,7 +591,21 @@ export function VisualTransformCanvas({ blocks, selectedIds: selectedIdsProp, zo
       let delta = angle - base;
       if (delta > 180) delta -= 360;
       if (delta < -180) delta += 360;
-      if (event.shiftKey) delta = Math.round(delta / 15) * 15;
+      if (event.shiftKey) {
+        delta = Math.round(delta / 15) * 15;
+      } else {
+        // Magnetismo suave em ângulos úteis: facilita chegar a posições
+        // visualmente precisas sem impedir rotações livres.
+        const snapAngles = [0, 45, 90, 135, 180, 225, 270, 315, 360];
+        const normalized = ((delta % 360) + 360) % 360;
+        const nearestAngle = snapAngles.reduce((best, candidate) =>
+          Math.abs(candidate - normalized) < Math.abs(best - normalized) ? candidate : best,
+        0);
+        const angleDistance = Math.abs(nearestAngle - normalized);
+        if (angleDistance <= 3 || 360 - angleDistance <= 3) {
+          delta += nearestAngle - normalized;
+        }
+      }
       const radians = delta * Math.PI / 180;
       const cos = Math.cos(radians);
       const sin = Math.sin(radians);
