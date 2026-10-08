@@ -868,7 +868,25 @@ export function VisualTransformCanvas({ blocks, selectedIds: selectedIdsProp, zo
     )}
         {showGrid && <div aria-hidden className="pointer-events-none absolute inset-0 z-0 opacity-30" style={{ backgroundImage: "linear-gradient(to right, hsl(var(--border)) 1px, transparent 1px), linear-gradient(to bottom, hsl(var(--border)) 1px, transparent 1px)", backgroundSize: `${GRID_UNIT}px ${GRID_UNIT}px` }} />}
         {showGrid && <div aria-hidden className="pointer-events-none absolute z-[5] border border-dashed border-amber-500/50" style={{ left: SAFE_MARGIN, top: SAFE_MARGIN, right: SAFE_MARGIN, bottom: SAFE_MARGIN }} />}
-    {guides.map((guide, index) => <div key={`${guide.axis}-${index}`} className={`pointer-events-none absolute z-[70] ${guide.kind === "grid" ? "border-amber-400/60" : "border-primary/70"}`} style={guide.axis === "x" ? { left: guide.value, top: 0, bottom: 0, borderLeftWidth: 1, borderLeftStyle: "dashed" } : { top: guide.value, left: 0, right: 0, borderTopWidth: 1, borderTopStyle: "dashed" }} />)}
+    {guides.map((guide, index) => {
+      const label = guide.kind === "grid" ? "Grade" : guide.kind === "center" ? "Centro" : "Alinhado";
+      return (
+        <div
+          key={guide.axis + "-" + index}
+          className={"pointer-events-none absolute z-[70] " + (guide.kind === "grid" ? "border-amber-400/60" : "border-primary/70")}
+          style={guide.axis === "x"
+            ? { left: guide.value, top: 0, bottom: 0, borderLeftWidth: 1, borderLeftStyle: "dashed" }
+            : { top: guide.value, left: 0, right: 0, borderTopWidth: 1, borderTopStyle: "dashed" }}
+        >
+          <span
+            className="absolute whitespace-nowrap rounded-full border border-primary/20 bg-background/90 px-1.5 py-0.5 text-[8px] font-medium text-primary shadow-sm backdrop-blur-sm"
+            style={guide.axis === "x" ? { left: 4, top: 6 } : { left: 6, top: 4 }}
+          >
+            {label}
+          </span>
+        </div>
+      );
+    })}
     {blocks.map((block: any, index: number) => {
       const value = geometry(block, index);
       const isSelected = selectedIds.includes(block.id);
