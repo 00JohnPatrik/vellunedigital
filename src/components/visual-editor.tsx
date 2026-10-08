@@ -734,7 +734,7 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHe
           <span className="hidden rounded-full border border-primary/20 bg-primary/5 px-2 py-1 text-[10px] font-medium text-primary sm:inline-flex">{selectedIds.length ? `${selectedIds.length} selecionado(s)` : `${blocks.length} elemento(s)`}</span>
         </div>
         <div className="flex items-center gap-1.5">
-          {toolbarExtra && <div className="hidden items-center gap-1.5 md:flex">{toolbarExtra}</div>}
+          {toolbarExtra && !desktopHeaderRight && <div className="hidden items-center gap-1.5 md:flex">{toolbarExtra}</div>}
           <div className="vellune-editor-history-cluster flex items-center gap-1 rounded-xl border border-primary/10 bg-background/60 p-1 shadow-sm">
           <button type="button" aria-label="Desfazer" title="Desfazer (Ctrl/Cmd+Z)" disabled={!h.canUndo} onClick={h.undo} className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-border/70 text-muted-foreground transition hover:bg-accent hover:text-foreground disabled:cursor-not-allowed disabled:opacity-40"><Undo2 className="h-3.5 w-3.5" /></button>
           <button type="button" aria-label="Refazer" title="Refazer (Ctrl/Cmd+Shift+Z)" disabled={!h.canRedo} onClick={h.redo} className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-border/70 text-muted-foreground transition hover:bg-accent hover:text-foreground disabled:cursor-not-allowed disabled:opacity-40"><Redo2 className="h-3.5 w-3.5" /></button>
