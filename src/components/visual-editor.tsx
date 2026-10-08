@@ -159,9 +159,10 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHe
   const fitCanvasToViewport = useCallback(() => {
     if (!compact) return;
     const viewportWidth = viewportRef.current?.clientWidth || window.innerWidth;
+    const deviceWidth = device === "mobile" ? 390 : device === "tablet" ? 768 : 1024;
     const available = Math.max(280, viewportWidth - 28);
-    setZoom(Math.round(Math.min(100, Math.max(72, (available / 390) * 100))));
-  }, [compact]);
+    setZoom(Math.round(Math.min(100, Math.max(50, (available / deviceWidth) * 100))));
+  }, [compact, device]);
   const fitCanvas = useCallback(() => {
     const viewportWidth = viewportRef.current?.clientWidth || window.innerWidth;
     const deviceWidth = device === "mobile" ? 390 : device === "tablet" ? 768 : 1024;
@@ -173,6 +174,10 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHe
   useEffect(() => {
     if (!compact) return;
     setDevice("mobile");
+  }, [compact]);
+
+  useEffect(() => {
+    if (!compact) return;
     requestAnimationFrame(fitCanvasToViewport);
     const node = viewportRef.current;
     if (!node || typeof ResizeObserver === "undefined") return;
