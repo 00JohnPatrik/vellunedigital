@@ -1372,9 +1372,11 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHe
 
                 if (pointers.size >= 2) {
                   const [first, second] = Array.from(pointers.values());
-                  nextPinch.startDistance = Math.max(1, Math.hypot(second.x - first.x, second.y - first.y));
-                  nextPinch.startZoom = zoom;
-                  event.preventDefault();
+                  if (first && second) {
+                    nextPinch.startDistance = Math.max(1, Math.hypot(second.x - first.x, second.y - first.y));
+                    nextPinch.startZoom = zoom;
+                    event.preventDefault();
+                  }
                 }
                 pinchRef.current = nextPinch;
                 return;
@@ -1403,12 +1405,14 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHe
 
                 if (pinch.pointers.size >= 2 && pinch.startDistance > 0) {
                   const [first, second] = Array.from(pinch.pointers.values());
-                  const distance = Math.max(1, Math.hypot(second.x - first.x, second.y - first.y));
-                  const scale = distance / pinch.startDistance;
-                  const nextZoom = Math.min(150, Math.max(50, pinch.startZoom * scale));
-                  event.preventDefault();
-                  event.stopPropagation();
-                  setZoom(Math.round(nextZoom));
+                  if (first && second) {
+                    const distance = Math.max(1, Math.hypot(second.x - first.x, second.y - first.y));
+                    const scale = distance / pinch.startDistance;
+                    const nextZoom = Math.min(150, Math.max(50, pinch.startZoom * scale));
+                    event.preventDefault();
+                    event.stopPropagation();
+                    setZoom(Math.round(nextZoom));
+                  }
                 }
                 return;
               }
