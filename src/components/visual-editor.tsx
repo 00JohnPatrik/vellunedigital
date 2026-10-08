@@ -916,6 +916,7 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHe
           </div>
         </aside>
         <main className="vellune-editor-workspace relative flex min-h-0 h-auto flex-1 flex-col overflow-hidden rounded-2xl border border-primary/10 bg-[radial-gradient(circle_at_top,hsl(var(--primary)/.12),transparent_38%),linear-gradient(145deg,hsl(var(--muted)/.45),hsl(var(--background)/.95))] p-2 shadow-inner sm:p-4 lg:h-full lg:min-w-0 lg:p-5">
+          {spaceHeld && <div className="pointer-events-none absolute left-1/2 top-3 z-[140] -translate-x-1/2 rounded-full border border-primary/20 bg-[#111318]/95 px-3 py-1.5 text-[10px] font-medium text-white/75 shadow-lg backdrop-blur-xl">Espaço + arrastar · mover área de trabalho</div>}
           <div className="vellune-editor-mobile-bar mb-3 flex items-center justify-between gap-2 rounded-xl border border-primary/15 bg-card/85 px-3 py-2.5 shadow-lg shadow-black/10 backdrop-blur-xl lg:hidden">
             <div className="flex min-w-0 items-center gap-2">
               <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary"><Sparkles className="h-3.5 w-3.5" /></div>
