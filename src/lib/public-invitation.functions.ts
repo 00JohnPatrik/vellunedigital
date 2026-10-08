@@ -69,7 +69,6 @@ export const getPublicInvitation = createServerFn({ method: "GET" })
             .select("name, people_count, status")
             .eq("invitation_id", tenant.id)
             .eq("qr_token", data.guestToken)
-            .neq("status", "deleted")
             .is("deleted_at", null)
             .maybeSingle();
           out.invitation.guest = guest ? {
