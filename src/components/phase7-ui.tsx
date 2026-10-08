@@ -265,7 +265,7 @@ export function NotificationCenter({ appUser }: { appUser: AppUser }) {
                         title={`Marcar todos de ${group.label} como lidos`}
                       >
                         <CheckCheck className="mr-1 h-3.5 w-3.5" />
-                        <span className="hidden sm:inline">{markingGroup === group.key ? "Salvando..." : "Marcar lidos"}</span>
+                        <span className="hidden sm:inline">{markingGroup === group.key ? "Salvando..." : "Marcar todos como lidos"}</span>
                       </Button>
                     )}
                     <Badge variant="secondary" className="text-[10px]">{group.unreadCount > 0 ? group.unreadCount : group.items.length}</Badge>
