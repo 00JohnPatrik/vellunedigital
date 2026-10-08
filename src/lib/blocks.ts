@@ -83,3 +83,18 @@ export function formatTime(t: string | null | undefined, format = "24h") {
 /** Custom value wins when source is "custom"; otherwise the event value (falling back to the custom one). */
 export const pick = (p: Record<string, string>, custom: string | undefined, event: string | null | undefined) =>
   p["source"] === "custom" ? custom || null : event || custom || null;
+
+
+/** Replaces safe personalization tokens used by public invitations. */
+export function resolvePublicText(text: string, ctx?: EventCtx) {
+  const guestName = ctx?.guest_name?.trim() || "você";
+  const guestPeople = Number.isFinite(ctx?.guest_people) ? String(ctx?.guest_people) : "1";
+  const guestPeopleLabel = Number(ctx?.guest_people) === 1 ? "1 pessoa" : `${guestPeople} pessoas`;
+  const values: Record<string, string> = {
+    guest_name: guestName,
+    guest_people: guestPeople,
+    guest_people_label: guestPeopleLabel,
+    event_name: ctx?.event_name?.trim() || "este evento",
+  };
+  return text.replace(/\\{\\{\\s*(guest_name|guest_people|guest_people_label|event_name)\\s*\\}\\}/gi, (_, key: string) => values[key.toLowerCase()] ?? "");
+}
