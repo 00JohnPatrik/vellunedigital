@@ -3,6 +3,7 @@ import { ShieldCheck } from "lucide-react";
 import Logo from "@/components/Logo";
 import { AuthPremiumVisual } from "@/components/auth-premium-visual";
 import { useEffect, useRef } from "react";
+import { AuthCommercialFooter } from "@/components/auth-commercial-footer";
 
 export function AuthCard({
   title,
@@ -117,7 +118,7 @@ export function AuthCard({
               <span className="text-white/30">Acesso protegido</span>
             </div>
 
-            {footer}
+            {footer ?? <AuthCommercialFooter />}
           </div>
         </section>
       </div>
