@@ -17,25 +17,24 @@ export type Database = {
       auth_rate_limits: {
         Row: {
           rate_key: string
-          window_started_at: string
           request_count: number
           updated_at: string
+          window_started_at: string
         }
         Insert: {
           rate_key: string
-          window_started_at?: string
           request_count?: number
           updated_at?: string
+          window_started_at?: string
         }
         Update: {
           rate_key?: string
-          window_started_at?: string
           request_count?: number
           updated_at?: string
+          window_started_at?: string
         }
         Relationships: []
       }
-
       companies: {
         Row: {
           created_at: string
