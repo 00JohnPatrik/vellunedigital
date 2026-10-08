@@ -1603,6 +1603,12 @@
     display: none;
   }
 
+  .vellune-editor-experimental .vellune-experimental-sheet {
+    --vellune-sheet-drag: 0px;
+    transform: translateY(var(--vellune-sheet-drag));
+    transition: transform 180ms cubic-bezier(.22,1,.36,1);
+  }
+
   .vellune-editor-experimental .fixed.inset-x-2.bottom-2 {
     animation: velluneExperimentalSheetIn 180ms cubic-bezier(.22,1,.36,1);
     border-color: rgb(255 255 255 / 8%) !important;
@@ -1613,14 +1619,8 @@
 }
 
 @keyframes velluneExperimentalSheetIn {
-  from {
-    opacity: 0;
-    transform: translateY(18px) scale(.985);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1629,7 +1629,8 @@
   }
 
   .vellune-editor-experimental .vellune-editor-mobile-bar-experimental,
-  .vellune-experimental-canvas-controls {
+  .vellune-experimental-canvas-controls,
+  .vellune-editor-experimental .vellune-experimental-sheet {
     transition: none !important;
   }
 }
