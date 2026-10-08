@@ -28,7 +28,7 @@ export function SubscriptionOverviewCard({ companyId, compact = false }: { compa
 
 export function SubscriptionStatusBanner({ companyId }: { companyId: string }) {
   const query = useQuery({ queryKey: [...subscriptionKey(companyId), "banner"], queryFn: () => getSubscriptionOverview(companyId), staleTime: 30_000 });
-  if (query.isLoading || query.isError) return null;
+  if (query.isLoading || query.isError || !query.data) return null;
 
   const data = query.data;
   const lifecycle = getSubscriptionLifecycle(data);
