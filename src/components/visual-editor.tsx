@@ -305,7 +305,7 @@ const ELEMENT_ICONS: Partial<Record<BlockType, ComponentType<{ className?: strin
 };
 export type EditorPoint = { x: number; y: number };
 
-export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHeaderLeft, desktopHeaderRight, experimentalMobileActions, fullHeight = false, experimentalLayout = false }: { h: BlocksHistory; ctx?: unknown; assets?: unknown; bg?: unknown; onBg?: (value: any) => void; toolbarExtra?: React.ReactNode; desktopHeaderLeft?: React.ReactNode; desktopHeaderRight?: React.ReactNode; experimentalMobileActions?: React.ReactNode; fullHeight?: boolean; experimentalLayout?: boolean }) {
+export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHeaderLeft, desktopHeaderRight, experimentalMobileActions, onSignOut, fullHeight = false, experimentalLayout = false }: { h: BlocksHistory; ctx?: unknown; assets?: unknown; bg?: unknown; onBg?: (value: any) => void; toolbarExtra?: React.ReactNode; desktopHeaderLeft?: React.ReactNode; desktopHeaderRight?: React.ReactNode; experimentalMobileActions?: React.ReactNode; onSignOut?: () => void; fullHeight?: boolean; experimentalLayout?: boolean }) {
   const canvasRef = useRef<HTMLDivElement>(null);
   const viewportRef = useRef<HTMLDivElement>(null);
   const viewPreferences = useRef<EditorViewPreferences | null>(null);
@@ -1199,6 +1199,7 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHe
       {experimentalLayout && !focusMode && (
         <VelluneTopBar
           readOnlySearch
+          onSignOut={onSignOut}
           onSearchActivate={() => setCommandOpen(true)}
           mobileActions={
             <>
