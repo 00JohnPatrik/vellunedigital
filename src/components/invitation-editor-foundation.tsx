@@ -213,19 +213,58 @@ export function InvitationEditorFoundation({ invitationId, content, onSave }: Pr
   const select = (id: string, additive = false) => setSelectedIds((current) => additive ? current.includes(id) ? current.filter((item) => item !== id) : [...current, id] : [id]);
   const add = (element: EditorElement) => { mark((document) => ({ ...document, elements: [...document.elements, { ...element, zIndex: document.elements.length + 1 }], sections: document.sections.map((section) => ({ ...section, elementIds: [...section.elementIds, element.id] })) })); setSelectedIds([element.id]); };
   const remove = () => { if (!selectedIds.length) return; mark((document) => ({ ...document, elements: document.elements.filter((element) => !selectedIds.includes(element.id)), sections: document.sections.map((section) => ({ ...section, elementIds: section.elementIds.filter((id) => !selectedIds.includes(id)) })) })); setSelectedIds([]); };
-  const duplicate = () => { const copies = selected.map((element, index) => ({ ...clone(element), id: crypto.randomUUID(), x: element.x + 24 + index * 8, y: element.y + 24 + index * 8 })); if (!copies.length) return; mark((document) => ({ ...document, elements: [...document.elements, ...copies] })); setSelectedIds(copies.map((element) => element.id)); };
+  const duplicate = () => {
+    if (!selected.length) return;
+    const copies = selected.map((element, index) => ({
+      ...clone(element),
+      id: crypto.randomUUID(),
+      x: element.x + 24 + index * 8,
+      y: element.y + 24 + index * 8,
+    }));
+    const copyIds = copies.map((element) => element.id);
+    mark((document) => {
+      const startZ = document.elements.reduce((max, element) => Math.max(max, element.zIndex), 0) + 1;
+      const inserted = copies.map((element, index) => ({ ...element, zIndex: startZ + index }));
+      return { ...document, elements: [...document.elements, ...inserted] };
+    });
+    setSelectedIds(copyIds);
+  };
   const group = () => { if (selectedIds.length < 2) return; const groupId = crypto.randomUUID(); mark((document) => ({ ...document, elements: document.elements.map((element) => selectedIds.includes(element.id) ? { ...element, groupId } : element) })); };
   const ungroup = () => mark((document) => ({ ...document, elements: document.elements.map((element) => selectedIds.includes(element.id) ? { ...element, groupId: null } : element) }));
   const copy = () => setClipboard(selected.map(clone));
-  const paste = () => { if (!clipboard.length) return; const pasted = clipboard.map((element, index) => ({ ...clone(element), id: crypto.randomUUID(), x: element.x + 24 + index * 8, y: element.y + 24 + index * 8 })); mark((document) => ({ ...document, elements: [...document.elements, ...pasted] })); setSelectedIds(pasted.map((element) => element.id)); };
+  const paste = () => {
+    if (!clipboard.length) return;
+    const pasted = clipboard.map((element, index) => ({
+      ...clone(element),
+      id: crypto.randomUUID(),
+      x: element.x + 24 + index * 8,
+      y: element.y + 24 + index * 8,
+    }));
+    const pastedIds = pasted.map((element) => element.id);
+    mark((document) => {
+      const startZ = document.elements.reduce((max, element) => Math.max(max, element.zIndex), 0) + 1;
+      const inserted = pasted.map((element, index) => ({ ...element, zIndex: startZ + index }));
+      return { ...document, elements: [...document.elements, ...inserted] };
+    });
+    setSelectedIds(pastedIds);
+  };
   const updateSelected = (patch: any, key = "property") => { if (!primary) return; mark((document) => ({ ...document, elements: document.elements.map((element) => selectedIds.includes(element.id) && !element.locked ? { ...element, ...patch, styles: patch.styles ? patch.styles : element.styles } : element) }), key); };
 
   const startDrag = (event: any, element: EditorElement) => {
     if (element.locked) return;
     event.stopPropagation();
-    select(element.id, event.shiftKey || event.metaKey || event.ctrlKey);
-    const ids = selectedIds.includes(element.id) ? selectedIds : [element.id];
-    const origins = Object.fromEntries(h.document.elements.filter((item) => ids.includes(item.id)).map((item) => [item.id, { x: item.x, y: item.y }]));
+    const additive = event.shiftKey || event.metaKey || event.ctrlKey;
+    const ids = additive
+      ? selectedIds.includes(element.id)
+        ? selectedIds
+        : [...selectedIds, element.id]
+      : [element.id];
+    setSelectedIds(ids);
+    const origins = Object.fromEntries(
+      h.document.elements
+        .filter((item) => ids.includes(item.id))
+        .map((item) => [item.id, { x: item.x, y: item.y }]),
+    );
     drag.current = { x: event.clientX, y: event.clientY, ids, origins };
     event.currentTarget.setPointerCapture?.(event.pointerId);
   };
