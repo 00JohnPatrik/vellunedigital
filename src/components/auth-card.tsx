@@ -81,15 +81,14 @@ export function AuthCard({
       >
         <AuthPremiumVisual />
 
-        <section ref={authScrollRef} className="flex h-full min-h-0 items-stretch justify-start overflow-x-clip bg-[#08090d] overflow-y-auto overscroll-contain px-3 pt-[max(1rem,env(safe-area-inset-top))] pb-[max(1rem,env(safe-area-inset-bottom))] sm:px-8 sm:py-5 lg:items-stretch lg:justify-start lg:overflow-y-auto lg:border-l lg:border-white/[0.045] lg:bg-white/[0.012] xl:px-16">
+        <section ref={authScrollRef} className="vellune-auth-section flex h-full min-h-0 items-stretch justify-start overflow-x-clip bg-[#08090d] overflow-y-auto overscroll-contain px-3 pt-[max(1rem,env(safe-area-inset-top))] pb-[max(1rem,env(safe-area-inset-bottom))] sm:px-8 sm:py-5 lg:items-stretch lg:justify-start lg:overflow-y-auto lg:border-l lg:border-white/[0.045] lg:bg-white/[0.012] xl:px-16">
           <div className="my-auto mx-auto flex w-full max-w-[430px] min-h-0 shrink-0 flex-col py-0.5 pb-[max(0.5rem,env(safe-area-inset-bottom))] sm:py-2">
-            <div className="mb-3 flex w-full shrink-0 flex-col items-center justify-center lg:hidden sm:mb-7">
+            <div className="vellune-auth-mobile-logo mb-3 flex w-full shrink-0 flex-col items-center justify-center lg:hidden sm:mb-7">
               <Logo className="h-10 w-auto max-w-[72vw] text-white transition-opacity duration-500 hover:opacity-90 sm:h-14" />
-              <span className="mt-2 text-[8px] font-semibold uppercase tracking-[0.28em] text-white/25">Seu espaço de criação</span>
             </div>
 
             <div
-              className="relative w-full overflow-hidden rounded-[20px] border border-white/[0.075] bg-[#111318]/94 p-4 shadow-[0_30px_100px_rgba(0,0,0,0.46),inset_0_1px_0_rgba(255,255,255,0.035)] ring-1 ring-white/[0.018] backdrop-blur-xl sm:rounded-[28px] sm:p-9"
+              className="vellune-auth-card relative w-full overflow-hidden rounded-[20px] border border-white/[0.075] bg-[#111318]/94 p-4 shadow-[0_30px_100px_rgba(0,0,0,0.46),inset_0_1px_0_rgba(255,255,255,0.035)] ring-1 ring-white/[0.018] backdrop-blur-xl sm:rounded-[28px] sm:p-9"
               style={{ animation: "velluneAuthFadeUp 800ms cubic-bezier(.22,1,.36,1)" }}
             >
               <div className="pointer-events-none absolute inset-x-10 top-0 h-px bg-gradient-to-r from-transparent via-[#d4af37]/35 to-transparent" />
@@ -98,7 +97,7 @@ export function AuthCard({
               <div className="border-b border-white/[0.07] pb-4 sm:pb-6">
                 <div className="mb-2 flex items-center gap-2 text-[9px] font-semibold uppercase tracking-[0.25em] text-[#d4af37] sm:text-[10px]">
                   <span className="h-1.5 w-1.5 rounded-full bg-[#d4af37] shadow-[0_0_8px_rgba(212,175,55,0.55)]" />
-                  Área segura
+                  Vellune Digital
                 </div>
                 <h1 className="font-display text-[24px] font-medium leading-[1.1] tracking-[-0.04em] sm:text-[32px]">
                   {title}
@@ -113,11 +112,9 @@ export function AuthCard({
               <div className="pt-4 sm:pt-6">{children}</div>
             </div>
 
-            <div className="mt-2 flex shrink-0 items-center justify-center gap-2 text-center text-[8px] font-medium uppercase tracking-[0.2em] text-white/20 sm:mt-5 sm:text-[9px]">
+            <div className="vellune-auth-footer mt-2 flex shrink-0 items-center justify-center gap-2 text-center text-[8px] font-medium uppercase tracking-[0.2em] text-white/20 sm:mt-5 sm:text-[9px]">
               <ShieldCheck className="h-3 w-3 text-[#d4af37]/60 sm:h-3.5 sm:w-3.5" />
-              <span className="text-white/30">Vellune Secure</span>
-              <span className="h-px w-3 bg-white/[0.09]" />
-              <span>Ambiente protegido</span>
+              <span className="text-white/30">Acesso protegido</span>
             </div>
 
             {footer}
