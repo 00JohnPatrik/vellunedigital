@@ -118,19 +118,26 @@ function ResetPage() {
 
     requestLockRef.current = true;
     setLoading(true);
-    const { error: updateError } = await supabase.auth.updateUser({ password });
-    setLoading(false);
-    if (updateError) {
-      if (isAuthServiceUnavailable(updateError)) setAuthUnavailable(true);
-      setError(friendlyAuthError(updateError.message));
-      return;
-    }
+    try {
+      const { error: updateError } = await supabase.auth.updateUser({ password });
+      if (updateError) {
+        if (isAuthServiceUnavailable(updateError)) setAuthUnavailable(true);
+        setError(friendlyAuthError(updateError.message));
+        return;
+      }
 
-    setPasswordUpdated(true);
-    await supabase.auth.signOut();
-    const prefersReducedMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
-    await new Promise((resolve) => window.setTimeout(resolve, prefersReducedMotion ? 420 : 1250));
-    navigate({ to: "/login", replace: true });
+      setPasswordUpdated(true);
+      await supabase.auth.signOut();
+      const prefersReducedMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
+      await new Promise((resolve) => window.setTimeout(resolve, prefersReducedMotion ? 420 : 1250));
+      navigate({ to: "/login", replace: true });
+    } catch (err) {
+      if (isAuthServiceUnavailable(err)) setAuthUnavailable(true);
+      setError(friendlyAuthError(err instanceof Error ? err.message : undefined));
+    } finally {
+      setLoading(false);
+      requestLockRef.current = false;
+    }
   }
 
   if (authUnavailable) {
