@@ -185,8 +185,21 @@ export function planHasFeature(plan: SubscriptionPlan | null | undefined, featur
 }
 
 export async function companyHasFeature(companyId: string, feature: string) {
-  const overview = await getSubscriptionOverview(companyId);
-  return isSubscriptionUsable(overview) && planHasFeature(overview.plan, feature);
+  // Feature checks run frequently (for example when opening the editor), so
+  // do not load usage counters or storage just to decide whether a flag is enabled.
+  const { data: subscription, error } = await supabase
+    .from("company_subscriptions")
+    .select("status, expires_at, plan_id")
+    .eq("company_id", companyId)
+    .in("status", ["active", "suspended"])
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (error) throw error;
+  if (!subscription || subscription.status !== "active") return false;
+  if (subscription.expires_at && new Date(subscription.expires_at) < new Date()) return false;
+  const plan = await getPlan(subscription.plan_id);
+  return planHasFeature(plan, feature);
 }
 
 export function limitReached(value: number, limit: number | null | undefined) {
