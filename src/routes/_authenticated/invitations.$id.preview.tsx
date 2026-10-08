@@ -98,7 +98,7 @@ function PreviewPage() {
                 <div className="flex items-center gap-1.5">
                   {(inv.status === "published" || inv.status === "closed") && <Button variant="outline" size="sm" onClick={() => setShare(true)}><Share2 className="h-4 w-4" /><span className="hidden sm:inline">Compartilhar</span></Button>}
                   <Button type="button" variant="outline" size="sm" onClick={() => void refreshPreview()} disabled={refreshing} title="Recarregar a prévia e conferir o estado mais recente"><RefreshCw className={refreshing ? "h-4 w-4 animate-spin" : "h-4 w-4"} /><span className="hidden sm:inline">Atualizar prévia</span></Button>
-                  {snapshot ? <Button size="sm" asChild><a href={`/invitations/${inv.id}/editor?experimental=1`}><Pencil className="h-4 w-4" />Editar</a></Button> : <Button size="sm" asChild><Link to="/invitations/$id/editor" params={{ id: inv.id }}><Pencil className="h-4 w-4" />Editar</Link></Button>}
+                  {snapshot ? <Button size="sm" asChild><a href={`/invitations/${inv.id}/editor`}><Pencil className="h-4 w-4" />Editar</a></Button> : <Button size="sm" asChild><Link to="/invitations/$id/editor" params={{ id: inv.id }}><Pencil className="h-4 w-4" />Editar</Link></Button>}
                 </div>
               </div>
               <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-border/60 pt-3">
