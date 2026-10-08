@@ -12,7 +12,7 @@ export const Route = createFileRoute("/_authenticated/dashboard/")({
 
 function CompanyDashboard() {
   const { appUser } = Route.useRouteContext();
-  const experimentalLayout = typeof window !== "undefined" && new URLSearchParams(window.location.search).get("experimental") === "1";
+  const experimentalLayout = typeof window !== "undefined" && new URLSearchParams(window.location.search).get("legacy") !== "1";
   const report = useQuery({ queryKey: ["reports", "company"], queryFn: () => fetchReport() });
   const recent = useQuery({ queryKey: ["reports", "recent"], queryFn: () => recentResponses(5) });
   if (report.isLoading) return <LoadingState />;
