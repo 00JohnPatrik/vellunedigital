@@ -11,7 +11,6 @@ import { signInWithPhone, requestPasswordReset } from "@/lib/auth.functions";
 import { canUseAdminArea, friendlyAuthError, homeFor, isAuthServiceUnavailable, loadAppUser } from "@/lib/app-user";
 import Logo from "@/components/Logo";
 import { AuthPremiumVisual } from "@/components/auth-premium-visual";
-import { AuthSuccessTransition } from "@/components/auth-success-transition";
 import { AuthJourneySteps } from "@/components/auth-journey";
 import { AuthUnavailableState } from "@/components/auth-unavailable-state";
 
@@ -46,7 +45,6 @@ function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [touched, setTouched] = useState(false);
   const [rememberAccess, setRememberAccess] = useState(false);
-  const [loginSuccess, setLoginSuccess] = useState(false);
   const [loginButtonPress, setLoginButtonPress] = useState(false);
   const [focusedField, setFocusedField] = useState<string | null>(null);
   const [capsLockOn, setCapsLockOn] = useState(false);
@@ -268,9 +266,8 @@ function LoginPage() {
       } catch {
         // Login must continue even if browser storage is unavailable.
       }
-      setLoginSuccess(true);
-      const prefersReducedMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
-      await new Promise((resolve) => window.setTimeout(resolve, prefersReducedMotion ? 360 : 1050));
+      // O acesso foi validado. Evitamos uma tela intermediária para manter a entrada fluida.
+      await new Promise((resolve) => window.setTimeout(resolve, 180));
       navigate({ to: homeFor(appUser), replace: true });
     } catch (err) {
       if (isAuthServiceUnavailable(err)) {
@@ -325,7 +322,6 @@ function LoginPage() {
     setRecoveryCooldown(0);
     try { window.sessionStorage.removeItem("vellune-recovery-cooldown-until"); } catch {}
     setAuthUnavailable(false);
-    setLoginSuccess(false);
     navigate({ to: "/login", replace: true });
   }
 
@@ -617,12 +613,7 @@ function LoginPage() {
                   )}
 
                   <Button ref={loginButtonRef} type="submit" disabled={loading || loginCooldown > 0} onPointerMove={handleLoginButtonMove} onPointerLeave={resetLoginButtonTilt} onPointerDown={triggerLoginButtonPress} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") triggerLoginButtonPress(); }} className={`vellune-auth-cta group mt-2 flex h-12 w-full min-h-12 items-center justify-center rounded-xl bg-[#d4af37] font-semibold text-[#16130b] shadow-[0_12px_34px_rgba(212,175,55,0.10)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#e5c66b] hover:shadow-[0_16px_38px_rgba(212,175,55,0.16)] active:translate-y-0 disabled:cursor-default disabled:opacity-100 ${loginButtonPress ? "vellune-auth-cta-press" : ""}`}>
-                    {loginSuccess ? (
-                      <span className="flex items-center justify-center gap-2">
-                        <CheckCircle2 className="h-4 w-4" style={{ animation: "velluneSuccess 260ms cubic-bezier(.22,1,.36,1)" }} />
-                        Acesso confirmado
-                      </span>
-                    ) : loading ? (
+                    {loading ? (
                       <span className="flex items-center justify-center gap-2">
                         <LoaderCircle className="h-4 w-4 animate-spin" />
                         Entrando...
@@ -649,8 +640,6 @@ function LoginPage() {
               )}
               </div>
             </div>
-
-            <AuthSuccessTransition open={loginSuccess} />
             
           </div>
         </section>
