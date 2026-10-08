@@ -1362,6 +1362,10 @@
 }
 
 @media (min-width: 1024px) {
+  .vellune-editor-experimental .vellune-editor-body {
+    padding-bottom: 92px;
+  }
+
   .vellune-editor-experimental .vellune-editor-experimental-sidebar {
     width: 64px !important;
     grid-template-columns: 64px !important;
@@ -1477,6 +1481,7 @@
   }
 
   .vellune-editor-experimental .vellune-editor-body {
+    padding-bottom: 88px;
     background:
       radial-gradient(circle at 50% 10%, rgb(139 92 246 / 9%), transparent 32%),
       #0b0d12;
