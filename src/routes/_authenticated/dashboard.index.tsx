@@ -6,6 +6,7 @@ import { fetchReport, recentResponses, totals, upcoming } from "@/lib/reports";
 import { CompanyDashboardEnhancements } from "@/components/phase7-ui";
 import { ExperimentalCompanyDashboard } from "@/components/experimental-company-dashboard";
 import { CommercialOnboarding } from "@/components/commercial-onboarding";
+import { SubscriptionStatusBanner } from "@/components/subscription-ui";
 
 export const Route = createFileRoute("/_authenticated/dashboard/")({
   component: CompanyDashboard,
@@ -23,7 +24,9 @@ function CompanyDashboard() {
   if (experimentalLayout) {
     return (
       <>
-        <CommercialOnboarding userId={appUser!.id} userName={appUser!.name} />
+        <SubscriptionStatusBanner companyId={appUser!.company!.id} />
+        <SubscriptionStatusBanner companyId={appUser!.company!.id} />
+      <CommercialOnboarding userId={appUser!.id} userName={appUser!.name} />
         <ExperimentalCompanyDashboard
         appUser={appUser!}
         reportRows={rows}

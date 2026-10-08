@@ -52,6 +52,31 @@ export type SubscriptionOverview = {
   usage: SubscriptionUsage;
 };
 
+export type SubscriptionLifecycle = {
+  state: "missing" | "active" | "expiring" | "expired" | "suspended" | "cancelled";
+  daysRemaining: number | null;
+};
+
+export type CompanySubscriptionHistoryItem = {
+  id: string;
+  company_id: string;
+  subscription_id: string;
+  action: string;
+  from_status: string | null;
+  to_status: string | null;
+  from_plan_id: string | null;
+  to_plan_id: string | null;
+  from_expires_at: string | null;
+  to_expires_at: string | null;
+  notes: string | null;
+  changed_by: string | null;
+  created_at: string;
+  company?: { id: string; name: string } | null;
+  from_plan?: SubscriptionPlan | null;
+  to_plan?: SubscriptionPlan | null;
+  changed_by_user?: { id: string; name: string } | null;
+};
+
 export const plansKey = ["subscriptions", "plans"] as const;
 export const subscriptionKey = (companyId: string) => ["subscriptions", companyId] as const;
 
@@ -152,15 +177,41 @@ async function count(table: string, companyId: string, column = "id") {
 }
 
 export async function getSubscriptionUsage(companyId: string): Promise<SubscriptionUsage> {
-  const [invitations, customers, guests, filesResult] = await Promise.all([
-    count("invitations", companyId),
-    count("customers", companyId),
-    count("invitation_guests", companyId),
+  const [{ count: invitations, error: invitationsError }, { count: customers, error: customersError }, { count: guests, error: guestsError }, filesResult] = await Promise.all([
+    supabase
+      .from("invitations")
+      .select("id", { count: "exact", head: true })
+      .eq("company_id", companyId)
+      .neq("status", "deleted")
+      .is("deleted_at", null),
+    supabase
+      .from("customers")
+      .select("id", { count: "exact", head: true })
+      .eq("company_id", companyId)
+      .eq("status", "active")
+      .is("deleted_at", null),
+    supabase
+      .from("invitation_guests")
+      .select("id", { count: "exact", head: true })
+      .eq("company_id", companyId)
+      .eq("status", "active")
+      .is("deleted_at", null),
     supabase.from("files").select("size").eq("company_id", companyId),
   ]);
+
+  if (invitationsError) throw invitationsError;
+  if (customersError) throw customersError;
+  if (guestsError) throw guestsError;
   if (filesResult.error) throw filesResult.error;
+
   const sizes = (filesResult.data ?? []) as { size: number }[];
-  return { invitations, customers, guests, files: sizes.length, storageBytes: sizes.reduce((sum, file) => sum + Number(file.size || 0), 0) };
+  return {
+    invitations: invitations ?? 0,
+    customers: customers ?? 0,
+    guests: guests ?? 0,
+    files: sizes.length,
+    storageBytes: sizes.reduce((sum, file) => sum + Number(file.size || 0), 0),
+  };
 }
 
 export async function getSubscriptionOverview(companyId: string): Promise<SubscriptionOverview> {
@@ -208,3 +259,80 @@ export function limitReached(value: number, limit: number | null | undefined) {
 
 export const formatStorage = (bytes: number) => bytes < 1024 * 1024 ? `${Math.round(bytes / 1024)} KB` : `${(bytes / 1024 / 1024).toFixed(1)} MB`;
 export const formatMoney = (value: number) => value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+
+
+export function getSubscriptionLifecycle(overview: SubscriptionOverview): SubscriptionLifecycle {
+  if (!overview.subscription || !overview.plan) return { state: "missing", daysRemaining: null };
+
+  const status = overview.subscription.status;
+  if (status === "cancelled") return { state: "cancelled", daysRemaining: null };
+  if (status === "suspended") return { state: "suspended", daysRemaining: null };
+
+  if (!overview.subscription.expires_at) return { state: "active", daysRemaining: null };
+
+  const diff = new Date(overview.subscription.expires_at).getTime() - Date.now();
+  const daysRemaining = Math.ceil(diff / 86_400_000);
+  if (daysRemaining <= 0) return { state: "expired", daysRemaining: 0 };
+  if (daysRemaining <= 7) return { state: "expiring", daysRemaining };
+  return { state: "active", daysRemaining };
+}
+
+export async function listCompanySubscriptionHistory(
+  limit = 100,
+  subscriptionId?: string,
+): Promise<CompanySubscriptionHistoryItem[]> {
+  let historyQuery = supabase
+    .from("company_subscription_history")
+    .select("*")
+    .order("created_at", { ascending: false })
+    .limit(limit);
+
+  if (subscriptionId) historyQuery = historyQuery.eq("subscription_id", subscriptionId);
+
+  const { data, error } = await historyQuery;
+  if (error) throw error;
+
+  const rows = (data ?? []) as CompanySubscriptionHistoryItem[];
+  if (rows.length === 0) return [];
+
+  const companyIds = [...new Set(rows.map((row) => row.company_id))];
+  const planIds = [...new Set(rows.flatMap((row) => [row.from_plan_id, row.to_plan_id]).filter(Boolean))] as string[];
+  const userIds = [...new Set(rows.map((row) => row.changed_by).filter(Boolean))] as string[];
+
+  const [{ data: companies, error: companiesError }, { data: plans, error: plansError }, { data: users, error: usersError }] = await Promise.all([
+    supabase.from("companies").select("id, name").in("id", companyIds),
+    planIds.length ? supabase.from("subscription_plans").select("*").in("id", planIds) : Promise.resolve({ data: [], error: null }),
+    userIds.length ? supabase.from("users").select("id, name").in("id", userIds) : Promise.resolve({ data: [], error: null }),
+  ]);
+
+  if (companiesError) throw companiesError;
+  if (plansError) throw plansError;
+  if (usersError) throw usersError;
+
+  const companyRows = (companies ?? []) as { id: string; name: string }[];
+  const planRows = (plans ?? []) as SubscriptionPlan[];
+  const userRows = (users ?? []) as { id: string; name: string }[];
+  const companyMap = new Map<string, { id: string; name: string }>(companyRows.map((company) => [company.id, company]));
+  const planMap = new Map<string, SubscriptionPlan>(planRows.map((plan) => [plan.id, plan]));
+  const userMap = new Map<string, { id: string; name: string }>(userRows.map((user) => [user.id, user]));
+
+  return rows.map((row) => ({
+    ...row,
+    company: companyMap.get(row.company_id) ?? null,
+    from_plan: row.from_plan_id ? planMap.get(row.from_plan_id) ?? null : null,
+    to_plan: row.to_plan_id ? planMap.get(row.to_plan_id) ?? null : null,
+    changed_by_user: row.changed_by ? userMap.get(row.changed_by) ?? null : null,
+  }));
+}
+
+export const subscriptionHistoryActionLabel: Record<string, string> = {
+  created: "Assinatura criada",
+  activated: "Assinatura ativada",
+  suspended: "Assinatura suspensa",
+  cancelled: "Assinatura cancelada",
+  plan_changed: "Plano alterado",
+  renewed: "Assinatura renovada",
+  expiration_changed: "Vencimento alterado",
+  start_changed: "Início alterado",
+  status_changed: "Status alterado",
+};

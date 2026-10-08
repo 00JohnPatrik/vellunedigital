@@ -255,6 +255,90 @@ export type Database = {
           },
         ]
       }
+      company_subscription_history: {
+        Row: {
+          action: string
+          changed_by: string | null
+          company_id: string
+          created_at: string
+          from_expires_at: string | null
+          from_plan_id: string | null
+          from_status: string | null
+          id: string
+          notes: string | null
+          subscription_id: string
+          to_expires_at: string | null
+          to_plan_id: string | null
+          to_status: string | null
+        }
+        Insert: {
+          action: string
+          changed_by?: string | null
+          company_id: string
+          created_at?: string
+          from_expires_at?: string | null
+          from_plan_id?: string | null
+          from_status?: string | null
+          id?: string
+          notes?: string | null
+          subscription_id: string
+          to_expires_at?: string | null
+          to_plan_id?: string | null
+          to_status?: string | null
+        }
+        Update: {
+          action?: string
+          changed_by?: string | null
+          company_id?: string
+          created_at?: string
+          from_expires_at?: string | null
+          from_plan_id?: string | null
+          from_status?: string | null
+          id?: string
+          notes?: string | null
+          subscription_id?: string
+          to_expires_at?: string | null
+          to_plan_id?: string | null
+          to_status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "company_subscription_history_changed_by_fkey"
+            columns: ["changed_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "company_subscription_history_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "company_subscription_history_from_plan_id_fkey"
+            columns: ["from_plan_id"]
+            isOneToOne: false
+            referencedRelation: "subscription_plans"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "company_subscription_history_subscription_id_fkey"
+            columns: ["subscription_id"]
+            isOneToOne: false
+            referencedRelation: "company_subscriptions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "company_subscription_history_to_plan_id_fkey"
+            columns: ["to_plan_id"]
+            isOneToOne: false
+            referencedRelation: "subscription_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       customers: {
         Row: {
           company_id: string

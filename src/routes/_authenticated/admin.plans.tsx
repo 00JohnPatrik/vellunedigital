@@ -24,6 +24,7 @@ type PlanForm = {
   customers_limit: string;
   guests_limit: string;
   storage_limit_mb: string;
+  premium_templates_limit: string;
   features: Record<string, unknown>;
 };
 
@@ -37,6 +38,7 @@ const empty: PlanForm = {
   customers_limit: "",
   guests_limit: "",
   storage_limit_mb: "",
+  premium_templates_limit: "",
   features: {},
 };
 
@@ -66,6 +68,7 @@ function PlansPage() {
             customers_limit: plan.customers_limit == null ? "" : String(plan.customers_limit),
             guests_limit: plan.guests_limit == null ? "" : String(plan.guests_limit),
             storage_limit_mb: plan.storage_limit_mb == null ? "" : String(plan.storage_limit_mb),
+            premium_templates_limit: plan.premium_templates_limit == null ? "" : String(plan.premium_templates_limit),
             // Preserve existing feature flags, including flags not yet surfaced by the UI.
             features: { ...(plan.features ?? {}) },
           }
@@ -93,6 +96,7 @@ function PlansPage() {
           customers_limit: form.customers_limit ? Number(form.customers_limit) : null,
           guests_limit: form.guests_limit ? Number(form.guests_limit) : null,
           storage_limit_mb: form.storage_limit_mb ? Number(form.storage_limit_mb) : null,
+          premium_templates_limit: form.premium_templates_limit ? Number(form.premium_templates_limit) : null,
           features: form.features,
         },
         editing?.id,
@@ -133,12 +137,15 @@ function PlansPage() {
                 ["customers_limit", "Limite de clientes"],
                 ["guests_limit", "Limite de convidados"],
                 ["storage_limit_mb", "Armazenamento (MB)"],
+                ["premium_templates_limit", "Modelos premium"],
               ] as [keyof Omit<PlanForm, "description" | "features">, string][]).map(([key, label]) => (
                 <div key={key} className="space-y-1.5">
                   <Label htmlFor={key}>{label}</Label>
                   <Input
                     id={key}
                     type={key === "price_monthly" || key.includes("limit") || key === "duration_days" ? "number" : "text"}
+                    min={key === "price_monthly" || key.includes("limit") || key === "duration_days" ? "0" : undefined}
+                    step={key === "price_monthly" ? "0.01" : key.includes("limit") || key === "duration_days" ? "1" : undefined}
                     value={form[key]}
                     onChange={(event) => setForm({ ...form, [key]: event.target.value })}
                     required={key === "code" || key === "name"}
