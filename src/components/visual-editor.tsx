@@ -460,6 +460,18 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHe
       setSheetDragY(0);
     }
   }, [mobileSheet]);
+
+  useEffect(() => {
+    if (!focusMode) return;
+    const onEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        setFocusMode(false);
+      }
+    };
+    window.addEventListener("keydown", onEscape);
+    return () => window.removeEventListener("keydown", onEscape);
+  }, [focusMode]);
   useEffect(() => {
     if (compact) return;
     requestAnimationFrame(fitCanvas);
@@ -1129,7 +1141,7 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHe
           {desktopHeaderRight}
         </div>
       </div>}
-      {experimentalLayout && (
+      {experimentalLayout && !focusMode && (
         <VelluneTopBar
           readOnlySearch
           onSearchActivate={() => setCommandOpen(true)}
@@ -1603,7 +1615,7 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHe
           <ContextualPropertiesPanel blocks={blocks} selectedIds={selectedIds} assets={assets as any} onChange={(update, group) => h.set(update, group)} onDuplicate={duplicateByIds} onDelete={removeByIds} />
         </aside>}
       </div>
-      {experimentalLayout && <VelluneCreativeDock
+      {experimentalLayout && !focusMode && <VelluneCreativeDock
         activeItem="projects"
         onCreate={() => { setToolCategory("Adicionar"); setMobileSheet("experimental-add"); }}
         onNavigate={(item) => {
@@ -1613,6 +1625,19 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHe
           setMobileSheet("view");
         }}
       />}
+      {experimentalLayout && focusMode && (
+        <button
+          type="button"
+          onClick={() => setFocusMode(false)}
+          className="fixed right-3 top-3 z-[190] inline-flex h-10 items-center gap-2 rounded-full border border-white/[0.10] bg-[#171B23]/90 px-3 text-[10px] font-semibold text-[#F5F7FA] shadow-[0_18px_48px_-20px_rgba(11,13,18,0.95)] backdrop-blur-xl transition hover:bg-[#171B23]"
+          aria-label="Sair do modo foco"
+          title="Sair do modo foco (Esc)"
+        >
+          <Minimize2 className="h-3.5 w-3.5 text-[#8B5CF6]" />
+          Sair do foco
+        </button>
+      )}
+
       {!experimentalLayout && (
       <div className="vellune-editor-mobile-bar shrink-0 flex items-center justify-between gap-1.5 rounded-2xl border border-primary/15 bg-card/95 p-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))] shadow-2xl shadow-black/25 backdrop-blur-xl lg:hidden" role="toolbar" aria-label="Ferramentas móveis do editor"> 
         <button type="button" className="flex flex-1 flex-col items-center gap-0.5 rounded-xl px-1 py-1.5 text-[10px] text-muted-foreground transition hover:bg-primary/10 hover:text-primary" onClick={() => setMobileSheet("layers")}><Grid3X3 className="h-4 w-4" />Organizar</button>
