@@ -1,10 +1,10 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, type CSSProperties } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Check, Eye, LayoutTemplate, Search, Sparkles, X } from "lucide-react";
 import { BlockView, BackgroundLayers } from "@/components/block-render";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { CATEGORIES, STARTERS, cloneContent, listTemplates, resolveBlockGeometry, type Category, type Template, type TemplateContent } from "@/lib/templates";
+import { CATEGORIES, STARTERS, cloneContent, listTemplates, resolveBlockGeometry, type Block, type Category, type Template, type TemplateContent } from "@/lib/templates";
 import { cn } from "@/lib/utils";
 
 type TemplateGalleryProps = {
@@ -61,6 +61,112 @@ function databaseTemplateItems(templates: Template[] | undefined): GalleryItem[]
     }));
 }
 
+function galleryFont(font?: string) {
+  return font === "display" ? "Georgia, 'Times New Roman', serif" : "Inter, ui-sans-serif, system-ui, sans-serif";
+}
+
+function GalleryBlockPreview({ block, geometry }: { block: Block; geometry: ReturnType<typeof resolveBlockGeometry> }) {
+  const p = block.props ?? {};
+  const base: CSSProperties = {
+    position: "absolute",
+    left: geometry.x,
+    top: geometry.y,
+    width: geometry.width,
+    height: geometry.height,
+    zIndex: geometry.zIndex,
+    opacity: geometry.opacity,
+    transform: `rotate(${geometry.rotation}deg) scale(${geometry.scale})`,
+    transformOrigin: "center",
+    overflow: "hidden",
+  };
+
+  if (block.type === "image") {
+    return (
+      <div style={base} className="rounded-xl bg-muted">
+        {p.url ? (
+          <img src={p.url} alt="" className="h-full w-full object-cover" loading="lazy" />
+        ) : (
+          <div className="flex h-full items-center justify-center text-[10px] text-muted-foreground">Imagem</div>
+        )}
+      </div>
+    );
+  }
+
+  if (block.type === "gallery") {
+    let images: Array<{ url?: string; alt?: string }> = [];
+    try { images = JSON.parse(p.images || "[]"); } catch { images = []; }
+    const columns = Math.max(1, Math.min(4, Number(p.columns) || 2));
+    return (
+      <div style={{ ...base, display: "grid", gridTemplateColumns: `repeat(${columns}, minmax(0,1fr))`, gap: 4 }} className="rounded-xl bg-muted p-1">
+        {images.slice(0, 4).map((item, index) => item.url ? (
+          <img key={index} src={item.url} alt="" className="h-full min-h-0 w-full rounded-lg object-cover" loading="lazy" />
+        ) : (
+          <div key={index} className="rounded-lg bg-muted-foreground/10" />
+        ))}
+      </div>
+    );
+  }
+
+  if (block.type === "text") {
+    return (
+      <div
+        style={{
+          ...base,
+          display: "flex", alignItems: "center",
+          justifyContent: p.align === "left" ? "flex-start" : p.align === "right" ? "flex-end" : "center",
+          padding: "4px 8px", textAlign: p.align || "center",
+          fontFamily: galleryFont(p.font),
+          fontSize: `${Math.max(9, Math.min(48, Number(p.fontSize) || 16))}px`,
+          fontWeight: p.fontWeight || (p.bold === "1" ? 700 : 500),
+          lineHeight: Number(p.lineHeight) || 1.15,
+          letterSpacing: `${Number(p.letterSpacing) || 0}px`,
+          color: p.color || "currentColor",
+          textTransform: p.textTransform as CSSProperties["textTransform"] || undefined,
+        }}
+      >
+        {p.text || "Seu texto aqui"}
+      </div>
+    );
+  }
+
+  const accent = p.backgroundColor || p.borderColor || "#a78bfa";
+  const color = p.textColor || p.color || "currentColor";
+  const labels: Record<string, string> = {
+    date: "DATA • evento", time: "HORÁRIO • evento", location: "LOCAL • evento",
+    countdown: "FALTAM • contagem", rsvp: p.label || "CONFIRMAR PRESENÇA",
+    whatsapp: p.label || "WHATSAPP", button: p.label || "BOTÃO",
+  };
+
+  if (block.type === "divider") {
+    return <div style={{ ...base, display: "flex", alignItems: "center", padding: "0 12px" }}><div className="w-full border-t border-current opacity-40" /></div>;
+  }
+  if (block.type === "shape" || block.type === "decoration") {
+    const shape = p.shape || "rectangle";
+    return (
+      <div style={{
+        ...base,
+        background: p.fill === "none" ? "transparent" : (p.fillColor || accent),
+        border: `${Math.max(0, Number(p.borderWidth) || 0)}px solid ${p.borderColor || accent}`,
+        borderRadius: shape === "circle" ? "999px" : `${Number(p.borderRadius) || 12}px`,
+      }} />
+    );
+  }
+  if (block.type === "qr_code") {
+    return <div style={{ ...base, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 4, padding: 8 }}><div className="aspect-square w-2/3 rounded-md border-4 border-foreground bg-background" /><span className="text-[8px] text-muted-foreground">QR Code</span></div>;
+  }
+
+  return (
+    <div style={{ ...base, display: "flex", alignItems: "center", justifyContent: "center", padding: 6 }}>
+      <span
+        className="rounded-full border px-3 py-2 text-[9px] font-semibold shadow-sm"
+        style={{ color, borderColor: p.borderColor || accent, background: p.backgroundColor || "rgba(255,255,255,.62)" }}
+      >
+        {labels[block.type] || "Elemento"}
+      </span>
+    </div>
+  );
+}
+
 function PreviewCanvas({ content }: { content: TemplateContent }) {
   const blocks = content.blocks ?? [];
   const background = content.settings?.background;
@@ -70,48 +176,18 @@ function PreviewCanvas({ content }: { content: TemplateContent }) {
   const scale = 240 / canvasWidth;
 
   return (
-    <div
-      className="relative mx-auto w-full max-w-[240px] overflow-hidden rounded-xl border border-border/70 bg-card shadow-inner"
-      style={{ minHeight: Math.max(180, height * scale) }}
-    >
-      <div
-        className="absolute inset-0 origin-top-left"
-        style={{ width: canvasWidth, minHeight: height, transform: `scale(${scale})` }}
-      >
+    <div className="relative mx-auto w-full max-w-[240px] overflow-hidden rounded-xl border border-border/70 bg-card shadow-inner" style={{ minHeight: Math.max(180, height * scale) }}>
+      <div className="absolute inset-0 origin-top-left" style={{ width: canvasWidth, minHeight: height, transform: `scale(${scale})` }}>
         <div className="relative isolate h-full w-[390px] overflow-hidden bg-card" style={{ minHeight: height }}>
           <BackgroundLayers bg={background} />
           {blocks.length === 0 ? (
-            <div className="absolute inset-0 flex items-center justify-center p-6 text-center text-sm text-muted-foreground">
-              Canvas em branco
-            </div>
+            <div className="absolute inset-0 flex items-center justify-center p-6 text-center text-sm text-muted-foreground">Canvas em branco</div>
           ) : (
-            blocks.map((block, index) => {
-              const geometry = geometries[index] ?? resolveBlockGeometry(block, index);
-              return (
-                <div
-                  key={block.id}
-                  className="absolute"
-                  style={{
-                    left: geometry.x,
-                    top: geometry.y,
-                    width: geometry.width,
-                    height: geometry.height,
-                    zIndex: geometry.zIndex,
-                    opacity: geometry.opacity,
-                    transform: `rotate(${geometry.rotation}deg) scale(${geometry.scale})`,
-                    transformOrigin: "center",
-                  }}
-                >
-                  <BlockView block={block} interactive={false} />
-                </div>
-              );
-            })
+            blocks.map((block, index) => <GalleryBlockPreview key={block.id} block={block} geometry={geometries[index] ?? resolveBlockGeometry(block, index)} />)
           )}
         </div>
       </div>
-      <span className="pointer-events-none absolute right-2 top-2 rounded-full border border-white/20 bg-black/35 px-2 py-1 text-[8px] font-medium uppercase tracking-wide text-white/80 backdrop-blur-sm">
-        Prévia
-      </span>
+      <span className="pointer-events-none absolute right-2 top-2 rounded-full border border-white/20 bg-black/35 px-2 py-1 text-[8px] font-medium uppercase tracking-wide text-white/80 backdrop-blur-sm">Prévia</span>
     </div>
   );
 }
