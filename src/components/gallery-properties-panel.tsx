@@ -60,7 +60,7 @@ function GalleryThumb({ image, index, total, onRemove, onMove }: { image: Galler
 export function GalleryPropertiesPanel({ selected, assets, onChange }: GalleryPanelProps) {
   const primary = selected[0];
   const images = useMemo(() => parseImages(primary?.props?.images), [primary?.id, primary?.props?.images]);
-  if (!primary || primary.type !== "gallery") return null;
+  if (!primary || selected.length !== 1 || primary.type !== "gallery") return null;
 
   const updateProps = (patch: Record<string, string>, group = "gallery:props") => {
     onChange((items) => items.map((item) =>
