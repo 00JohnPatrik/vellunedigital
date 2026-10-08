@@ -88,7 +88,7 @@ function SupportPage() {
                       href={supportUrl}
                       target="_blank"
                       rel="noreferrer"
-                      aria-label="Abrir o WhatsApp da Vellune Digital"
+                      aria-label="Abrir o WhatsApp da Vellune Digital" title="Abrir WhatsApp"
                       className="vellune-auth-cta mt-4 inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#d4af37] px-5 text-sm font-semibold text-[#16130b] shadow-[0_12px_34px_rgba(212,175,55,0.10)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#e5c66b] hover:shadow-[0_16px_38px_rgba(212,175,55,0.16)]"
                     >
                       Falar pelo WhatsApp
