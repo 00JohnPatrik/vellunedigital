@@ -284,10 +284,23 @@ export function VisualTransformCanvas({ blocks, selectedIds: selectedIdsProp, zo
   const selectedBounds = useMemo(() => boundsOf(blocks, selectedIds), [blocks, selectedIds]);
   const selected = blocks.filter((block: any) => selectedIds.includes(block.id));
 
-  const canvasSize = () => ({
-    width: canvasRef.current?.clientWidth || 768,
-    height: canvasRef.current?.clientHeight || 640,
-  });
+  const canvasSize = () => {
+    const currentWidth = canvasRef.current?.clientWidth || 768;
+    const currentHeight = canvasRef.current?.clientHeight || 640;
+    const contentBottom = blocks.reduce((maxBottom, block, index) => {
+      const bounds = rotatedBounds(geometry(block, index));
+      return Math.max(maxBottom, bounds.bottom + SAFE_MARGIN);
+    }, 640);
+
+    // The invitation is a free-flowing vertical canvas. Keep a generous
+    // workspace below the current content so dragging/resizing can extend
+    // the composition; the parent recomputes canvasHeight as soon as state
+    // changes, making the workspace grow with the element being moved.
+    return {
+      width: currentWidth,
+      height: Math.max(currentHeight, contentBottom + 320),
+    };
+  };
 
   const toolbarPosition = selectedBounds ? (() => {
     const size = canvasSize();
