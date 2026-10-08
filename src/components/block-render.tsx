@@ -239,8 +239,8 @@ function BlockContent({ block, ctx, interactive = false }: { block: Block; ctx?:
       );
     }
     case "divider": {
-      const style: CSSProperties = { borderTopWidth: `${Number(p["thickness"]) || 1}px`, borderTopStyle: (p["style"] as CSSProperties["borderTopStyle"]) || "solid" };
-      return <Row align={p["align"]}><hr style={style} className={cn("border-0 border-border", p["width"] === "auto" ? "w-1/3" : WIDTH[p["width"] ?? "full"])} /></Row>;
+      const style: CSSProperties = { borderTopWidth: `${Number(p["thickness"]) || 1}px`, borderTopStyle: (p["style"] as CSSProperties["borderTopStyle"]) || "solid", borderTopColor: p["borderColor"] || p["color"] || "currentColor" };
+      return <Row align={p["align"]}><hr style={style} className={cn("border-x-0 border-b-0", p["width"] === "auto" ? "w-1/3" : WIDTH[p["width"] ?? "full"])} /></Row>;
     }
   }
 }
