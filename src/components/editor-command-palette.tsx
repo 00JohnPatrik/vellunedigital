@@ -126,12 +126,10 @@ export function EditorCommandPalette({
               {filtered.map((item, index) => {
                 const Icon = item.Icon;
                 const selected = index === active;
-                const disabled = item.type === "rsvp" && selectedCount > 0 && false;
                 return (
                   <button
                     key={item.id}
                     type="button"
-                    disabled={disabled}
                     onMouseEnter={() => setActive(index)}
                     onClick={() => {
                       if (item.kind === "template") onOpenTemplates();
