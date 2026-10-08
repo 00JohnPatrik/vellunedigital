@@ -601,7 +601,7 @@ function LoginPage() {
                   <div className="space-y-1.5 sm:space-y-2.5">
                     <p className="flex items-center justify-center gap-2 text-center text-[10px] uppercase tracking-[0.16em] text-white/25">
                       <ShieldCheck className="h-3.5 w-3.5 text-[#d4af37]/60" />
-                      Vellune Secure · Ambiente protegido
+                      Acesso protegido
                     </p>
                     <p className="text-center text-[11px] leading-5 text-white/35 sm:text-xs">Primeira vez aqui? <Link to="/first-access" className="font-semibold text-white/65 transition-colors hover:text-[#e5c66b]">Faça seu primeiro acesso</Link></p>
                   </div>
@@ -612,7 +612,7 @@ function LoginPage() {
             </div>
 
             <AuthSuccessTransition open={loginSuccess} />
-            <p className="mt-2 shrink-0 text-center text-[9px] font-medium uppercase tracking-[0.24em] text-white/20">Vellune Digital · v2.0</p>
+            
           </div>
         </section>
       </div>
