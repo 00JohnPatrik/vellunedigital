@@ -362,17 +362,18 @@
     overscroll-behavior-y: contain;
   }
 
-  @media (max-height: 730px) {
-    .vellune-login-root .vellune-auth-mobile-logo,
-    .vellune-auth-root .vellune-auth-mobile-logo {
-      margin-bottom: 0.5rem;
-    }
+}
 
-    .vellune-login-root .vellune-auth-card,
-    .vellune-auth-root .vellune-auth-card {
-      padding-top: 0.9rem !important;
-      padding-bottom: 0.9rem !important;
-    }
+@media (max-width: 639px) and (max-height: 730px) {
+  .vellune-login-root .vellune-auth-mobile-logo,
+  .vellune-auth-root .vellune-auth-mobile-logo {
+    margin-bottom: 0.5rem;
+  }
+
+  .vellune-login-root .vellune-auth-card,
+  .vellune-auth-root .vellune-auth-card {
+    padding-top: 0.9rem !important;
+    padding-bottom: 0.9rem !important;
   }
 }
 
