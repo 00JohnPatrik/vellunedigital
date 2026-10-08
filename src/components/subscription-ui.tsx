@@ -37,13 +37,14 @@ export function SubscriptionUsageAlert({ companyId, className = "" }: { companyI
   if (query.isLoading || query.isError || !query.data?.plan || !query.data.subscription) return null;
   const data = query.data;
   const subscription = data.subscription;
+  const plan = data.plan;
   if (subscription.status !== "active" || (subscription.expires_at && new Date(subscription.expires_at) < new Date())) return null;
 
   const usage = [
-    { label: "Convites", value: data.usage.invitations, limit: data.plan.invitations_limit },
-    { label: "Clientes", value: data.usage.customers, limit: data.plan.customers_limit },
-    { label: "Convidados", value: data.usage.guests, limit: data.plan.guests_limit },
-    { label: "Armazenamento", value: data.usage.storageBytes / 1024 / 1024, limit: data.plan.storage_limit_mb },
+    { label: "Convites", value: data.usage.invitations, limit: plan.invitations_limit },
+    { label: "Clientes", value: data.usage.customers, limit: plan.customers_limit },
+    { label: "Convidados", value: data.usage.guests, limit: plan.guests_limit },
+    { label: "Armazenamento", value: data.usage.storageBytes / 1024 / 1024, limit: plan.storage_limit_mb },
   ].filter((item) => item.limit != null);
 
   const relevant = usage.map((item) => ({
@@ -55,6 +56,7 @@ export function SubscriptionUsageAlert({ companyId, className = "" }: { companyI
   if (warning.length === 0) return null;
 
   const highest = critical[0] ?? warning[0];
+  if (!highest) return null;
   const severity = highest.percent >= 100 ? "critical" : "warning";
   const formatValue = (item: typeof highest) =>
     item.label === "Armazenamento"
