@@ -3,7 +3,7 @@ import { BarChart3, Building2, Contact, CreditCard, FileText, LayoutDashboard, L
 export type NavItem = { slug: string; label: string; icon: LucideIcon; to?: string };
 
 export const adminNav: NavItem[] = [
-  { slug: "", label: "Dashboard", icon: LayoutDashboard, to: "/dashboard" },
+  { slug: "", label: "Dashboard", icon: LayoutDashboard },
   { slug: "companies", label: "Empresas", icon: Building2 },
   { slug: "users", label: "Usuários", icon: Users },
   { slug: "plans", label: "Planos", icon: CreditCard },
@@ -16,7 +16,7 @@ export const adminNav: NavItem[] = [
 ];
 
 export const companyNav: NavItem[] = [
-  { slug: "", label: "Dashboard", icon: LayoutDashboard },
+  { slug: "", label: "Dashboard", icon: LayoutDashboard, to: "/dashboard" },
   { slug: "convites", label: "Convites", icon: Mail, to: "/invitations" },
   { slug: "customers", label: "Clientes", icon: Users, to: "/customers" },
   { slug: "templates", label: "Modelos", icon: FileText, to: "/templates" },
