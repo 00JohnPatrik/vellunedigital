@@ -357,7 +357,7 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHe
       ? new ResizeObserver(syncCanvasToViewport)
       : null;
 
-    observer?.observe(viewport);
+    if (observer && viewport) observer.observe(viewport);
     window.addEventListener("resize", syncCanvasToViewport);
 
     return () => {
