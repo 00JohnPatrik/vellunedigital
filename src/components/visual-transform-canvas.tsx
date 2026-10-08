@@ -757,7 +757,7 @@ export function VisualTransformCanvas({ blocks, selectedIds: selectedIdsProp, zo
       onPointerUp={endMarquee}
       onPointerCancel={() => setMarquee(null)}
       onDoubleClick={(event) => {
-        if (event.pointerType === "touch" || event.button !== 0 || !onAddBlock) return;
+        if (event.button !== 0 || !onAddBlock || window.matchMedia("(pointer: coarse)").matches) return;
         event.preventDefault();
         event.stopPropagation();
         const point = pointerPoint(event, canvasRef.current, zoom);
