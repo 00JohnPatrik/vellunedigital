@@ -2,7 +2,7 @@ import { buildContent, type Background } from "@/lib/templates";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { AlertCircle, ArrowLeft, Check, Eye, Loader2, MoreHorizontal, QrCode, Send, Settings2, Share2, SlidersHorizontal, UserCheck, Users } from "lucide-react";
+import { AlertCircle, ArrowLeft, Check, Eye, Loader2, MoreHorizontal, QrCode, Save, Send, Settings2, Share2, SlidersHorizontal, UserCheck, Users } from "lucide-react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { ShareDialog } from "@/components/share-dialog";
 import { RsvpPanel } from "@/components/rsvp-panel";
@@ -206,6 +206,52 @@ function EditorForm({ inv, experimentalLayout = false }: { inv: Invitation; expe
     </div>
   );
 
+  const experimentalMobileActions = (
+    <>
+      <button
+        type="button"
+        onClick={openEditorPreview}
+        className="inline-flex h-8 w-8 items-center justify-center rounded-full text-[#A9B1BF] transition hover:bg-[#171B23] hover:text-[#F5F7FA]"
+        aria-label="Visualizar convite"
+        title="Visualizar"
+      >
+        <Eye className="h-4 w-4" />
+      </button>
+      <button
+        type="button"
+        onClick={() => void save(true)}
+        disabled={state === "saving"}
+        className="inline-flex h-8 w-8 items-center justify-center rounded-full text-[#A9B1BF] transition hover:bg-[#171B23] hover:text-[#F5F7FA] disabled:opacity-40"
+        aria-label="Salvar convite"
+        title="Salvar"
+      >
+        {state === "saving" ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+      </button>
+      {isPublic ? (
+        <button
+          type="button"
+          onClick={() => setShareOpen(true)}
+          className="hidden h-8 w-8 items-center justify-center rounded-full text-[#A9B1BF] transition hover:bg-[#171B23] hover:text-[#F5F7FA] sm:inline-flex"
+          aria-label="Compartilhar convite"
+          title="Compartilhar"
+        >
+          <Share2 className="h-4 w-4" />
+        </button>
+      ) : (
+        <button
+          type="button"
+          onClick={() => void publish()}
+          disabled={publishing}
+          className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-[#8B5CF6] text-[#F5F7FA] shadow-[0_8px_22px_-10px_rgba(139,92,246,0.8)] transition hover:bg-[#9D74F8] disabled:opacity-40"
+          aria-label="Publicar convite"
+          title="Publicar"
+        >
+          {publishing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+        </button>
+      )}
+    </>
+  );
+
   const desktopHeaderRight = (
     <>
       <Button type="button" size="sm" variant="ghost" className="h-9 text-white/65 hover:bg-white/[0.06] hover:text-white" onClick={() => setEventOpen(true)}>
@@ -252,21 +298,12 @@ function EditorForm({ inv, experimentalLayout = false }: { inv: Invitation; expe
         toolbarExtra={toolbar}
         desktopHeaderLeft={desktopHeaderLeft}
         desktopHeaderRight={desktopHeaderRight}
+        experimentalMobileActions={experimentalMobileActions}
         fullHeight
         experimentalLayout={experimentalLayout}
       />
 
-      {experimentalLayout && (
-        <div className="vellune-experimental-build-badge pointer-events-none fixed inset-x-0 top-2 z-[300] flex justify-center px-3">
-          <div className="pointer-events-auto flex items-center gap-2 rounded-full border border-white/10 bg-[#11141B]/85 px-3 py-1.5 text-[10px] font-medium text-white/70 shadow-2xl backdrop-blur-xl">
-            <span className="h-1.5 w-1.5 rounded-full bg-[#8B5CF6] shadow-[0_0_12px_rgba(139,92,246,0.8)]" />
-            Layout experimental · Mobile-first
-            <Link to="/invitations/$id/editor" params={{ id: inv.id }} className="rounded-full border border-white/10 bg-white/[0.06] px-2 py-1 text-white hover:bg-white/[0.12]">
-              Voltar ao editor atual
-            </Link>
-          </div>
-        </div>
-      )}
+
 
       <ShareDialog slug={inv.slug} open={shareOpen} onOpenChange={setShareOpen} />
       <RsvpPanel invitationId={inv.id} open={rsvpOpen} onOpenChange={setRsvpOpen} />
