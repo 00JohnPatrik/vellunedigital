@@ -8,6 +8,7 @@ import { ElementsLibrary } from "@/components/elements-library";
 import { EditorCommandPalette } from "@/components/editor-command-palette";
 import { TemplateGallery } from "@/components/template-gallery";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 import { CalendarDays, CheckCircle2, Eye, EyeOff, Grid3X3, Minus, Plus, Redo2, Undo2, PanelLeft, PanelRight, Sparkles, Smartphone, Tablet, Monitor, BringToFront, SendToBack, Trash2, X, Pencil, RotateCcw, RotateCw, Lock, Unlock, AlignCenterHorizontal, AlignCenterVertical, Link2, Unlink2, MapPin, Type, Image as ImageIcon, Palette, MoreHorizontal, Maximize2, Minimize2, Search, LayoutGrid } from "lucide-react";
 
 function useIsCompact() {
@@ -368,7 +369,7 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHe
   };
   const addBlockByType = (type: BlockType, initialProps?: Record<string, string>, dropPoint?: { x: number; y: number }) => {
     if (type === "rsvp" && blocks.some((block: any) => block.type === "rsvp")) {
-      window.alert(RSVP_DUP);
+      toast.error(RSVP_DUP);
       return;
     }
     const block = newBlock(type);
@@ -383,9 +384,11 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHe
       block.x = Math.round(Math.max(24, Math.min(dropPoint.x - size.width / 2, canvasWidth - size.width - 24)));
       block.y = Math.round(Math.max(24, Math.min(dropPoint.y - size.height / 2, canvasHeight - size.height - 24)));
     } else {
-      const safeMaxY = Math.max(24, canvasHeight - size.height - 24);
+      // The free canvas grows with its content, so adding a block should continue
+      // below the current last block instead of clamping to the current height.
+      // Clamping here could place a new element on top of existing content.
       block.x = Math.round(Math.max(24, Math.min((canvasWidth - size.width) / 2, canvasWidth - size.width - 24)));
-      block.y = Math.round(Math.min(Math.max(24, lastY + 24), safeMaxY));
+      block.y = Math.round(Math.max(24, lastY + 24));
     }
     block.width = size.width;
     block.height = size.height;
