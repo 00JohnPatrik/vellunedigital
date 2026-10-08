@@ -66,11 +66,19 @@ function PreviewCanvas({ content }: { content: TemplateContent }) {
   const background = content.settings?.background;
   const geometries = blocks.map((block, index) => resolveBlockGeometry(block, index));
   const height = Math.max(420, ...geometries.map((geometry) => geometry.y + geometry.height + 24));
+  const canvasWidth = 390;
+  const scale = 240 / canvasWidth;
 
   return (
-    <div className="relative mx-auto w-full max-w-[240px] overflow-hidden rounded-xl border border-border/70 bg-card shadow-inner" style={{ minHeight: height / 2.6 }}>
-      <div className="absolute inset-0 origin-top-left" style={{ width: 260, minHeight: height, transform: "scale(0.385)" }}>
-        <div className="relative isolate h-full w-[260px] overflow-hidden bg-card" style={{ minHeight: height }}>
+    <div
+      className="relative mx-auto w-full max-w-[240px] overflow-hidden rounded-xl border border-border/70 bg-card shadow-inner"
+      style={{ minHeight: Math.max(180, height * scale) }}
+    >
+      <div
+        className="absolute inset-0 origin-top-left"
+        style={{ width: canvasWidth, minHeight: height, transform: `scale(${scale})` }}
+      >
+        <div className="relative isolate h-full w-[390px] overflow-hidden bg-card" style={{ minHeight: height }}>
           <BackgroundLayers bg={background} />
           {blocks.length === 0 ? (
             <div className="absolute inset-0 flex items-center justify-center p-6 text-center text-sm text-muted-foreground">
@@ -101,6 +109,9 @@ function PreviewCanvas({ content }: { content: TemplateContent }) {
           )}
         </div>
       </div>
+      <span className="pointer-events-none absolute right-2 top-2 rounded-full border border-white/20 bg-black/35 px-2 py-1 text-[8px] font-medium uppercase tracking-wide text-white/80 backdrop-blur-sm">
+        Prévia
+      </span>
     </div>
   );
 }
@@ -195,6 +206,12 @@ export function TemplateGallery({ open, onClose, onApply, hasContent }: Template
               </div>
             </div>
 
+            {templatesQuery.error && (
+              <div className="mb-3 rounded-xl border border-amber-500/20 bg-amber-500/5 px-3 py-2 text-[11px] leading-5 text-muted-foreground">
+                Seus modelos cadastrados não puderam ser carregados agora. Os modelos Vellune prontos continuam disponíveis.
+              </div>
+            )}
+
             {filtered.length > 0 ? (
               <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
                 {filtered.map((item) => (
@@ -215,7 +232,12 @@ export function TemplateGallery({ open, onClose, onApply, hasContent }: Template
                 ))}
               </div>
             ) : (
-              <div className="flex min-h-48 items-center justify-center rounded-xl border border-dashed text-sm text-muted-foreground">Nenhum modelo encontrado.</div>
+              <div className="flex min-h-48 items-center justify-center rounded-xl border border-dashed text-center text-sm text-muted-foreground">
+                <div>
+                  <p>Nenhum modelo encontrado.</p>
+                  {search.trim() && <p className="mt-1 text-xs">Tente outro termo ou escolha “Todos”.</p>}
+                </div>
+              </div>
             )}
           </main>
 
