@@ -118,7 +118,7 @@ function boundsOf(blocks: any[], selectedIds: string[]): Bounds | null {
   return { left, top, right, bottom, width: right - left, height: bottom - top };
 }
 
-function pointerPoint(event: PointerEvent | React.PointerEvent, canvas: HTMLDivElement | null, zoom: number): Point {
+function pointerPoint(event: MouseEvent | PointerEvent | React.MouseEvent | React.PointerEvent, canvas: HTMLDivElement | null, zoom: number): Point {
   const rect = canvas?.getBoundingClientRect();
   if (!rect) return { x: 0, y: 0 };
   const scale = Math.max(0.01, zoom / 100);
