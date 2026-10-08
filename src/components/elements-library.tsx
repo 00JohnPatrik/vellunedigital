@@ -32,6 +32,7 @@ type ElementsLibraryProps = {
   onSelectImage?: (value: string) => void;
   onCancelImageReplace?: () => void;
   onAddComposition?: (kind: CompositionKind) => void;
+  initialCategory?: LibraryCategory;
   id?: string;
 };
 
@@ -108,15 +109,19 @@ function typeLabel(type: BlockType) {
   return BLOCKS[type]?.label || type;
 }
 
-export function ElementsLibrary({ availableTypes, onAdd, assets, onAddImage, imageMode = "add", onSelectImage, onCancelImageReplace, onAddComposition, id }: ElementsLibraryProps) {
+export function ElementsLibrary({ availableTypes, onAdd, assets, onAddImage, imageMode = "add", onSelectImage, onCancelImageReplace, onAddComposition, initialCategory = "Todos", id }: ElementsLibraryProps) {
   const [search, setSearch] = useState("");
-  const [category, setCategory] = useState<LibraryCategory>("Todos");
+  const [category, setCategory] = useState<LibraryCategory>(initialCategory);
   const [recents, setRecents] = useState<string[]>([]);
   const [uploadedImage, setUploadedImage] = useState("");
 
   useEffect(() => {
     setRecents(readRecents());
   }, []);
+
+  useEffect(() => {
+    setCategory(initialCategory);
+  }, [initialCategory]);
 
   useEffect(() => {
     if (imageMode === "replace") {
