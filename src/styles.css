@@ -888,7 +888,7 @@
     var(--color-background);
 }
 
-.dark .vellune-platform-root {
+.vellune-platform-root.dark {
   --vellune-platform-line: color-mix(in oklch, oklch(1 0 0) 8%, transparent);
   --vellune-platform-line-strong: color-mix(in oklch, var(--color-primary) 28%, transparent);
   --vellune-platform-surface: oklch(0.165 0.026 254);
