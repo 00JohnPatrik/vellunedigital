@@ -170,7 +170,9 @@ export function PlanCatalog({ companyId }: { companyId: string }) {
   if (plansQuery.isLoading) return <Card><CardContent className="py-8 text-center text-sm text-muted-foreground">Carregando planos disponíveis…</CardContent></Card>;
   if (plansQuery.isError) return <Card><CardContent className="py-8 text-center text-sm text-destructive">Não foi possível carregar os planos disponíveis.</CardContent></Card>;
 
-  const currentPlanId = currentQuery.data?.plan?.id ?? null;
+  const currentOverview = currentQuery.data ?? null;
+  const currentPlanId = currentOverview?.plan?.id ?? null;
+  const lifecycle = currentOverview ? getSubscriptionLifecycle(currentOverview) : null;
   const plans = plansQuery.data ?? [];
 
   return (
@@ -181,10 +183,13 @@ export function PlanCatalog({ companyId }: { companyId: string }) {
       </div>
       <div className="grid gap-4 lg:grid-cols-3">
         {plans.map((plan) => {
-          const isCurrent = plan.id === currentPlanId;
+          const isCurrent = plan.id === currentPlanId && lifecycle?.state === "active";
+          const needsRegularization = plan.id === currentPlanId && lifecycle && lifecycle.state !== "active";
           const requestUrl = whatsappHref(
-            "Olá! Quero conhecer o plano " + plan.name + " da Vellune Digital (R$ " +
-              plan.price_monthly.toLocaleString("pt-BR", { minimumFractionDigits: 2 }) + "/mês).",
+            needsRegularization
+              ? `Olá! Quero regularizar/renovar o plano ${plan.name} da Vellune Digital.`
+              : "Olá! Quero conhecer o plano " + plan.name + " da Vellune Digital (R$ " +
+                plan.price_monthly.toLocaleString("pt-BR", { minimumFractionDigits: 2 }) + "/mês).",
           );
           return (
             <Card key={plan.id} className={isCurrent ? "border-primary/50 shadow-md" : ""}>
@@ -197,7 +202,7 @@ export function PlanCatalog({ companyId }: { companyId: string }) {
                     </CardTitle>
                     {plan.description && <p className="mt-1 text-sm text-muted-foreground">{plan.description}</p>}
                   </div>
-                  {isCurrent && <Badge>Atual</Badge>}
+                  {isCurrent ? <Badge>Atual</Badge> : needsRegularization ? <Badge variant="destructive">{lifecycle?.state === "expired" ? "Vencido" : "Regularizar"}</Badge> : null}
                 </div>
                 <div className="pt-2">
                   <span className="text-2xl font-semibold">{formatMoney(plan.price_monthly)}</span>
@@ -216,9 +221,9 @@ export function PlanCatalog({ companyId }: { companyId: string }) {
                   {plan.features?.checkin === true && <Badge variant="secondary">Check-in QR</Badge>}
                   {plan.premium_templates_limit != null && <Badge variant="secondary">{plan.premium_templates_limit} modelos premium</Badge>}
                 </div>
-                {!isCurrent && requestUrl ? (
+                {requestUrl && !isCurrent ? (
                   <Button asChild className="w-full">
-                    <a href={requestUrl} target="_blank" rel="noreferrer">Falar sobre este plano</a>
+                    <a href={requestUrl} target="_blank" rel="noreferrer">{needsRegularization ? "Regularizar pelo WhatsApp" : "Falar sobre este plano"}</a>
                   </Button>
                 ) : (
                   <Button type="button" variant="outline" className="w-full" disabled>Plano atual</Button>
