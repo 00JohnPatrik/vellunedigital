@@ -114,7 +114,7 @@ function GalleryBlockPreview({ block, geometry }: { block: Block; geometry: Retu
           ...base,
           display: "flex", alignItems: "center",
           justifyContent: p.align === "left" ? "flex-start" : p.align === "right" ? "flex-end" : "center",
-          padding: "4px 8px", textAlign: p.align || "center",
+          padding: "4px 8px", textAlign: (p.align as CSSProperties["textAlign"]) || "center",
           fontFamily: galleryFont(p.font),
           fontSize: `${Math.max(9, Math.min(48, Number(p.fontSize) || 16))}px`,
           fontWeight: p.fontWeight || (p.bold === "1" ? 700 : 500),
