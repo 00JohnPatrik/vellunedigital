@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { canUseAdminArea, loadAppUser } from "@/lib/app-user";
 import { PresenceTracker } from "@/components/presence-tracker";
 import { isDemoMode } from "@/lib/demo-mode";
+import { AuthSessionGuard } from "@/components/auth-session-guard";
 
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
@@ -22,6 +23,7 @@ export const Route = createFileRoute("/_authenticated")({
   component: () => (
     <>
       {!isDemoMode() && <PresenceTracker />}
+      {!isDemoMode() && <AuthSessionGuard />}
       <Outlet />
     </>
   ),
