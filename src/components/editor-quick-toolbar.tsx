@@ -1,4 +1,4 @@
-import { AlignCenter, AlignCenterHorizontal, AlignCenterVertical, AlignLeft, AlignRight, AlignStartVertical, AlignVerticalJustifyCenter, AlignEndVertical, Bold, BringToFront, Copy, Crop, Italic, MoreHorizontal, RotateCcw, RotateCw, SendToBack, SlidersHorizontal, Trash2, Image as ImageIcon, Lock, Unlock, Underline, Strikethrough } from "lucide-react";
+import { AlignCenter, AlignCenterHorizontal, AlignCenterVertical, AlignLeft, AlignRight, AlignStartVertical, AlignVerticalJustifyCenter, AlignEndVertical, Bold, BringToFront, Copy, Crop, Italic, MoreHorizontal, RotateCcw, RotateCw, SendToBack, SlidersHorizontal, Trash2, Image as ImageIcon, Lock, Unlock, Underline, Strikethrough, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { FONTS } from "@/lib/blocks";
@@ -6,7 +6,7 @@ import type { Block } from "@/lib/templates";
 
 export type ImageAction = "replace" | "crop" | "adjust";
 
-export function EditorQuickToolbar({ selected, onProp, onDuplicate, onDelete, onAdvanced, onImage, onLock, onLayer, onAlign, onOpacity, onRotate }: {
+export function EditorQuickToolbar({ selected, onProp, onDuplicate, onDelete, onAdvanced, onImage, onLock, onLayer, onAlign, onOpacity, onRotate, onAutoArrange }: {
   selected: Block[];
   onProp: (key: string, value: string) => void;
   onDuplicate: () => void;
@@ -18,6 +18,7 @@ export function EditorQuickToolbar({ selected, onProp, onDuplicate, onDelete, on
   onAlign?: (mode: "left" | "center" | "right" | "top" | "middle" | "bottom" | "distributeX" | "distributeY" | "canvasCenterX" | "canvasCenterY") => void;
   onOpacity?: (value: number) => void;
   onRotate?: (amount: number) => void;
+  onAutoArrange?: () => void;
 }) {
   const primary = selected[0];
   if (!primary) return null;
@@ -146,6 +147,19 @@ export function EditorQuickToolbar({ selected, onProp, onDuplicate, onDelete, on
           <Button variant="ghost" size="sm" className="h-8 px-2 text-[10px]" title="Distribuir horizontalmente" onClick={() => onAlign("distributeX")} aria-label="Distribuir horizontalmente">Distribuir X</Button>
           <Button variant="ghost" size="sm" className="h-8 rounded-l-none border-l px-2 text-[10px]" title="Distribuir verticalmente" onClick={() => onAlign("distributeY")} aria-label="Distribuir verticalmente">Distribuir Y</Button>
         </div>
+      )}
+
+      {selected.length > 1 && onAutoArrange && (
+        <Button
+          variant="secondary"
+          size="sm"
+          className="h-8 px-2 text-[10px]"
+          title="Organizar seleção automaticamente"
+          aria-label="Organizar seleção automaticamente"
+          onClick={onAutoArrange}
+        >
+          <Sparkles className="mr-1.5 h-3.5 w-3.5" />Organizar
+        </Button>
       )}
 
       <span className="mx-1 h-5 w-px bg-primary/10" aria-hidden="true" />

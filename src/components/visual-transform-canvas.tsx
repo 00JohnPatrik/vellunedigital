@@ -24,6 +24,7 @@ type Props = {
   onAlign?: (mode: "left" | "center" | "right" | "top" | "middle" | "bottom" | "distributeX" | "distributeY" | "canvasCenterX" | "canvasCenterY", ids: string[]) => void;
   onOpacity?: (value: number, ids: string[]) => void;
   onRotate?: (amount: number, ids: string[]) => void;
+  onAutoArrange?: (ids: string[]) => void;
   onGroup?: (ids: string[]) => void;
   onUngroup?: (ids: string[]) => void;
   onImageAction?: (id: string, action: ImageAction) => void;
@@ -259,7 +260,7 @@ function isTextInput(target: EventTarget | null) {
   return element.tagName === "INPUT" || element.tagName === "TEXTAREA" || element.tagName === "SELECT" || element.isContentEditable;
 }
 
-export function VisualTransformCanvas({ blocks, selectedIds: selectedIdsProp, zoom, canvasRef, ctx, onSelect, onAddBlock, onChange, onDuplicate, onDelete, onAdvanced, onLayer, onAlign, onOpacity, onRotate, onGroup, onUngroup, onImageAction, startEditingId, onStartEditingHandled, showGrid = true }: Props) {
+export function VisualTransformCanvas({ blocks, selectedIds: selectedIdsProp, zoom, canvasRef, ctx, onSelect, onAddBlock, onChange, onDuplicate, onDelete, onAdvanced, onLayer, onAlign, onOpacity, onRotate, onAutoArrange, onGroup, onUngroup, onImageAction, startEditingId, onStartEditingHandled, showGrid = true }: Props) {
   const interaction = useRef<Interaction | null>(null);
   const [guides, setGuides] = useState<Guide[]>([]);
   const [marquee, setMarquee] = useState<{ start: Point; current: Point; additive: boolean } | null>(null);
@@ -795,6 +796,7 @@ export function VisualTransformCanvas({ blocks, selectedIds: selectedIdsProp, zo
           onAlign={(mode) => onAlign?.(mode, selectedIds)}
           onOpacity={(value) => onOpacity?.(value, selectedIds)}
           onRotate={(amount) => onRotate?.(amount, selectedIds)}
+          onAutoArrange={() => onAutoArrange?.(selectedIds)}
         />
       </div>
     )}
