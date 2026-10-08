@@ -48,7 +48,68 @@ export const normalizePhone = (v: string) => {
   return digits;
 };
 
+async function authRateKey(scope: string, value: string): Promise<string> {
+  const bytes = new TextEncoder().encode(value.trim().toLowerCase());
+  const digest = await crypto.subtle.digest("SHA-256", bytes);
+  const hex = Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, "0")).join("");
+  return `${scope}:${hex}`;
+}
+
+async function allowAuthRequest(
+  scope: string,
+  value: string,
+  limit: number,
+  windowSeconds: number,
+): Promise<boolean> {
+  try {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const key = await authRateKey(scope, value);
+    const { data, error } = await supabaseAdmin.rpc("consume_auth_rate_limit", {
+      p_key: key,
+      p_limit: limit,
+      p_window_seconds: windowSeconds,
+    });
+    if (error) {
+      console.error("auth rate-limit check", error.message);
+      return true;
+    }
+    return data === true;
+  } catch (error) {
+    console.error("auth rate-limit check", error);
+    return true;
+  }
+}
+
+async function authenticateEmail(email: string, password: string) {
+  const generic = { ok: false as const, error: "E-mail, telefone ou senha inválidos." };
+  const client = await publicAuthClient();
+  const { data: s, error } = await client.auth.signInWithPassword({ email, password });
+  if (error || !s.session) return generic;
+
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  await supabaseAdmin
+    .from("users")
+    .update({ last_login_at: new Date().toISOString(), last_seen_at: new Date().toISOString() })
+    .eq("auth_user_id", s.session.user.id);
+
+  return {
+    ok: true as const,
+    access_token: s.session.access_token,
+    refresh_token: s.session.refresh_token,
+  };
+}
+
 /** Phone + password sign-in: resolves the account server-side (email never returned). */
+export const signInWithEmail = createServerFn({ method: "POST" })
+  .validator((d) =>
+    z.object({ email: z.string().trim().toLowerCase().email().max(255), password: z.string().min(1).max(200) }).parse(d),
+  )
+  .handler(async ({ data }) => {
+    const allowed = await allowAuthRequest("login-email", data.email, 10, 600);
+    if (!allowed) return { ok: false as const, error: "Muitas tentativas. Aguarde alguns minutos e tente novamente." };
+    return authenticateEmail(data.email, data.password);
+  });
+
 export const signInWithPhone = createServerFn({ method: "POST" })
   .validator((d) =>
     z.object({ phone: z.string().min(8).max(20), password: z.string().min(1).max(200) }).parse(d),
@@ -58,6 +119,9 @@ export const signInWithPhone = createServerFn({ method: "POST" })
     const phone = normalizePhone(data.phone);
     if (phone.length < 10 || phone.length > 15) return generic;
 
+    const allowed = await allowAuthRequest("login-phone", phone, 10, 600);
+    if (!allowed) return { ok: false as const, error: "Muitas tentativas. Aguarde alguns minutos e tente novamente." };
+
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: row } = await supabaseAdmin
       .from("users")
@@ -65,21 +129,7 @@ export const signInWithPhone = createServerFn({ method: "POST" })
       .eq("phone", phone)
       .maybeSingle();
     if (!row) return generic;
-    const client = await publicAuthClient();
-    const { data: s, error } = await client.auth.signInWithPassword({
-      email: row.email,
-      password: data.password,
-    });
-    if (error || !s.session) return generic;
-    await supabaseAdmin
-      .from("users")
-      .update({ last_login_at: new Date().toISOString(), last_seen_at: new Date().toISOString() })
-      .eq("auth_user_id", s.session.user.id);
-    return {
-      ok: true as const,
-      access_token: s.session.access_token,
-      refresh_token: s.session.refresh_token,
-    };
+    return authenticateEmail(row.email, data.password);
   });
 
 /** First access: activates a pre-registered user and emails a link to set the password. */
@@ -89,6 +139,7 @@ export const requestFirstAccess = createServerFn({ method: "POST" })
   )
   .handler(async ({ data }) => {
     const done = { ok: true as const };
+    if (!(await allowAuthRequest("first-access", data.email, 3, 600))) return done;
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: row } = await supabaseAdmin
       .from("users")
@@ -137,6 +188,7 @@ export const requestPasswordReset = createServerFn({ method: "POST" })
   )
   .handler(async ({ data }) => {
     const done = { ok: true as const };
+    if (!(await allowAuthRequest("password-reset", data.email, 3, 600))) return done;
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: row } = await supabaseAdmin
       .from("users")
