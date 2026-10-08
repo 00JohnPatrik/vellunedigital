@@ -22,6 +22,7 @@ function initials(name: string) {
 
 export function VelluneAdminShell({ appUser, children, className }: { appUser: AppUser; children: ReactNode; className?: string }) {
   const [search, setSearch] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const navigate = useNavigate();
@@ -48,10 +49,15 @@ export function VelluneAdminShell({ appUser, children, className }: { appUser: A
     return term ? MODULES.filter((item) => item.label.toLowerCase().includes(term)) : MODULES;
   }, [search]);
 
+  useEffect(() => {
+    const timer = window.setTimeout(() => setSearchTerm(search.trim().toLowerCase()), 220);
+    return () => window.clearTimeout(timer);
+  }, [search]);
+
   const contentSearch = useQuery({
-    queryKey: ["global-search", appUser.role, appUser.id, search.trim().toLowerCase()],
-    queryFn: () => searchWorkspaceContent(search, appUser.role),
-    enabled: searchOpen && search.trim().length >= 2,
+    queryKey: ["global-search", appUser.role, appUser.id, searchTerm],
+    queryFn: () => searchWorkspaceContent(searchTerm, appUser.role),
+    enabled: searchOpen && searchTerm.length >= 2,
     staleTime: 30_000,
     retry: 1,
   });
