@@ -1,9 +1,10 @@
 import { useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Check, Eye, LayoutTemplate, Search, Sparkles, X } from "lucide-react";
 import { BlockView, BackgroundLayers } from "@/components/block-render";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { CATEGORIES, STARTERS, cloneContent, resolveBlockGeometry, type Category, type TemplateContent } from "@/lib/templates";
+import { CATEGORIES, STARTERS, cloneContent, listTemplates, resolveBlockGeometry, type Category, type Template, type TemplateContent } from "@/lib/templates";
 import { cn } from "@/lib/utils";
 
 type TemplateGalleryProps = {
@@ -13,11 +14,13 @@ type TemplateGalleryProps = {
   hasContent: boolean;
 };
 
-type StarterItem = {
+type GalleryItem = {
   id: string;
   label: string;
   category: Category;
   content: TemplateContent;
+  source: "curated" | "official" | "company";
+  sourceLabel: string;
 };
 
 const STARTER_CATEGORIES: Record<string, Category> = {
@@ -34,13 +37,28 @@ const STARTER_CATEGORIES: Record<string, Category> = {
   party: "aniversario",
 };
 
-function starterItems(): StarterItem[] {
+function starterItems(): GalleryItem[] {
   return Object.entries(STARTERS).map(([id, starter]) => ({
     id,
     label: starter.label,
     category: STARTER_CATEGORIES[id] ?? "outros",
     content: starter.build(),
+    source: "curated",
+    sourceLabel: "Vellune",
   }));
+}
+
+function databaseTemplateItems(templates: Template[] | undefined): GalleryItem[] {
+  return (templates ?? [])
+    .filter((template) => template.status === "active")
+    .map((template) => ({
+      id: template.id,
+      label: template.name,
+      category: template.category,
+      content: template.content,
+      source: template.type === "company" ? "company" : "official",
+      sourceLabel: template.type === "company" ? "Meu modelo" : "Oficial",
+    }));
 }
 
 function PreviewCanvas({ content }: { content: TemplateContent }) {
@@ -92,13 +110,22 @@ export function TemplateGallery({ open, onClose, onApply, hasContent }: Template
   const [category, setCategory] = useState<"Todos" | Category>("Todos");
   const [selectedId, setSelectedId] = useState<string>("editorial");
   const [confirmReplace, setConfirmReplace] = useState(false);
-
-  const items = useMemo(() => starterItems(), []);
+  const curatedItems = useMemo(() => starterItems(), []);
+  const templatesQuery = useQuery({
+    queryKey: ["templates", "editor-gallery"],
+    queryFn: listTemplates,
+    enabled: open,
+    staleTime: 60_000,
+  });
+  const items = useMemo(
+    () => [...curatedItems, ...databaseTemplateItems(templatesQuery.data)],
+    [curatedItems, templatesQuery.data],
+  );
   const filtered = useMemo(() => {
     const term = search.trim().toLowerCase();
     return items.filter((item) => {
       const matchesCategory = category === "Todos" || item.category === category;
-      const matchesSearch = !term || `${item.label} ${item.id} ${item.category}`.toLowerCase().includes(term);
+      const matchesSearch = !term || `${item.label} ${item.id} ${item.category} ${item.sourceLabel}`.toLowerCase().includes(term);
       return matchesCategory && matchesSearch;
     });
   }, [category, items, search]);
@@ -178,7 +205,10 @@ export function TemplateGallery({ open, onClose, onApply, hasContent }: Template
                         <p className="min-w-0 flex-1 truncate text-sm font-semibold text-foreground">{item.label}</p>
                         {selected?.id === item.id && <Check className="h-4 w-4 shrink-0 text-primary" />}
                       </div>
-                      <p className="mt-1 text-[10px] uppercase tracking-wide text-primary">{CATEGORIES.find((categoryItem) => categoryItem.value === item.category)?.label ?? "Modelo"}</p>
+                      <div className="mt-1 flex flex-wrap items-center gap-1.5">
+                        <p className="text-[10px] uppercase tracking-wide text-primary">{CATEGORIES.find((categoryItem) => categoryItem.value === item.category)?.label ?? "Modelo"}</p>
+                        <span className="rounded-full border border-border/70 bg-muted/50 px-1.5 py-0.5 text-[9px] font-medium text-muted-foreground">{item.sourceLabel}</span>
+                      </div>
                       <p className="mt-1 text-[11px] text-muted-foreground">{item.content.blocks.length} elementos editáveis</p>
                     </div>
                   </button>
@@ -199,7 +229,7 @@ export function TemplateGallery({ open, onClose, onApply, hasContent }: Template
                 <PreviewCanvas content={selected.content} />
                 <div>
                   <p className="font-medium text-foreground">{selected.label}</p>
-                  <p className="mt-1 text-xs leading-5 text-muted-foreground">A composição será aplicada ao convite e poderá ser ajustada bloco a bloco no editor.</p>
+                  <p className="mt-1 text-xs leading-5 text-muted-foreground">{selected.source === "company" ? "Modelo da sua empresa. Você pode ajustar o conteúdo, estilo e posição no editor." : "A composição será aplicada ao convite e poderá ser ajustada bloco a bloco no editor."}</p>
                 </div>
                 <Button type="button" className="w-full" onClick={apply}>
                   <LayoutTemplate className="mr-2 h-4 w-4" />
