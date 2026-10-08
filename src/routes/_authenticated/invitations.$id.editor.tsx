@@ -117,7 +117,7 @@ function EditorForm({ inv, experimentalLayout = false, checkinEnabled = false }:
 
       setV(draft.event);
       setCustomerId(draft.customerId ?? inv.customer_id);
-      h.set(normalizeBlocks(draft.blocks), "recovery:local-draft");
+      h.set(normalizeBlocks({ version: 1, blocks: draft.blocks } as Invitation["content"]), "recovery:local-draft");
       setBg((draft.background && typeof draft.background === "object" ? structuredClone(draft.background) : {}) as Background);
       toast.info("Recuperamos alterações locais ainda não sincronizadas deste convite.");
     } catch {
