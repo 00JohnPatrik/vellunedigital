@@ -1283,7 +1283,7 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHe
           <div className="fixed inset-x-2 bottom-2 z-50 max-h-[70vh] overflow-y-auto rounded-2xl border border-border/80 bg-card p-4 shadow-2xl">
           <div className="mb-3 flex items-center justify-between gap-3">
             <p className="text-sm font-semibold">
-              {mobileSheet === "properties" ? "Ajustar" : mobileSheet === "background" ? "Fundo" : mobileSheet === "view" ? "Visualizar" : "Elementos"}
+              {mobileSheet === "properties" ? "Ajustar" : mobileSheet === "background" ? "Fundo" : mobileSheet === "view" ? "Visualizar" : mobileSheet === "layers" ? "Organizar" : "Elementos"}
             </p>
             <button type="button" className="rounded-md border px-2 py-1 text-xs" onClick={() => setMobileSheet(null)}>Fechar</button>
           </div>
