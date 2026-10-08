@@ -674,12 +674,19 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra }: { h: Bl
             height: Math.round(value.height),
             rotation: value.rotation,
             scale: value.scale,
-            zIndex: Math.round(value.zIndex + 1),
+            zIndex: index + 1,
             groupId: block.groupId ? groupMap.get(block.groupId) : undefined,
             props: { ...(block.props || {}) },
           };
         });
-        h.set((items) => [...items, ...pasted]);
+        h.set((items) => {
+          const maxZ = items.reduce(
+            (max, item, itemIndex) => Math.max(max, resolveBlockGeometry(item as Block, itemIndex).zIndex),
+            0,
+          );
+          const inserted = pasted.map((block: any, index: number) => ({ ...block, zIndex: maxZ + index + 1 }));
+          return [...items, ...inserted];
+        });
         setSelectedIds(pasted.map((block: any) => block.id));
       }
       else if (event.key === "Delete" || event.key === "Backspace") {
