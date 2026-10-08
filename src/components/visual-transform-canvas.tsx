@@ -608,15 +608,17 @@ export function VisualTransformCanvas({ blocks, selectedIds: selectedIdsProp, zo
       if (delta > 180) delta -= 360;
       if (delta < -180) delta += 360;
       if (event.shiftKey) {
+        // Shift mantém um passo angular previsível, mesmo com o magnetismo desligado.
         delta = Math.round(delta / 15) * 15;
-      } else {
-        // Magnetismo suave em ângulos úteis: facilita chegar a posições
-        // visualmente precisas sem impedir rotações livres.
+      } else if (snapEnabled && !event.altKey) {
+        // Magnetismo também controla a rotação: ângulos úteis ficam magnéticos,
+        // enquanto Alt/Option permite rotação totalmente livre.
         const snapAngles = [0, 45, 90, 135, 180, 225, 270, 315, 360];
         const normalized = ((delta % 360) + 360) % 360;
         const nearestAngle = snapAngles.reduce((best, candidate) =>
           Math.abs(candidate - normalized) < Math.abs(best - normalized) ? candidate : best,
-        0);
+          0,
+        );
         const angleDistance = Math.abs(nearestAngle - normalized);
         if (angleDistance <= 3 || 360 - angleDistance <= 3) {
           delta += nearestAngle - normalized;
