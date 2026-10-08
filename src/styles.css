@@ -145,6 +145,7 @@
   #root {
     box-sizing: border-box;
     width: 100%;
+    height: 100%;
     min-width: 0;
     max-width: 100%;
     min-height: 100%;
@@ -153,8 +154,10 @@
   }
 
   body {
+    min-height: 100dvh;
     background-color: var(--color-background);
     color: var(--color-foreground);
+    overscroll-behavior-y: none;
   }
 
   .vellune-login-root,
@@ -188,6 +191,20 @@
 
   #root:has(.vellune-login-root),
   #root:has(.vellune-auth-root) {
+    min-height: 100dvh;
+  }
+
+  /* Authenticated platform: never expose the global light body behind the app
+   * shell, especially on mobile during dynamic browser viewport changes. */
+  html:has(.vellune-platform-root),
+  body:has(.vellune-platform-root),
+  #root:has(.vellune-platform-root) {
+    background-color: #08090d;
+    color-scheme: dark;
+    overscroll-behavior-y: none;
+  }
+
+  #root:has(.vellune-platform-root) {
     min-height: 100dvh;
   }
 }
@@ -858,12 +875,13 @@
 /* -------------------------------------------------------------------------- */
 
 .vellune-platform-root {
+  width: 100%;
+  min-height: 100dvh;
   --vellune-platform-line: color-mix(in oklch, var(--color-foreground) 8%, transparent);
   --vellune-platform-line-strong: color-mix(in oklch, var(--color-primary) 22%, transparent);
   --vellune-platform-surface: color-mix(in oklch, var(--color-card) 94%, var(--color-background));
   --vellune-platform-soft: color-mix(in oklch, var(--color-muted) 54%, var(--color-background));
   --vellune-platform-glow: color-mix(in oklch, var(--color-primary) 8%, transparent);
-  min-height: 100svh;
   background:
     radial-gradient(circle at 88% -10%, var(--vellune-platform-glow), transparent 28rem),
     radial-gradient(circle at 0% 20%, color-mix(in oklch, var(--color-primary) 4%, transparent), transparent 34rem),
@@ -981,7 +999,7 @@
 }
 
 .vellune-app-main {
-  min-height: calc(100svh - 4.35rem);
+  min-height: calc(100dvh - 4.35rem);
   background:
     radial-gradient(circle at 100% 0%, color-mix(in oklch, var(--color-primary) 4%, transparent), transparent 28rem),
     transparent;
@@ -1250,7 +1268,7 @@
   }
 
   .vellune-app-main {
-    min-height: calc(100svh - 4rem);
+    min-height: calc(100dvh - 4rem);
   }
 }
 
