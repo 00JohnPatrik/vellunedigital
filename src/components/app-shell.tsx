@@ -155,15 +155,15 @@ export function AppShell({ base, nav, appUser, children }: Props) {
                 activeOptions={{ exact: !item.slug }}
                 onClick={() => setMobileOpen(false)}
                 className={cn(
-                  "group relative flex h-10 items-center gap-3 overflow-hidden rounded-xl border border-transparent px-3 text-sm text-sidebar-foreground/65 transition-all duration-200 hover:border-cyan-400/10 hover:bg-cyan-400/[0.07] hover:text-sidebar-foreground",
+                  "group relative flex h-10 items-center gap-3 overflow-hidden rounded-xl border border-transparent px-3 text-sm text-sidebar-foreground/65 transition-all duration-200 hover:border-[#d4af37]/15 hover:bg-[#d4af37]/[0.055] hover:text-sidebar-foreground",
                   compact && "justify-center px-0",
                 )}
-                activeProps={{ className: "border-cyan-400/15 bg-cyan-400/[0.12] font-medium text-sidebar-foreground shadow-[inset_3px_0_0_0_theme(colors.cyan.400)]" }}
+                activeProps={{ className: "border-[#d4af37]/18 bg-[#d4af37]/[0.075] font-medium text-sidebar-foreground shadow-[inset_3px_0_0_0_#d4af37]" }}
                 aria-label={compact ? item.label : undefined}
               >
-                <item.icon className="h-[18px] w-[18px] shrink-0 text-sidebar-foreground/55 transition-colors group-hover:text-cyan-300 group-data-[active=true]:text-cyan-300" />
+                <item.icon className="h-[18px] w-[18px] shrink-0 text-sidebar-foreground/55 transition-colors group-hover:text-[#e5c66b] group-data-[active=true]:text-[#e5c66b]" />
                 {!compact && <span className="truncate">{item.label}</span>}
-                {!compact && <span className="ml-auto h-1.5 w-1.5 rounded-full bg-cyan-300 opacity-0 shadow-[0_0_10px_theme(colors.cyan.300)] transition-opacity group-data-[active=true]:opacity-100" />}
+                {!compact && <span className="ml-auto h-1.5 w-1.5 rounded-full bg-[#d4af37] opacity-0 shadow-[0_0_10px_rgba(212,175,55,0.65)] transition-opacity group-data-[active=true]:opacity-100" />}
               </Link>
             );
 
@@ -172,7 +172,7 @@ export function AppShell({ base, nav, appUser, children }: Props) {
             return (
               <Tooltip key={`${item.slug}-${item.label}-tooltip`}>
                 <TooltipTrigger asChild>{link}</TooltipTrigger>
-                <TooltipContent side="right" sideOffset={12} className="border border-cyan-300/15 bg-[#10243e] text-slate-100 shadow-xl">
+                <TooltipContent side="right" sideOffset={12} className="border border-[#d4af37]/15 bg-[#111318] text-slate-100 shadow-xl">
                   {item.label}
                 </TooltipContent>
               </Tooltip>
@@ -222,7 +222,7 @@ export function AppShell({ base, nav, appUser, children }: Props) {
       <aside
         aria-label="Navegação principal"
         className={cn(
-          "fixed inset-y-0 left-0 z-30 hidden flex-col border-r border-sidebar-border/70 bg-sidebar shadow-[12px_0_40px_-28px_rgba(34,211,238,0.45)] transition-[width] duration-300 md:flex dark:bg-[#071426]",
+          "fixed inset-y-0 left-0 z-30 hidden flex-col border-r border-sidebar-border/70 bg-sidebar shadow-[12px_0_44px_-28px_rgba(212,175,55,0.18)] transition-[width] duration-300 md:flex dark:bg-[#0a0c10]",
           collapsed ? "w-[4.5rem]" : "w-[4.5rem] lg:w-64",
         )}
       >
@@ -233,7 +233,7 @@ export function AppShell({ base, nav, appUser, children }: Props) {
       </aside>
 
       <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
-        <SheetContent id="mobile-navigation" side="left" className="flex w-[min(18rem,calc(100vw-1rem))] max-w-[calc(100vw-1rem)] flex-col overflow-hidden border-r border-cyan-300/10 bg-sidebar p-0 shadow-2xl dark:bg-[#071426]">
+        <SheetContent id="mobile-navigation" side="left" className="flex w-[min(18rem,calc(100vw-1rem))] max-w-[calc(100vw-1rem)] flex-col overflow-hidden border-r border-[#d4af37]/10 bg-sidebar p-0 shadow-2xl dark:bg-[#0a0c10]">
           <SheetTitle className="sr-only">Menu de navegação</SheetTitle>
           {brand(false)}
           {links(false)}
@@ -268,8 +268,8 @@ export function AppShell({ base, nav, appUser, children }: Props) {
         </DialogContent>
       </Dialog>
 
-      <div className={cn("flex min-h-screen min-w-0 flex-col transition-[padding] duration-300 dark:bg-[#071426]", collapsed ? "md:pl-[4.5rem]" : "md:pl-[4.5rem] lg:pl-64")}>
-        <header className="sticky top-0 z-20 flex h-[4.5rem] min-w-0 items-center gap-3 border-b border-border/60 bg-background/80 px-4 shadow-[0_8px_30px_-24px_rgba(34,211,238,0.45)] backdrop-blur-xl dark:border-white/[0.07] dark:bg-[#071426]/80 sm:px-6">
+      <div className={cn("flex min-h-screen min-w-0 flex-col transition-[padding] duration-300 dark:bg-[#0a0c10]", collapsed ? "md:pl-[4.5rem]" : "md:pl-[4.5rem] lg:pl-64")}>
+        <header className="sticky top-0 z-20 flex h-[4.5rem] min-w-0 items-center gap-3 border-b border-border/60 bg-background/85 px-4 shadow-[0_8px_30px_-24px_rgba(212,175,55,0.10)] backdrop-blur-xl dark:border-white/[0.07] dark:bg-[#0a0c10]/80 sm:px-6">
           <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setMobileOpen(true)} aria-label="Abrir menu" aria-expanded={mobileOpen} aria-controls="mobile-navigation">
             <Menu className="h-5 w-5" />
           </Button>
@@ -277,8 +277,8 @@ export function AppShell({ base, nav, appUser, children }: Props) {
             {collapsed ? <PanelLeftOpen className="h-5 w-5" /> : <PanelLeftClose className="h-5 w-5" />}
           </Button>
           <button onClick={() => setSearchOpen(true)} className="group hidden min-w-0 flex-1 items-center gap-3 text-left text-sm text-muted-foreground sm:flex" aria-label="Abrir busca global">
-            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-border/70 bg-muted/40 transition-colors group-hover:border-cyan-300/30 group-hover:bg-cyan-300/10">
-              <Search className="h-4 w-4 transition-colors group-hover:text-cyan-300" />
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-border/70 bg-muted/40 transition-colors group-hover:border-[#d4af37]/22 group-hover:bg-[#d4af37]/[0.05]">
+              <Search className="h-4 w-4 transition-colors group-hover:text-[#e5c66b]" />
             </span>
             <span className="truncate transition-colors group-hover:text-foreground">Buscar no painel...</span>
             <kbd className="ml-auto hidden rounded-lg border border-border/70 bg-muted/60 px-2 py-1 text-[10px] font-medium text-muted-foreground lg:inline-flex">Ctrl K</kbd>
