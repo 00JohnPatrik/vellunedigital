@@ -1396,6 +1396,8 @@
 }
 
 @media (max-width: 1023px) {
+  .vellune-experimental-build-badge { display: none !important; }
+
   .vellune-editor-experimental .vellune-editor-topbar:not(.vellune-editor-topbar-experimental) {
     display: none !important;
   }
