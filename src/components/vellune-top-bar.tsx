@@ -93,7 +93,7 @@ export function VelluneTopBar({
           className="relative inline-flex h-9 w-9 items-center justify-center rounded-full text-[#A9B1BF] transition hover:bg-[#171B23] hover:text-[#F5F7FA] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B5CF6]/55"
           aria-label={
             notificationCount > 0
-              ? \`Notificações (\${notificationCount})\`
+              ? `Notificações (${notificationCount})`
               : "Notificações"
           }
           title="Notificações"
