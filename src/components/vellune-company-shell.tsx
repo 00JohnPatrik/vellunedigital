@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
-import { BarChart3, CreditCard, LayoutDashboard, LayoutTemplate, Mail, Palette, Search, Settings2, Users, X } from "lucide-react";
+import { Search, X } from "lucide-react";
 import { VelluneTopBar } from "@/components/vellune-top-bar";
 import { VelluneCreativeDock } from "@/components/vellune-creative-dock";
 import { NotificationCenter } from "@/components/phase7-ui";
 import type { AppUser } from "@/lib/app-user";
+import { companyNav } from "@/lib/nav";
 import { cn } from "@/lib/utils";
 
 type Props = {
@@ -14,16 +15,9 @@ type Props = {
   className?: string;
 };
 
-const MODULES = [
-  { label: "Dashboard", to: "/dashboard", icon: LayoutDashboard },
-  { label: "Convites", to: "/invitations", icon: Mail },
-  { label: "Clientes", to: "/customers", icon: Users },
-  { label: "Modelos", to: "/templates", icon: LayoutTemplate },
-  { label: "Resultados", to: "/reports", icon: BarChart3 },
-  { label: "Plano", to: "/dashboard/assinatura", icon: CreditCard },
-  { label: "Sua marca", to: "/settings/brand", icon: Palette },
-  { label: "Configurações", to: "/dashboard/configuracoes", icon: Settings2 },
-] as const;
+const MODULES = companyNav.filter((item): item is typeof item & { to: string } => Boolean(item.to));
+
+
 
 function initials(name: string) {
   const words = name.trim().split(/\s+/).filter(Boolean);
@@ -121,7 +115,7 @@ export function VelluneCompanyShell({ appUser, children, activeItem = "home", cl
                 return (
                   <Link
                     key={item.to}
-                    to={item.to}
+                    to={item.to as any}
                     onClick={() => setSearchOpen(false)}
                     className="flex items-center gap-3 rounded-2xl px-3 py-3 text-sm text-[#A9B1BF] transition hover:bg-[#17181e] hover:text-[#F5F7FA]"
                   >
