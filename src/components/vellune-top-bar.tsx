@@ -16,6 +16,8 @@ export type VelluneTopBarProps = {
   readOnlySearch?: boolean;
   onSearchActivate?: () => void;
   className?: string;
+  showNotifications?: boolean;
+  onAvatarClick?: () => void;
 };
 
 export function VelluneTopBar({
@@ -32,6 +34,8 @@ export function VelluneTopBar({
   readOnlySearch = false,
   onSearchActivate,
   className,
+  showNotifications = true,
+  onAvatarClick,
 }: VelluneTopBarProps) {
   return (
     <header
@@ -83,7 +87,7 @@ export function VelluneTopBar({
       <div className="flex min-w-0 flex-1 items-center justify-end gap-1.5 sm:gap-2">
         <div className="flex items-center gap-1 lg:gap-1.5">{mobileActions}</div>
         {trailingActions}
-        <button
+        {showNotifications && <button
           type="button"
           onClick={onNotifications}
           className="relative inline-flex h-9 w-9 items-center justify-center rounded-full text-[#A9B1BF] transition hover:bg-[#171B23] hover:text-[#F5F7FA] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B5CF6]/55"
@@ -99,10 +103,11 @@ export function VelluneTopBar({
             aria-hidden="true"
             className="absolute right-2 top-2 h-2 w-2 rounded-full bg-[#F59E0B] ring-2 ring-[#0B0D12]"
           />
-        </button>
+        </button>}
 
         <button
           type="button"
+          onClick={onAvatarClick}
           className="group inline-flex items-center gap-2 rounded-full p-0.5 transition hover:bg-[#171B23] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B5CF6]/55"
           aria-label="Abrir conta"
           title="Conta"
