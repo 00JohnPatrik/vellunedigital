@@ -1133,7 +1133,31 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHe
         <VelluneTopBar
           readOnlySearch
           onSearchActivate={() => setCommandOpen(true)}
-          mobileActions={experimentalMobileActions}
+          mobileActions={
+            <>
+              <button
+                type="button"
+                onClick={h.undo}
+                disabled={!h.canUndo}
+                className="inline-flex h-8 w-8 items-center justify-center rounded-full text-[#A9B1BF] transition hover:bg-[#171B23] hover:text-[#F5F7FA] disabled:opacity-30"
+                aria-label="Desfazer"
+                title="Desfazer"
+              >
+                <Undo2 className="h-4 w-4" />
+              </button>
+              <button
+                type="button"
+                onClick={h.redo}
+                disabled={!h.canRedo}
+                className="inline-flex h-8 w-8 items-center justify-center rounded-full text-[#A9B1BF] transition hover:bg-[#171B23] hover:text-[#F5F7FA] disabled:opacity-30"
+                aria-label="Refazer"
+                title="Refazer"
+              >
+                <Redo2 className="h-4 w-4" />
+              </button>
+              {experimentalMobileActions}
+            </>
+          }
           trailingActions={<div className="hidden items-center gap-1 lg:flex">{desktopHeaderRight}</div>}
         />
       )}
