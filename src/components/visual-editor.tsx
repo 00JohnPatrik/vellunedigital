@@ -702,7 +702,7 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra }: { h: Bl
     h.set((items) => items.map((item: any) => selectedIds.includes(item.id) && !item.locked ? { ...item, props: { ...(item.props ?? {}), [key]: value } } : item), "selection:properties");
   };
   return (
-    <div className="vellune-editor-root flex min-h-[calc(100dvh-7rem)] flex-col overflow-hidden rounded-[1.25rem] border border-primary/10 bg-background/95 pb-20 shadow-2xl shadow-black/15 ring-1 ring-black/5 lg:min-h-[680px] lg:pb-0">
+    <div className="vellune-editor-root flex min-h-[calc(100dvh-7rem)] flex-col overflow-hidden rounded-[1.25rem] border border-primary/10 bg-background/95 pb-20 shadow-2xl shadow-black/15 ring-1 ring-black/5 lg:min-h-[680px] lg:pb-0" style={{ "--color-primary": "#d4af37", "--color-primary-foreground": "#16130b" } as React.CSSProperties}>
       <div className="vellune-editor-topbar flex flex-wrap items-center justify-between gap-2 border-b border-primary/10 bg-card/90 px-3 py-2.5 shadow-sm backdrop-blur-xl" role="toolbar" aria-label="Barra principal do editor">
         <div className="flex min-w-0 items-center gap-2">
           <div className="vellune-editor-device-switcher hidden items-center gap-0.5 rounded-xl border border-primary/10 bg-background/80 p-1 shadow-sm sm:flex" role="group" aria-label="Tamanho da tela do convite">
