@@ -743,7 +743,7 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHe
         {toolbarExtra && <div className="mt-2 flex items-center justify-end gap-1.5 border-t border-primary/10 pt-2 md:hidden">{toolbarExtra}</div>}
       </div>
       <div className="vellune-editor-body flex min-h-0 flex-1 flex-col lg:flex-row">
-        <aside className={cn("vellune-editor-sidebar hidden shrink-0 grid-rows-[auto_minmax(0,1fr)] border-r border-white/[0.06] bg-[#0d0f14]/95 backdrop-blur-xl", focusMode ? "lg:hidden" : cn("lg:grid", sidebarOpen ? "w-[330px] grid-cols-[74px_minmax(0,1fr)]" : "w-[74px] grid-cols-[74px]")))} aria-label="Ferramentas do editor">
+        <aside className={cn("vellune-editor-sidebar hidden shrink-0 grid-rows-[auto_minmax(0,1fr)] border-r border-white/[0.06] bg-[#0d0f14]/95 backdrop-blur-xl", focusMode ? "lg:hidden" : cn("lg:grid", sidebarOpen ? "w-[330px] grid-cols-[74px_minmax(0,1fr)]" : "w-[74px] grid-cols-[74px]"))} aria-label="Ferramentas do editor">
           <div className={cn("border-b border-white/[0.06] bg-[#101217]/80 p-3.5", sidebarOpen ? "col-span-2" : "hidden")}>
             <div className="flex items-center gap-2">
               <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary"><Sparkles className="h-4 w-4" /></div>
