@@ -635,6 +635,7 @@ export function VisualTransformCanvas({ blocks, selectedIds: selectedIdsProp, zo
       offsetX = clamp(offsetX, -current.bounds.left, size.width - current.bounds.right);
       offsetY = clamp(offsetY, -current.bounds.top, size.height - current.bounds.bottom);
       setGuides(nextGuides);
+      setResizeHint(null);
       onChange((items: any[]) => items.map((item: any) => {
         const original = current.originals[item.id];
         return original ? { ...item, x: Math.round(original.x + offsetX), y: Math.round(original.y + offsetY) } : item;
@@ -669,6 +670,7 @@ export function VisualTransformCanvas({ blocks, selectedIds: selectedIdsProp, zo
         }
       }
       setRotationHint(snappedRotation);
+      setResizeHint(null);
       const radians = delta * Math.PI / 180;
       const cos = Math.cos(radians);
       const sin = Math.sin(radians);
@@ -735,6 +737,7 @@ export function VisualTransformCanvas({ blocks, selectedIds: selectedIdsProp, zo
     }
 
     setGuides(nextResizeGuides);
+    setResizeHint({ width: Math.round(resized.width), height: Math.round(resized.height) });
     const sx = resized.width / Math.max(MIN_SIZE, current.bounds.width);
     const sy = resized.height / Math.max(MIN_SIZE, current.bounds.height);
     onChange((items: any[]) => items.map((item: any) => {
@@ -1084,6 +1087,18 @@ export function VisualTransformCanvas({ blocks, selectedIds: selectedIdsProp, zo
         )}
       </div>;
     })}
+    {selectedBounds && resizeHint && (
+      <div
+        className="pointer-events-none absolute z-[104] rounded-full border border-primary/25 bg-background/95 px-2.5 py-1 text-[10px] font-semibold tabular-nums text-foreground shadow-lg backdrop-blur-sm"
+        style={{
+          left: clamp(selectedBounds.left + selectedBounds.width - 12, 58, Math.max(58, canvasSize().width - 58)),
+          top: clamp(selectedBounds.bottom + 10, 10, Math.max(10, canvasSize().height - 28)),
+        }}
+        aria-hidden="true"
+      >
+        {resizeHint.width} × {resizeHint.height}
+      </div>
+    )}
     {selectedBounds && rotationHint !== null && (
       <div
         className="pointer-events-none absolute z-[105] -translate-y-1/2 rounded-full border border-primary/25 bg-primary px-2.5 py-1 text-[10px] font-semibold tabular-nums text-primary-foreground shadow-lg shadow-primary/25"
@@ -1097,22 +1112,41 @@ export function VisualTransformCanvas({ blocks, selectedIds: selectedIdsProp, zo
       </div>
     )}
     {selectedBounds && <div className="pointer-events-none absolute z-[80] rounded-[2px] border-2 border-primary shadow-[0_0_0_1px_hsl(var(--primary)/.12),0_4px_14px_hsl(var(--primary)/.08)]" style={{ left: selectedBounds.left, top: selectedBounds.top, width: selectedBounds.width, height: selectedBounds.height }}>
-      {selected.length === 1 && !selected[0]?.locked && <button type="button" aria-label="Girar seleção" className="pointer-events-auto absolute left-1/2 top-0 h-8 w-8 -translate-x-1/2 -translate-y-10 rounded-full border-2 border-background bg-primary shadow-sm sm:h-6 sm:w-6 sm:-translate-y-9" style={{ cursor: cursorFor("rotate"), touchAction: "none" }} onPointerDown={(event) => begin(event, "rotate")} onPointerMove={move} onPointerUp={end} onPointerCancel={end} />}
-      {HANDLES.map((handle) => {
+      {selected.length === 1 && !selected[0]?.locked && (
+        <button
+          type="button"
+          aria-label="Girar seleção"
+          className="pointer-events-auto absolute left-1/2 top-0 flex h-8 w-8 -translate-x-1/2 -translate-y-10 items-center justify-center rounded-full border-2 border-background bg-primary text-primary-foreground shadow-sm transition-transform hover:scale-110 sm:h-6 sm:w-6 sm:-translate-y-9"
+          style={{ cursor: cursorFor("rotate"), touchAction: "none" }}
+          onPointerDown={(event) => begin(event, "rotate")}
+          onPointerMove={move}
+          onPointerUp={end}
+          onPointerCancel={end}
+        >
+          <RotateCw className="h-4 w-4 sm:h-3 sm:w-3" aria-hidden="true" />
+        </button>
+      )}      {HANDLES.map((handle) => {
         const position = {
           nw: "-left-3 -top-3", n: "left-1/2 -top-3 -translate-x-1/2",
           ne: "-right-3 -top-3", e: "-right-3 top-1/2 -translate-y-1/2",
           se: "-bottom-3 -right-3", s: "-bottom-3 left-1/2 -translate-x-1/2",
           sw: "-bottom-3 -left-3", w: "-left-3 top-1/2 -translate-y-1/2"
         }[handle];
-        return <button key={handle} type="button" aria-label={`Redimensionar ${handle}`} disabled={selected.some((item: any) => item.locked)}
-          className={`pointer-events-auto absolute h-8 w-8 rounded-full border-2 border-background bg-primary shadow-sm disabled:cursor-not-allowed disabled:opacity-50 sm:h-6 sm:w-6 ${position}`}
+        return <button
+          key={handle}
+          type="button"
+          aria-label={`Redimensionar ${handle}`}
+          title="Arraste para redimensionar"
+          disabled={selected.some((item: any) => item.locked)}
+          className={`pointer-events-auto absolute flex h-8 w-8 items-center justify-center rounded-full border-2 border-background bg-primary shadow-md transition-transform hover:scale-110 disabled:cursor-not-allowed disabled:opacity-50 sm:h-6 sm:w-6 ${position}`}
           style={{ cursor: cursorFor(handle), touchAction: "none" }}
           onPointerDown={(event) => begin(event, "resize", handle)}
           onPointerMove={move}
           onPointerUp={end}
           onPointerCancel={end}
-        />;
+        >
+          <span className="h-2 w-2 rounded-full bg-primary-foreground/95 shadow-sm sm:h-1.5 sm:w-1.5" aria-hidden="true" />
+        </button> />;
       })}
       {selected.length > 1 && <span className="pointer-events-none absolute -top-7 left-1 rounded-full border border-primary/20 bg-primary px-2 py-1 text-[9px] font-semibold text-primary-foreground shadow-sm">{selected.length} selecionados</span>}
     </div>}
