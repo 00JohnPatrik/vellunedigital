@@ -743,7 +743,7 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHe
       "font", "fontSize", "fontWeight", "fontStyle", "textDecoration", "align", "color", "letterSpacing", "lineHeight",
       "fill", "fillColor", "fillGradient", "borderColor", "borderWidth", "borderStyle", "borderRadius", "radiusTopLeft", "radiusTopRight",
       "radiusBottomRight", "radiusBottomLeft", "shadow", "shadowColor", "shadowX", "shadowY", "shadowBlur", "shadowSpread",
-      "filterBlur", "filterBrightness", "textColor", "backgroundColor", "radius", "paddingX", "paddingY", "width", "height", "position"
+      "filterBlur", "filterBrightness", "textColor", "backgroundColor", "radius", "paddingX", "paddingY"
     ]);
     setStyleClipboard(Object.fromEntries(Object.entries(source.props ?? {}).filter(([key]) => styleKeys.has(key))));
     toast.success("Estilo copiado.");
