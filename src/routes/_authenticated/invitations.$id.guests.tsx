@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Copy, Download, Edit3, ExternalLink, FileUp, Link2, Loader2, MessageCircle, Plus, Printer, QrCode, Search, Trash2, Users, X } from "lucide-react";
+import { Download, Edit3, ExternalLink, FileUp, Link2, Loader2, Plus, Printer, QrCode, Search, Trash2, Users, X } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
