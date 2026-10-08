@@ -309,9 +309,12 @@ export async function listCompanySubscriptionHistory(
   if (plansError) throw plansError;
   if (usersError) throw usersError;
 
-  const companyMap = new Map((companies ?? []).map((company: { id: string; name: string }) => [company.id, company]));
-  const planMap = new Map((plans ?? []).map((plan: SubscriptionPlan) => [plan.id, plan]));
-  const userMap = new Map((users ?? []).map((user: { id: string; name: string }) => [user.id, user]));
+  const companyRows = (companies ?? []) as { id: string; name: string }[];
+  const planRows = (plans ?? []) as SubscriptionPlan[];
+  const userRows = (users ?? []) as { id: string; name: string }[];
+  const companyMap = new Map<string, { id: string; name: string }>(companyRows.map((company) => [company.id, company]));
+  const planMap = new Map<string, SubscriptionPlan>(planRows.map((plan) => [plan.id, plan]));
+  const userMap = new Map<string, { id: string; name: string }>(userRows.map((user) => [user.id, user]));
 
   return rows.map((row) => ({
     ...row,
