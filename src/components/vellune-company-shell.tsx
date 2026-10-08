@@ -1,11 +1,13 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Link, useNavigate } from "@tanstack/react-router";
-import { Search, X } from "lucide-react";
+import { FileText, LayoutTemplate, Search, UserRound, X } from "lucide-react";
 import { VelluneTopBar } from "@/components/vellune-top-bar";
 import { VelluneCreativeDock } from "@/components/vellune-creative-dock";
 import { NotificationCenter } from "@/components/phase7-ui";
 import type { AppUser } from "@/lib/app-user";
 import { companyNav } from "@/lib/nav";
+import { searchWorkspaceContent } from "@/lib/global-search";
 import { cn } from "@/lib/utils";
 
 type Props = {
@@ -49,13 +51,21 @@ export function VelluneCompanyShell({ appUser, children, activeItem = "home", cl
       : MODULES;
   }, [search]);
 
+  const contentSearch = useQuery({
+    queryKey: ["global-search", appUser.role, appUser.id, search.trim().toLowerCase()],
+    queryFn: () => searchWorkspaceContent(search, appUser.role),
+    enabled: searchOpen && search.trim().length >= 2,
+    staleTime: 30_000,
+    retry: 1,
+  });
+
   return (
     <div className={cn("vellune-platform-root dark min-h-[100dvh] bg-[#08090d] text-[#F5F7FA]", className)}>
       <VelluneTopBar
         avatarFallback={initials(appUser.name)}
         searchValue={search}
         onSearchChange={setSearch}
-        searchPlaceholder="Buscar área ou módulo"
+        searchPlaceholder="Buscar convites, clientes ou áreas"
         onSearchActivate={() => setSearchOpen(true)}
         onAvatarClick={() => navigate({ to: "/dashboard/configuracoes" })}
         showNotifications={false}
@@ -87,7 +97,7 @@ export function VelluneCompanyShell({ appUser, children, activeItem = "home", cl
             className="w-full max-w-xl overflow-hidden rounded-[26px] border border-[#2a2b31] bg-[#111318] shadow-[0_32px_100px_-30px_rgba(0,0,0,0.98)]"
             role="dialog"
             aria-modal="true"
-            aria-label="Busca global"
+            aria-label="Busca global da Vellune"
             onMouseDown={(event) => event.stopPropagation()}
           >
             <div className="flex items-center gap-3 border-b border-[#2a2b31] px-4 py-3">
@@ -96,9 +106,9 @@ export function VelluneCompanyShell({ appUser, children, activeItem = "home", cl
                 autoFocus
                 value={search}
                 onChange={(event) => setSearch(event.target.value)}
-                placeholder="Buscar área ou módulo..."
+                placeholder="Buscar convites, clientes, modelos ou áreas..."
                 className="min-w-0 flex-1 bg-transparent text-sm text-[#F5F7FA] outline-none placeholder:text-[#A9B1BF]"
-                aria-label="Buscar área ou módulo"
+                aria-label="Buscar convites, clientes, modelos ou áreas"
               />
               <button
                 type="button"
@@ -109,14 +119,17 @@ export function VelluneCompanyShell({ appUser, children, activeItem = "home", cl
                 <X className="h-4 w-4" />
               </button>
             </div>
-            <div className="max-h-[min(60vh,30rem)] overflow-y-auto p-2">
-              {filtered.length ? filtered.map((item) => {
+            <div className="max-h-[min(68vh,36rem)] overflow-y-auto p-2">
+              {filtered.length > 0 && (
+                <div className="mb-2 px-3 pt-1 text-[9px] font-semibold uppercase tracking-[0.14em] text-[#A9B1BF]">Áreas</div>
+              )}
+              {filtered.map((item) => {
                 const Icon = item.icon;
                 return (
                   <Link
                     key={item.to}
                     to={item.to as any}
-                    onClick={() => setSearchOpen(false)}
+                    onClick={() => { setSearchOpen(false); setSearch(""); }}
                     className="flex items-center gap-3 rounded-2xl px-3 py-3 text-sm text-[#A9B1BF] transition hover:bg-[#17181e] hover:text-[#F5F7FA]"
                   >
                     <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#d4af37]/10 text-[#d4af37]">
@@ -125,8 +138,50 @@ export function VelluneCompanyShell({ appUser, children, activeItem = "home", cl
                     <span className="font-medium">{item.label}</span>
                   </Link>
                 );
-              }) : (
-                <div className="px-4 py-8 text-center text-sm text-[#A9B1BF]">Nenhuma área encontrada.</div>
+              })}
+
+              {search.trim().length < 2 ? (
+                <div className="px-4 py-10 text-center">
+                  <Search className="mx-auto h-5 w-5 text-[#d4af37]/70" />
+                  <p className="mt-2 text-sm font-medium text-[#F5F7FA]">Busque dentro da Vellune</p>
+                  <p className="mt-1 text-xs leading-5 text-[#A9B1BF]">Procure convites, clientes, modelos ou qualquer conteúdo salvo.</p>
+                </div>
+              ) : contentSearch.isLoading ? (
+                <div className="px-4 py-10 text-center text-sm text-[#A9B1BF]">Pesquisando seus conteúdos...</div>
+              ) : contentSearch.isError ? (
+                <div className="px-4 py-10 text-center text-sm text-[#A9B1BF]">
+                  Não foi possível pesquisar agora. As áreas do menu continuam disponíveis.
+                </div>
+              ) : contentSearch.data?.length ? (
+                <div className="mt-2">
+                  <div className="mb-2 px-3 pt-1 text-[9px] font-semibold uppercase tracking-[0.14em] text-[#A9B1BF]">Resultados</div>
+                  {contentSearch.data.map((item) => {
+                    const Icon = item.type === "invitation" ? FileText : item.type === "customer" ? UserRound : LayoutTemplate;
+                    return (
+                      <Link
+                        key={`${item.type}-${item.id}`}
+                        to={item.to as any}
+                        onClick={() => { setSearchOpen(false); setSearch(""); }}
+                        className="group flex items-center gap-3 rounded-2xl px-3 py-3 text-sm text-[#A9B1BF] transition hover:bg-[#17181e] hover:text-[#F5F7FA]"
+                      >
+                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#08090d] text-[#d4af37] transition group-hover:bg-[#d4af37]/10">
+                          <Icon className="h-4 w-4" />
+                        </span>
+                        <span className="min-w-0 flex-1">
+                          <span className="block truncate font-medium text-[#F5F7FA]">{item.title}</span>
+                          <span className="mt-0.5 block truncate text-[11px] text-[#A9B1BF]">{item.subtitle}</span>
+                        </span>
+                        {item.meta && <span className="shrink-0 rounded-full border border-[#2a2b31] px-2 py-1 text-[9px] text-[#A9B1BF]">{item.meta}</span>}
+                      </Link>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="px-4 py-10 text-center text-sm text-[#A9B1BF]">Nenhum conteúdo encontrado para “{search.trim()}”.</div>
+              )}
+
+              {filtered.length === 0 && search.trim().length >= 2 && !contentSearch.data?.length && !contentSearch.isLoading && (
+                <div className="px-4 pb-4 text-center text-[10px] text-[#A9B1BF]">Tente nome do convite, cliente, telefone, e-mail, local ou texto dentro do design.</div>
               )}
             </div>
           </section>
