@@ -22,13 +22,13 @@ export const Route = createFileRoute("/convite/$slug")({
     const i = loaderData.invitation;
     const desc = i.message?.slice(0, 150) || `Você está convidado! ${new Date(`${i.event_date}T00:00:00`).toLocaleDateString("pt-BR")}${i.venue_name ? ` · ${i.venue_name}` : ""}`;
     const publicPath = `/convite/${i.slug}`;
-    const firstImage = (i.content?.blocks ?? []).find((block) => block.type === "image" && /^https?:\\/\\//i.test(block.props?.url ?? ""))?.props?.url
+    const firstImage = (i.content?.blocks ?? []).find((block) => block.type === "image" && /^https?:\/\//i.test(block.props?.url ?? ""))?.props?.url
       ?? (() => {
         const gallery = (i.content?.blocks ?? []).find((block) => block.type === "gallery");
         if (!gallery?.props?.images) return null;
         try {
           const items = JSON.parse(gallery.props.images) as Array<{ url?: unknown }>;
-          const url = items.find((item) => typeof item?.url === "string" && /^https?:\\/\\//i.test(item.url))?.url;
+          const url = items.find((item) => typeof item?.url === "string" && /^https?:\/\//i.test(item.url))?.url;
           return typeof url === "string" ? url : null;
         } catch {
           return null;
