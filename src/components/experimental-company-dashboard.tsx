@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import {
   ArrowUpRight,
@@ -20,8 +20,8 @@ import {
 } from "lucide-react";
 import { VelluneTopBar } from "@/components/vellune-top-bar";
 import { VelluneCreativeDock } from "@/components/vellune-creative-dock";
-import { InvitationRender } from "@/components/invitation-ui";
-import { InvitationStatusBadge } from "@/components/invitation-ui";
+import { InvitationRender, InvitationStatusBadge } from "@/components/invitation-ui";
+import { NotificationCenter } from "@/components/phase7-ui";
 import { LoadingState } from "@/components/admin-ui";
 import { listInvitations, fmtEventDate, invitationsKey, type Invitation } from "@/lib/invitations";
 import { type ReportRow, type RecentResponse } from "@/lib/reports";
@@ -106,6 +106,7 @@ function ProjectThumbnail({ invitation }: { invitation: Invitation }) {
 
 export function ExperimentalCompanyDashboard({ appUser, reportRows, recentResponses }: Props) {
   const [search, setSearch] = useState("");
+  const navigate = useNavigate();
   const invitations = useQuery({ queryKey: [...invitationsKey, "dashboard-experimental"], queryFn: listInvitations, staleTime: 30_000 });
   const rows = invitations.data ?? [];
   const totals = useMemo(
@@ -146,7 +147,9 @@ export function ExperimentalCompanyDashboard({ appUser, reportRows, recentRespon
         searchValue={search}
         onSearchChange={setSearch}
         searchPlaceholder="Buscar convite ou cliente"
-        notificationCount={0}
+        showNotifications={false}
+        onAvatarClick={() => navigate({ to: "/settings" })}
+        trailingActions={<NotificationCenter appUser={appUser} />}
       />
 
       <main className="mx-auto w-full max-w-[1540px] px-4 pb-32 pt-20 sm:px-6 sm:pt-24 lg:px-8">
@@ -350,12 +353,12 @@ export function ExperimentalCompanyDashboard({ appUser, reportRows, recentRespon
 
       <VelluneCreativeDock
         activeItem="home"
-        onCreate={() => window.location.assign("/invitations/new")}
+        onCreate={() => navigate({ to: "/invitations/new" })}
         onNavigate={(item) => {
           if (item === "home") return;
-          if (item === "projects") window.location.assign("/invitations");
-          if (item === "templates") window.location.assign("/templates");
-          if (item === "settings") window.location.assign("/settings");
+          if (item === "projects") navigate({ to: "/invitations" });
+          if (item === "templates") navigate({ to: "/templates" });
+          if (item === "settings") navigate({ to: "/settings" });
         }}
       />
     </div>
