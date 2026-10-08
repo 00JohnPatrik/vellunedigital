@@ -316,6 +316,26 @@ export function VisualTransformCanvas({ blocks, selectedIds: selectedIdsProp, zo
     return { left, top, width: toolbarWidth };
   })() : null;
 
+  const mobileToolbarPosition = selectedBounds ? (() => {
+    const size = canvasSize();
+    const toolbarHeight = 48;
+    const gap = 10;
+    const left = clamp(
+      selectedBounds.left + selectedBounds.width / 2,
+      54,
+      Math.max(54, size.width - 54),
+    );
+    const above = selectedBounds.top - toolbarHeight - gap;
+    const below = selectedBounds.bottom + gap;
+    const preferredTop = above >= 8 ? above : below;
+    const top = clamp(
+      preferredTop,
+      8,
+      Math.max(8, size.height - toolbarHeight - 8),
+    );
+    return { left, top };
+  })() : null;
+
   const cancelTextLongPress = () => {
     if (textLongPress.current) {
       clearTimeout(textLongPress.current);
@@ -819,11 +839,11 @@ export function VisualTransformCanvas({ blocks, selectedIds: selectedIdsProp, zo
 
     {selectedBounds && selectedBlocks.length > 0 && (
       <div
-        className="pointer-events-auto absolute z-[95] flex -translate-x-1/2 items-center gap-1 rounded-2xl border border-primary/20 bg-popover/95 p-1.5 text-popover-foreground shadow-2xl shadow-black/25 backdrop-blur-xl sm:hidden"
-        style={{
-          left: clamp(selectedBounds.left + selectedBounds.width / 2, 54, Math.max(54, canvasSize().width - 54)),
-          top: Math.max(8, selectedBounds.top - 54),
-        }}
+        className="pointer-events-auto absolute z-[95] flex max-w-[calc(100%-16px)] -translate-x-1/2 items-center gap-1 overflow-x-auto rounded-2xl border border-primary/20 bg-popover/95 p-1.5 text-popover-foreground shadow-2xl shadow-black/25 backdrop-blur-xl sm:hidden"
+        style={mobileToolbarPosition ? {
+          left: mobileToolbarPosition.left,
+          top: mobileToolbarPosition.top,
+        } : undefined}
         role="toolbar"
         aria-label="Ações rápidas do elemento"
         onPointerDown={(event) => event.stopPropagation()}
