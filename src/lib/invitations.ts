@@ -1,5 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 import { cloneContent, type TemplateContent } from "@/lib/templates";
+import { subscriptionLimitErrorMessage } from "@/lib/subscriptions";
 
 // Invitations go through the browser client under RLS. The DB trigger `invitations_guard` sets company_id,
 // generates the stable slug, copies template content and validates customer/template ownership.
@@ -129,6 +130,8 @@ export const fmtEventDate = (d: string) => new Date(`${d}T00:00:00`).toLocaleDat
 
 export function invitationError(e: unknown) {
   const err = e as { code?: string; message?: string };
+  const limitMessage = subscriptionLimitErrorMessage(e);
+  if (limitMessage) return limitMessage;
   if (/Cliente/.test(err?.message ?? "")) return "Cliente inválido para esta empresa.";
   if (/Modelo/.test(err?.message ?? "")) return "Modelo indisponível para esta empresa.";
   if (/Publicação incompleta/.test(err?.message ?? "")) return "Preencha nome, data, hora e adicione ao menos um bloco antes de publicar.";
