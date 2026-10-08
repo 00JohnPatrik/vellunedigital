@@ -138,7 +138,6 @@ const ELEMENT_ICONS: Partial<Record<BlockType, ComponentType<{ className?: strin
   button: Link2,
   rsvp: CheckCircle2,
 };
-const GRID_UNIT = 16;
 export type EditorPoint = { x: number; y: number };
 
 export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHeaderLeft, desktopHeaderRight, fullHeight = false }: { h: BlocksHistory; ctx?: unknown; assets?: unknown; bg?: unknown; onBg?: (value: any) => void; toolbarExtra?: React.ReactNode; desktopHeaderLeft?: React.ReactNode; desktopHeaderRight?: React.ReactNode; fullHeight?: boolean }) {
@@ -509,12 +508,6 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHe
       if (fullySelected) return current.filter((item) => !targetIds.includes(item));
       return [...current, ...targetIds.filter((targetId) => !current.includes(targetId))];
     });
-  };
-  const addElement = (type: BlockType) => {
-    // Keep every insertion path on the same flow so text/images behave
-    // identically whether added from desktop shortcuts, mobile drawer,
-    // category bar or the element library.
-    addBlockByType(type);
   };
   const duplicate = () => {
     if (!selectedIds.length) return;
