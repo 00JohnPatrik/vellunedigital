@@ -41,7 +41,7 @@ const guestColumns = "id, company_id, invitation_id, guest_id, name, phone, emai
 export async function getInvitationForGuests(invitationId: string) {
   const { data, error } = await supabase
     .from("invitations")
-    .select("id, company_id, name, status, event_date, event_time, venue_name, address")
+    .select("id, company_id, name, slug, status, event_date, event_time, venue_name, address")
     .eq("id", invitationId)
     .neq("status", "deleted")
     .maybeSingle();
@@ -50,6 +50,7 @@ export async function getInvitationForGuests(invitationId: string) {
     id: string;
     company_id: string;
     name: string;
+    slug: string;
     status: string;
     event_date: string;
     event_time: string;
