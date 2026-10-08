@@ -1500,6 +1500,8 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHe
               onOpacity={(value, ids) => updateSelectedOpacity(value, ids)}
               onRotate={(amount, ids) => rotateSelectedBy(amount, ids)}
               onAutoArrange={(ids) => autoArrangeSelected(ids)}
+              onMagicArrange={(ids, preset) => magicArrangeSelected(ids, preset)}
+              onSmartAlign={(ids) => smartAlignSelected(ids)}
               onGroup={(ids) => {
                 if (ids.length < 2) return;
                 groupSelected();
