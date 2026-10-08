@@ -1577,7 +1577,7 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHe
           setMobileSheet("view");
         }}
       />}
-      {!experimentalLayout && ((
+      {!experimentalLayout && (
       <div className="vellune-editor-mobile-bar shrink-0 flex items-center justify-between gap-1.5 rounded-2xl border border-primary/15 bg-card/95 p-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))] shadow-2xl shadow-black/25 backdrop-blur-xl lg:hidden" role="toolbar" aria-label="Ferramentas móveis do editor"> 
         <button type="button" className="flex flex-1 flex-col items-center gap-0.5 rounded-xl px-1 py-1.5 text-[10px] text-muted-foreground transition hover:bg-primary/10 hover:text-primary" onClick={() => setMobileSheet("layers")}><Grid3X3 className="h-4 w-4" />Organizar</button>
         <button type="button" className="flex flex-1 flex-col items-center gap-0.5 rounded-xl bg-primary px-1 py-1.5 text-[10px] font-semibold text-primary-foreground shadow-[0_8px_20px_hsl(var(--primary)/.24)] transition hover:brightness-105" onClick={() => setMobileSheet("elements")}><Plus className="h-5 w-5" />Adicionar</button>
