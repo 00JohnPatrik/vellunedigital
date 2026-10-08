@@ -199,7 +199,7 @@ async function sumCompanyFileStorage(companyId: string): Promise<{ files: number
 
     const batch = data ?? [];
     files += batch.length;
-    storageBytes += batch.reduce((total, file) => total + Number(file.size || 0), 0);
+    storageBytes += batch.reduce((total: number, file: { id: string; size: number | null }) => total + Number(file.size || 0), 0);
 
     if (batch.length < pageSize) break;
     lastId = batch[batch.length - 1]!.id;
