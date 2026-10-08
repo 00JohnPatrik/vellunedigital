@@ -50,6 +50,9 @@ export function EditorQuickToolbar({
   onOpacity,
   onRotate,
   onAutoArrange,
+  onMagicArrange,
+  onSmartAlign,
+  onAddElement,
 }: {
   selected: Block[];
   onProp: (key: string, value: string) => void;
