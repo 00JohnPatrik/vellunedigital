@@ -77,9 +77,9 @@ function AdminDashboard() {
 
       <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4" aria-label="Indicadores principais">
         <MetricCard label="Online agora" value={(users.data ?? []).filter((u) => getPresenceStatus(u.last_seen_at) === "online").length} description="Usuários vistos nos últimos 2 minutos" icon={UserCheck} accent="bg-emerald-500 text-emerald-600" />
-        <MetricCard label="Empresas ativas" value={counts.data.companies} description="Organizações cadastradas" icon={Building2} accent="bg-sky-500 text-sky-600" />
-        <MetricCard label="Usuários ativos" value={counts.data.users} description="Contas com acesso liberado" icon={Users} accent="bg-violet-500 text-violet-600" />
-        <MetricCard label="Convites criados" value={metrics.invitations} description="Total consolidado" icon={FileText} accent="bg-amber-500 text-amber-600" />
+        <MetricCard label="Empresas ativas" value={counts.data.companies} description="Organizações cadastradas" icon={Building2} accent="bg-[#d4af37] text-[#d4af37]" />
+        <MetricCard label="Usuários ativos" value={counts.data.users} description="Contas com acesso liberado" icon={Users} accent="bg-[#d4af37] text-[#d4af37]" />
+        <MetricCard label="Convites criados" value={metrics.invitations} description="Total consolidado" icon={FileText} accent="bg-[#d4af37] text-[#d4af37]" />
         <MetricCard label="Visualizações" value={metrics.views} description="Acessos aos convites" icon={Eye} accent="bg-emerald-500 text-emerald-600" />
       </section>
 
@@ -91,13 +91,13 @@ function AdminDashboard() {
                 <CardTitle>Desempenho da plataforma</CardTitle>
                 <CardDescription>Métricas consolidadas a partir dos registros reais de convites.</CardDescription>
               </div>
-              <div className="hidden rounded-lg bg-muted p-2 sm:block"><Gauge className="h-5 w-5 text-primary" /></div>
+              <div className="hidden rounded-xl border border-[#2a2b31] bg-[#08090d] p-2 sm:block"><Gauge className="h-5 w-5 text-primary" /></div>
             </div>
           </CardHeader>
           <CardContent className="space-y-6">
-            <ProgressMetric label="Visualizações" value={metrics.views} total={Math.max(metrics.views, totalInvitations)} color="bg-sky-500" />
+            <ProgressMetric label="Visualizações" value={metrics.views} total={Math.max(metrics.views, totalInvitations)} color="bg-[#d4af37]" />
             <ProgressMetric label="Confirmações" value={metrics.confirmed} total={Math.max(metrics.views, totalInvitations)} color="bg-emerald-500" />
-            <ProgressMetric label="Pessoas confirmadas" value={metrics.people} total={Math.max(metrics.views, totalInvitations)} color="bg-violet-500" />
+            <ProgressMetric label="Pessoas confirmadas" value={metrics.people} total={Math.max(metrics.views, totalInvitations)} color="bg-[#d4af37]" />
             <div className="grid gap-3 border-t pt-5 sm:grid-cols-2">
               <div className="rounded-xl bg-muted/50 p-4"><p className="text-xs text-muted-foreground">Taxa relativa de confirmações</p><p className="mt-1 text-2xl font-semibold">{confirmedRate}%</p></div>
               <div className="rounded-xl bg-muted/50 p-4"><p className="text-xs text-muted-foreground">Pessoas confirmadas</p><p className="mt-1 text-2xl font-semibold">{metrics.people.toLocaleString("pt-BR")}</p></div>
