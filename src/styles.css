@@ -1362,6 +1362,63 @@
 }
 
 @media (min-width: 1024px) {
+  .vellune-editor-experimental .vellune-editor-experimental-sidebar {
+    width: 64px !important;
+    grid-template-columns: 64px !important;
+    overflow: visible;
+    transition: width 220ms cubic-bezier(.22,1,.36,1), box-shadow 220ms ease;
+    z-index: 90;
+  }
+
+  .vellune-editor-experimental .vellune-editor-experimental-sidebar:hover,
+  .vellune-editor-experimental .vellune-editor-experimental-sidebar:focus-within {
+    width: min(340px, 34vw) !important;
+    grid-template-columns: 64px minmax(0, 1fr) !important;
+    box-shadow:
+      20px 0 60px -42px rgb(0 0 0 / 90%),
+      0 1px 0 rgb(255 255 255 / 4%) inset;
+  }
+
+  .vellune-editor-experimental .vellune-editor-experimental-sidebar:not(:hover):not(:focus-within) .vellune-editor-experimental-sidebar-header,
+  .vellune-editor-experimental .vellune-editor-experimental-sidebar:not(:hover):not(:focus-within) .vellune-editor-experimental-sidebar-content {
+    display: none !important;
+  }
+
+  .vellune-editor-experimental .vellune-editor-experimental-sidebar:hover .vellune-editor-experimental-sidebar-header,
+  .vellune-editor-experimental .vellune-editor-experimental-sidebar:focus-within .vellune-editor-experimental-sidebar-header {
+    display: block !important;
+    grid-column: 1 / -1;
+  }
+
+  .vellune-editor-experimental .vellune-editor-experimental-sidebar:hover .vellune-editor-experimental-sidebar-content,
+  .vellune-editor-experimental .vellune-editor-experimental-sidebar:focus-within .vellune-editor-experimental-sidebar-content {
+    display: block !important;
+  }
+
+  .vellune-editor-experimental .vellune-editor-experimental-sidebar nav button {
+    min-height: 48px;
+  }
+
+  .vellune-editor-experimental .vellune-editor-experimental-sidebar:not(:hover):not(:focus-within) nav button:not(:first-child) span {
+    display: none;
+  }
+
+  .vellune-editor-experimental .vellune-editor-experimental-sidebar:hover nav button span,
+  .vellune-editor-experimental .vellune-editor-experimental-sidebar:focus-within nav button span {
+    display: block;
+  }
+
+  .vellune-editor-experimental .vellune-editor-experimental-sidebar:not(:hover):not(:focus-within) nav button:not(:first-child) {
+    gap: 0;
+  }
+
+  .vellune-editor-experimental .vellune-editor-experimental-sidebar:hover nav button:not(:first-child),
+  .vellune-editor-experimental .vellune-editor-experimental-sidebar:focus-within nav button:not(:first-child) {
+    align-items: center;
+  }
+}
+
+@media (min-width: 1024px) {
   .vellune-editor-experimental .vellune-editor-sidebar {
     border-right-color: rgba(255,255,255,.07);
     background: rgba(13,15,20,.88);
