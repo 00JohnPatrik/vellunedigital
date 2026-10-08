@@ -18,7 +18,7 @@ function DashboardLayout() {
   const appUser = routeAppUser!;
   const legacyLayout = typeof window !== "undefined" && new URLSearchParams(window.location.search).get("legacy") === "1";
 
-  if (!legacyLayout && typeof window !== "undefined" && window.location.pathname === "/dashboard") {
+  if (!legacyLayout && typeof window !== "undefined" && window.location.pathname.replace(/\/$/, "") === "/dashboard") {
     return (
       <div className="dark min-h-[100dvh] w-full bg-[#0B0D12] text-[#F5F7FA]">
         <Outlet />
