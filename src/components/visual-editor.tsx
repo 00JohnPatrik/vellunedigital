@@ -1230,12 +1230,38 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHe
           )}
           {mobileSheet === "view" && (
             <div className="space-y-3">
-              <div className="flex items-center gap-2">
-                <button type="button" className="rounded border px-3 py-2" onClick={() => setZoom((value) => Math.max(50, value - 10))}>−</button>
-                <span className="flex-1 text-center">{zoom}%</span>
-                <button type="button" className="rounded border px-3 py-2" onClick={() => setZoom((value) => Math.min(150, value + 10))}>+</button>
+              <div>
+                <p className="text-xs font-semibold text-foreground">Tamanho da visualização</p>
+                <p className="mt-1 text-[10px] leading-4 text-muted-foreground">O celular é o padrão. Use os outros formatos apenas para conferir como o convite se adapta.</p>
               </div>
-              <button type="button" className={`w-full rounded border px-3 py-2 ${showGrid ? "bg-primary/10 text-primary" : "text-muted-foreground"}`} onClick={() => setShowGrid((value) => !value)}>
+              <div className="grid grid-cols-3 gap-2" role="group" aria-label="Tamanho da visualização no celular">
+                {([
+                  ["mobile", Smartphone, "Celular"],
+                  ["tablet", Tablet, "Tablet"],
+                  ["desktop", Monitor, "Desktop"],
+                ] as const).map(([value, Icon, label]) => (
+                  <button
+                    key={value}
+                    type="button"
+                    aria-pressed={device === value}
+                    onClick={() => setDevice(value)}
+                    className={cn(
+                      "flex min-h-14 flex-col items-center justify-center gap-1 rounded-xl border text-[10px] font-medium transition",
+                      device === value ? "border-primary bg-primary/10 text-primary" : "border-border/70 text-muted-foreground hover:bg-muted hover:text-foreground",
+                    )}
+                  >
+                    <Icon className="h-4 w-4" />
+                    {label}
+                  </button>
+                ))}
+              </div>
+              <div className="flex items-center gap-2">
+                <button type="button" className="rounded-xl border px-3 py-2.5" onClick={() => setZoom((value) => Math.max(50, value - 10))} aria-label="Diminuir zoom">−</button>
+                <span className="flex-1 text-center text-xs tabular-nums">{zoom}%</span>
+                <button type="button" className="rounded-xl border px-3 py-2.5" onClick={() => setZoom((value) => Math.min(150, value + 10))} aria-label="Aumentar zoom">+</button>
+                <button type="button" className="rounded-xl border px-3 py-2.5 text-[10px]" onClick={fitCanvasToViewport}>Ajustar</button>
+              </div>
+              <button type="button" className={cn("w-full rounded-xl border px-3 py-2.5 text-[11px] font-medium", showGrid ? "border-primary/20 bg-primary/10 text-primary" : "text-muted-foreground")} onClick={() => setShowGrid((value) => !value)}>
                 {showGrid ? "Guias ativas" : "Ativar guias"}
               </button>
             </div>
