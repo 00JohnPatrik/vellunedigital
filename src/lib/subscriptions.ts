@@ -216,7 +216,7 @@ export async function getSubscriptionUsage(companyId: string): Promise<Subscript
 
 export async function getSubscriptionOverview(companyId: string): Promise<SubscriptionOverview> {
   const [{ data: subscription, error }, usage] = await Promise.all([
-    supabase.from("company_subscriptions").select("*").eq("company_id", companyId).in("status", ["active", "suspended"]).order("created_at", { ascending: false }).limit(1).maybeSingle(),
+    supabase.from("company_subscriptions").select("*").eq("company_id", companyId).in("status", ["active", "suspended", "cancelled"]).order("created_at", { ascending: false }).limit(1).maybeSingle(),
     getSubscriptionUsage(companyId),
   ]);
   if (error) throw error;
