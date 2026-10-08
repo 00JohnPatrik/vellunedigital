@@ -22,19 +22,39 @@ export const Route = createFileRoute("/convite/$slug")({
     const i = loaderData.invitation;
     const desc = i.message?.slice(0, 150) || `Você está convidado! ${new Date(`${i.event_date}T00:00:00`).toLocaleDateString("pt-BR")}${i.venue_name ? ` · ${i.venue_name}` : ""}`;
     const publicPath = `/convite/${i.slug}`;
+    const firstImage = (i.content?.blocks ?? []).find((block) => block.type === "image" && /^https?:\\/\\//i.test(block.props?.url ?? ""))?.props?.url
+      ?? (() => {
+        const gallery = (i.content?.blocks ?? []).find((block) => block.type === "gallery");
+        if (!gallery?.props?.images) return null;
+        try {
+          const items = JSON.parse(gallery.props.images) as Array<{ url?: unknown }>;
+          const url = items.find((item) => typeof item?.url === "string" && /^https?:\\/\\//i.test(item.url))?.url;
+          return typeof url === "string" ? url : null;
+        } catch {
+          return null;
+        }
+      })();
+    const themeColor = i.branding?.primary_color || i.branding?.accent_color || "#08090d";
     return {
       meta: [
         { title: i.name },
         { name: "description", content: desc },
+        { name: "theme-color", content: themeColor },
         { property: "og:title", content: i.name },
         { property: "og:description", content: desc },
         { property: "og:type", content: "website" },
         { property: "og:url", content: publicPath },
         { property: "og:site_name", content: "Vellune Digital" },
-        { name: "twitter:card", content: "summary" },
+        ...(firstImage ? [{ property: "og:image", content: firstImage }] : []),
+        { name: "twitter:card", content: firstImage ? "summary_large_image" : "summary" },
         { name: "twitter:title", content: i.name },
         { name: "twitter:description", content: desc },
+        ...(firstImage ? [{ name: "twitter:image", content: firstImage }] : []),
         { name: "robots", content: "noindex" },
+      ],
+      links: [
+        { rel: "canonical", href: publicPath },
+        ...(i.branding?.favicon_url ? [{ rel: "icon", href: i.branding.favicon_url }] : []),
       ],
     };
   },
@@ -44,6 +64,13 @@ export const Route = createFileRoute("/convite/$slug")({
 });
 
 const viewed = new Set<string>();
+
+function formatPublicEvent(invitation: { event_date: string; event_time?: string | null; venue_name?: string | null }) {
+  const date = new Date(`${invitation.event_date}T00:00:00`).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric" });
+  const time = invitation.event_time ? ` às ${String(invitation.event_time).slice(0, 5)}` : "";
+  const venue = invitation.venue_name ? ` · ${invitation.venue_name}` : "";
+  return `${date}${time}${venue}`;
+}
 
 function InvitationLoading() {
   return (
@@ -129,7 +156,7 @@ function PublicInvitationPage() {
       return;
     }
     try {
-      await navigator.share({ title: i.name, text: "Confira este convite", url: publicUrl });
+      await navigator.share({ title: i.name, text: `${i.name} — ${formatPublicEvent(i)}`, url: publicUrl });
     } catch {
       // Cancelamento pelo visitante não é um erro da página.
     }
