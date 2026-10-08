@@ -34,8 +34,8 @@ export function SubscriptionUsageAlert({ companyId, className = "" }: { companyI
     staleTime: 30_000,
   });
 
-  if (query.isLoading || query.isError || !query.data?.plan || !query.data.subscription) return null;
   const data = query.data;
+  if (query.isLoading || query.isError || !data?.plan || !data.subscription) return null;
   const subscription = data.subscription;
   const plan = data.plan;
   if (subscription.status !== "active" || (subscription.expires_at && new Date(subscription.expires_at) < new Date())) return null;
