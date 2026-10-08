@@ -84,7 +84,7 @@ export function VelluneAdminShell({ appUser, children, className }: { appUser: A
         {children}
       </main>
 
-      <nav className="fixed inset-x-0 bottom-0 z-[170] flex justify-center px-3 pb-[max(12px,env(safe-area-inset-bottom))] pt-3 sm:px-5 sm:pb-5 pointer-events-none" aria-label="Creative Dock administrativo">
+      <nav className="fixed inset-x-0 bottom-[max(14px,env(safe-area-inset-bottom))] z-[170] flex justify-center px-3 sm:px-5 pointer-events-none" aria-label="Creative Dock administrativo">
         <div className="pointer-events-auto flex min-h-[66px] items-center gap-1 rounded-full border border-[#2a2b31] bg-[#111318]/88 px-2.5 py-2 shadow-[0_24px_70px_-28px_rgba(11,13,18,0.98)] backdrop-blur-lg backdrop-saturate-150 sm:min-h-[72px] sm:gap-1.5 sm:px-3">
           <AdminDockButton label="Início" active={Boolean(matchRoute({ to: "/admin", fuzzy: false }))} onClick={() => go("/admin")} icon={adminNav[0]!.icon} />
           <AdminDockButton label="Empresas" active={Boolean(matchRoute({ to: "/admin/companies", fuzzy: true }))} onClick={() => go("/admin/companies")} icon={adminNav[1]!.icon} />
