@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { CalendarPlus, Check, Loader2, MailX, MessageCircle, Share2, Sparkles } from "lucide-react";
+import { z } from "zod";
+import { CalendarPlus, Check, Download, Loader2, MailX, MessageCircle, Share2, Sparkles } from "lucide-react";
 import { InvitationCanvas } from "@/components/block-render";
 import { Button } from "@/components/ui/button";
 import { getPublicInvitation, recordInvitationView } from "@/lib/public-invitation.functions";
@@ -8,7 +9,8 @@ import { requestMotionPermission } from "@/lib/invitation-editor-animation";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/convite/$slug")({
-  loader: ({ params }) => getPublicInvitation({ data: { slug: params.slug } }),
+  validateSearch: z.object({ guest: z.string().optional() }),
+  loader: ({ params, location }) => getPublicInvitation({ data: { slug: params.slug, guestToken: location.search.guest } }),
   pendingComponent: InvitationLoading,
   head: ({ loaderData }) => {
     if (!loaderData || loaderData.state !== "ok") {
@@ -64,6 +66,37 @@ export const Route = createFileRoute("/convite/$slug")({
 });
 
 const viewed = new Set<string>();
+
+function formatIcsText(value: string) {
+  return value.replace(/\\/g, "\\\\").replace(/;/g, "\\;").replace(/,/g, "\\,").replace(/\r?\n/g, "\\n");
+}
+
+function makeCalendarIcs(invitation: { name: string; event_date: string; event_time?: string | null; venue_name?: string | null; address?: string | null; city?: string | null; state?: string | null; message?: string | null }, slug: string) {
+  const startDate = new Date(invitation.event_date + "T" + String(invitation.event_time ?? "00:00").slice(0, 5));
+  const start = invitation.event_date.replaceAll("-", "") + "T" + String(invitation.event_time ?? "00:00").slice(0, 5).replace(":", "") + "00";
+  const endDate = Number.isNaN(startDate.getTime()) ? startDate : new Date(startDate.getTime() + 2 * 60 * 60 * 1000);
+  const end = Number.isNaN(endDate.getTime())
+    ? start
+    : endDate.getFullYear() + String(endDate.getMonth() + 1).padStart(2, "0") + String(endDate.getDate()).padStart(2, "0") + "T" +
+      String(endDate.getHours()).padStart(2, "0") + String(endDate.getMinutes()).padStart(2, "0") + "00";
+  const location = [invitation.venue_name, invitation.address, invitation.city, invitation.state].filter(Boolean).join(", ");
+  const body = [
+    "BEGIN:VCALENDAR",
+    "VERSION:2.0",
+    "PRODID:-//Vellune Digital//Convite//PT-BR",
+    "CALSCALE:GREGORIAN",
+    "BEGIN:VEVENT",
+    "UID:" + slug + "@vellunedigital.app",
+    "DTSTART:" + start,
+    "DTEND:" + end,
+    "SUMMARY:" + formatIcsText(invitation.name),
+    location ? "LOCATION:" + formatIcsText(location) : "",
+    invitation.message ? "DESCRIPTION:" + formatIcsText(invitation.message) : "",
+    "END:VEVENT",
+    "END:VCALENDAR",
+  ].filter(Boolean).join("\r\n");
+  return "data:text/calendar;charset=utf-8," + encodeURIComponent(body);
+}
 
 function formatPublicEvent(invitation: { event_date: string; event_time?: string | null; venue_name?: string | null }) {
   const date = new Date(`${invitation.event_date}T00:00:00`).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric" });
