@@ -5,6 +5,7 @@ import { RecentResponses, Section, StatCard, StatGrid, UpcomingList } from "@/co
 import { fetchReport, recentResponses, totals, upcoming } from "@/lib/reports";
 import { CompanyDashboardEnhancements } from "@/components/phase7-ui";
 import { ExperimentalCompanyDashboard } from "@/components/experimental-company-dashboard";
+import { CommercialOnboarding } from "@/components/commercial-onboarding";
 
 export const Route = createFileRoute("/_authenticated/dashboard/")({
   component: CompanyDashboard,
@@ -21,11 +22,14 @@ function CompanyDashboard() {
 
   if (experimentalLayout) {
     return (
-      <ExperimentalCompanyDashboard
+      <>
+        <CommercialOnboarding userId={appUser!.id} userName={appUser!.name} />
+        <ExperimentalCompanyDashboard
         appUser={appUser!}
         reportRows={rows}
         recentResponses={recent.data ?? []}
-      />
+        />
+      </>
     );
   }
 
@@ -39,7 +43,9 @@ function CompanyDashboard() {
   }
 
   return (
-    <div>
+    <>
+      <CommercialOnboarding userId={appUser!.id} userName={appUser!.name} />
+      <div>
       <PageHeader title="Dashboard" description="Resumo da sua empresa." />
       <StatGrid>
         <StatCard label="Convites ativos" value={t.invitations} />
@@ -57,6 +63,7 @@ function CompanyDashboard() {
         ) : <RecentResponses rows={recent.data ?? []} />}
       </Section>
       <CompanyDashboardEnhancements companyId={appUser!.company!.id} />
-    </div>
+      </div>
+    </>
   );
 }
