@@ -493,7 +493,7 @@ function ShapeBlock({ p }: { p: Record<string, string> }) {
 function GiftBlock({ p }: { p: Record<string, string> }) {
   const [copied, setCopied] = useState(false);
   const pixKey = p["pix_key"]?.trim() || "";
-  const giftUrl = /^https?:\\/\\//i.test(p["gift_url"] ?? "") ? p["gift_url"] : "";
+  const giftUrl = /^https?:\/\//i.test(p["gift_url"] ?? "") ? p["gift_url"] : "";
   const copyPix = async () => {
     if (!pixKey) return;
     try {
