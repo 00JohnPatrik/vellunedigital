@@ -26,6 +26,13 @@ const IMAGE_KEYS = [
 
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
 
+const photoPresets = [
+  { id: "natural", label: "Natural", values: { imageBrightness: "100", imageContrast: "100", imageSaturate: "100" } },
+  { id: "soft", label: "Suave", values: { imageBrightness: "104", imageContrast: "96", imageSaturate: "90" } },
+  { id: "mono", label: "P&B", values: { imageBrightness: "105", imageContrast: "112", imageSaturate: "0" } },
+  { id: "vivid", label: "Vibrante", values: { imageBrightness: "102", imageContrast: "108", imageSaturate: "125" } },
+] as const;
+
 function numberValue(value: unknown, fallback: number) {
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : fallback;
@@ -153,6 +160,31 @@ export function ImagePropertiesPanel({ selected, assets, onChange }: ImagePanelP
           Zoom do crop: {zoom}%
           <input type="range" min="100" max="300" step="5" value={zoom} onChange={(event) => updateNumber("imageZoom", Number(event.target.value), 100, 300)} className="w-full accent-primary" />
         </label>
+        <div className="space-y-1.5">
+          <p className="text-[11px] font-semibold text-foreground">Acabamento rápido</p>
+          <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-4">
+            {photoPresets.map((preset) => {
+              const active = brightness === Number(preset.values.imageBrightness) && contrast === Number(preset.values.imageContrast) && saturate === Number(preset.values.imageSaturate);
+              return (
+                <Button
+                  key={preset.id}
+                  type="button"
+                  size="sm"
+                  variant={active ? "default" : "outline"}
+                  className="h-8 rounded-lg px-2 text-[10px]"
+                  onClick={() => onChange(
+                    (items) => items.map((item) => selected.some((chosen) => chosen.id === item.id) && item.type === "image"
+                      ? { ...item, props: { ...item.props, ...preset.values } }
+                      : item),
+                    `image:preset:${preset.id}`,
+                  )}
+                >
+                  {preset.label}
+                </Button>
+              );
+            })}
+          </div>
+        </div>
       </div>
 
       <details className="group rounded-lg border border-primary/10 bg-background/35">
