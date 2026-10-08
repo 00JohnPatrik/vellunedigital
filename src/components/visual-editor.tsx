@@ -750,12 +750,12 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHe
         {toolbarExtra && <div className="mt-2 flex items-center justify-end gap-1.5 border-t border-primary/10 pt-2 md:hidden">{toolbarExtra}</div>}
       </div>
       <div className="vellune-editor-body flex min-h-0 flex-1 flex-col lg:flex-row">
-        <aside className={cn("vellune-editor-sidebar hidden shrink-0 grid-rows-[auto_minmax(0,1fr)] border-r border-white/[0.06] bg-[#0d0f14]/95 backdrop-blur-xl", focusMode ? "lg:hidden" : cn("lg:grid", sidebarOpen ? "w-[330px] grid-cols-[74px_minmax(0,1fr)]" : "w-[74px] grid-cols-[74px]"))} aria-label="Ferramentas do editor">
+        <aside className={cn("vellune-editor-sidebar hidden shrink-0 grid-rows-[auto_minmax(0,1fr)] border-r border-white/[0.06] bg-[#0d0f14]/95 backdrop-blur-xl", focusMode ? "lg:hidden" : cn("lg:grid", sidebarOpen ? "w-[300px] grid-cols-[68px_minmax(0,1fr)]" : "w-[74px] grid-cols-[74px]"))} aria-label="Ferramentas do editor">
           <div className={cn("border-b border-white/[0.06] bg-[#101217]/80 p-3.5", sidebarOpen ? "col-span-2" : "hidden")}>
             <div className="flex items-center gap-2">
               <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary"><Sparkles className="h-4 w-4" /></div>
               <div className="min-w-0 flex-1">
-                <p className="text-sm font-semibold text-foreground">Criar convite</p>
+                <p className="text-sm font-semibold text-foreground tracking-[-0.01em]">Criar convite</p>
                 <p className="mt-0.5 text-[10px] leading-4 text-muted-foreground">Tudo o que você precisa, na ordem certa.</p>
               </div>
               <button type="button" onClick={() => setSidebarOpen(false)} className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-white/[0.08] bg-white/[0.03] text-white/45 transition hover:bg-white/[0.06] hover:text-white" aria-label="Recolher biblioteca lateral" title="Recolher biblioteca lateral">
@@ -922,7 +922,7 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHe
             )}
           </div>
         </aside>
-        <main className="vellune-editor-workspace relative flex min-h-0 h-auto flex-1 flex-col overflow-hidden rounded-2xl border border-primary/10 bg-[radial-gradient(circle_at_top,hsl(var(--primary)/.12),transparent_38%),linear-gradient(145deg,hsl(var(--muted)/.45),hsl(var(--background)/.95))] p-2 shadow-inner sm:p-4 lg:h-full lg:min-w-0 lg:p-5">
+        <main className="vellune-editor-workspace relative flex min-h-0 h-auto flex-1 flex-col overflow-hidden rounded-2xl border border-primary/10 bg-[radial-gradient(circle_at_top,hsl(var(--primary)/.12),transparent_38%),linear-gradient(145deg,hsl(var(--muted)/.45),hsl(var(--background)/.95))] p-2 shadow-inner sm:p-4 lg:h-full lg:min-w-0 lg:p-4 xl:p-5">
           {spaceHeld && <div className="pointer-events-none absolute left-1/2 top-3 z-[140] -translate-x-1/2 rounded-full border border-primary/20 bg-[#111318]/95 px-3 py-1.5 text-[10px] font-medium text-white/75 shadow-lg backdrop-blur-xl">Espaço + arrastar · mover área de trabalho</div>}
           <div className="vellune-editor-mobile-bar mb-3 flex items-center justify-between gap-2 rounded-xl border border-primary/15 bg-card/85 px-3 py-2.5 shadow-lg shadow-black/10 backdrop-blur-xl lg:hidden">
             <div className="flex min-w-0 items-center gap-2">
@@ -1047,7 +1047,7 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHe
               }}
             /></div></div></div>
         </main>
-        {inspectorOpen && <aside id="editor-contextual-properties" className={cn("vellune-editor-inspector hidden w-[300px] shrink-0 overflow-y-auto rounded-2xl border border-primary/10 bg-card/75 p-3 shadow-xl shadow-black/10 backdrop-blur-xl lg:block", focusMode && "!hidden")} aria-label="Ajustes avançados do elemento">
+        {inspectorOpen && <aside id="editor-contextual-properties" className={cn("vellune-editor-inspector hidden w-[280px] shrink-0 overflow-y-auto rounded-2xl border border-primary/10 bg-card/75 p-3 shadow-xl shadow-black/10 backdrop-blur-xl lg:block", focusMode && "!hidden")} aria-label="Ajustes avançados do elemento">
           <div className="mb-2 flex items-center justify-between gap-2 rounded-xl border border-primary/10 bg-background/35 px-3 py-2.5">
             <div className="flex min-w-0 items-center gap-2">
               <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary"><PanelRight className="h-3.5 w-3.5" /></div>
