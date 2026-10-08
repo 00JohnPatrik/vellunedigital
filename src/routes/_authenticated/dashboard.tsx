@@ -19,7 +19,7 @@ function DashboardLayout() {
   const appUser = routeAppUser!;
   const matchRoute = useMatchRoute();
   const legacyLayout = typeof window !== "undefined" && new URLSearchParams(window.location.search).get("legacy") === "1";
-  const isDashboardHome = Boolean(matchRoute({ to: "/dashboard/", fuzzy: false }));
+  const isDashboardHome = Boolean(matchRoute({ to: "/dashboard", fuzzy: false }));
 
   if (legacyLayout) {
     return <AppShell base="/dashboard" nav={companyNav} appUser={appUser}><Outlet /></AppShell>;
