@@ -90,8 +90,74 @@ function EditorForm({ inv, experimentalLayout = false, checkinEnabled = false }:
   const inFlight = useRef(false);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const first = useRef(true);
+  const recoveryChecked = useRef(false);
+  const draftTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const localDraftKey = `vellune:editor-draft:${inv.id}`;
 
-  const save = useCallback(async (manual = false): Promise<boolean> => {
+  useEffect(() => {
+    if (recoveryChecked.current) return;
+    recoveryChecked.current = true;
+
+    try {
+      const raw = localStorage.getItem(localDraftKey);
+      if (!raw) return;
+      const draft = JSON.parse(raw) as {
+        savedAt?: number;
+        blocks?: unknown;
+        background?: unknown;
+        event?: EventValues;
+        customerId?: string;
+      };
+      const draftSavedAt = Number(draft.savedAt || 0);
+      const serverUpdatedAt = new Date(inv.updated_at).getTime();
+      if (!draftSavedAt || draftSavedAt <= serverUpdatedAt || !Array.isArray(draft.blocks) || !draft.event) {
+        localStorage.removeItem(localDraftKey);
+        return;
+      }
+
+      setV(draft.event);
+      setCustomerId(draft.customerId ?? inv.customer_id);
+      h.set(normalizeBlocks(draft.blocks), "recovery:local-draft");
+      setBg((draft.background && typeof draft.background === "object" ? structuredClone(draft.background) : {}) as Background);
+      toast.info("Recuperamos alterações locais ainda não sincronizadas deste convite.");
+    } catch {
+      // A recuperação local é opcional; falhas de armazenamento não impedem o editor.
+    }
+  }, [h, inv.customer_id, inv.id, inv.updated_at, localDraftKey]);
+
+  useEffect(() => {
+    if (JSON.stringify(snap.current) === initial.current) return;
+    if (draftTimer.current) clearTimeout(draftTimer.current);
+    draftTimer.current = setTimeout(() => {
+      try {
+        localStorage.setItem(localDraftKey, JSON.stringify({
+          savedAt: Date.now(),
+          blocks: snap.current.blocks,
+          background: snap.current.bg,
+          event: snap.current.v,
+          customerId: snap.current.customerId,
+        }));
+      } catch {
+        // Limitações de armazenamento não impedem o autosave remoto.
+      }
+    }, 500);
+    return () => {
+      if (draftTimer.current) {
+        clearTimeout(draftTimer.current);
+        draftTimer.current = null;
+      }
+    };
+  }, [bg, customerId, h.blocks, localDraftKey, v]);
+
+  const clearLocalDraft = useCallback(() => {
+    try {
+      localStorage.removeItem(localDraftKey);
+    } catch {
+      // Ignora indisponibilidade de armazenamento local.
+    }
+  }, [localDraftKey]);
+
+  const save = useCallback(async (manual = false): Promise<boolean> =>
     if (timer.current) { clearTimeout(timer.current); timer.current = null; }
     if (inFlight.current) {
       await new Promise<void>((resolve) => setTimeout(resolve, 100));
@@ -108,6 +174,7 @@ function EditorForm({ inv, experimentalLayout = false, checkinEnabled = false }:
     try {
       await updateInvitation(inv.id, cid, ev, content);
       savedVersion.current = target;
+      clearLocalDraft();
       setState(version.current === target ? "saved" : "dirty");
       if (manual) toast.success("Convite salvo.");
       void qc.invalidateQueries({ queryKey: invitationsKey });
@@ -120,7 +187,7 @@ function EditorForm({ inv, experimentalLayout = false, checkinEnabled = false }:
       inFlight.current = false;
       if (version.current !== target && !timer.current) timer.current = setTimeout(() => void save(), AUTOSAVE_MS);
     }
-  }, [inv.id, qc]);
+  }, [clearLocalDraft, inv.id, qc]);
 
   const initial = useRef(JSON.stringify(snap.current));
   useEffect(() => {
