@@ -36,7 +36,7 @@ export function CommercialOnboarding({ userId, userName }: { userId: string; use
 
   if (dismissed) return null;
 
-  const step = visibleSteps[active] ?? visibleSteps[0];
+  const step = visibleSteps[Math.min(active, visibleSteps.length - 1)]!;
 
   const dismiss = () => {
     try { localStorage.setItem(storageKey(userId), "dismissed"); } catch { /* optional */ }
