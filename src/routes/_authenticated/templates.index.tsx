@@ -26,6 +26,7 @@ function CompanyTemplates() {
   const [category, setCategory] = useState("all");
   const [favoritesOnly, setFavoritesOnly] = useState(false);
   const [sort, setSort] = useState<"recent" | "az">("recent");
+  const sortTemplates = (items: Template[]) => [...items].sort((a, b) => sort === "az" ? a.name.localeCompare(b.name, "pt-BR") : String(b.created_at).localeCompare(String(a.created_at)));
   const favoriteIds = new Set(favoritesQ.data ?? []);
   const match = (t: Template) => (category === "all" || t.category === category)
     && t.name.toLowerCase().includes(search.trim().toLowerCase())
