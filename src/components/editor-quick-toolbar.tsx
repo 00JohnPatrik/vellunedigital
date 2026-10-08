@@ -1,4 +1,4 @@
-import { AlignCenter, AlignCenterHorizontal, AlignCenterVertical, AlignLeft, AlignRight, AlignStartVertical, AlignVerticalJustifyCenter, AlignEndVertical, Bold, BringToFront, Copy, Crop, Italic, MoreHorizontal, RotateCcw, RotateCw, SendToBack, SlidersHorizontal, Trash2, Image as ImageIcon, Lock, Unlock, Underline, Strikethrough, WandSparkles } from "lucide-react";
+import { AlignCenter, AlignCenterHorizontal, AlignCenterVertical, AlignLeft, AlignRight, AlignStartVertical, AlignVerticalJustifyCenter, AlignEndVertical, Bold, BringToFront, Copy, Crop, Italic, MoreHorizontal, RotateCcw, RotateCw, SendToBack, SlidersHorizontal, Trash2, Image as ImageIcon, Lock, Unlock, Underline, Strikethrough, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { FONTS } from "@/lib/blocks";
@@ -158,7 +158,7 @@ export function EditorQuickToolbar({ selected, onProp, onDuplicate, onDelete, on
           aria-label="Organizar seleção automaticamente"
           onClick={onAutoArrange}
         >
-          <WandSparkles className="mr-1.5 h-3.5 w-3.5" />Organizar
+          <Sparkles className="mr-1.5 h-3.5 w-3.5" />Organizar
         </Button>
       )}
 
