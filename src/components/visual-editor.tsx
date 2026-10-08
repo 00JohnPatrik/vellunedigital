@@ -1617,6 +1617,16 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHe
       </div>
       {experimentalLayout && !focusMode && <VelluneCreativeDock
         activeItem="projects"
+        menuItems={[
+          { label: "Dashboard", to: "/dashboard" },
+          { label: "Convites", to: "/invitations" },
+          { label: "Clientes", to: "/customers" },
+          { label: "Modelos", to: "/templates" },
+          { label: "Resultados", to: "/reports" },
+          { label: "Plano", to: "/dashboard/assinatura" },
+          { label: "Sua marca", to: "/settings/brand" },
+          { label: "Configurações", to: "/dashboard/configuracoes" },
+        ]}
         onCreate={() => { setToolCategory("Adicionar"); setMobileSheet("experimental-add"); }}
         onNavigate={(item) => {
           if (item === "home") { setMobileSheet(null); return; }
