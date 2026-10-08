@@ -1,6 +1,7 @@
-import { FolderOpen, Home, LayoutTemplate, Plus, Settings2, MoreHorizontal, LayoutDashboard, Users, BarChart3, CreditCard, Palette, Mail, X } from "lucide-react";
+import { FolderOpen, Home, LayoutTemplate, Plus, Settings2, MoreHorizontal, X } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { useState } from "react";
+import { companyNav } from "@/lib/nav";
 import { cn } from "@/lib/utils";
 
 export type CreativeDockItem = "home" | "projects" | "templates" | "settings";
@@ -20,17 +21,7 @@ export function VelluneCreativeDock({
 }: VelluneCreativeDockProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   type Item = { id: CreativeDockItem; label: string; Icon: typeof Home };
-  const defaultMenuItems = [
-    { label: "Dashboard", to: "/dashboard", icon: LayoutDashboard },
-    { label: "Convites", to: "/invitations", icon: Mail },
-    { label: "Clientes", to: "/customers", icon: Users },
-    { label: "Modelos", to: "/templates", icon: LayoutTemplate },
-    { label: "Resultados", to: "/reports", icon: BarChart3 },
-    { label: "Plano", to: "/dashboard/assinatura", icon: CreditCard },
-    { label: "Sua marca", to: "/settings/brand", icon: Palette },
-    { label: "Configurações", to: "/dashboard/configuracoes", icon: Settings2 },
-  ] as const;
-  const completeMenu = defaultMenuItems;
+  const completeMenu = companyNav.filter((item): item is typeof item & { to: string } => Boolean(item.to));
   const items: [Item, Item, Item, Item] = [
     { id: "home", label: "Início", Icon: Home },
     { id: "projects", label: "Projetos", Icon: FolderOpen },
