@@ -640,3 +640,322 @@
     transition: none !important;
   }
 }
+
+
+/* -------------------------------------------------------------------------- */
+/* Vellune Platform — premium product chrome                                  */
+/* Shared by Dashboard and Super Admin. Scoped so login/public invitations   */
+/* keep their own visual language.                                            */
+/* -------------------------------------------------------------------------- */
+
+.vellune-platform-root {
+  --vellune-platform-line: color-mix(in oklch, var(--color-foreground) 8%, transparent);
+  --vellune-platform-line-strong: color-mix(in oklch, var(--color-primary) 22%, transparent);
+  --vellune-platform-surface: color-mix(in oklch, var(--color-card) 94%, var(--color-background));
+  --vellune-platform-soft: color-mix(in oklch, var(--color-muted) 54%, var(--color-background));
+  --vellune-platform-glow: color-mix(in oklch, var(--color-primary) 8%, transparent);
+  min-height: 100svh;
+  background:
+    radial-gradient(circle at 88% -10%, var(--vellune-platform-glow), transparent 28rem),
+    radial-gradient(circle at 0% 20%, color-mix(in oklch, var(--color-primary) 4%, transparent), transparent 34rem),
+    var(--color-background);
+}
+
+.dark .vellune-platform-root {
+  --vellune-platform-line: color-mix(in oklch, oklch(1 0 0) 8%, transparent);
+  --vellune-platform-line-strong: color-mix(in oklch, var(--color-primary) 28%, transparent);
+  --vellune-platform-surface: oklch(0.165 0.026 254);
+  --vellune-platform-soft: oklch(0.19 0.03 254);
+  --vellune-platform-glow: oklch(0.72 0.11 190 / 8%);
+  background:
+    radial-gradient(circle at 88% -10%, var(--vellune-platform-glow), transparent 30rem),
+    radial-gradient(circle at 0% 18%, oklch(0.72 0.11 190 / 4%), transparent 36rem),
+    oklch(0.115 0.024 254);
+}
+
+.vellune-app-sidebar {
+  border-color: var(--vellune-platform-line) !important;
+  background:
+    linear-gradient(180deg, color-mix(in oklch, var(--color-sidebar) 96%, transparent), color-mix(in oklch, var(--color-background) 82%, var(--color-sidebar)));
+  box-shadow:
+    14px 0 44px -34px color-mix(in oklch, var(--color-primary) 22%, transparent),
+    inset -1px 0 0 color-mix(in oklch, var(--color-foreground) 3%, transparent);
+  backdrop-filter: blur(22px);
+}
+
+.dark .vellune-app-sidebar {
+  background:
+    linear-gradient(180deg, oklch(0.145 0.026 254 / 98%), oklch(0.095 0.02 254 / 98%));
+  box-shadow:
+    18px 0 50px -34px oklch(0 0 0 / 55%),
+    inset -1px 0 0 oklch(1 0 0 / 3%);
+}
+
+.vellune-app-brand {
+  min-height: 5.25rem;
+  border-color: var(--vellune-platform-line) !important;
+  background: linear-gradient(180deg, color-mix(in oklch, var(--color-card) 18%, transparent), transparent);
+}
+
+.vellune-nav-link {
+  position: relative;
+  border-color: transparent !important;
+  color: color-mix(in oklch, var(--color-sidebar-foreground) 66%, transparent);
+  transition:
+    background-color 170ms ease,
+    color 170ms ease,
+    border-color 170ms ease,
+    transform 170ms ease,
+    box-shadow 170ms ease;
+}
+
+.vellune-nav-link:hover {
+  border-color: var(--vellune-platform-line) !important;
+  background: color-mix(in oklch, var(--color-primary) 5%, transparent);
+  color: var(--color-sidebar-foreground);
+  transform: translateX(1px);
+}
+
+.vellune-nav-link[data-active="true"],
+.vellune-nav-link[aria-current="page"] {
+  border-color: var(--vellune-platform-line-strong) !important;
+  background:
+    linear-gradient(90deg, color-mix(in oklch, var(--color-primary) 11%, transparent), color-mix(in oklch, var(--color-primary) 4%, transparent));
+  color: var(--color-sidebar-foreground);
+  box-shadow:
+    inset 2px 0 0 var(--color-primary),
+    0 8px 22px color-mix(in oklch, var(--color-primary) 5%, transparent);
+}
+
+.vellune-nav-link:focus-visible,
+.vellune-global-search:focus-visible,
+.vellune-profile-trigger:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px color-mix(in oklch, var(--color-primary) 14%, transparent);
+}
+
+.vellune-app-header {
+  height: 4.35rem;
+  border-color: var(--vellune-platform-line) !important;
+  background: color-mix(in oklch, var(--color-background) 82%, transparent) !important;
+  box-shadow: 0 10px 30px -28px oklch(0 0 0 / 35%);
+  backdrop-filter: blur(20px);
+}
+
+.dark .vellune-app-header {
+  background: oklch(0.11 0.024 254 / 82%) !important;
+  box-shadow: 0 12px 36px -28px oklch(0 0 0 / 65%);
+}
+
+.vellune-global-search {
+  border: 1px solid var(--vellune-platform-line);
+  border-radius: 0.9rem;
+  padding: 0.1rem 0.25rem;
+  transition: border-color 160ms ease, background-color 160ms ease, color 160ms ease;
+}
+
+.vellune-global-search:hover {
+  border-color: var(--vellune-platform-line-strong);
+  background: color-mix(in oklch, var(--color-muted) 35%, transparent);
+  color: var(--color-foreground);
+}
+
+.vellune-profile-trigger {
+  border: 1px solid transparent !important;
+  border-radius: 0.9rem !important;
+  transition: background-color 160ms ease, border-color 160ms ease;
+}
+
+.vellune-profile-trigger:hover {
+  border-color: var(--vellune-platform-line);
+  background: color-mix(in oklch, var(--color-muted) 38%, transparent);
+}
+
+.vellune-app-main {
+  min-height: calc(100svh - 4.35rem);
+  background:
+    radial-gradient(circle at 100% 0%, color-mix(in oklch, var(--color-primary) 4%, transparent), transparent 28rem),
+    transparent;
+}
+
+.vellune-page-header {
+  margin-bottom: 1.65rem;
+}
+
+.vellune-page-header h1 {
+  letter-spacing: -0.032em;
+  font-size: clamp(1.55rem, 1.2rem + 0.55vw, 2.1rem);
+}
+
+.vellune-page-header p {
+  max-width: 68ch;
+  line-height: 1.6;
+}
+
+.vellune-platform-card {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--vellune-platform-line) !important;
+  border-radius: 1.15rem;
+  background: var(--vellune-platform-surface);
+  box-shadow:
+    0 1px 0 oklch(1 0 0 / 3%),
+    0 14px 36px -28px oklch(0 0 0 / 35%);
+  transition:
+    transform 180ms ease,
+    border-color 180ms ease,
+    box-shadow 180ms ease;
+}
+
+.vellune-platform-card:hover {
+  border-color: var(--vellune-platform-line-strong) !important;
+  box-shadow:
+    0 1px 0 oklch(1 0 0 / 4%),
+    0 18px 44px -30px oklch(0 0 0 / 42%);
+}
+
+.vellune-platform-card[data-interactive="true"]:hover {
+  transform: translateY(-1px);
+}
+
+.vellune-platform-card::before {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--vellune-platform-line-strong), transparent);
+  opacity: 0.8;
+  pointer-events: none;
+}
+
+.vellune-stat-card {
+  padding: 1.15rem 1.2rem;
+}
+
+.vellune-stat-card .vellune-stat-value {
+  margin-top: 0.45rem;
+  font-family: var(--font-display);
+  font-size: clamp(1.75rem, 1.25rem + 1vw, 2.3rem);
+  line-height: 1;
+  letter-spacing: -0.045em;
+}
+
+.vellune-status-badge {
+  border: 1px solid var(--vellune-platform-line);
+  border-radius: 999px;
+  padding: 0.24rem 0.62rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+.vellune-status-badge[data-state="active"],
+.vellune-status-badge[data-state="published"],
+.vellune-status-badge[data-state="confirmed"] {
+  border-color: color-mix(in oklch, oklch(0.72 0.19 150) 28%, transparent);
+  background: color-mix(in oklch, oklch(0.72 0.19 150) 10%, transparent);
+  color: color-mix(in oklch, oklch(0.62 0.2 150) 86%, var(--color-foreground));
+}
+
+.dark .vellune-status-badge[data-state="active"],
+.dark .vellune-status-badge[data-state="published"],
+.dark .vellune-status-badge[data-state="confirmed"] {
+  color: oklch(0.82 0.14 150);
+}
+
+.vellune-status-badge[data-state="inactive"],
+.vellune-status-badge[data-state="draft"] {
+  background: color-mix(in oklch, var(--color-muted) 72%, transparent);
+  color: var(--color-muted-foreground);
+}
+
+.vellune-status-badge[data-state="closed"] {
+  border-color: color-mix(in oklch, oklch(0.7 0.16 50) 26%, transparent);
+  background: color-mix(in oklch, oklch(0.7 0.16 50) 9%, transparent);
+  color: color-mix(in oklch, oklch(0.62 0.17 50) 82%, var(--color-foreground));
+}
+
+.vellune-segmented {
+  border: 1px solid var(--vellune-platform-line);
+  border-radius: 0.85rem;
+  background: color-mix(in oklch, var(--color-card) 70%, transparent);
+  padding: 0.18rem;
+}
+
+.vellune-segmented button {
+  border-radius: 0.66rem;
+  transition: background-color 160ms ease, color 160ms ease, box-shadow 160ms ease;
+}
+
+.vellune-segmented button[aria-pressed="true"] {
+  background: var(--color-primary);
+  color: var(--color-primary-foreground);
+  box-shadow: 0 7px 16px color-mix(in oklch, var(--color-primary) 17%, transparent);
+}
+
+.vellune-empty-state {
+  min-height: 10.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px dashed var(--vellune-platform-line-strong);
+  border-radius: 1.15rem;
+  background:
+    radial-gradient(circle at 50% 0%, color-mix(in oklch, var(--color-primary) 6%, transparent), transparent 55%),
+    color-mix(in oklch, var(--color-card) 48%, transparent);
+}
+
+.vellune-loading-state {
+  min-height: 10.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--vellune-platform-line);
+  border-radius: 1.15rem;
+  background: color-mix(in oklch, var(--color-card) 60%, transparent);
+}
+
+.vellune-data-surface {
+  overflow: hidden;
+  border: 1px solid var(--vellune-platform-line);
+  border-radius: 1.15rem;
+  background: var(--vellune-platform-surface);
+  box-shadow: 0 12px 34px -30px oklch(0 0 0 / 34%);
+}
+
+.vellune-data-surface thead {
+  background: color-mix(in oklch, var(--color-muted) 42%, transparent);
+}
+
+.vellune-data-surface tbody tr {
+  transition: background-color 150ms ease;
+}
+
+.vellune-data-surface tbody tr:hover {
+  background: color-mix(in oklch, var(--color-primary) 4%, transparent);
+}
+
+@media (max-width: 767px) {
+  .vellune-page-header {
+    margin-bottom: 1.2rem;
+  }
+
+  .vellune-platform-card {
+    border-radius: 1rem;
+  }
+
+  .vellune-app-main {
+    min-height: calc(100svh - 4rem);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .vellune-nav-link,
+  .vellune-platform-card,
+  .vellune-platform-card[data-interactive="true"],
+  .vellune-global-search,
+  .vellune-profile-trigger {
+    transition: none !important;
+  }
+}
