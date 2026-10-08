@@ -48,36 +48,21 @@ export const normalizePhone = (v: string) => {
   return digits;
 };
 
-async function authRateKey(scope: string, value: string): Promise<string> {
-  const bytes = new TextEncoder().encode(value.trim().toLowerCase());
-  const digest = await crypto.subtle.digest("SHA-256", bytes);
-  const hex = Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, "0")).join("");
-  return `${scope}:${hex}`;
-}
+type AuthRateBucket = { windowStartedAt: number; count: number };
+const authRateBuckets = new Map<string, AuthRateBucket>();
 
-async function allowAuthRequest(
-  scope: string,
-  value: string,
-  limit: number,
-  windowSeconds: number,
-): Promise<boolean> {
-  try {
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const key = await authRateKey(scope, value);
-    const { data, error } = await supabaseAdmin.rpc("consume_auth_rate_limit", {
-      p_key: key,
-      p_limit: limit,
-      p_window_seconds: windowSeconds,
-    });
-    if (error) {
-      console.error("auth rate-limit check", error.message);
-      return true;
-    }
-    return data === true;
-  } catch (error) {
-    console.error("auth rate-limit check", error);
+function allowAuthRequest(scope: string, value: string, limit: number, windowSeconds: number): boolean {
+  const now = Date.now();
+  const key = `${scope}:${value.trim().toLowerCase()}`;
+  const current = authRateBuckets.get(key);
+
+  if (!current || now - current.windowStartedAt >= windowSeconds * 1000) {
+    authRateBuckets.set(key, { windowStartedAt: now, count: 1 });
     return true;
   }
+
+  current.count += 1;
+  return current.count <= limit;
 }
 
 async function authenticateEmail(email: string, password: string) {
