@@ -10,9 +10,9 @@ import { cn } from "@/lib/utils";
 
 export function StatCard({ label, value }: { label: string; value: number }) {
   return (
-    <div className="rounded-xl border bg-card p-4 shadow-sm sm:p-5" aria-label={`${label}: ${value.toLocaleString("pt-BR")}`}>
+    <div className="vellune-platform-card vellune-stat-card" aria-label={`${label}: ${value.toLocaleString("pt-BR")}`}>
       <div className="text-sm text-muted-foreground">{label}</div>
-      <div className="mt-1 font-display text-2xl font-semibold tabular-nums text-foreground sm:text-3xl">{value.toLocaleString("pt-BR")}</div>
+      <div className="vellune-stat-value tabular-nums text-foreground">{value.toLocaleString("pt-BR")}</div>
     </div>
   );
 }
@@ -37,7 +37,7 @@ export function InvStatus({ status }: { status: InvitationStatus }) {
 export function UpcomingList({ rows }: { rows: ReportRow[] }) {
   if (!rows.length) return <EmptyState>Nenhum evento futuro.</EmptyState>;
   return (
-    <div className="divide-y rounded-xl border bg-card">
+    <div className="vellune-data-surface divide-y">
       {rows.map((r) => (
         <div key={r.id} className="flex flex-col gap-2 p-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="min-w-0">
@@ -105,7 +105,7 @@ export function ReportTable({ rows }: { rows: ReportRow[] }) {
       </div>
       {!rows.length ? <EmptyState>Você ainda não possui convites.</EmptyState> : !shown.length ? <EmptyState>Nenhum convite encontrado.</EmptyState> : (
         <>
-          <div className="hidden overflow-x-auto rounded-xl border bg-card md:block">
+          <div className="vellune-data-surface hidden overflow-x-auto md:block">
             <table className="w-full text-sm">
               <caption className="sr-only">Relatório de convites, visualizações e respostas</caption>
               <thead className="border-b bg-muted/30 text-left text-muted-foreground">
@@ -129,7 +129,7 @@ export function ReportTable({ rows }: { rows: ReportRow[] }) {
           </div>
           <div className="space-y-3 md:hidden">
             {shown.map((r) => (
-              <div key={r.id} className="rounded-xl border bg-card p-4">
+              <div key={r.id} className="vellune-platform-card p-4">
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0"><div className="truncate font-medium">{r.name}</div>
                     <div className="text-sm text-muted-foreground">{r.customer_name ?? "—"} · {fmtEventDate(r.event_date)}</div></div>
