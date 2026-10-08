@@ -22,6 +22,41 @@ function useIsCompact() {
   return compact;
 }
 
+type EditorViewPreferences = {
+  device?: "mobile" | "tablet" | "desktop";
+  zoom?: number;
+  sidebarOpen?: boolean;
+};
+
+const EDITOR_VIEW_PREFERENCES_KEY = "vellune:invitation-editor:view-preferences:v1";
+
+function readEditorViewPreferences(): EditorViewPreferences {
+  if (typeof window === "undefined") return {};
+  try {
+    const value = JSON.parse(localStorage.getItem(EDITOR_VIEW_PREFERENCES_KEY) || "{}");
+    if (!value || typeof value !== "object") return {};
+    const device = value.device === "mobile" || value.device === "tablet" || value.device === "desktop" ? value.device : undefined;
+    const zoom = Number.isFinite(Number(value.zoom)) ? Math.min(150, Math.max(50, Number(value.zoom))) : undefined;
+    const sidebarOpen = typeof value.sidebarOpen === "boolean" ? value.sidebarOpen : undefined;
+    return { device, zoom, sidebarOpen };
+  } catch {
+    return {};
+  }
+}
+
+function writeEditorViewPreferences(patch: Partial<EditorViewPreferences>) {
+  if (typeof window === "undefined") return;
+  try {
+    const current = readEditorViewPreferences();
+    localStorage.setItem(
+      EDITOR_VIEW_PREFERENCES_KEY,
+      JSON.stringify({ ...current, ...patch }),
+    );
+  } catch {
+    // Preferências de interface são opcionais e nunca podem bloquear o editor.
+  }
+}
+
 /* ---------------- History (local, session only) ---------------- */
 
 type Hist = { past: Block[][]; present: Block[]; future: Block[][] };
@@ -266,18 +301,20 @@ export type EditorPoint = { x: number; y: number };
 export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHeaderLeft, desktopHeaderRight, fullHeight = false }: { h: BlocksHistory; ctx?: unknown; assets?: unknown; bg?: unknown; onBg?: (value: any) => void; toolbarExtra?: React.ReactNode; desktopHeaderLeft?: React.ReactNode; desktopHeaderRight?: React.ReactNode; fullHeight?: boolean }) {
   const canvasRef = useRef<HTMLDivElement>(null);
   const viewportRef = useRef<HTMLDivElement>(null);
+  const viewPreferences = useRef<EditorViewPreferences | null>(null);
+  if (viewPreferences.current === null) viewPreferences.current = readEditorViewPreferences();
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
-  const [zoom, setZoom] = useState(60);
+  const [zoom, setZoom] = useState(() => viewPreferences.current?.zoom ?? 60);
   const [showGrid, setShowGrid] = useState(false);
   const [mobileSheet, setMobileSheet] = useState<"elements" | "layers" | "properties" | "background" | "view" | null>(null);
   const [toolCategory, setToolCategory] = useState("Modelos");
   const [templateOpen, setTemplateOpen] = useState(false);
   const [startEditingTextId, setStartEditingTextId] = useState<string | null>(null);
   const [imageReplaceId, setImageReplaceId] = useState<string | null>(null);
-  const [device, setDevice] = useState<"mobile" | "tablet" | "desktop">("mobile");
+  const [device, setDevice] = useState<"mobile" | "tablet" | "desktop">(() => viewPreferences.current?.device ?? "mobile");
   const [canvasDragOver, setCanvasDragOver] = useState(false);
   const [inspectorOpen, setInspectorOpen] = useState(false);
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(() => viewPreferences.current?.sidebarOpen ?? true);
   const [commandOpen, setCommandOpen] = useState(false);
   const [focusMode, setFocusMode] = useState(false);
   const [spaceHeld, setSpaceHeld] = useState(false);
@@ -340,6 +377,10 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHe
     if (!compact) return;
     requestAnimationFrame(fitCanvasToViewport);
   }, [compact, device, fitCanvasToViewport]);
+
+  useEffect(() => {
+    writeEditorViewPreferences({ device, zoom, sidebarOpen });
+  }, [device, zoom, sidebarOpen]);
 
   useEffect(() => {
     const syncCanvasToViewport = () => {
