@@ -7,13 +7,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { signInWithPhone, requestPasswordReset } from "@/lib/auth.functions";
+import { signInWithEmail, signInWithPhone, requestPasswordReset } from "@/lib/auth.functions";
 import { canUseAdminArea, friendlyAuthError, homeFor, isAuthServiceUnavailable, loadAppUser } from "@/lib/app-user";
 import Logo from "@/components/Logo";
 import { AuthPremiumVisual } from "@/components/auth-premium-visual";
 import { AuthJourneySteps } from "@/components/auth-journey";
 import { AuthUnavailableState } from "@/components/auth-unavailable-state";
 import { AuthSuccessTransition } from "@/components/auth-success-transition";
+import { AuthCommercialFooter } from "@/components/auth-commercial-footer";
 
 export const Route = createFileRoute("/login")({
   validateSearch: z.object({ error: z.enum(["inactive"]).optional(), mode: z.enum(["recovery"]).optional() }),
@@ -32,7 +33,7 @@ export const Route = createFileRoute("/login")({
 function LoginPage() {
   const { error: reason, mode: requestedMode } = Route.useSearch();
   const navigate = useNavigate();
-  const phoneSignIn = useServerFn(signInWithPhone);
+  const emailSignIn = useServerFn(signInWithEmail);\n  const phoneSignIn = useServerFn(signInWithPhone);
   const resetPassword = useServerFn(requestPasswordReset);
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
@@ -238,10 +239,12 @@ function LoginPage() {
     setLoading(true);
     try {
       if (id.includes("@")) {
-        const { error: authError } = await supabase.auth.signInWithPassword({ email: id.toLowerCase(), password });
-        if (authError) {
-          if (isAuthServiceUnavailable(authError)) setAuthUnavailable(true);
-          throw new Error(friendlyAuthError(authError.message));
+        const res = await emailSignIn({ data: { email: id.toLowerCase(), password } });
+        if (!res.ok) throw new Error(res.error);
+        const { error: sessionError } = await supabase.auth.setSession(res);
+        if (sessionError) {
+          if (isAuthServiceUnavailable(sessionError)) setAuthUnavailable(true);
+          throw new Error(friendlyAuthError(sessionError.message));
         }
       } else {
         const res = await phoneSignIn({ data: { phone: id, password } });
@@ -644,7 +647,7 @@ function LoginPage() {
               )}
               </div>
             </div>
-            
+            <AuthCommercialFooter />
           </div>
         </section>
       </div>
