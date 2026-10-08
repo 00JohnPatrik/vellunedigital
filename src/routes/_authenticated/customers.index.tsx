@@ -32,11 +32,20 @@ function CustomersPage() {
     const s = search.trim().toLowerCase();
     const digits = s.replace(/\D/g, "");
     return (q.data ?? []).filter((c) => (filter === "all" || c.status === filter) &&
-      (!s || c.name.toLowerCase().includes(s) || !!c.email?.includes(s) || (!!digits && !!c.phone && c.phone.replace(/\D/g, "").includes(digits))));
+      (!s || c.name.toLowerCase().includes(s) || !!c.email?.toLowerCase().includes(s) || (!!digits && !!c.phone && c.phone.replace(/\D/g, "").includes(digits))));
   }, [q.data, search, filter]);
 
   const refresh = () => qc.invalidateQueries({ queryKey: customersKey });
-  const toggle = (c: Customer) => async () => { await setCustomerStatus(c.id, c.status === "active" ? "inactive" : "active"); refresh(); };
+  const toggle = (c: Customer) => async () => {
+    try {
+      const nextStatus = c.status === "active" ? "inactive" : "active";
+      await setCustomerStatus(c.id, nextStatus);
+      toast.success(nextStatus === "active" ? "Cliente ativado." : "Cliente inativado.");
+      await refresh();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Não foi possível atualizar o status.");
+    }
+  };
   const actions = (c: Customer, variant: "ghost" | "outline") => (
     <>
       <Button variant={variant} size="sm" asChild><Link to="/customers/$id" params={{ id: c.id }}>Ver</Link></Button>
