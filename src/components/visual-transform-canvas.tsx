@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { BlockView } from "@/components/block-render";
-import { EditorQuickToolbar, type ImageAction } from "@/components/editor-quick-toolbar";
+import { EditorProToolbar } from "@/components/editor-pro-toolbar";
 import { resolveBlockGeometry, type Block, type BlockType } from "@/lib/templates";
 import { fontCss } from "@/lib/blocks";
-import { Copy, Lock, Unlock, Pencil, SlidersHorizontal, Trash2, Crop, Sparkles, RotateCw } from "lucide-react";
+import { Copy, RotateCw } from "lucide-react";
 
 type Point = { x: number; y: number };
 type Guide = { axis: "x" | "y"; value: number; kind?: "edge" | "center" | "grid" };
@@ -29,7 +29,11 @@ type Props = {
   onSmartAlign?: (ids: string[]) => void;
   onGroup?: (ids: string[]) => void;
   onUngroup?: (ids: string[]) => void;
-  onImageAction?: (id: string, action: ImageAction) => void;
+  onToggleLock?: (ids: string[]) => void;
+  onCopyStyle?: (ids: string[]) => void;
+  onPasteStyle?: (ids: string[]) => void;
+  canPasteStyle?: boolean;
+  onImageAction?: (id: string, action: "replace" | "crop" | "adjust") => void;
   startEditingId?: string | null;
   onStartEditingHandled?: () => void;
   showGrid?: boolean;
@@ -317,35 +321,17 @@ export function VisualTransformCanvas({ blocks, selectedIds: selectedIdsProp, zo
 
   const toolbarPosition = selectedBounds ? (() => {
     const size = canvasSize();
-    const toolbarWidth = Math.min(520, Math.max(220, size.width - 16));
-    const preferredLeft = selectedBounds.left + selectedBounds.width / 2 - toolbarWidth / 2;
-    const left = clamp(preferredLeft, 8, Math.max(8, size.width - toolbarWidth - 8));
-    const above = selectedBounds.top - 12;
-    const below = selectedBounds.bottom + 12;
-    const top = above >= 76
-      ? above
-      : clamp(below, 8, Math.max(8, size.height - 84));
-    return { left, top, width: toolbarWidth };
-  })() : null;
-
-  const mobileToolbarPosition = selectedBounds ? (() => {
-    const size = canvasSize();
+    const toolbarWidth = Math.min(760, Math.max(220, size.width - 16));
     const toolbarHeight = 48;
-    const gap = 10;
-    const left = clamp(
-      selectedBounds.left + selectedBounds.width / 2,
-      54,
-      Math.max(54, size.width - 54),
-    );
-    const above = selectedBounds.top - toolbarHeight - gap;
-    const below = selectedBounds.bottom + gap;
-    const preferredTop = above >= 8 ? above : below;
-    const top = clamp(
-      preferredTop,
-      8,
-      Math.max(8, size.height - toolbarHeight - 8),
-    );
-    return { left, top };
+    const toolbarGap = 10;
+    const center = selectedBounds.left + selectedBounds.width / 2;
+    const left = clamp(center, 8 + toolbarWidth / 2, Math.max(8 + toolbarWidth / 2, size.width - 8 - toolbarWidth / 2));
+    const above = selectedBounds.top - toolbarHeight - toolbarGap;
+    const below = selectedBounds.bottom + toolbarGap;
+    const top = above >= 8
+      ? above
+      : clamp(below, 8, Math.max(8, size.height - toolbarHeight - 8));
+    return { left, top, width: toolbarWidth };
   })() : null;
 
   const cancelTextLongPress = () => {
@@ -760,67 +746,22 @@ export function VisualTransformCanvas({ blocks, selectedIds: selectedIdsProp, zo
   const end = (event?: React.PointerEvent) => { event?.stopPropagation(); finish(); };
 
   const selectedBlocks = blocks.filter((block: any) => selectedIds.includes(block.id));
-  const updateSelectedProps = (key: string, value: string) => {
+  const centerSelected = () => {
     if (!selectedBlocks.length) return;
-    onChange((items: any[]) => items.map((item: any) => selectedIds.includes(item.id) && !item.locked
-      ? { ...item, props: { ...item.props, [key]: value } }
-      : item), `quick-toolbar:${key}`);
-  };
-  const duplicateSelected = () => {
-    if (!selectedBlocks.length) return;
-    if (onDuplicate) {
-      onDuplicate(selectedIds);
+    if (selectedBlocks.length === 1) {
+      const target = selectedBlocks[0];
+      if (target?.locked) return;
+      const index = blocks.indexOf(target);
+      const value = geometry(target, index);
+      const size = canvasSize();
+      onChange((items: any[]) => items.map((item: any) =>
+        item.id === target.id && !item.locked
+          ? { ...item, x: Math.round((size.width - value.width) / 2) }
+          : item
+      ), "selection:center");
       return;
     }
-    const duplicatedGroupId = selectedBlocks.some((block: any) => block.groupId)
-      ? `group-${Date.now()}-${Math.random().toString(36).slice(2)}`
-      : undefined;
-    const duplicableBlocks = selectedBlocks.filter((block: any) => !block.locked && block.type !== "rsvp");
-    if (!duplicableBlocks.length) return;
-    const duplicated = duplicableBlocks.map((block: any) => {
-      const index = blocks.indexOf(block);
-      const value = geometry(block, index);
-      return {
-        ...structuredClone(block),
-        id: typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
-          ? crypto.randomUUID()
-          : `${block.id}-copy-${Date.now()}-${index}`,
-        x: Math.round(value.x + 24),
-        y: Math.round(value.y + 24),
-        width: Math.round(value.width),
-        height: Math.round(value.height),
-        rotation: value.rotation,
-        scale: value.scale,
-        zIndex: value.zIndex + 1,
-        ...(duplicatedGroupId ? { groupId: duplicatedGroupId } : { groupId: undefined }),
-      };
-    });
-    onChange((items: any[]) => [...items, ...duplicated], "quick-toolbar:duplicate");
-  };
-  const deleteSelected = () => {
-    if (!selectedBlocks.length) return;
-    if (onDelete) {
-      onDelete(selectedIds);
-      return;
-    }
-    onChange((items: any[]) => items.filter((item: any) => !selectedIds.includes(item.id) || item.locked), "quick-toolbar:delete");
-    selectedIds.forEach((id) => onSelect(id, true));
-  }; 
-  const toggleLockSelected = () => {
-    if (!selectedBlocks.length) return;
-    const locked = selectedBlocks.some((block: any) => block.locked);
-    onChange((items: any[]) => items.map((item: any) => selectedIds.includes(item.id)
-      ? { ...item, locked: !locked }
-      : item), "quick-toolbar:lock");
-  };
-  const imageAction = (action: ImageAction) => {
-    const image = selectedBlocks.find((block: any) => block.type === "image");
-    if (!image || selectedBlocks.length !== 1) return;
-    if (onImageAction) {
-      onImageAction(image.id, action);
-      if (action === "replace") return;
-    }
-    onAdvanced?.();
+    onAlign?.("canvasCenterX", selectedIds);
   };
 
   return <>
@@ -878,93 +819,36 @@ export function VisualTransformCanvas({ blocks, selectedIds: selectedIdsProp, zo
       </div>
     )}
 
-    {selectedBounds && selectedBlocks.length > 0 && (
+    {selectedBounds && selectedBlocks.length > 0 && toolbarPosition && (
       <div
-        className="pointer-events-auto absolute z-[95] flex max-w-[calc(100%-16px)] -translate-x-1/2 items-center gap-1 overflow-x-auto rounded-2xl border border-primary/20 bg-popover/95 p-1.5 text-popover-foreground shadow-2xl shadow-black/25 backdrop-blur-xl sm:hidden"
-        style={mobileToolbarPosition ? {
-          left: mobileToolbarPosition.left,
-          top: mobileToolbarPosition.top,
-        } : undefined}
-        role="toolbar"
-        aria-label="Ações rápidas do elemento"
+        className="pointer-events-auto absolute z-[135] -translate-x-1/2"
+        style={{
+          left: toolbarPosition.left,
+          top: toolbarPosition.top,
+          width: toolbarPosition.width,
+        }}
         onPointerDown={(event) => event.stopPropagation()}
       >
-        {selectedBlocks.length === 1 && selectedBlocks[0]?.type === "text" && !selectedBlocks[0]?.locked && (
-          <button
-            type="button"
-            className="inline-flex h-9 min-w-9 items-center justify-center gap-1 rounded-xl px-2 text-[10px] font-medium text-foreground transition hover:bg-primary/10 hover:text-primary"
-            aria-label="Editar texto"
-            title="Editar texto"
-            onClick={() => startTextEditing(selectedBlocks[0]!, false)}
-          >
-            <Pencil className="h-4 w-4" />
-            <span>Editar</span>
-          </button>
-        )}
-        {selectedBlocks.length === 1 && selectedBlocks[0]?.type === "image" && !selectedBlocks[0]?.locked && (
-          <button
-            type="button"
-            className="inline-flex h-9 min-w-9 items-center justify-center gap-1 rounded-xl px-2 text-[10px] font-medium text-foreground transition hover:bg-primary/10 hover:text-primary"
-            aria-label="Enquadrar imagem"
-            title="Enquadrar imagem"
-            onClick={() => imageAction("crop")}
-          >
-            <Crop className="h-4 w-4" />
-            <span>Enquadrar</span>
-          </button>
-        )}
-        {selectedBlocks.length > 1 && onAutoArrange && (
-          <button
-            type="button"
-            className="inline-flex h-9 min-w-9 items-center justify-center gap-1 rounded-xl px-2 text-[10px] font-medium text-primary transition hover:bg-primary/10"
-            aria-label="Organizar seleção automaticamente"
-            title="Organizar seleção"
-            onClick={() => onAutoArrange(selectedIds)}
-          >
-            <Sparkles className="h-4 w-4" />
-            <span>Organizar</span>
-          </button>
-        )}
-        <button
-          type="button"
-          className="inline-flex h-9 w-9 items-center justify-center rounded-xl text-muted-foreground transition hover:bg-primary/10 hover:text-primary disabled:opacity-40"
-          disabled={selectedBlocks.every((block: any) => block.locked || block.type === "rsvp")}
-          aria-label="Duplicar seleção"
-          title="Duplicar"
-          onClick={duplicateSelected}
-        >
-          <Copy className="h-4 w-4" />
-        </button>
-        <button
-          type="button"
-          className={`inline-flex h-9 w-9 items-center justify-center rounded-xl transition hover:bg-primary/10 hover:text-primary ${selectedBlocks.some((block: any) => block.locked) ? "bg-primary/10 text-primary" : "text-muted-foreground"}`}
-          aria-label={selectedBlocks.some((block: any) => block.locked) ? "Desbloquear seleção" : "Bloquear seleção"}
-          title={selectedBlocks.some((block: any) => block.locked) ? "Desbloquear" : "Bloquear"}
-          onClick={toggleLockSelected}
-        >
-          {selectedBlocks.some((block: any) => block.locked) ? <Unlock className="h-4 w-4" /> : <Lock className="h-4 w-4" />}
-        </button>
-        <button
-          type="button"
-          className="inline-flex h-9 w-9 items-center justify-center rounded-xl text-muted-foreground transition hover:bg-primary/10 hover:text-primary"
-          aria-label="Mais ajustes"
-          title="Mais ajustes"
-          onClick={() => onAdvanced?.()}
-        >
-          <SlidersHorizontal className="h-4 w-4" />
-        </button>
-        <button
-          type="button"
-          className="inline-flex h-9 w-9 items-center justify-center rounded-xl text-destructive transition hover:bg-destructive/10"
-          disabled={selectedBlocks.some((block: any) => block.locked)}
-          aria-label="Excluir seleção"
-          title="Excluir"
-          onClick={deleteSelected}
-        >
-          <Trash2 className="h-4 w-4" />
-        </button>
+        <EditorProToolbar
+          selected={selectedBlocks}
+          onEditText={selectedBlocks.length === 1 ? () => startTextEditing(selectedBlocks[0]!, false) : undefined}
+          onDuplicate={() => onDuplicate?.(selectedIds)}
+          onGroup={() => onGroup?.(selectedIds)}
+          onUngroup={() => onUngroup?.(selectedIds)}
+          onCopyStyle={() => onCopyStyle?.(selectedIds)}
+          onPasteStyle={() => onPasteStyle?.(selectedIds)}
+          canPasteStyle={Boolean(canPasteStyle)}
+          onCenter={centerSelected}
+          onBringFront={() => onLayer?.("front", selectedIds)}
+          onSendBack={() => onLayer?.("back", selectedIds)}
+          onRotate={(amount) => onRotate?.(amount, selectedIds)}
+          onToggleLock={() => onToggleLock?.(selectedIds)}
+          onDelete={() => onDelete?.(selectedIds)}
+          onAlign={(mode) => onAlign?.(mode, selectedIds)}
+        />
       </div>
     )}
+
         {showGrid && <div aria-hidden className="pointer-events-none absolute inset-0 z-0 opacity-30" style={{ backgroundImage: "linear-gradient(to right, hsl(var(--border)) 1px, transparent 1px), linear-gradient(to bottom, hsl(var(--border)) 1px, transparent 1px)", backgroundSize: `${GRID_UNIT}px ${GRID_UNIT}px` }} />}
         {showGrid && <div aria-hidden className="pointer-events-none absolute z-[5] border border-dashed border-amber-500/50" style={{ left: SAFE_MARGIN, top: SAFE_MARGIN, right: SAFE_MARGIN, bottom: SAFE_MARGIN }} />}
     {guides.map((guide, index) => {
@@ -1007,10 +891,11 @@ export function VisualTransformCanvas({ blocks, selectedIds: selectedIdsProp, zo
           boxSizing: "border-box",
         }}
         onPointerDown={(event) => {
-          if (hidden || block.locked) return;
+          if (hidden) return;
           cancelTextLongPress();
           const additive = event.shiftKey || event.ctrlKey || event.metaKey;
           onSelect(block.id, additive);
+          if (block.locked) return;
           begin(event, "move", undefined, block);
           if (event.pointerType === "touch" && block.type === "text") {
             textLongPress.current = setTimeout(() => {
