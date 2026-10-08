@@ -1080,7 +1080,7 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHe
     h.set((items) => items.map((item: any) => selectedIds.includes(item.id) && !item.locked ? { ...item, props: { ...(item.props ?? {}), [key]: value } } : item), "selection:properties");
   };
   return (
-    <div className={cn("vellune-editor-root flex flex-col overflow-hidden border border-primary/10 bg-background/95 shadow-2xl shadow-black/15 ring-1 ring-black/5", fullHeight ? "h-full min-h-0 rounded-none border-0 pb-0 shadow-none ring-0" : "min-h-[calc(100dvh-7rem)] rounded-[1.25rem] pb-20 lg:min-h-[680px] lg:pb-0", experimentalLayout && "vellune-editor-experimental pt-14 sm:pt-16")} style={{ "--color-primary": experimentalLayout ? "#8B5CF6" : "#d4af37", "--color-primary-foreground": experimentalLayout ? "#F5F7FA" : "#16130b" } as React.CSSProperties}>
+    <div className={cn("vellune-editor-root flex flex-col overflow-hidden border border-primary/10 bg-background/95 shadow-2xl shadow-black/15 ring-1 ring-black/5", fullHeight ? "h-full min-h-0 rounded-none border-0 pb-0 shadow-none ring-0" : "min-h-[calc(100dvh-7rem)] rounded-[1.25rem] pb-20 lg:min-h-[680px] lg:pb-0", experimentalLayout && "vellune-editor-experimental pt-14 sm:pt-16")} style={{ "--color-primary": experimentalLayout ? "#d4af37" : "#d4af37", "--color-primary-foreground": experimentalLayout ? "#F5F7FA" : "#16130b" } as React.CSSProperties}>
       {!experimentalLayout && <div className="hidden h-14 shrink-0 items-center gap-3 border-b border-white/[0.07] bg-[#0b0d12]/95 px-4 shadow-[0_8px_30px_rgba(0,0,0,0.18)] backdrop-blur-xl lg:flex" role="toolbar" aria-label="Barra principal do editor">
         <div className="min-w-0 flex-1">
           {desktopHeaderLeft ?? (
@@ -1151,7 +1151,7 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHe
                 type="button"
                 onClick={h.undo}
                 disabled={!h.canUndo}
-                className="inline-flex h-8 w-8 items-center justify-center rounded-full text-[#A9B1BF] transition hover:bg-[#171B23] hover:text-[#F5F7FA] disabled:opacity-30"
+                className="inline-flex h-8 w-8 items-center justify-center rounded-full text-[#A9B1BF] transition hover:bg-[#111318] hover:text-[#F5F7FA] disabled:opacity-30"
                 aria-label="Desfazer"
                 title="Desfazer"
               >
@@ -1161,7 +1161,7 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHe
                 type="button"
                 onClick={h.redo}
                 disabled={!h.canRedo}
-                className="inline-flex h-8 w-8 items-center justify-center rounded-full text-[#A9B1BF] transition hover:bg-[#171B23] hover:text-[#F5F7FA] disabled:opacity-30"
+                className="inline-flex h-8 w-8 items-center justify-center rounded-full text-[#A9B1BF] transition hover:bg-[#111318] hover:text-[#F5F7FA] disabled:opacity-30"
                 aria-label="Refazer"
                 title="Refazer"
               >
@@ -1173,7 +1173,7 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHe
                 onClick={() => setFocusMode((value) => !value)}
                 className={cn(
                   "inline-flex h-8 w-8 items-center justify-center rounded-full transition",
-                  focusMode ? "bg-[#8B5CF6]/10 text-[#8B5CF6]" : "text-[#A9B1BF] hover:bg-[#171B23] hover:text-[#F5F7FA]",
+                  focusMode ? "bg-[#d4af37]/10 text-[#d4af37]" : "text-[#A9B1BF] hover:bg-[#111318] hover:text-[#F5F7FA]",
                 )}
                 aria-pressed={focusMode}
                 aria-label={focusMode ? "Sair do modo foco" : "Ativar modo foco"}
@@ -1629,11 +1629,11 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHe
         <button
           type="button"
           onClick={() => setFocusMode(false)}
-          className="fixed right-3 top-3 z-[190] inline-flex h-10 items-center gap-2 rounded-full border border-white/[0.10] bg-[#171B23]/90 px-3 text-[10px] font-semibold text-[#F5F7FA] shadow-[0_18px_48px_-20px_rgba(11,13,18,0.95)] backdrop-blur-xl transition hover:bg-[#171B23]"
+          className="fixed right-3 top-3 z-[190] inline-flex h-10 items-center gap-2 rounded-full border border-white/[0.10] bg-[#111318]/90 px-3 text-[10px] font-semibold text-[#F5F7FA] shadow-[0_18px_48px_-20px_rgba(11,13,18,0.95)] backdrop-blur-xl transition hover:bg-[#111318]"
           aria-label="Sair do modo foco"
           title="Sair do modo foco (Esc)"
         >
-          <Minimize2 className="h-3.5 w-3.5 text-[#8B5CF6]" />
+          <Minimize2 className="h-3.5 w-3.5 text-[#d4af37]" />
           Sair do foco
         </button>
       )}
