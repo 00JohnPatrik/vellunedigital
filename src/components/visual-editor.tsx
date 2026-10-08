@@ -145,7 +145,7 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHe
   const viewportRef = useRef<HTMLDivElement>(null);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [zoom, setZoom] = useState(100);
-  const [showGrid, setShowGrid] = useState(true);
+  const [showGrid, setShowGrid] = useState(false);
   const [mobileSheet, setMobileSheet] = useState<"elements" | "layers" | "properties" | "background" | "view" | null>(null);
   const [toolCategory, setToolCategory] = useState("Modelos");
   const [templateOpen, setTemplateOpen] = useState(false);
@@ -861,7 +861,7 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHe
               <span className="rounded-lg bg-muted/70 px-2 py-1.5 text-[11px] font-medium tabular-nums text-foreground">{zoom}%</span>
             </div>
           </div>
-          <div ref={viewportRef} className="vellune-editor-viewport min-h-0 flex-1 overflow-auto overscroll-contain rounded-2xl border border-primary/10 bg-background/25 p-2 shadow-inner backdrop-blur-[2px] sm:p-4 lg:p-6"><div className="mx-auto origin-top transition-transform" style={{ width: `${100 / (zoom / 100)}%`, minHeight: canvasHeight / (zoom / 100) }}><div ref={canvasRef} className={`vellune-editor-canvas relative isolate mx-auto w-full ${DEVICE_W[device]} overflow-hidden rounded-2xl border bg-card shadow-sm ${showGrid ? "[background-image:linear-gradient(to_right,hsl(var(--border)/.25)_1px,transparent_1px),linear-gradient(to_bottom,hsl(var(--border)/.25)_1px,transparent_1px)] [background-size:16px_16px]" : ""}`} style={{ minHeight: canvasHeight, backgroundColor: bg && (bg as any).color ? (bg as any).color : undefined, transform: `scale(${zoom / 100})`, transformOrigin: "top center" }}
+          <div ref={viewportRef} className="vellune-editor-viewport min-h-0 flex-1 overflow-auto overscroll-contain rounded-2xl border border-primary/10 bg-background/25 p-2 shadow-inner backdrop-blur-[2px] sm:p-4 lg:p-6"><div className="mx-auto origin-top transition-transform" style={{ width: `${100 / (zoom / 100)}%`, minHeight: canvasHeight / (zoom / 100) }}><div ref={canvasRef} className={`vellune-editor-canvas relative isolate mx-auto w-full ${DEVICE_W[device]} overflow-hidden rounded-2xl border border-black/10 bg-card shadow-[0_28px_80px_-36px_rgba(0,0,0,0.72),0_8px_24px_-12px_rgba(0,0,0,0.42)] ${showGrid ? "[background-image:linear-gradient(to_right,hsl(var(--border)/.25)_1px,transparent_1px),linear-gradient(to_bottom,hsl(var(--border)/.25)_1px,transparent_1px)] [background-size:16px_16px]" : ""}`} style={{ minHeight: canvasHeight, backgroundColor: bg && (bg as any).color ? (bg as any).color : undefined, transform: `scale(${zoom / 100})`, transformOrigin: "top center" }}
               onDragEnter={(event) => {
                 if (event.dataTransfer.types.includes("application/x-vellune-block-type")) {
                   canvasDragDepth.current += 1;
