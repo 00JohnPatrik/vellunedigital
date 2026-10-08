@@ -17,8 +17,10 @@ function DashboardLayout() {
   const { appUser: routeAppUser } = Route.useRouteContext();
   const appUser = routeAppUser!;
   const legacyLayout = typeof window !== "undefined" && new URLSearchParams(window.location.search).get("legacy") === "1";
+  const isDashboardHome = typeof window !== "undefined" && window.location.pathname.replace(/\/$/, "") === "/dashboard";
 
-  if (!legacyLayout && typeof window !== "undefined" && window.location.pathname.replace(/\/$/, "") === "/dashboard") {
+  // The premium shell is the default only for the dashboard home; secondary dashboard routes retain AppShell.
+  if (!legacyLayout && isDashboardHome) {
     return (
       <div className="dark min-h-[100dvh] w-full bg-[#0B0D12] text-[#F5F7FA]">
         <Outlet />
