@@ -1,3 +1,4 @@
+import { Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { AlertTriangle, CalendarClock, CheckCircle2, CreditCard, Crown, HardDrive, MessageCircle, Users } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -25,6 +26,59 @@ export function SubscriptionOverviewCard({ companyId, compact = false }: { compa
   return <Card><CardHeader className="flex flex-row items-start justify-between gap-3"><div><CardTitle className="flex items-center gap-2 text-base"><CreditCard className="h-4 w-4" />Assinatura</CardTitle><p className="mt-1 text-sm text-muted-foreground">Plano {data.plan.name}</p></div><Badge variant={warning ? "destructive" : "default"}>{expired ? "Vencida" : data.subscription.status === "active" ? lifecycle.state === "expiring" ? `Vence em ${lifecycle.daysRemaining}d` : "Ativa" : data.subscription.status}</Badge></CardHeader><CardContent className="space-y-5"><div className="grid gap-3 sm:grid-cols-3"><div className="rounded-lg bg-muted/50 p-3"><p className="text-xs text-muted-foreground">Mensalidade</p><p className="mt-1 font-semibold">{formatMoney(data.plan.price_monthly)}</p></div><div className="rounded-lg bg-muted/50 p-3"><p className="text-xs text-muted-foreground">Início</p><p className="mt-1 font-semibold">{new Date(data.subscription.starts_at).toLocaleDateString("pt-BR")}</p></div><div className="rounded-lg bg-muted/50 p-3"><p className="text-xs text-muted-foreground">Vencimento</p><p className="mt-1 font-semibold">{data.subscription.expires_at ? new Date(data.subscription.expires_at).toLocaleDateString("pt-BR") : "Sem vencimento"}</p>{lifecycle.daysRemaining != null && <p className={`mt-0.5 text-xs ${lifecycle.state === "expiring" ? "text-amber-600 dark:text-amber-400" : "text-muted-foreground"}`}>{lifecycle.daysRemaining} dia(s) restante(s)</p>}</div></div>{warning && <div className="flex items-start gap-2 rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive"><AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" /><span>{expired ? "A assinatura está vencida. Novos recursos podem ser bloqueados." : "A assinatura não está ativa. Consulte a administração."}</span></div>}{!compact && <div className="grid gap-4 sm:grid-cols-2"><UsageBar label="Convites" value={data.usage.invitations} limit={data.plan.invitations_limit} /><UsageBar label="Clientes" value={data.usage.customers} limit={data.plan.customers_limit} /><UsageBar label="Convidados" value={data.usage.guests} limit={data.plan.guests_limit} /><UsageBar label="Armazenamento" value={data.usage.storageBytes / 1024 / 1024} limit={data.plan.storage_limit_mb} suffix=" MB" /></div>}</CardContent></Card>;
 }
 
+
+export function SubscriptionUsageAlert({ companyId, className = "" }: { companyId: string; className?: string }) {
+  const query = useQuery({
+    queryKey: [...subscriptionKey(companyId), "usage-alert"],
+    queryFn: () => getSubscriptionOverview(companyId),
+    staleTime: 30_000,
+  });
+
+  if (query.isLoading || query.isError || !query.data?.plan || !query.data.subscription) return null;
+  const data = query.data;
+  const subscription = data.subscription;
+  if (subscription.status !== "active" || (subscription.expires_at && new Date(subscription.expires_at) < new Date())) return null;
+
+  const usage = [
+    { label: "Convites", value: data.usage.invitations, limit: data.plan.invitations_limit },
+    { label: "Clientes", value: data.usage.customers, limit: data.plan.customers_limit },
+    { label: "Convidados", value: data.usage.guests, limit: data.plan.guests_limit },
+    { label: "Armazenamento", value: data.usage.storageBytes / 1024 / 1024, limit: data.plan.storage_limit_mb },
+  ].filter((item) => item.limit != null);
+
+  const relevant = usage.map((item) => ({
+    ...item,
+    percent: item.limit ? Math.round((item.value / item.limit) * 100) : 0,
+  }));
+  const critical = relevant.filter((item) => item.percent >= 90).sort((a, b) => b.percent - a.percent);
+  const warning = relevant.filter((item) => item.percent >= 80).sort((a, b) => b.percent - a.percent);
+  if (warning.length === 0) return null;
+
+  const highest = critical[0] ?? warning[0];
+  const severity = highest.percent >= 100 ? "critical" : "warning";
+  const formatValue = (item: typeof highest) =>
+    item.label === "Armazenamento"
+      ? `${formatStorage(item.value * 1024 * 1024)} de ${formatStorage((item.limit ?? 0) * 1024 * 1024)}`
+      : `${item.value} de ${item.limit}`;
+
+  return (
+    <Card className={`mb-6 ${severity === "critical" ? "border-destructive/30 bg-destructive/5" : "border-amber-500/25 bg-amber-500/5"} ${className}`}>
+      <CardContent className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
+        <div className="min-w-0">
+          <p className={`font-semibold ${severity === "critical" ? "text-destructive" : "text-amber-700 dark:text-amber-300"}`}>
+            {highest.percent >= 100 ? `Limite de ${highest.label.toLowerCase()} atingido` : `Seu plano está em ${highest.percent}% de ${highest.label.toLowerCase()}`}
+          </p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {formatValue(highest)}. {highest.percent >= 100 ? "Novos registros desse recurso serão bloqueados até renovar ou trocar o plano." : "Revise o uso antes de continuar criando novos registros."}
+          </p>
+        </div>
+        <Button asChild variant={severity === "critical" ? "destructive" : "outline"} className="shrink-0">
+          <Link to="/dashboard/assinatura">Ver plano e limites</Link>
+        </Button>
+      </CardContent>
+    </Card>
+  );
+}
 
 export function SubscriptionStatusBanner({ companyId }: { companyId: string }) {
   const query = useQuery({ queryKey: [...subscriptionKey(companyId), "banner"], queryFn: () => getSubscriptionOverview(companyId), staleTime: 30_000 });
