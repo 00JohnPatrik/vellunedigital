@@ -273,6 +273,7 @@ function LoginPage() {
       await new Promise((resolve) => window.setTimeout(resolve, 1050));
       navigate({ to: homeFor(appUser), replace: true });
     } catch (err) {
+      setAuthSuccessOpen(false);
       if (isAuthServiceUnavailable(err)) {
         setAuthUnavailable(true);
       }
