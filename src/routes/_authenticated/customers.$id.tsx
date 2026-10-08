@@ -38,6 +38,17 @@ function CustomerDetail() {
       return data as { id: string; name: string; event_date: string; status: InvitationStatus; updated_at: string }[];
     },
   });
+  const responseQ = useQuery({
+    queryKey: ["customers", id, "responses"],
+    enabled: valid && Boolean(hist.data?.length),
+    queryFn: async () => {
+      const ids = (hist.data ?? []).map((item) => item.id);
+      if (!ids.length) return [] as { invitation_id: string; status: "confirmed" | "declined"; people_count: number | null; created_at: string }[];
+      const { data, error } = await supabase.from("rsvp_responses").select("invitation_id,status,people_count,created_at").in("invitation_id", ids).order("created_at", { ascending: false });
+      if (error) throw error;
+      return (data ?? []) as { invitation_id: string; status: "confirmed" | "declined"; people_count: number | null; created_at: string }[];
+    },
+  });
   const refresh = () => qc.invalidateQueries({ queryKey: ["customers"] });
   const setEdit = (e: boolean) => navigate({ search: e ? { edit: true } : {}, replace: true });
 
@@ -78,19 +89,22 @@ function CustomerDetail() {
       <section className="mt-8 max-w-4xl">
         <div className="mb-4 flex items-end justify-between gap-3"><div><p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[#A9B1BF]">Relacionamento</p><h2 className="mt-1 font-display text-lg font-semibold text-[#F5F7FA]">Histórico de convites{hist.data?.length ? ` (${hist.data.length})` : ""}</h2></div><span className="rounded-full border border-[#2a2b31] bg-[#111318] px-2.5 py-1 text-[9px] text-[#A9B1BF]">Atividade do cliente</span></div>
         {hist.isLoading ? <LoadingState /> : !hist.data?.length ? <EmptyState>Este cliente ainda não possui convites.</EmptyState> : (
-          <div className="grid gap-2 text-sm">
+          <ol className="relative ml-2 border-l border-[#d4af37]/20 pl-5 text-sm">
             {hist.data.map((i) => (
-              <div key={i.id} className="vellune-platform-card flex flex-col gap-3 p-4 transition hover:border-[#d4af37]/35 sm:flex-row sm:items-center sm:justify-between">
-                <div className="min-w-0">
-                  <div className="flex items-center gap-2"><span className="truncate font-medium">{i.name}</span><InvitationStatusBadge status={i.status} /></div>
-                  <p className="mt-1 text-xs text-muted-foreground">Evento em {fmtEventDate(i.event_date)} · atualizado em {fmtDateTime(i.updated_at)}</p>
+              <li key={i.id} className="relative pb-4 last:pb-0">
+                <span className="absolute -left-[25px] top-4 h-3 w-3 rounded-full border-2 border-[#111318] bg-[#d4af37] shadow-[0_0_0_3px_rgba(212,175,55,0.10)]" aria-hidden="true" />
+                <div className="vellune-platform-card flex flex-col gap-3 p-4 transition hover:border-[#d4af37]/35 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="min-w-0">
+                    <div className="flex flex-wrap items-center gap-2"><span className="truncate font-medium">{i.name}</span><InvitationStatusBadge status={i.status} /></div>
+                    <p className="mt-1 text-xs text-muted-foreground">Evento em {fmtEventDate(i.event_date)} · atualizado em {fmtDateTime(i.updated_at)}</p>
+                  </div>
+                  {i.status === "draft" && <Button size="sm" variant="outline" asChild><Link to="/invitations/$id/editor" params={{ id: i.id }}>Editar</Link></Button>}
+                  {(i.status === "published" || i.status === "closed") && <Button size="sm" variant="outline" asChild><Link to="/invitations/$id/preview" params={{ id: i.id }}>Visualizar</Link></Button>}
+                  {i.status === "deleted" && <span className="text-xs text-muted-foreground">Somente histórico</span>}
                 </div>
-                {i.status === "draft" && <Button size="sm" variant="outline" asChild><Link to="/invitations/$id/editor" params={{ id: i.id }}>Editar</Link></Button>}
-                {(i.status === "published" || i.status === "closed") && <Button size="sm" variant="outline" asChild><Link to="/invitations/$id/preview" params={{ id: i.id }}>Visualizar</Link></Button>}
-                {i.status === "deleted" && <span className="text-xs text-muted-foreground">Somente histórico</span>}
-              </div>
+              </li>
             ))}
-          </div>
+          </ol>
         )}
       </section>
 
