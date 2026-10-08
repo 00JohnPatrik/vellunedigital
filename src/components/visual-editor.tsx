@@ -26,6 +26,7 @@ type EditorViewPreferences = {
   device?: "mobile" | "tablet" | "desktop";
   zoom?: number;
   sidebarOpen?: boolean;
+  sidebarWidth?: number;
   snapEnabled?: boolean;
 };
 
@@ -39,8 +40,9 @@ function readEditorViewPreferences(): EditorViewPreferences {
     const device = value.device === "mobile" || value.device === "tablet" || value.device === "desktop" ? value.device : undefined;
     const zoom = Number.isFinite(Number(value.zoom)) ? Math.min(150, Math.max(50, Number(value.zoom))) : undefined;
     const sidebarOpen = typeof value.sidebarOpen === "boolean" ? value.sidebarOpen : undefined;
+    const sidebarWidth = Number.isFinite(Number(value.sidebarWidth)) ? Math.min(420, Math.max(280, Number(value.sidebarWidth))) : undefined;
     const snapEnabled = typeof value.snapEnabled === "boolean" ? value.snapEnabled : undefined;
-    return { device, zoom, sidebarOpen, snapEnabled };
+    return { device, zoom, sidebarOpen, sidebarWidth, snapEnabled };
   } catch {
     return {};
   }
@@ -318,6 +320,9 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHe
   const [canvasDragOver, setCanvasDragOver] = useState(false);
   const [inspectorOpen, setInspectorOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(() => viewPreferences.current?.sidebarOpen ?? true);
+  const [sidebarWidth, setSidebarWidth] = useState(() => viewPreferences.current?.sidebarWidth ?? 320);
+  const [sidebarResizing, setSidebarResizing] = useState(false);
+  const sidebarResizeRef = useRef<{ startX: number; startWidth: number } | null>(null);
   const [commandOpen, setCommandOpen] = useState(false);
   const [focusMode, setFocusMode] = useState(false);
   const [spaceHeld, setSpaceHeld] = useState(false);
@@ -387,8 +392,34 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHe
   }, [compact, device, fitCanvasToViewport]);
 
   useEffect(() => {
-    writeEditorViewPreferences({ device, zoom, sidebarOpen, snapEnabled });
-  }, [device, zoom, sidebarOpen, snapEnabled]);
+    writeEditorViewPreferences({ device, zoom, sidebarOpen, sidebarWidth, snapEnabled });
+  }, [device, zoom, sidebarOpen, sidebarWidth, snapEnabled]);
+
+  useEffect(() => {
+    if (!sidebarResizing) return;
+    const onMove = (event: PointerEvent) => {
+      const resize = sidebarResizeRef.current;
+      if (!resize) return;
+      const next = Math.min(420, Math.max(280, resize.startWidth + (event.clientX - resize.startX)));
+      setSidebarWidth(next);
+    };
+    const onUp = () => {
+      sidebarResizeRef.current = null;
+      setSidebarResizing(false);
+      document.body.style.removeProperty("cursor");
+      document.body.style.removeProperty("user-select");
+    };
+    document.addEventListener("pointermove", onMove);
+    document.addEventListener("pointerup", onUp);
+    document.body.style.cursor = "col-resize";
+    document.body.style.userSelect = "none";
+    return () => {
+      document.removeEventListener("pointermove", onMove);
+      document.removeEventListener("pointerup", onUp);
+      document.body.style.removeProperty("cursor");
+      document.body.style.removeProperty("user-select");
+    };
+  }, [sidebarResizing]);
 
   useEffect(() => {
     const syncCanvasToViewport = () => {
@@ -1060,13 +1091,25 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHe
         {toolbarExtra && <div className="mt-2 flex items-center justify-end gap-1.5 border-t border-primary/10 pt-2 md:hidden">{toolbarExtra}</div>}
       </div>
       <div className="vellune-editor-body relative flex min-h-0 flex-1 flex-col lg:flex-row">
-        <aside className={cn("vellune-editor-sidebar hidden shrink-0 grid-rows-[auto_minmax(0,1fr)] border-r border-white/[0.06] bg-[#0d0f14]/95 backdrop-blur-xl", focusMode ? "lg:hidden" : cn("lg:grid", sidebarOpen ? "w-[248px] grid-cols-[56px_minmax(0,1fr)] xl:w-[272px] xl:grid-cols-[64px_minmax(0,1fr)]" : "w-[56px] grid-cols-[56px] xl:w-[64px] xl:grid-cols-[64px]"))} aria-label="Ferramentas do editor">
+        <aside
+          className={cn(
+            "vellune-editor-sidebar relative hidden shrink-0 grid-rows-[auto_minmax(0,1fr)] border-r border-white/[0.06] bg-[#0d0f14]/95 backdrop-blur-xl",
+            focusMode ? "lg:hidden" : "lg:grid",
+          )}
+          style={sidebarOpen ? {
+            width: `${sidebarWidth}px`,
+            gridTemplateColumns: "64px minmax(0, 1fr)",
+          } : {
+            width: "64px",
+            gridTemplateColumns: "64px",
+          }}
+          aria-label="Ferramentas do editor">
           <div className={cn("border-b border-white/[0.06] bg-[#101217]/80 p-3.5", sidebarOpen ? "col-span-2" : "hidden")}>
             <div className="flex items-center gap-2">
               <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary"><Sparkles className="h-4 w-4" /></div>
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-semibold text-foreground tracking-[-0.01em]">Criar convite</p>
-                <p className="mt-0.5 text-[10px] leading-4 text-muted-foreground">Tudo o que você precisa, na ordem certa.</p>
+                <p className="mt-0.5 text-[10px] leading-4 text-muted-foreground">Arraste a divisória para ajustar a largura.</p>
               </div>
               <button type="button" onClick={() => setSidebarOpen(false)} className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-white/[0.08] bg-white/[0.03] text-white/45 transition hover:bg-white/[0.06] hover:text-white" aria-label="Recolher biblioteca lateral" title="Recolher biblioteca lateral">
                 <PanelLeft className="h-3.5 w-3.5" />
@@ -1107,7 +1150,29 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHe
             })}
           </nav>
 
-          <div className={cn("row-start-2 col-start-2 min-h-0 overflow-y-auto bg-[#0f1117]/65 p-3.5", !sidebarOpen && "hidden")}>
+          {sidebarOpen && (
+            <button
+              type="button"
+              aria-label="Redimensionar barra lateral"
+              title="Arraste para ajustar a largura"
+              className={cn(
+                "absolute right-0 top-0 z-50 h-full w-2 -translate-x-1/2 cursor-col-resize bg-transparent transition",
+                sidebarResizing ? "bg-primary/15" : "hover:bg-primary/10",
+              )}
+              onPointerDown={(event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                sidebarResizeRef.current = { startX: event.clientX, startWidth: sidebarWidth };
+                setSidebarResizing(true);
+              }}
+            >
+              <span className={cn(
+                "absolute right-0.5 top-1/2 h-16 w-1 -translate-y-1/2 rounded-full",
+                sidebarResizing ? "bg-primary/70" : "bg-white/10 hover:bg-primary/50",
+              )} />
+            </button>
+          )}
+          <div className={cn("row-start-2 col-start-2 min-h-0 overflow-y-auto bg-[#0f1117]/65 p-4", !sidebarOpen && "hidden")}>
             {toolCategory === "Modelos" && (
               <div className="space-y-3">
                 <div>
