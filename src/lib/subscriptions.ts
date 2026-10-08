@@ -260,6 +260,16 @@ export function limitReached(value: number, limit: number | null | undefined) {
 export const formatStorage = (bytes: number) => bytes < 1024 * 1024 ? `${Math.round(bytes / 1024)} KB` : `${(bytes / 1024 / 1024).toFixed(1)} MB`;
 export const formatMoney = (value: number) => value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
+export function subscriptionLimitErrorMessage(error: unknown): string | null {
+  const err = error as { code?: string; message?: string } | null;
+  if (err?.code !== "P0001") return null;
+  const raw = err.message ?? "";
+  if (/armazenamento/i.test(raw)) return "O limite de armazenamento do seu plano foi atingido. Revise seu plano para continuar enviando arquivos.";
+  const match = raw.match(/Limite do plano atingido:\s*(clientes|convites|convidados)\s*\((\d+)\s+de\s+(\d+)\)/i);
+  if (match) return `O limite de ${match[1]} do seu plano foi atingido (${match[2]} de ${match[3]}). Revise seu plano para continuar.`;
+  return "Um limite do seu plano foi atingido. Revise seu plano para continuar.";
+}
+
 
 export function getSubscriptionLifecycle(overview: SubscriptionOverview): SubscriptionLifecycle {
   if (!overview.subscription || !overview.plan) return { state: "missing", daysRemaining: null };

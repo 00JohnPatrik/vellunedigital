@@ -82,6 +82,13 @@ export const fmtDate = (s: string) => new Date(s).toLocaleDateString("pt-BR");
 
 export function dbErrorMessage(err: { code?: string; message?: string } | null, dupMsg: string) {
   if (!err) return "";
+  if (err.code === "P0001") {
+    const raw = err.message ?? "";
+    if (/armazenamento/i.test(raw)) return "O limite de armazenamento do seu plano foi atingido. Revise seu plano para continuar enviando arquivos.";
+    const match = raw.match(/Limite do plano atingido:\s*(clientes|convites|convidados)\s*\((\d+)\s+de\s+(\d+)\)/i);
+    if (match) return `O limite de ${match[1]} do seu plano foi atingido (${match[2]} de ${match[3]}). Revise seu plano para continuar.`;
+    return "Um limite do seu plano foi atingido. Revise seu plano para continuar.";
+  }
   if (err.code === "23505") return dupMsg;
   if (err.code === "23514") return "Dados inválidos. Verifique os campos obrigatórios.";
   return "Não foi possível salvar. Tente novamente.";

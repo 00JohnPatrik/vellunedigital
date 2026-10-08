@@ -1,4 +1,5 @@
 import { supabase as typedSupabase } from "@/integrations/supabase/client";
+import { subscriptionLimitErrorMessage } from "@/lib/subscriptions";
 // eslint-disable-next-line @typescript-eslint/no-explicit-any -- tables newer than generated types
 const supabase = typedSupabase as any;
 
@@ -141,7 +142,11 @@ function guestRow(values: GuestValues) {
 
 export async function createGuest(invitationId: string, values: GuestValues) {
   const { data, error } = await supabase.from("invitation_guests").insert({ invitation_id: invitationId, ...guestRow(values) }).select(guestColumns).single();
-  if (error) throw error;
+  if (error) {
+    const limitMessage = subscriptionLimitErrorMessage(error);
+    if (limitMessage) throw new Error(limitMessage);
+    throw error;
+  }
   return data as unknown as InvitationGuest;
 }
 

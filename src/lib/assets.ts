@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { subscriptionLimitErrorMessage } from "@/lib/subscriptions";
 
 // Images live in the private "invitation-assets" bucket. Blocks store `storage:<path>`; the editor
 // resolves it to a short-lived signed URL (RLS-scoped) and the public page receives server-signed URLs.
@@ -40,7 +41,12 @@ export async function uploadImage(scope: AssetScope, file: File): Promise<string
     storage_path: path, file_name: file.name.slice(0, 200), mime_type: file.type, size: file.size,
     invitation_id: scope.kind === "invitation" ? scope.id : null, template_id: scope.kind === "template" ? scope.id : null,
   } as never);
-  if (error) { await supabase.storage.from(BUCKET).remove([path]); throw new Error("Não foi possível registrar a imagem."); }
+  if (error) {
+    await supabase.storage.from(BUCKET).remove([path]);
+    const limitMessage = subscriptionLimitErrorMessage(error);
+    if (limitMessage) throw new Error(limitMessage);
+    throw new Error("Não foi possível registrar a imagem.");
+  }
   return STORAGE_PREFIX + path;
 }
 

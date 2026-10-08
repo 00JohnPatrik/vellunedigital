@@ -12,6 +12,7 @@ import { customersKey, findDuplicate, listCustomers, toRow, type Customer } from
 import { invitationsKey, listInvitations } from "@/lib/invitations";
 import { setCustomerStatus } from "@/lib/customer-actions";
 import { cn } from "@/lib/utils";
+import { SubscriptionUsageAlert } from "@/components/subscription-ui";
 
 export const Route = createFileRoute("/_authenticated/customers/")({
   head: () => ({ meta: [{ title: "Clientes — Vellune Digital" }] }),
@@ -58,6 +59,7 @@ function CustomersPage() {
 
   return (
     <div>
+      {companyId && <SubscriptionUsageAlert companyId={companyId} />}
       <PageHeader title="Clientes" description={isSuper ? "Clientes de todas as empresas." : "Clientes da sua empresa."}
         action={companyId && <Button onClick={() => setOpen(true)}><Plus className="h-4 w-4" />Novo cliente</Button>} />
       <div className="mb-5 grid gap-3 sm:grid-cols-3">
