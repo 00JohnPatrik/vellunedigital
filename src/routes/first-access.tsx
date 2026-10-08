@@ -71,7 +71,12 @@ function FirstAccessPage() {
       await request({ data: { email: parsed.data } });
       setResendCooldown(30); try { window.sessionStorage.setItem("vellune-first-access-cooldown-until", String(Date.now() + 30000)); } catch {}
     } catch (err) {
-      if (isAuthServiceUnavailable(err)) setAuthUnavailable(true);
+      if (isAuthServiceUnavailable(err)) {
+        setAuthUnavailable(true);
+      } else {
+        setError("Não foi possível reenviar agora. Tente novamente.");
+        setErrorIsValidation(false);
+      }
     } finally {
       setLoading(false);
       requestLockRef.current = false;
