@@ -32,7 +32,7 @@ export function VelluneCreativeDock({
   return (
     <nav
       className={cn(
-        "fixed inset-x-0 bottom-0 z-[170] flex justify-center px-3 pb-[max(12px,env(safe-area-inset-bottom))] pt-3 sm:px-5 sm:pb-5",
+        "fixed inset-x-0 bottom-0 z-[170] flex justify-center px-3 pb-[max(12px,env(safe-area-inset-bottom))] pt-3 sm:px-5 sm:pb-5 lg:hidden",
         "pointer-events-none",
         className,
       )}
