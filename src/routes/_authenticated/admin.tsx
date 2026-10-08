@@ -1,6 +1,5 @@
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
-import { AppShell } from "@/components/app-shell";
-import { adminNav } from "@/lib/nav";
+import { VelluneAdminShell } from "@/components/vellune-admin-shell";
 import { isDemoMode } from "@/lib/demo-mode";
 
 export const Route = createFileRoute("/_authenticated/admin")({
@@ -15,8 +14,8 @@ function AdminLayout() {
   const { appUser: routeAppUser } = Route.useRouteContext();
   const appUser = routeAppUser!;
   return (
-    <AppShell base="/admin" nav={adminNav} appUser={appUser}>
+    <VelluneAdminShell appUser={appUser}>
       <Outlet />
-    </AppShell>
+    </VelluneAdminShell>
   );
 }
