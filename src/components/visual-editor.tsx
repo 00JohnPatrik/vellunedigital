@@ -302,7 +302,7 @@ const ELEMENT_ICONS: Partial<Record<BlockType, ComponentType<{ className?: strin
 };
 export type EditorPoint = { x: number; y: number };
 
-export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHeaderLeft, desktopHeaderRight, fullHeight = false }: { h: BlocksHistory; ctx?: unknown; assets?: unknown; bg?: unknown; onBg?: (value: any) => void; toolbarExtra?: React.ReactNode; desktopHeaderLeft?: React.ReactNode; desktopHeaderRight?: React.ReactNode; fullHeight?: boolean }) {
+export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHeaderLeft, desktopHeaderRight, fullHeight = false, experimentalLayout = false }: { h: BlocksHistory; ctx?: unknown; assets?: unknown; bg?: unknown; onBg?: (value: any) => void; toolbarExtra?: React.ReactNode; desktopHeaderLeft?: React.ReactNode; desktopHeaderRight?: React.ReactNode; fullHeight?: boolean; experimentalLayout?: boolean }) {
   const canvasRef = useRef<HTMLDivElement>(null);
   const viewportRef = useRef<HTMLDivElement>(null);
   const viewPreferences = useRef<EditorViewPreferences | null>(null);
@@ -319,7 +319,7 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHe
   const [device, setDevice] = useState<"mobile" | "tablet" | "desktop">(() => viewPreferences.current?.device ?? "mobile");
   const [canvasDragOver, setCanvasDragOver] = useState(false);
   const [inspectorOpen, setInspectorOpen] = useState(false);
-  const [sidebarOpen, setSidebarOpen] = useState(() => viewPreferences.current?.sidebarOpen ?? true);
+  const [sidebarOpen, setSidebarOpen] = useState(() => experimentalLayout ? false : (viewPreferences.current?.sidebarOpen ?? true));
   const [sidebarWidth, setSidebarWidth] = useState(() => viewPreferences.current?.sidebarWidth ?? 320);
   const [sidebarResizing, setSidebarResizing] = useState(false);
   const sidebarResizeRef = useRef<{ startX: number; startWidth: number } | null>(null);
@@ -1057,7 +1057,7 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHe
     h.set((items) => items.map((item: any) => selectedIds.includes(item.id) && !item.locked ? { ...item, props: { ...(item.props ?? {}), [key]: value } } : item), "selection:properties");
   };
   return (
-    <div className={cn("vellune-editor-root flex flex-col overflow-hidden border border-primary/10 bg-background/95 shadow-2xl shadow-black/15 ring-1 ring-black/5", fullHeight ? "h-full min-h-0 rounded-none border-0 pb-0 shadow-none ring-0" : "min-h-[calc(100dvh-7rem)] rounded-[1.25rem] pb-20 lg:min-h-[680px] lg:pb-0")} style={{ "--color-primary": "#d4af37", "--color-primary-foreground": "#16130b" } as React.CSSProperties}>
+    <div className={cn("vellune-editor-root flex flex-col overflow-hidden border border-primary/10 bg-background/95 shadow-2xl shadow-black/15 ring-1 ring-black/5", fullHeight ? "h-full min-h-0 rounded-none border-0 pb-0 shadow-none ring-0" : "min-h-[calc(100dvh-7rem)] rounded-[1.25rem] pb-20 lg:min-h-[680px] lg:pb-0", experimentalLayout && "vellune-editor-experimental")} style={{ "--color-primary": "#d4af37", "--color-primary-foreground": "#16130b" } as React.CSSProperties}>
       <div className="hidden h-14 shrink-0 items-center gap-3 border-b border-white/[0.07] bg-[#0b0d12]/95 px-4 shadow-[0_8px_30px_rgba(0,0,0,0.18)] backdrop-blur-xl lg:flex" role="toolbar" aria-label="Barra principal do editor">
         <div className="min-w-0 flex-1">
           {desktopHeaderLeft ?? (
@@ -1539,11 +1539,28 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHe
           <ContextualPropertiesPanel blocks={blocks} selectedIds={selectedIds} assets={assets as any} onChange={(update, group) => h.set(update, group)} onDuplicate={duplicateByIds} onDelete={removeByIds} />
         </aside>}
       </div>
-      <div className="vellune-editor-mobile-bar shrink-0 flex items-center justify-between gap-1.5 rounded-2xl border border-primary/15 bg-card/95 p-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))] shadow-2xl shadow-black/25 backdrop-blur-xl lg:hidden" role="toolbar" aria-label="Ferramentas móveis do editor"><button type="button" className="flex flex-1 flex-col items-center gap-0.5 rounded-xl px-1 py-1.5 text-[10px] text-muted-foreground transition hover:bg-primary/10 hover:text-primary" onClick={() => setMobileSheet("layers")}><Grid3X3 className="h-4 w-4" />Organizar</button><button type="button" className="flex flex-1 flex-col items-center gap-0.5 rounded-xl bg-primary px-1 py-1.5 text-[10px] font-semibold text-primary-foreground shadow-[0_8px_20px_hsl(var(--primary)/.24)] transition hover:brightness-105" onClick={() => setMobileSheet("elements")}><Plus className="h-5 w-5" />Adicionar</button><button type="button" className="flex flex-1 flex-col items-center gap-0.5 rounded-xl px-1 py-1.5 text-[10px] text-muted-foreground transition hover:bg-primary/10 hover:text-primary" onClick={() => setMobileSheet("properties")}><PanelRight className="h-4 w-4" />Ajustar</button><button type="button" className="flex flex-1 flex-col items-center gap-0.5 rounded-xl px-1 py-1.5 text-[10px] text-muted-foreground transition hover:bg-primary/10 hover:text-primary" onClick={() => setMobileSheet("background")}><Sparkles className="h-4 w-4" />Fundo</button><button type="button" className="flex flex-1 flex-col items-center gap-0.5 rounded-xl px-1 py-1.5 text-[10px] text-muted-foreground transition hover:bg-primary/10 hover:text-primary" onClick={() => setMobileSheet("view")}><Eye className="h-4 w-4" />Visualizar</button></div>
+      {experimentalLayout ? (
+        <div className="vellune-editor-mobile-bar vellune-editor-mobile-bar-experimental shrink-0 flex items-center justify-between gap-1.5 rounded-[24px] border border-white/10 bg-[#11141B]/80 p-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))] shadow-[0_18px_60px_-20px_rgba(0,0,0,0.75)] backdrop-blur-2xl lg:hidden" role="toolbar" aria-label="Ferramentas principais do editor experimental">
+          <button type="button" className="flex flex-1 flex-col items-center gap-0.5 rounded-2xl px-1 py-1.5 text-[10px] text-white/60 transition active:scale-95 hover:bg-white/[0.06] hover:text-white" onClick={() => { setToolCategory("Modelos"); setMobileSheet("elements"); }}><LayoutGrid className="h-4 w-4" />Layouts</button>
+          <button type="button" className="flex flex-1 flex-col items-center gap-0.5 rounded-2xl px-1 py-1.5 text-[10px] text-white/60 transition active:scale-95 hover:bg-white/[0.06] hover:text-white" onClick={() => { setToolCategory("Adicionar"); setMobileSheet("elements"); }}><Sparkles className="h-4 w-4" />Elementos</button>
+          <button type="button" className="relative -mt-7 flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-[#8B5CF6] text-white shadow-[0_16px_34px_-10px_rgba(139,92,246,0.75)] ring-4 ring-[#0B0D12]/90 transition active:scale-95 hover:brightness-110" aria-label="Adicionar ao convite" onClick={() => { setToolCategory("Adicionar"); setMobileSheet("elements"); }}><Plus className="h-6 w-6" /></button>
+          <button type="button" className="flex flex-1 flex-col items-center gap-0.5 rounded-2xl px-1 py-1.5 text-[10px] text-white/60 transition active:scale-95 hover:bg-white/[0.06] hover:text-white" onClick={() => { setToolCategory("Adicionar"); setMobileSheet("elements"); }}><UploadCloud className="h-4 w-4" />Uploads</button>
+          <button type="button" className="flex flex-1 flex-col items-center gap-0.5 rounded-2xl px-1 py-1.5 text-[10px] text-white/60 transition active:scale-95 hover:bg-white/[0.06] hover:text-white" onClick={() => { addBlockByType("text"); }}><Type className="h-4 w-4" />Texto</button>
+        </div>
+      ) : (
+      <div className="vellune-editor-mobile-bar shrink-0 flex items-center justify-between gap-1.5 rounded-2xl border border-primary/15 bg-card/95 p-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))] shadow-2xl shadow-black/25 backdrop-blur-xl lg:hidden" role="toolbar" aria-label="Ferramentas móveis do editor"> 
+        <button type="button" className="flex flex-1 flex-col items-center gap-0.5 rounded-xl px-1 py-1.5 text-[10px] text-muted-foreground transition hover:bg-primary/10 hover:text-primary" onClick={() => setMobileSheet("layers")}><Grid3X3 className="h-4 w-4" />Organizar</button>
+        <button type="button" className="flex flex-1 flex-col items-center gap-0.5 rounded-xl bg-primary px-1 py-1.5 text-[10px] font-semibold text-primary-foreground shadow-[0_8px_20px_hsl(var(--primary)/.24)] transition hover:brightness-105" onClick={() => setMobileSheet("elements")}><Plus className="h-5 w-5" />Adicionar</button>
+        <button type="button" className="flex flex-1 flex-col items-center gap-0.5 rounded-xl px-1 py-1.5 text-[10px] text-muted-foreground transition hover:bg-primary/10 hover:text-primary" onClick={() => setMobileSheet("properties")}><PanelRight className="h-4 w-4" />Ajustar</button>
+        <button type="button" className="flex flex-1 flex-col items-center gap-0.5 rounded-xl px-1 py-1.5 text-[10px] text-muted-foreground transition hover:bg-primary/10 hover:text-primary" onClick={() => setMobileSheet("background")}><Sparkles className="h-4 w-4" />Fundo</button>
+        <button type="button" className="flex flex-1 flex-col items-center gap-0.5 rounded-xl px-1 py-1.5 text-[10px] text-muted-foreground transition hover:bg-primary/10 hover:text-primary" onClick={() => setMobileSheet("view")}><Eye className="h-4 w-4" />Visualizar</button>
+      </div>
+      )}
       {compact && mobileSheet && (
         <>
           <button type="button" aria-label="Fechar painel" className="fixed inset-0 z-40 bg-black/35 backdrop-blur-[2px]" onClick={() => setMobileSheet(null)} />
-          <div className="fixed inset-x-2 bottom-2 z-50 max-h-[70vh] overflow-y-auto rounded-2xl border border-border/80 bg-card p-4 shadow-2xl">
+          <div className={cn("fixed inset-x-2 bottom-2 z-50 overflow-y-auto border border-border/80 bg-card p-4 shadow-2xl", experimentalLayout ? "max-h-[50vh] rounded-t-[28px] rounded-b-[22px] backdrop-blur-2xl" : "max-h-[70vh] rounded-2xl")}>
+            {experimentalLayout && <div className="mx-auto mb-3 h-1 w-12 rounded-full bg-muted-foreground/30" aria-hidden="true" />}
           <div className="mb-3 flex items-center justify-between gap-3">
             <p className="text-sm font-semibold">
               {mobileSheet === "properties" ? "Ajustar" : mobileSheet === "background" ? "Fundo" : mobileSheet === "view" ? "Visualizar" : mobileSheet === "layers" ? "Organizar" : "Elementos"}
