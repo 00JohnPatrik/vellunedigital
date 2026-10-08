@@ -14,6 +14,28 @@ export type Database = {
   }
   public: {
     Tables: {
+      auth_rate_limits: {
+        Row: {
+          rate_key: string
+          window_started_at: string
+          request_count: number
+          updated_at: string
+        }
+        Insert: {
+          rate_key: string
+          window_started_at?: string
+          request_count?: number
+          updated_at?: string
+        }
+        Update: {
+          rate_key?: string
+          window_started_at?: string
+          request_count?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+
       companies: {
         Row: {
           created_at: string
@@ -890,6 +912,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      consume_auth_rate_limit: {
+        Args: { p_key: string; p_limit: number; p_window_seconds: number }
+        Returns: boolean
+      }
       current_company_id: { Args: never; Returns: string }
       get_public_invitation: { Args: { _slug: string }; Returns: Json }
       invitation_company: { Args: { _invitation_id: string }; Returns: string }
