@@ -2,6 +2,10 @@ import { BLOCKS, normalizeBlockGeometry, type Block, type BlockType, type Templa
 
 /** Event data used by date/time/location/countdown blocks when their source is "event". */
 export type EventCtx = {
+  event_name?: string | null | undefined;
+  guest_name?: string | null | undefined;
+  guest_people?: number | null | undefined;
+  guest_status?: string | null | undefined;
   event_date?: string | null | undefined; event_time?: string | null | undefined; venue_name?: string | null | undefined;
   address?: string | null | undefined; city?: string | null | undefined; state?: string | null | undefined; publicUrl?: string | null | undefined;
   /** Only set on the public page: makes the RSVP block functional (or hides it when disabled). */
