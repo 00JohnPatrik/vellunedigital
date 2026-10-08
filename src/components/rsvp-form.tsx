@@ -1,6 +1,6 @@
 import { useState, type CSSProperties } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { CheckCircle2, Loader2 } from "lucide-react";
+import { CheckCircle2, Heart, Loader2, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -69,10 +69,21 @@ export function RsvpForm({ slug, cfg, title, label, visual = {} }: { slug: strin
   if (closed) return <Box><p className="text-sm text-muted-foreground">{CLOSED}</p></Box>;
   if (done) return (
     <Box>
-      <CheckCircle2 className="mx-auto h-8 w-8 text-primary" />
-      <p className="font-display text-lg">{done.status === "confirmed" ? "Presença confirmada!" : "Presença registrada."}</p>
-      {done.status === "confirmed" && <p className="text-sm text-muted-foreground">{done.name} · {done.people} {done.people === 1 ? "pessoa" : "pessoas"}</p>}
-      {done.status === "declined" && <p className="text-sm text-muted-foreground">Obrigado por avisar, {done.name}.</p>}
+      <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-primary/10 text-primary">
+        <CheckCircle2 className="h-7 w-7" />
+      </div>
+      <div className="space-y-1">
+        <p className="flex items-center justify-center gap-1.5 font-display text-xl">
+          <Sparkles className="h-4 w-4 text-primary" />
+          {done.status === "confirmed" ? "Presença confirmada!" : "Resposta registrada."}
+        </p>
+        {done.status === "confirmed" && <p className="text-sm text-muted-foreground">{done.name} · {done.people} {done.people === 1 ? "pessoa" : "pessoas"}</p>}
+        {done.status === "declined" && <p className="text-sm text-muted-foreground">Obrigado por avisar, {done.name}.</p>}
+      </div>
+      <div className="mx-auto max-w-sm rounded-xl border border-primary/10 bg-primary/5 p-3">
+        <p className="flex items-center justify-center gap-1.5 text-sm text-foreground"><Heart className="h-4 w-4 text-primary" />Foi um prazer receber sua resposta.</p>
+        <p className="mt-1 text-xs leading-5 text-muted-foreground">Guarde esta página para consultar os detalhes do evento quando precisar.</p>
+      </div>
     </Box>
   );
 
@@ -112,7 +123,7 @@ export function RsvpForm({ slug, cfg, title, label, visual = {} }: { slug: strin
 }
 
 function Box({ children }: { children: React.ReactNode }) {
-  return <div className="space-y-1 rounded-xl border p-5 text-center" role="status">{children}</div>;
+  return <div className="space-y-4 rounded-2xl border border-primary/10 bg-background/30 p-5 text-center shadow-sm" role="status" aria-live="polite">{children}</div>;
 }
 
 function Field({ id, label, error, children }: { id: string; label: string; error?: string | undefined; children: React.ReactNode }) {
