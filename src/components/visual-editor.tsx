@@ -1059,8 +1059,8 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHe
         </div>
         {toolbarExtra && <div className="mt-2 flex items-center justify-end gap-1.5 border-t border-primary/10 pt-2 md:hidden">{toolbarExtra}</div>}
       </div>
-      <div className="vellune-editor-body flex min-h-0 flex-1 flex-col lg:flex-row">
-        <aside className={cn("vellune-editor-sidebar hidden shrink-0 grid-rows-[auto_minmax(0,1fr)] border-r border-white/[0.06] bg-[#0d0f14]/95 backdrop-blur-xl", focusMode ? "lg:hidden" : cn("lg:grid", sidebarOpen ? "w-[272px] grid-cols-[64px_minmax(0,1fr)]" : "w-[64px] grid-cols-[64px]"))} aria-label="Ferramentas do editor">
+      <div className="vellune-editor-body relative flex min-h-0 flex-1 flex-col lg:flex-row">
+        <aside className={cn("vellune-editor-sidebar hidden shrink-0 grid-rows-[auto_minmax(0,1fr)] border-r border-white/[0.06] bg-[#0d0f14]/95 backdrop-blur-xl", focusMode ? "lg:hidden" : cn("lg:grid", sidebarOpen ? "w-[248px] grid-cols-[56px_minmax(0,1fr)] xl:w-[272px] xl:grid-cols-[64px_minmax(0,1fr)]" : "w-[56px] grid-cols-[56px] xl:w-[64px] xl:grid-cols-[64px]"))} aria-label="Ferramentas do editor">
           <div className={cn("border-b border-white/[0.06] bg-[#101217]/80 p-3.5", sidebarOpen ? "col-span-2" : "hidden")}>
             <div className="flex items-center gap-2">
               <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary"><Sparkles className="h-4 w-4" /></div>
@@ -1397,7 +1397,7 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHe
               }}
             /></div></div></div>
         </main>
-        {inspectorOpen && <aside id="editor-contextual-properties" className={cn("vellune-editor-inspector hidden w-[288px] shrink-0 overflow-y-auto rounded-2xl border border-primary/10 bg-card/75 p-3 shadow-xl shadow-black/10 backdrop-blur-xl lg:block", focusMode && "lg:hidden")} aria-label="Ajustes avançados do elemento">
+        {inspectorOpen && <aside id="editor-contextual-properties" className={cn("vellune-editor-inspector hidden w-[288px] shrink-0 overflow-y-auto rounded-2xl border border-primary/10 bg-card/75 p-3 shadow-xl shadow-black/10 backdrop-blur-xl lg:block lg:absolute lg:right-4 lg:top-4 lg:bottom-4 lg:z-50 lg:max-h-[calc(100%-2rem)] xl:relative xl:right-auto xl:top-auto xl:bottom-auto xl:z-auto xl:max-h-none", focusMode && "lg:hidden")} aria-label="Ajustes avançados do elemento">
           <div className="mb-2 flex items-center justify-between gap-2 rounded-xl border border-primary/10 bg-background/35 px-3 py-2.5">
             <div className="flex min-w-0 items-center gap-2">
               <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary"><PanelRight className="h-3.5 w-3.5" /></div>
