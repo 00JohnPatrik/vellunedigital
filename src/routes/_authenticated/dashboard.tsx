@@ -16,9 +16,9 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
 function DashboardLayout() {
   const { appUser: routeAppUser } = Route.useRouteContext();
   const appUser = routeAppUser!;
-  const experimentalLayout = typeof window !== "undefined" && new URLSearchParams(window.location.search).get("experimental") === "1";
+  const legacyLayout = typeof window !== "undefined" && new URLSearchParams(window.location.search).get("legacy") === "1";
 
-  if (experimentalLayout) {
+  if (!legacyLayout && typeof window !== "undefined" && window.location.pathname === "/dashboard") {
     return (
       <div className="dark min-h-[100dvh] w-full bg-[#0B0D12] text-[#F5F7FA]">
         <Outlet />
