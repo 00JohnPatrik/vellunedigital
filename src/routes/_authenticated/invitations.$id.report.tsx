@@ -5,6 +5,7 @@ import { EmptyState, LoadingState, PageHeader } from "@/components/admin-ui";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getInvitationForGuests, listAllInvitationGuests } from "@/lib/guests";
+import { InvitationAutomationCard } from "@/components/invitation-automation-card";
 import { listRsvpResponses } from "@/lib/rsvp";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -21,7 +22,9 @@ async function loadReport(id: string) {
     supabase.from("guest_checkins").select("id, guest_id, status, checked_in_at").eq("invitation_id", id).eq("status", "active"),
   ]);
   if (checkins.error) throw checkins.error;
-  return { invitation, guests, rsvps, checkins: checkins.data ?? [] };
+  const { data: access, error: accessError } = await supabase.from("invitations").select("access_token").eq("id", id).maybeSingle();
+  if (accessError) throw accessError;
+  return { invitation, guests, rsvps, checkins: checkins.data ?? [], accessToken: (access?.access_token as string | null | undefined) ?? null };
 }
 
 function InvitationReport() {
@@ -31,7 +34,7 @@ function InvitationReport() {
   if (report.isError) return <div className="rounded-xl border border-destructive/30 bg-destructive/5 p-6 text-center text-sm text-destructive">Não foi possível carregar o relatório.</div>;
   if (!report.data?.invitation) return <EmptyState>Convite não encontrado.</EmptyState>;
 
-  const { invitation, guests, rsvps, checkins } = report.data;
+  const { invitation, guests, rsvps, checkins, accessToken } = report.data;
   const confirmed = rsvps.filter((response) => response.status === "confirmed");
   const declined = rsvps.filter((response) => response.status === "declined");
   const activeGuestIds = new Set(guests.map((guest) => guest.guest_id));
@@ -52,6 +55,8 @@ function InvitationReport() {
         <Metric icon={<CheckCircle2 className="h-5 w-5" />} label="Check-ins" value={checkedGuestIds.size} detail={`${checkinRate}% dos convidados`} />
         <Metric icon={<ClipboardCheck className="h-5 w-5" />} label="Respostas" value={responseTotal} detail={`${responseRate}% de retorno`} />
       </div>
+
+      <InvitationAutomationCard invitationId={id} accessToken={accessToken} />
 
       <div className="grid gap-4 lg:grid-cols-2">
         <Card>
