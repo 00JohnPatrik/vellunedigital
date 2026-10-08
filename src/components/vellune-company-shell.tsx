@@ -15,7 +15,7 @@ type Props = {
   className?: string;
 };
 
-const MODULES = companyNav.filter((item): item is typeof item & { to: string } => Boolean(item.to));
+const MODULES = companyNav.filter((item) => Boolean(item.to)).map((item) => ({ label: item.label, to: item.to!, icon: item.icon }));
 
 
 
