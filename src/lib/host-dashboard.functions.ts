@@ -75,7 +75,7 @@ export const getHostDashboard = createServerFn({ method: "GET" })
     if (!invitation) return { state: "not_found" };
 
     const { data: automationState, error: automationError } = await supabaseAdmin
-      .rpc("apply_invitation_automation", { _invitation_id: invitation.id });
+      .rpc("apply_invitation_automation" as never, { _invitation_id: invitation.id } as never);
 
     if (automationError) {
       console.error("getHostDashboard automation", automationError.message);
