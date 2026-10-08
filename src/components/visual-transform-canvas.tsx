@@ -25,6 +25,8 @@ type Props = {
   onOpacity?: (value: number, ids: string[]) => void;
   onRotate?: (amount: number, ids: string[]) => void;
   onAutoArrange?: (ids: string[]) => void;
+  onMagicArrange?: (ids: string[], preset: "balanced" | "editorial" | "minimal" | "romantic") => void;
+  onSmartAlign?: (ids: string[]) => void;
   onGroup?: (ids: string[]) => void;
   onUngroup?: (ids: string[]) => void;
   onImageAction?: (id: string, action: ImageAction) => void;
@@ -869,6 +871,8 @@ export function VisualTransformCanvas({ blocks, selectedIds: selectedIdsProp, zo
           onOpacity={(value) => onOpacity?.(value, selectedIds)}
           onRotate={(amount) => onRotate?.(amount, selectedIds)}
           onAutoArrange={() => onAutoArrange?.(selectedIds)}
+          onMagicArrange={(preset) => onMagicArrange?.(selectedIds, preset)}
+          onSmartAlign={() => onSmartAlign?.(selectedIds)}
         />
       </div>
     )}
