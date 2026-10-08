@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { BlockView } from "@/components/block-render";
 import { EditorQuickToolbar, type ImageAction } from "@/components/editor-quick-toolbar";
-import { resolveBlockGeometry, type Block } from "@/lib/templates";
+import { resolveBlockGeometry, type Block, type BlockType } from "@/lib/templates";
 import { fontCss } from "@/lib/blocks";
 import { Copy, Lock, Unlock, Pencil, SlidersHorizontal, Trash2, Crop } from "lucide-react";
 
