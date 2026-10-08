@@ -271,7 +271,7 @@ function isTextInput(target: EventTarget | null) {
   );
 }
 
-export function VisualTransformCanvas({ blocks, selectedIds: selectedIdsProp, zoom, canvasRef, ctx, onSelect, onAddBlock, onChange, onDuplicate, onDelete, onAdvanced, onLayer, onAlign, onOpacity, onRotate, onAutoArrange, onGroup, onUngroup, onImageAction, startEditingId, onStartEditingHandled, showGrid = true, snapEnabled = true }: Props) {
+export function VisualTransformCanvas({ blocks, selectedIds: selectedIdsProp, zoom, canvasRef, ctx, onSelect, onAddBlock, onChange, onDuplicate, onDelete, onAdvanced, onLayer, onAlign, onOpacity, onRotate, onAutoArrange, onMagicArrange, onSmartAlign, onGroup, onUngroup, onImageAction, startEditingId, onStartEditingHandled, showGrid = true, snapEnabled = true }: Props) {
   const interaction = useRef<Interaction | null>(null);
   const [guides, setGuides] = useState<Guide[]>([]);
   const [marquee, setMarquee] = useState<{ start: Point; current: Point; additive: boolean } | null>(null);
