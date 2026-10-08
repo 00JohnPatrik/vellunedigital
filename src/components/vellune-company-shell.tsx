@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { FileText, LayoutTemplate, Search, UserRound, X } from "lucide-react";
 import { VelluneTopBar } from "@/components/vellune-top-bar";
@@ -9,6 +9,8 @@ import type { AppUser } from "@/lib/app-user";
 import { companyNav } from "@/lib/nav";
 import { searchWorkspaceContent } from "@/lib/global-search";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
+import { applyTheme } from "@/lib/app-user";
 
 type Props = {
   appUser: AppUser;
@@ -34,6 +36,7 @@ export function VelluneCompanyShell({ appUser, children, activeItem = "home", cl
   const [searchOpen, setSearchOpen] = useState(false);
   const [createOpen, setCreateOpen] = useState(false);
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
@@ -68,6 +71,14 @@ export function VelluneCompanyShell({ appUser, children, activeItem = "home", cl
     retry: 1,
   });
 
+  async function signOut() {
+    await queryClient.cancelQueries();
+    queryClient.clear();
+    await supabase.auth.signOut();
+    applyTheme(null);
+    void navigate({ to: "/login", replace: true });
+  }
+
   return (
     <div className={cn("vellune-platform-root dark min-h-[100dvh] bg-[#08090d] text-[#F5F7FA]", className)}>
       <VelluneTopBar
@@ -77,6 +88,7 @@ export function VelluneCompanyShell({ appUser, children, activeItem = "home", cl
         searchPlaceholder="Buscar convites, clientes ou áreas"
         onSearchActivate={() => setSearchOpen(true)}
         onAvatarClick={() => navigate({ to: "/settings" })}
+        onSignOut={signOut}
         showNotifications={false}
         trailingActions={<NotificationCenter appUser={appUser} />}
       />
