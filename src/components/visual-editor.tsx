@@ -478,7 +478,7 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHe
     requestAnimationFrame(fitCanvas);
   }, [compact, device, fitCanvas]);
   const clipboard = useRef<any[]>([]);
-  const styleClipboard = useRef<Record<string, unknown> | null>(null);
+  const [styleClipboard, setStyleClipboard] = useState<Record<string, unknown> | null>(null);
   const blocks = Array.isArray(h?.blocks) ? h.blocks : [];
   const selected = blocks.filter((block: any) => selectedIds.includes(block.id));
   const applyEditorTheme = (theme: EditorTheme) => {
@@ -745,12 +745,12 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHe
       "radiusBottomRight", "radiusBottomLeft", "shadow", "shadowColor", "shadowX", "shadowY", "shadowBlur", "shadowSpread",
       "filterBlur", "filterBrightness", "textColor", "backgroundColor", "radius", "paddingX", "paddingY", "width", "height", "position"
     ]);
-    styleClipboard.current = Object.fromEntries(Object.entries(source.props ?? {}).filter(([key]) => styleKeys.has(key)));
+    setStyleClipboard(Object.fromEntries(Object.entries(source.props ?? {}).filter(([key]) => styleKeys.has(key))));
     toast.success("Estilo copiado.");
   };
   const pasteSelectedStyle = () => {
-    if (!styleClipboard.current || !selected.length) return;
-    h.set((items) => items.map((item: any) => selectedIds.includes(item.id) && !item.locked ? { ...item, props: { ...(item.props ?? {}), ...styleClipboard.current } } : item), "selection:paste-style");
+    if (!styleClipboard || !selected.length) return;
+    h.set((items) => items.map((item: any) => selectedIds.includes(item.id) && !item.locked ? { ...item, props: { ...(item.props ?? {}), ...styleClipboard } } : item), "selection:paste-style");
     toast.success("Estilo aplicado.");
   };
   const toggleLockSelected = () => {
