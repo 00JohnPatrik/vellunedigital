@@ -72,10 +72,10 @@ function InvitationsPage() {
       return [...ids];
     });
     try {
-      await setInvitationFavorite(appUser.id, i.id, !wasFavorite);
+      await setInvitationFavorite(appUser!.id, i.id, !wasFavorite);
       toast.success(wasFavorite ? "Removido dos favoritos." : "Adicionado aos favoritos.");
     } catch {
-      await qc.invalidateQueries({ queryKey: invitationFavoritesKey(appUser.id) });
+      await qc.invalidateQueries({ queryKey: invitationFavoritesKey(appUser!.id) });
       toast.error("Não foi possível atualizar o favorito.");
     }
   }
