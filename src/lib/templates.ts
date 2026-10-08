@@ -209,6 +209,21 @@ type PremiumPhotoOptions = {
   includeCountdown?: boolean;
 };
 
+const PREMIUM_IMAGE_ANIMATION: EditorAnimation = {
+  preset: "fade",
+  direction: "in",
+  trigger: "on_load",
+  duration: 700,
+  delay: 80,
+  stagger: 0,
+  iterations: 1,
+  easing: "cubic-bezier(0.22, 1, 0.36, 1)",
+  enabled: true,
+  parallax: 10,
+  depth: 2,
+  sensor: false,
+};
+
 function buildPremiumPhotoTemplate(options: PremiumPhotoOptions): TemplateContent {
   const {
     image, imageAlt, kicker, title, body, accent, ink, muted, background, gradient,
@@ -219,6 +234,7 @@ function buildPremiumPhotoTemplate(options: PremiumPhotoOptions): TemplateConten
     {
       ...newBlock("image"),
       x: 24, y: 24, width: 342, height: 232, zIndex: 1,
+      animation: structuredClone(PREMIUM_IMAGE_ANIMATION),
       props: {
         url: image, alt: imageAlt, width: "full", height: "wide", align: "center",
         objectFit: "cover", objectPosition: "center", imageZoom: "108",
@@ -628,7 +644,7 @@ export const STARTERS: Record<string, { label: string; build: () => TemplateCont
         },
       },
       blocks: [
-        { ...newBlock("image"), x: 24, y: 24, width: 342, height: 220, zIndex: 1, props: { url: PREMIUM_PHOTO_IMAGES.event, alt: "Evento elegante", width: "full", height: "wide", align: "center", objectFit: "cover", imageZoom: "104" } },
+        { ...newBlock("image"), x: 24, y: 24, width: 342, height: 220, zIndex: 1, animation: structuredClone(PREMIUM_IMAGE_ANIMATION), props: { url: PREMIUM_PHOTO_IMAGES.event, alt: "Evento elegante", width: "full", height: "wide", align: "center", objectFit: "cover", imageZoom: "104" } },
         { ...newBlock("text"), x: 34, y: 270, width: 322, height: 24, zIndex: 3, props: { text: "EXEMPLO COMPLETO", font: "sans", fontSize: "10", letterSpacing: "3", color: "#d9c59b", align: "center", width: "full", textTransform: "uppercase" } },
         { ...newBlock("text"), x: 28, y: 310, width: 334, height: 66, zIndex: 4, props: { text: "Uma experiência feita para celebrar", font: "display", fontSize: "33", lineHeight: "1.05", color: "#f8f3e7", align: "center", width: "full" } },
         { ...newBlock("gallery"), x: 34, y: 402, width: 322, height: 168, zIndex: 5, props: { images: JSON.stringify([{ url: PREMIUM_PHOTO_IMAGES.wedding, alt: "Casamento" }, { url: PREMIUM_PHOTO_IMAGES.birthday, alt: "Aniversário" }, { url: PREMIUM_PHOTO_IMAGES.graduation, alt: "Formatura" }]), mode: "grid", columns: "3", height: "square", align: "center", captions: "0", autoplay: "0" } },
