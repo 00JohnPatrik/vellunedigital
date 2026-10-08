@@ -1,6 +1,7 @@
 import { AlertTriangle, ArrowRight, RefreshCw, ShieldCheck } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import Logo from "@/components/Logo";
+import { AuthCommercialFooter } from "@/components/auth-commercial-footer";
 
 export function AuthUnavailableState({
   title = "O acesso está temporariamente indisponível",
@@ -41,6 +42,7 @@ export function AuthUnavailableState({
           <div className="mt-5 flex items-center justify-center gap-2 text-[8px] font-medium uppercase tracking-[0.2em] text-white/20 sm:text-[9px]">
             <ShieldCheck className="h-3.5 w-3.5 text-[#d4af37]/55" />VELLUNE SECURE
           </div>
+          <AuthCommercialFooter />
         </div>
       </div>
     </div>
