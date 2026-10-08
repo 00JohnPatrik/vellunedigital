@@ -9,32 +9,123 @@ import {
   Scripts,
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
+import { ArrowRight, Sparkles } from "lucide-react";
 
 import appCss from "@/styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { supabase } from "@/integrations/supabase/client";
 import { Toaster } from "@/components/ui/sonner";
 import { AuthUnavailableState } from "@/components/auth-unavailable-state";
+import Logo from "@/components/Logo";
 
 function NotFoundComponent() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4">
-      <div className="max-w-md text-center">
-        <h1 className="text-7xl font-bold text-foreground">404</h1>
-        <h2 className="mt-4 text-xl font-semibold text-foreground">Page not found</h2>
-        <p className="mt-2 text-sm text-muted-foreground">
-          The page you're looking for doesn't exist or has been moved.
-        </p>
-        <div className="mt-6">
-          <Link
-            to="/"
-            className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-          >
-            Go home
-          </Link>
+    <main className="vellune-platform-root vellune-not-found min-h-[100svh] overflow-hidden bg-background text-foreground">
+      <div className="vellune-not-found-orb vellune-not-found-orb-one" aria-hidden="true" />
+      <div className="vellune-not-found-orb vellune-not-found-orb-two" aria-hidden="true" />
+
+      <div className="relative mx-auto flex min-h-[100svh] w-full max-w-[1240px] items-center justify-center px-5 py-10 sm:px-8 lg:px-12">
+        <div className="grid w-full max-w-[980px] items-center gap-10 lg:grid-cols-[.9fr_1.1fr] lg:gap-16">
+          <div className="order-2 lg:order-1">
+            <div className="mb-6 flex items-center gap-3">
+              <span className="vellune-not-found-brand-mark" aria-hidden="true">
+                <Logo markOnly className="h-6 w-6" title="" />
+              </span>
+              <span className="text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground">Vellune Digital</span>
+            </div>
+
+            <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.28em] text-primary">Erro 404</p>
+            <h1 className="max-w-xl font-display text-[clamp(2.7rem,6vw,5.2rem)] font-medium leading-[.94] tracking-[-0.055em]">
+              Esta página<br /><span className="text-muted-foreground">não existe.</span>
+            </h1>
+            <p className="mt-5 max-w-lg text-sm leading-7 text-muted-foreground sm:text-base">
+              O endereço pode ter sido alterado ou não fazer mais parte da experiência Vellune. Volte para o início e continue de onde parou.
+            </p>
+
+            <div className="mt-8 flex flex-wrap items-center gap-3">
+              <Link to="/" className="vellune-not-found-primary group inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-primary px-5 text-sm font-semibold text-primary-foreground">
+                Voltar ao início
+                <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
+              </Link>
+              <button type="button" onClick={() => window.history.back()} className="vellune-not-found-secondary inline-flex h-12 items-center justify-center rounded-xl px-5 text-sm font-medium text-foreground">
+                Voltar
+              </button>
+            </div>
+
+            <div className="mt-9 flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground/60">
+              <span className="h-px w-8 bg-border" />
+              Experiência Vellune
+            </div>
+          </div>
+
+          <div className="order-1 flex min-h-[330px] items-center justify-center lg:order-2 lg:min-h-[500px]">
+            <div className="vellune-not-found-scene relative h-[320px] w-[min(88vw,460px)] sm:h-[390px] lg:h-[470px]">
+              <div className="vellune-not-found-ghost absolute inset-x-8 top-10 h-[78%] rounded-[34px] border border-primary/10 bg-card/30" />
+              <div className="vellune-not-found-plane absolute left-[7%] top-[16%] h-[66%] w-[78%] rounded-[38px] border border-border/70 bg-card/70 shadow-2xl" />
+
+              <div className="vellune-not-found-invite absolute right-[5%] top-[8%] h-[75%] w-[56%] rounded-[34px] border border-primary/20 bg-background shadow-2xl">
+                <div className="absolute inset-2 rounded-[28px] border border-primary/10 bg-card p-6 sm:p-8">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[8px] font-semibold uppercase tracking-[0.24em] text-primary">Vellune</span>
+                    <span className="h-2 w-2 rounded-full bg-primary shadow-[0_0_14px_rgba(0,0,0,.18)]" />
+                  </div>
+                  <div className="flex h-full flex-col items-center justify-center text-center">
+                    <span className="font-display text-[clamp(4rem,10vw,6.5rem)] font-medium leading-none tracking-[-.09em] text-foreground/10">404</span>
+                    <div className="vellune-not-found-line h-px w-14" />
+                    <p className="mt-4 font-display text-xl tracking-[-.04em]">Página não encontrada</p>
+                    <p className="mt-2 max-w-[160px] text-[9px] leading-4 text-muted-foreground">O convite certo está em outro lugar.</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="vellune-not-found-chip absolute bottom-[8%] left-[4%] inline-flex items-center gap-2 rounded-full border border-border bg-card/90 px-4 py-2.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground shadow-lg backdrop-blur-xl">
+                <Sparkles className="h-3.5 w-3.5 text-primary" />
+                Experiência Vellune
+              </div>
+              <div className="vellune-not-found-404-shadow absolute bottom-[1%] right-[5%] font-display text-[clamp(5rem,16vw,9rem)] font-semibold leading-none tracking-[-.09em] text-primary/[0.07]">404</div>
+            </div>
+          </div>
         </div>
       </div>
-    </div>
+
+      <style>{`
+        .vellune-not-found { isolation:isolate; background:radial-gradient(circle at 85% 12%,color-mix(in oklch,var(--color-primary) 7%,transparent),transparent 26rem),radial-gradient(circle at 8% 86%,color-mix(in oklch,var(--color-primary) 4%,transparent),transparent 24rem),var(--color-background); }
+        .vellune-not-found-scene { perspective:1400px; transform-style:preserve-3d; }
+        .vellune-not-found-plane { transform:rotateY(-10deg) rotateX(4deg) rotateZ(-2deg) translateZ(-20px); transform-style:preserve-3d; animation:velluneNotFoundPlane 7s ease-in-out infinite; }
+        .vellune-not-found-ghost { transform:rotateY(-16deg) rotateX(8deg) rotateZ(2deg) translate3d(-10px,12px,-90px); opacity:.55; }
+        .vellune-not-found-invite { transform:rotateY(-10deg) rotateX(5deg) rotateZ(1.2deg) translateZ(36px); transform-style:preserve-3d; animation:velluneNotFoundInvite 6s ease-in-out infinite; }
+        .vellune-not-found-invite::after { content:""; position:absolute; inset:10px; border-radius:26px; box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 28px 50px rgba(0,0,0,.12); pointer-events:none; }
+        .vellune-not-found-chip { transform:translateZ(90px) rotateZ(-3deg); animation:velluneNotFoundChip 5s ease-in-out infinite; }
+        .vellune-not-found-404-shadow { transform:translateZ(-40px) rotateZ(3deg); }
+        .vellune-not-found-brand-mark { display:inline-flex;height:2rem;width:2rem;align-items:center;justify-content:center;border:1px solid color-mix(in oklch,var(--color-primary) 22%,transparent);border-radius:.7rem;background:color-mix(in oklch,var(--color-primary) 7%,transparent);box-shadow:0 8px 24px color-mix(in oklch,var(--color-primary) 8%,transparent); }
+        .vellune-not-found-line { background:linear-gradient(90deg,transparent,color-mix(in oklch,var(--color-primary) 50%,transparent),transparent); }
+        .vellune-not-found-primary,.vellune-not-found-secondary { border:1px solid var(--vellune-platform-line); transition:transform 180ms ease,box-shadow 180ms ease,background-color 180ms ease,border-color 180ms ease; }
+        .vellune-not-found-primary { box-shadow:0 14px 32px color-mix(in oklch,var(--color-primary) 14%,transparent); }
+        .vellune-not-found-primary:hover { transform:translateY(-1px); box-shadow:0 20px 44px color-mix(in oklch,var(--color-primary) 20%,transparent); }
+        .vellune-not-found-secondary { background:color-mix(in oklch,var(--color-card) 72%,transparent); }
+        .vellune-not-found-secondary:hover { background:var(--color-accent); border-color:var(--vellune-platform-line-strong); transform:translateY(-1px); }
+        .vellune-not-found-orb { position:absolute;border-radius:999px;pointer-events:none;border:1px solid color-mix(in oklch,var(--color-primary) 9%,transparent); }
+        .vellune-not-found-orb-one { width:18rem;height:18rem;right:-7rem;top:-7rem; }
+        .vellune-not-found-orb-two { width:13rem;height:13rem;left:-6rem;bottom:-5rem;opacity:.55; }
+        @keyframes velluneNotFoundInvite {
+          0%,100% { transform:rotateY(-10deg) rotateX(5deg) rotateZ(1.2deg) translate3d(0,0,36px); }
+          50% { transform:rotateY(-7deg) rotateX(3deg) rotateZ(.3deg) translate3d(0,-8px,44px); }
+        }
+        @keyframes velluneNotFoundPlane {
+          0%,100% { transform:rotateY(-10deg) rotateX(4deg) rotateZ(-2deg) translate3d(0,0,-20px); }
+          50% { transform:rotateY(-7deg) rotateX(2deg) rotateZ(-1deg) translate3d(0,-5px,-14px); }
+        }
+        @keyframes velluneNotFoundChip {
+          0%,100% { transform:translateZ(90px) rotateZ(-3deg); }
+          50% { transform:translateZ(100px) rotateZ(-1deg) translateY(-4px); }
+        }
+        @media (max-width:767px) { .vellune-not-found { overflow-y:auto; } .vellune-not-found-scene { transform:scale(.93); } }
+        @media (prefers-reduced-motion:reduce) {
+          .vellune-not-found-plane,.vellune-not-found-invite,.vellune-not-found-chip { animation:none!important; }
+          .vellune-not-found-primary:hover,.vellune-not-found-secondary:hover { transform:none; }
+        }
+      `}</style>
+    </main>
   );
 }
 
