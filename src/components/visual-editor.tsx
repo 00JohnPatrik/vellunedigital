@@ -183,27 +183,34 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHe
   }, [compact]);
 
   useEffect(() => {
-    const isTypingTarget = (target: EventTarget | null) => {
+    const isInteractiveTarget = (target: EventTarget | null) => {
       const element = target as HTMLElement | null;
-      return !!element?.closest?.("input, textarea, [contenteditable=true], [role=combobox]");
+      return !!element?.closest?.(
+        "input, textarea, select, button, a, [contenteditable=true], [role=button], [role=combobox], [role=option]",
+      );
+    };
+    const releaseSpace = () => {
+      setSpaceHeld(false);
+      panRef.current = null;
     };
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key !== " " || isTypingTarget(event.target)) return;
+      if (event.key !== " " || isInteractiveTarget(event.target)) return;
       event.preventDefault();
       setSpaceHeld(true);
     };
     const onKeyUp = (event: KeyboardEvent) => {
       if (event.key === " ") {
         event.preventDefault();
-        setSpaceHeld(false);
-        panRef.current = null;
+        releaseSpace();
       }
     };
     window.addEventListener("keydown", onKeyDown);
     window.addEventListener("keyup", onKeyUp);
+    window.addEventListener("blur", releaseSpace);
     return () => {
       window.removeEventListener("keydown", onKeyDown);
       window.removeEventListener("keyup", onKeyUp);
+      window.removeEventListener("blur", releaseSpace);
     };
   }, []);
 
