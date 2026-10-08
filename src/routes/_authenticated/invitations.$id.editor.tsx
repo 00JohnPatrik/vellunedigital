@@ -149,6 +149,20 @@ function EditorForm({ inv, experimentalLayout = false }: { inv: Invitation; expe
     };
   }, [state]);
 
+  // Mobile browsers may suspend or discard a tab without giving the user another
+  // interaction opportunity. Flush a pending autosave when the document becomes
+  // hidden so the editor has a better chance of persisting the latest changes.
+  useEffect(() => {
+    const onVisibilityChange = () => {
+      if (document.visibilityState !== "hidden") return;
+      if (version.current === savedVersion.current) return;
+      if (state === "saving") return;
+      void save();
+    };
+    document.addEventListener("visibilitychange", onVisibilityChange);
+    return () => document.removeEventListener("visibilitychange", onVisibilityChange);
+  }, [save, state]);
+
   const publish = async () => {
     const e = validateEvent(snap.current.v);
     if (Object.keys(e).length) { setErrors(e); toast.error("Preencha nome, data e hora do evento antes de publicar."); setEventOpen(true); return; }
@@ -242,7 +256,7 @@ function EditorForm({ inv, experimentalLayout = false }: { inv: Invitation; expe
           type="button"
           onClick={() => void publish()}
           disabled={publishing}
-          className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-[#8B5CF6] text-[#F5F7FA] shadow-[0_8px_22px_-10px_rgba(139,92,246,0.8)] transition hover:bg-[#9D74F8] disabled:opacity-40"
+          className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-[#d4af37] text-[#16130b] shadow-[0_8px_22px_-10px_rgba(212,175,55,0.28)] transition hover:bg-[#e5c66b] disabled:opacity-40"
           aria-label="Publicar convite"
           title="Publicar"
         >
