@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react";
-import { Link, useNavigate } from "@tanstack/react-router";
+import { Link, useMatchRoute, useNavigate } from "@tanstack/react-router";
 import { Search, X } from "lucide-react";
 import { VelluneTopBar } from "@/components/vellune-top-bar";
 import { NotificationCenter } from "@/components/phase7-ui";
@@ -23,6 +23,7 @@ export function VelluneAdminShell({ appUser, children, className }: { appUser: A
   const [searchOpen, setSearchOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const navigate = useNavigate();
+  const matchRoute = useMatchRoute();
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
@@ -69,9 +70,9 @@ export function VelluneAdminShell({ appUser, children, className }: { appUser: A
 
       <nav className="fixed inset-x-0 bottom-0 z-[170] flex justify-center px-3 pb-[max(12px,env(safe-area-inset-bottom))] pt-3 sm:px-5 sm:pb-5 pointer-events-none" aria-label="Creative Dock administrativo">
         <div className="pointer-events-auto flex min-h-[66px] items-center gap-1 rounded-full border border-[#2a2b31] bg-[#111318]/88 px-2.5 py-2 shadow-[0_24px_70px_-28px_rgba(11,13,18,0.98)] backdrop-blur-lg backdrop-saturate-150 sm:min-h-[72px] sm:gap-1.5 sm:px-3">
-          <AdminDockButton label="Início" active={false} onClick={() => go("/admin")} icon={adminNav[0]!.icon} />
-          <AdminDockButton label="Empresas" active={false} onClick={() => go("/admin/companies")} icon={adminNav[1]!.icon} />
-          <AdminDockButton label="Usuários" active={false} onClick={() => go("/admin/users")} icon={adminNav[2]!.icon} />
+          <AdminDockButton label="Início" active={Boolean(matchRoute({ to: "/admin", fuzzy: false }))} onClick={() => go("/admin")} icon={adminNav[0]!.icon} />
+          <AdminDockButton label="Empresas" active={Boolean(matchRoute({ to: "/admin/companies", fuzzy: true }))} onClick={() => go("/admin/companies")} icon={adminNav[1]!.icon} />
+          <AdminDockButton label="Usuários" active={Boolean(matchRoute({ to: "/admin/users", fuzzy: true }))} onClick={() => go("/admin/users")} icon={adminNav[2]!.icon} />
           <button
             type="button"
             onClick={() => go("/admin/companies/new")}
@@ -81,8 +82,8 @@ export function VelluneAdminShell({ appUser, children, className }: { appUser: A
           >
             <span className="text-xl font-medium sm:text-2xl">+</span>
           </button>
-          <AdminDockButton label="Planos" active={false} onClick={() => go("/admin/plans")} icon={adminNav[3]!.icon} />
-          <AdminDockButton label="Relatórios" active={false} onClick={() => go("/admin/reports")} icon={adminNav[7]!.icon} />
+          <AdminDockButton label="Planos" active={Boolean(matchRoute({ to: "/admin/plans", fuzzy: true }))} onClick={() => go("/admin/plans")} icon={adminNav[3]!.icon} />
+          <AdminDockButton label="Relatórios" active={Boolean(matchRoute({ to: "/admin/reports", fuzzy: true }))} onClick={() => go("/admin/reports")} icon={adminNav[7]!.icon} />
           <div className="relative">
             {menuOpen && (
               <div className="absolute bottom-[calc(100%+12px)] right-0 w-[min(320px,calc(100vw-24px))] rounded-[22px] border border-[#2a2b31] bg-[#111318]/98 p-2 shadow-[0_28px_80px_-28px_rgba(8,9,13,0.98)] backdrop-blur-xl">
