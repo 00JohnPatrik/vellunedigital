@@ -364,7 +364,7 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra }: { h: Bl
       }
     });
 
-    const copies = sourceBlocks.map((block: any) => {
+    const copies = sourceBlocks.map((block: any, copyIndex: number) => {
       const index = blocks.indexOf(block);
       const value = resolveBlockGeometry(block as Block, index);
       const nextId = typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
@@ -379,13 +379,20 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra }: { h: Bl
         height: Math.round(value.height),
         rotation: value.rotation,
         scale: value.scale,
-        zIndex: Math.round(value.zIndex + 1),
+        zIndex: copyIndex + 1,
         groupId: block.groupId ? groupIds.get(block.groupId) : undefined,
         props: { ...(block.props || {}) },
       };
     });
 
-    h.set((current) => [...current, ...copies]);
+    h.set((current) => {
+      const maxZ = current.reduce(
+        (max, item, index) => Math.max(max, resolveBlockGeometry(item as Block, index).zIndex),
+        0,
+      );
+      const inserted = copies.map((block: any, index: number) => ({ ...block, zIndex: maxZ + index + 1 }));
+      return [...current, ...inserted];
+    });
     setSelectedIds(copies.map((block: any) => block.id));
   };
   const removeByIds = (ids: string[]) => {
