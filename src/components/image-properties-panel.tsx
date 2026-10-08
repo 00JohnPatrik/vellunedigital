@@ -130,11 +130,11 @@ export function ImagePropertiesPanel({ selected, assets, onChange }: ImagePanelP
         <div className="space-y-1">
           <Label className="text-[11px] text-muted-foreground">Enquadramento</Label>
           <div className="grid grid-cols-3 gap-1 rounded-xl border border-border/70 bg-background/45 p-1.5" role="group" aria-label="Foco da imagem">
-            {[
+            {([
               ["left top", "↖"], ["center top", "↑"], ["right top", "↗"],
               ["left center", "←"], ["center", "●"], ["right center", "→"],
               ["left bottom", "↙"], ["center bottom", "↓"], ["right bottom", "↘"],
-            ].map(([value, label]) => (
+            ] as Array<[string, string]>).map(([value, label]) => (
               <button
                 key={value}
                 type="button"
