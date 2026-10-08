@@ -156,15 +156,18 @@ export function VelluneTopBar({
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" sideOffset={10} className="w-52 border-[#2a2b31] bg-[#111318] text-[#F5F7FA] shadow-[0_24px_70px_-24px_rgba(0,0,0,0.95)]">
             <DropdownMenuLabel className="text-xs font-medium text-[#A9B1BF]">Minha conta</DropdownMenuLabel>
-            <DropdownMenuItem
-              onSelect={onAvatarClick}
-              disabled={!onAvatarClick}
-              className="cursor-pointer focus:bg-[#1b1d24] focus:text-[#F5F7FA]"
-            >
-              <Settings className="h-4 w-4" />
-              Configurações
-            </DropdownMenuItem>
-            <DropdownMenuSeparator className="bg-[#2a2b31]" />
+            {onAvatarClick && (
+              <>
+                <DropdownMenuItem
+                  onSelect={onAvatarClick}
+                  className="cursor-pointer focus:bg-[#1b1d24] focus:text-[#F5F7FA]"
+                >
+                  <Settings className="h-4 w-4" />
+                  Configurações
+                </DropdownMenuItem>
+                <DropdownMenuSeparator className="bg-[#2a2b31]" />
+              </>
+            )}
             <DropdownMenuItem
               onSelect={() => onSignOut?.()}
               disabled={!onSignOut}
