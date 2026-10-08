@@ -127,9 +127,25 @@ function EditorForm({ inv }: { inv: Invitation }) {
   }, [state, save]);
 
   useEffect(() => {
-    const on = (e: BeforeUnloadEvent) => { if (state === "dirty" || state === "saving") e.preventDefault(); };
+    const onSaveShortcut = (event: KeyboardEvent) => {
+      if (!(event.ctrlKey || event.metaKey) || event.key.toLowerCase() !== "s") return;
+      event.preventDefault();
+      if (state !== "saving") void save(true);
+    };
+    window.addEventListener("keydown", onSaveShortcut);
+    return () => window.removeEventListener("keydown", onSaveShortcut);
+  }, [save, state]);
+
+  useEffect(() => {
+    const on = (e: BeforeUnloadEvent) => {
+      const hasUnsavedChanges = version.current !== savedVersion.current;
+      if (hasUnsavedChanges || state === "dirty" || state === "saving" || state === "error") e.preventDefault();
+    };
     window.addEventListener("beforeunload", on);
-    return () => { window.removeEventListener("beforeunload", on); if (timer.current) clearTimeout(timer.current); };
+    return () => {
+      window.removeEventListener("beforeunload", on);
+      if (timer.current) clearTimeout(timer.current);
+    };
   }, [state]);
 
   const publish = async () => {
@@ -152,7 +168,7 @@ function EditorForm({ inv }: { inv: Invitation }) {
 
   const toolbar = <>
     <Button type="button" size="sm" variant="outline" onClick={openEditorPreview}><Eye className="h-4 w-4" />Visualizar</Button>
-    <Button type="button" size="sm" onClick={() => void save(true)} disabled={state === "saving"}>{state === "saving" && <Loader2 className="h-4 w-4 animate-spin" />}Salvar</Button>
+    <Button type="button" size="sm" onClick={() => void save(true)} disabled={state === "saving"} title="Salvar alterações (Ctrl/Cmd + S)" aria-keyshortcuts="Control+S Meta+S">{state === "saving" && <Loader2 className="h-4 w-4 animate-spin" />}Salvar</Button>
     {isPublic ? <Button type="button" size="sm" variant="secondary" onClick={() => setShareOpen(true)}><Share2 className="h-4 w-4" />Compartilhar</Button> : <Button type="button" size="sm" variant="secondary" onClick={() => void publish()} disabled={publishing}>{publishing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}Publicar convite</Button>}
     <details className="relative">
       <summary className="inline-flex h-9 cursor-pointer list-none items-center gap-1.5 rounded-md border border-border bg-background px-3 text-sm font-medium text-foreground transition hover:bg-accent [&::-webkit-details-marker]:hidden">
@@ -197,7 +213,7 @@ function EditorForm({ inv }: { inv: Invitation }) {
       <Button type="button" size="sm" variant="ghost" className="h-9 text-white/65 hover:bg-white/[0.06] hover:text-white" onClick={openEditorPreview}>
         <Eye className="h-4 w-4" />Prévia
       </Button>
-      <Button type="button" size="sm" className="h-9 bg-[#d4af37] font-semibold text-[#16130b] hover:bg-[#e5c66b]" onClick={() => void save(true)} disabled={state === "saving"}>
+      <Button type="button" size="sm" className="h-9 bg-[#d4af37] font-semibold text-[#16130b] hover:bg-[#e5c66b]" onClick={() => void save(true)} disabled={state === "saving"} title="Salvar alterações (Ctrl/Cmd + S)" aria-keyshortcuts="Control+S Meta+S">
         {state === "saving" && <Loader2 className="h-4 w-4 animate-spin" />}
         Salvar
       </Button>
