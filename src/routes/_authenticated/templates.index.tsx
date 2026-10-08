@@ -40,7 +40,7 @@ function CompanyTemplates() {
     <div className="space-y-8">
       <PageHeader title="Modelos" description="Use um modelo oficial como base ou crie os seus."
         action={<Button asChild><Link to="/templates/new"><Plus className="h-4 w-4" />Novo modelo</Link></Button>} />
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+      <div className="rounded-[22px] border border-[#2a2b31] bg-[#111318] p-3 shadow-[0_18px_55px_-42px_rgba(0,0,0,0.95)] sm:p-4">
         <TemplateFilters search={search} setSearch={setSearch} category={category} setCategory={setCategory} />
       </div>
       {q.isLoading ? <LoadingState /> : q.isError ? (
@@ -52,9 +52,12 @@ function CompanyTemplates() {
       ) : (
         <>
           <section aria-labelledby="official-templates-title">
-            <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2">
-              <h2 id="official-templates-title" className="font-display text-lg font-semibold">Modelos oficiais</h2>
-              <span className="text-xs text-muted-foreground">{official.length} {official.length === 1 ? "modelo" : "modelos"}</span>
+            <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
+              <div>
+                <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#A9B1BF]">Biblioteca Vellune</p>
+                <h2 id="official-templates-title" className="mt-1 font-display text-xl font-semibold tracking-[-0.02em] text-[#F5F7FA]">Modelos oficiais</h2>
+              </div>
+              <span className="rounded-full border border-[#2a2b31] bg-[#111318] px-2.5 py-1 text-[10px] font-semibold text-[#A9B1BF]">{official.length} {official.length === 1 ? "modelo" : "modelos"}</span>
             </div>
             {official.length === 0 ? <EmptyState>Nenhum modelo oficial encontrado.</EmptyState> : (
               <div className={grid}>{official.map((t) => (
@@ -66,9 +69,12 @@ function CompanyTemplates() {
             )}
           </section>
           <section aria-labelledby="company-templates-title">
-            <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2">
-              <h2 id="company-templates-title" className="font-display text-lg font-semibold">Meus modelos</h2>
-              <span className="text-xs text-muted-foreground">{mine.length} {mine.length === 1 ? "modelo" : "modelos"}</span>
+            <div className="mb-4 mt-10 flex flex-wrap items-end justify-between gap-3">
+              <div>
+                <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#A9B1BF]">Sua coleção</p>
+                <h2 id="company-templates-title" className="mt-1 font-display text-xl font-semibold tracking-[-0.02em] text-[#F5F7FA]">Meus modelos</h2>
+              </div>
+              <span className="rounded-full border border-[#2a2b31] bg-[#111318] px-2.5 py-1 text-[10px] font-semibold text-[#A9B1BF]">{mine.length} {mine.length === 1 ? "modelo" : "modelos"}</span>
             </div>
             {mine.length === 0 ? <EmptyState>Você ainda não tem modelos. Crie um ou use um modelo oficial.</EmptyState> : (
               <div className={grid}>{mine.map((t) => (
