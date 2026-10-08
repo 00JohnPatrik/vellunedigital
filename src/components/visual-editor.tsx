@@ -1222,11 +1222,27 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHe
             />
           )}
           {mobileSheet === "background" && (
-            <BackgroundPropertiesPanel
-              background={(bg as Record<string, unknown>) || {}}
-              assets={assets as any}
-              onChange={(value) => onBg?.(value)}
-            />
+            <div className="space-y-3">
+              <div className="rounded-xl border border-primary/15 bg-primary/5 p-3">
+                <div className="mb-2 flex items-center justify-between gap-2">
+                  <div>
+                    <p className="text-[11px] font-semibold text-foreground">Tema</p>
+                    <p className="mt-0.5 text-[10px] text-muted-foreground">Troque a linguagem visual do convite em um toque.</p>
+                  </div>
+                  <Sparkles className="h-4 w-4 text-primary" aria-hidden="true" />
+                </div>
+                <div className="flex gap-2 overflow-x-auto pb-1">
+                  {EDITOR_THEMES.map((theme) => <div key={theme.id} className="min-w-[126px] flex-1">
+                    <ThemeSwatch theme={theme} onClick={() => applyEditorTheme(theme)} />
+                  </div>)}
+                </div>
+              </div>
+              <BackgroundPropertiesPanel
+                background={(bg as Record<string, unknown>) || {}}
+                assets={assets as any}
+                onChange={(value) => onBg?.(value)}
+              />
+            </div>
           )}
           {mobileSheet === "view" && (
             <div className="space-y-3">
