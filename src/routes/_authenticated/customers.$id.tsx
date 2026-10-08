@@ -42,7 +42,7 @@ function CustomerDetail() {
   const setEdit = (e: boolean) => navigate({ search: e ? { edit: true } : {}, replace: true });
 
   const back = (
-    <Link to="/customers" className="mb-4 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
+    <Link to="/customers" className="mb-4 inline-flex items-center gap-1 rounded-full border border-[#2a2b31] bg-[#111318] px-3 py-1.5 text-xs font-medium text-[#A9B1BF] transition hover:border-[#d4af37]/45 hover:text-[#F5F7FA]">
       <ArrowLeft className="h-4 w-4" />Clientes
     </Link>
   );
@@ -66,21 +66,21 @@ function CustomerDetail() {
           </div>
         } />
 
-      <dl className="grid max-w-2xl gap-4 rounded-xl border p-5 text-sm sm:grid-cols-2">
-        <div><dt className="text-muted-foreground">Status</dt><dd className="mt-1"><StatusBadge status={c.status} /></dd></div>
-        <div><dt className="text-muted-foreground">Telefone</dt><dd>{c.phone || "—"}</dd></div>
-        <div className="min-w-0"><dt className="text-muted-foreground">E-mail</dt><dd className="break-all">{c.email || "—"}</dd></div>
-        <div><dt className="text-muted-foreground">Criado em</dt><dd>{fmtDateTime(c.created_at)}</dd></div>
-        <div><dt className="text-muted-foreground">Atualizado em</dt><dd>{fmtDateTime(c.updated_at)}</dd></div>
-        <div className="sm:col-span-2"><dt className="text-muted-foreground">Observação</dt><dd className="whitespace-pre-wrap">{c.observation || "—"}</dd></div>
+      <dl className="vellune-platform-card grid max-w-4xl gap-4 p-5 text-sm shadow-[0_20px_70px_-55px_rgba(212,175,55,0.42)] sm:grid-cols-2">
+        <div className="rounded-2xl border border-[#2a2b31] bg-[#08090d] p-4"><dt className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[#A9B1BF]">Status</dt><dd className="mt-2"><StatusBadge status={c.status} /></dd></div>
+        <div className="rounded-2xl border border-[#2a2b31] bg-[#08090d] p-4"><dt className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[#A9B1BF]">Telefone</dt><dd className="mt-2 font-medium text-[#F5F7FA]">{c.phone || "—"}</dd></div>
+        <div className="min-w-0 rounded-2xl border border-[#2a2b31] bg-[#08090d] p-4"><dt className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[#A9B1BF]">E-mail</dt><dd className="mt-2 break-all font-medium text-[#F5F7FA]">{c.email || "—"}</dd></div>
+        <div className="rounded-2xl border border-[#2a2b31] bg-[#08090d] p-4"><dt className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[#A9B1BF]">Criado em</dt><dd className="mt-2 text-[#F5F7FA]">{fmtDateTime(c.created_at)}</dd></div>
+        <div className="rounded-2xl border border-[#2a2b31] bg-[#08090d] p-4"><dt className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[#A9B1BF]">Atualizado em</dt><dd className="mt-2 text-[#F5F7FA]">{fmtDateTime(c.updated_at)}</dd></div>
+        <div className="rounded-2xl border border-[#2a2b31] bg-[#08090d] p-4 sm:col-span-2"><dt className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[#A9B1BF]">Observação</dt><dd className="mt-2 whitespace-pre-wrap text-[#F5F7FA]">{c.observation || "—"}</dd></div>
       </dl>
 
-      <section className="mt-8 max-w-2xl">
-        <h2 className="mb-3 font-display text-lg font-semibold">Histórico de convites{hist.data?.length ? ` (${hist.data.length})` : ""}</h2>
+      <section className="mt-8 max-w-4xl">
+        <div className="mb-4 flex items-end justify-between gap-3"><div><p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[#A9B1BF]">Relacionamento</p><h2 className="mt-1 font-display text-lg font-semibold text-[#F5F7FA]">Histórico de convites{hist.data?.length ? ` (${hist.data.length})` : ""}</h2></div><span className="rounded-full border border-[#2a2b31] bg-[#111318] px-2.5 py-1 text-[9px] text-[#A9B1BF]">Atividade do cliente</span></div>
         {hist.isLoading ? <LoadingState /> : !hist.data?.length ? <EmptyState>Este cliente ainda não possui convites.</EmptyState> : (
-          <div className="divide-y rounded-xl border text-sm">
+          <div className="grid gap-2 text-sm">
             {hist.data.map((i) => (
-              <div key={i.id} className="flex flex-col gap-2 p-4 sm:flex-row sm:items-center sm:justify-between">
+              <div key={i.id} className="vellune-platform-card flex flex-col gap-3 p-4 transition hover:border-[#d4af37]/35 sm:flex-row sm:items-center sm:justify-between">
                 <div className="min-w-0">
                   <div className="flex items-center gap-2"><span className="truncate font-medium">{i.name}</span><InvitationStatusBadge status={i.status} /></div>
                   <p className="mt-1 text-xs text-muted-foreground">Evento em {fmtEventDate(i.event_date)} · atualizado em {fmtDateTime(i.updated_at)}</p>
