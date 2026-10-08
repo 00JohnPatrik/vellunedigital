@@ -258,7 +258,15 @@ function cursorFor(handle: string) {
 function isTextInput(target: EventTarget | null) {
   const element = target as HTMLElement | null;
   if (!element) return false;
-  return element.tagName === "INPUT" || element.tagName === "TEXTAREA" || element.tagName === "SELECT" || element.isContentEditable;
+  return (
+    element.tagName === "INPUT" ||
+    element.tagName === "TEXTAREA" ||
+    element.tagName === "SELECT" ||
+    element.tagName === "BUTTON" ||
+    element.tagName === "A" ||
+    element.isContentEditable ||
+    !!element.closest?.("button, a, [role=\"button\"], [role=\"menuitem\"]")
+  );
 }
 
 export function VisualTransformCanvas({ blocks, selectedIds: selectedIdsProp, zoom, canvasRef, ctx, onSelect, onAddBlock, onChange, onDuplicate, onDelete, onAdvanced, onLayer, onAlign, onOpacity, onRotate, onAutoArrange, onGroup, onUngroup, onImageAction, startEditingId, onStartEditingHandled, showGrid = true, snapEnabled = true }: Props) {
