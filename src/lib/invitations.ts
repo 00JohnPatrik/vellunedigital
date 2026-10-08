@@ -68,7 +68,7 @@ export async function duplicateInvitation(id: string) {
   const content = cloneContent(source.content ?? { version: 1, blocks: [] });
 
   const { data, error } = await supabase.from("invitations").insert({
-    ...eventRow(toEventValues(source)),
+    ...eventRow({ ...toEventValues(source), name: copyName }),
     customer_id: source.customer_id,
     template_id: null,
     content: content as never,
