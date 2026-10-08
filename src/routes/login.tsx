@@ -33,7 +33,8 @@ export const Route = createFileRoute("/login")({
 function LoginPage() {
   const { error: reason, mode: requestedMode } = Route.useSearch();
   const navigate = useNavigate();
-  const emailSignIn = useServerFn(signInWithEmail);\n  const phoneSignIn = useServerFn(signInWithPhone);
+  const emailSignIn = useServerFn(signInWithEmail);
+  const phoneSignIn = useServerFn(signInWithPhone);
   const resetPassword = useServerFn(requestPasswordReset);
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
