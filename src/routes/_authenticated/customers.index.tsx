@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { dbErrorMessage, EmptyState, fmtDate, LoadingState, PageHeader, StatusBadge, StatusTabs, StatusToggle, type StatusFilter } from "@/components/admin-ui";
 import { CustomerDialog, emptyCustomer } from "@/components/customer-dialog";
 import { customersKey, findDuplicate, listCustomers, toRow, type Customer } from "@/lib/customers-data";
+import { invitationsKey, listInvitations } from "@/lib/invitations";
 import { setCustomerStatus } from "@/lib/customer-actions";
 import { cn } from "@/lib/utils";
 
@@ -24,6 +25,7 @@ function CustomersPage() {
   const qc = useQueryClient();
   const navigate = useNavigate();
   const q = useQuery({ queryKey: customersKey, queryFn: listCustomers });
+  const invitationQ = useQuery({ queryKey: [...invitationsKey, "customer-summary"], queryFn: listInvitations, staleTime: 60_000 });
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<StatusFilter>("all");
   const [open, setOpen] = useState(false);
@@ -102,6 +104,7 @@ function CustomersPage() {
                 <tr>
                   <th className="px-4 py-3 font-medium">Nome</th>
                   <th className="px-4 py-3 font-medium">Telefone</th>
+                  <th className="hidden px-4 py-3 font-medium lg:table-cell">Convites</th>
                   <th className="hidden px-4 py-3 font-medium lg:table-cell">E-mail</th>
                   {isSuper && <th className="hidden px-4 py-3 font-medium xl:table-cell">Empresa</th>}
                   <th className="px-4 py-3 font-medium">Status</th>
@@ -114,6 +117,7 @@ function CustomersPage() {
                   <tr key={c.id} className="border-t">
                     <td className="px-4 py-3 font-medium">{c.name}</td>
                     <td className="px-4 py-3">{c.phone || "—"}</td>
+                    <td className="hidden px-4 py-3 lg:table-cell">{invitationQ.data?.filter((item) => item.customer_id === c.id).length ?? 0}</td>
                     <td className="hidden max-w-[220px] truncate px-4 py-3 lg:table-cell">{c.email || "—"}</td>
                     {isSuper && <td className="hidden px-4 py-3 xl:table-cell">{c.company?.name ?? "—"}</td>}
                     <td className="px-4 py-3"><StatusBadge status={c.status} /></td>
@@ -134,7 +138,7 @@ function CustomersPage() {
                   </div>
                   <StatusBadge status={c.status} />
                 </div>
-                <div className="mt-2 text-sm">{c.phone || "Sem telefone"} · {fmtDate(c.created_at)}</div>
+                <div className="mt-2 text-sm">{c.phone || "Sem telefone"} · {fmtDate(c.created_at)} · {(invitationQ.data?.filter((item) => item.customer_id === c.id).length ?? 0)} convites</div>
                 <div className="mt-3 flex flex-wrap gap-2">{actions(c, "outline")}</div>
               </div>
             ))}
