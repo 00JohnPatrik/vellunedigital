@@ -51,7 +51,7 @@ function GalleryThumb({ image, index, onRemove, onMove }: { image: GalleryImage;
       </div>
       <div className="mt-2 grid grid-cols-2 gap-1.5">
         <Button type="button" size="sm" variant="outline" className="h-7 px-2 text-[10px]" disabled={index === 0} onClick={() => onMove(-1)}>← Subir</Button>
-        <Button type="button" size="sm" variant="outline" className="h-7 px-2 text-[10px]" disabled={index === 0} onClick={() => onMove(1)}>Descer →</Button>
+        <Button type="button" size="sm" variant="outline" className="h-7 px-2 text-[10px]" disabled={index === 0 || index === images.length - 1} onClick={() => onMove(1)}>Descer →</Button>
       </div>
     </div>
   );
