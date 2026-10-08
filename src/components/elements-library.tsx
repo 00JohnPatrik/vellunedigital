@@ -19,8 +19,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ImageUpload } from "@/components/image-upload";
 import type { AssetScope } from "@/lib/assets";
-import type { BlockType } from "@/lib/templates";
-import { BLOCKS, EDITOR_STOCK_IMAGES } from "@/lib/templates";
+import type { BlockType, CompositionKind } from "@/lib/templates";
+import { BLOCKS, EDITOR_STOCK_IMAGES, READY_COMPOSITIONS } from "@/lib/templates";
 import { cn } from "@/lib/utils";
 
 type ElementsLibraryProps = {
@@ -31,6 +31,7 @@ type ElementsLibraryProps = {
   imageMode?: "add" | "replace";
   onSelectImage?: (value: string) => void;
   onCancelImageReplace?: () => void;
+  onAddComposition?: (kind: CompositionKind) => void;
   id?: string;
 };
 
@@ -107,7 +108,7 @@ function typeLabel(type: BlockType) {
   return BLOCKS[type]?.label || type;
 }
 
-export function ElementsLibrary({ availableTypes, onAdd, assets, onAddImage, imageMode = "add", onSelectImage, onCancelImageReplace, id }: ElementsLibraryProps) {
+export function ElementsLibrary({ availableTypes, onAdd, assets, onAddImage, imageMode = "add", onSelectImage, onCancelImageReplace, onAddComposition, id }: ElementsLibraryProps) {
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState<LibraryCategory>("Todos");
   const [recents, setRecents] = useState<string[]>([]);
@@ -216,6 +217,49 @@ export function ElementsLibrary({ availableTypes, onAdd, assets, onAddImage, ima
       <div className="-mx-1 flex gap-1 overflow-x-auto px-1 pb-1" role="tablist" aria-label="Categorias da biblioteca">
         {categories.map(({ value, label, icon: Icon }) => <button key={value} type="button" role="tab" aria-selected={category === value} onClick={() => setCategory(value)} className={cn("inline-flex shrink-0 items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-[11px] transition-colors", category === value ? "border-primary bg-primary/10 font-medium text-primary" : "text-muted-foreground hover:bg-accent hover:text-foreground")}><Icon className="h-3.5 w-3.5" aria-hidden="true" />{label}</button>)}
       </div>
+
+      {onAddComposition && imageMode !== "replace" && !search.trim() && (
+        <div className="rounded-2xl border border-primary/15 bg-gradient-to-br from-primary/10 via-background to-background p-3" aria-label="Composições prontas">
+          <div className="mb-3 flex items-start gap-2">
+            <Sparkles className="mt-0.5 h-4 w-4 text-primary" aria-hidden="true" />
+            <div>
+              <p className="text-xs font-semibold text-foreground">Composições prontas</p>
+              <p className="mt-0.5 text-[11px] leading-4 text-muted-foreground">Um clique cria uma seção completa, já alinhada e pronta para personalizar.</p>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            {READY_COMPOSITIONS.map((composition) => {
+              const icons = {
+                hero: ImageIcon,
+                details: CalendarDays,
+                confirmation: MousePointerClick,
+                gallery: Layers3,
+                closing: Minus,
+              } as const;
+              const Icon = icons[composition.kind];
+              return (
+                <button
+                  key={composition.kind}
+                  type="button"
+                  onClick={() => onAddComposition(composition.kind)}
+                  className="group rounded-xl border bg-background/80 p-2.5 text-left transition-all hover:-translate-y-0.5 hover:border-primary/50 hover:bg-primary/[0.03] hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  aria-label={"Adicionar composição " + composition.label}
+                  title={composition.description}
+                >
+                  <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary transition-colors group-hover:bg-primary/15">
+                    <Icon className="h-4 w-4" aria-hidden="true" />
+                  </span>
+                  <span className="mt-2 block truncate text-[11px] font-semibold text-foreground">{composition.label}</span>
+                  <span className="mt-0.5 line-clamp-2 text-[9px] leading-4 text-muted-foreground">{composition.description}</span>
+                  <span className="mt-1.5 inline-flex items-center gap-1 text-[9px] font-medium text-primary">
+                    <Sparkles className="h-3 w-3" aria-hidden="true" />1 toque
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {category === "Mídia" && availableTypes.includes("image") && (
         <>
