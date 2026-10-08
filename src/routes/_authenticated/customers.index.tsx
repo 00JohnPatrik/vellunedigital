@@ -59,7 +59,7 @@ function CustomersPage() {
       {q.isLoading ? <LoadingState /> : q.isError ? <EmptyState>Não foi possível carregar os clientes.</EmptyState>
         : rows.length === 0 ? <EmptyState>{q.data?.length ? "Nenhum cliente encontrado." : "Nenhum cliente cadastrado ainda."}</EmptyState> : (
         <>
-          <div className="hidden overflow-x-auto rounded-xl border md:block">
+          <div className="vellune-data-surface hidden overflow-x-auto md:block">
             <table className="w-full text-sm">
               <thead className="bg-muted/50 text-left text-muted-foreground">
                 <tr>
@@ -89,7 +89,7 @@ function CustomersPage() {
           </div>
           <div className="grid gap-3 md:hidden">
             {rows.map((c) => (
-              <div key={c.id} className="rounded-xl border p-4">
+              <div key={c.id} className="vellune-platform-card p-4">
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0">
                     <div className="truncate font-medium">{c.name}</div>
