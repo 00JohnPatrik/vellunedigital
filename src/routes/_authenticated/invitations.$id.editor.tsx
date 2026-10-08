@@ -129,83 +129,88 @@ function EditorForm({ inv }: { inv: Invitation }) {
   useEffect(() => {
     const on = (e: BeforeUnloadEvent) => { if (state === "dirty" || state === "saving") e.preventDefault(); };
     window.addEventListener("beforeunload", on);
-    return () => { window.removeEventListener("beforeunload", on); if (timer.current) clearTimeout(timer.current); };
-  }, [state]);
-
-  const publish = async () => {
-    const e = validateEvent(snap.current.v);
-    if (Object.keys(e).length) { setErrors(e); toast.error("Preencha nome, data e hora do evento antes de publicar."); setEventOpen(true); return; }
-    if (!snap.current.blocks.some((b) => b.visibility !== false && !b.hidden)) { toast.error("Adicione ao menos um bloco visível antes de publicar."); return; }
-    setPublishing(true);
-    try {
-      if (!(await save(true))) return;
-      await publishInvitation(inv.id);
-      setStatus("published"); setShareOpen(true);
-      toast.success("Convite publicado!");
-      void qc.invalidateQueries({ queryKey: invitationsKey });
-    } catch (err) { toast.error(invitationError(err)); } finally { setPublishing(false); }
-  };
-
-  const isPublic = status === "published" || status === "closed";
-  const ctx = useMemo(() => invitationCtx(inv, v), [inv, v]);
-  const options = (customers.data ?? []).filter((c) => c.company_id === inv.company_id && (c.status === "active" || c.id === inv.customer_id));
-
-  const toolbar = <>
-    <Button type="button" size="sm" variant="outline" onClick={openEditorPreview}><Eye className="h-4 w-4" />Visualizar</Button>
-    <Button type="button" size="sm" onClick={() => void save(true)} disabled={state === "saving"}>{state === "saving" && <Loader2 className="h-4 w-4 animate-spin" />}Salvar</Button>
-    {isPublic ? <Button type="button" size="sm" variant="secondary" onClick={() => setShareOpen(true)}><Share2 className="h-4 w-4" />Compartilhar</Button> : <Button type="button" size="sm" variant="secondary" onClick={() => void publish()} disabled={publishing}>{publishing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}Publicar convite</Button>}
-    <details className="relative">
-      <summary className="inline-flex h-9 cursor-pointer list-none items-center gap-1.5 rounded-md border border-border bg-background px-3 text-sm font-medium text-foreground transition hover:bg-accent [&::-webkit-details-marker]:hidden">
-        <MoreHorizontal className="h-4 w-4" />Mais
-      </summary>
-      <div className="absolute right-0 top-11 z-50 grid min-w-[190px] gap-1 rounded-xl border border-border/80 bg-popover p-1.5 text-popover-foreground shadow-2xl">
-        <Button type="button" variant="ghost" size="sm" className="justify-start" onClick={() => setEventOpen(true)}><Settings2 className="h-4 w-4" />Dados do evento</Button>
-        <Button type="button" variant="ghost" size="sm" className="justify-start" onClick={() => setRsvpOpen(true)}><UserCheck className="h-4 w-4" />RSVP</Button>
-        <Button type="button" variant="ghost" size="sm" className="justify-start" asChild><Link to="/invitations/$id/guests" params={{ id: inv.id }}><Users className="h-4 w-4" />Convidados</Link></Button>
-        <Button type="button" variant="ghost" size="sm" className="justify-start" asChild><Link to="/invitations/$id/checkin" params={{ id: inv.id }}><QrCode className="h-4 w-4" />Check-in</Link></Button>
+    const desktopHeaderLeft = (
+    <div className="flex min-w-0 items-center gap-3">
+      <Button variant="ghost" size="icon" className="h-9 w-9 shrink-0 text-white/65 hover:bg-white/[0.06] hover:text-white" asChild>
+        <Link to="/invitations" aria-label="Voltar para convites"><ArrowLeft className="h-4 w-4" /></Link>
+      </Button>
+      <div className="hidden h-7 w-px bg-white/[0.08] sm:block" />
+      <div className="min-w-0">
+        <div className="flex min-w-0 items-center gap-2">
+          <h1 className="min-w-0 truncate font-display text-[15px] font-medium tracking-[-0.02em] text-white sm:text-base">
+            {v.name || inv.name}
+          </h1>
+          <InvitationStatusBadge status={status} />
+        </div>
+        <p className="hidden truncate text-[10px] text-white/30 xl:block">{isPublic ? "Link público" : "Rascunho"} · /convite/{inv.slug}</p>
       </div>
-    </details>
-  </>;
-
-  return (
-    <div className="dark min-h-[calc(100vh-2rem)] rounded-[1.5rem] border border-border/60 bg-[radial-gradient(circle_at_top_right,hsl(var(--primary)/.1),transparent_32%),linear-gradient(145deg,hsl(var(--background)),hsl(var(--muted)/.35))] p-2 pb-20 text-foreground shadow-2xl shadow-black/20 sm:p-3 sm:pb-3 lg:p-4">
-      <div className="mx-auto max-w-[1800px] space-y-3">
-        <header className="sticky top-2 z-30 rounded-2xl border border-primary/15 bg-card/90 p-3 shadow-2xl shadow-black/25 backdrop-blur-2xl sm:top-3 sm:p-4">
-          <div className="flex min-h-9 items-center gap-2.5 sm:gap-3">
-            <Button variant="ghost" size="icon" className="shrink-0 sm:hidden" asChild><Link to="/invitations" aria-label="Voltar para convites"><ArrowLeft className="h-4 w-4" /></Link></Button>
-            <Button variant="ghost" size="sm" className="hidden shrink-0 sm:inline-flex" asChild><Link to="/invitations"><ArrowLeft className="h-4 w-4" />Voltar</Link></Button>
-            <div className="hidden h-8 w-px bg-border sm:block" />
-            <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-2"><h1 className="min-w-0 truncate font-display text-base font-semibold tracking-tight sm:text-xl">{v.name || inv.name}</h1><InvitationStatusBadge status={status} /></div>
-              <p className="mt-0.5 hidden truncate text-xs text-muted-foreground sm:block">{isPublic ? "Link público" : "Link reservado"}: /convite/{inv.slug}</p>
-            </div>
-            <div className="shrink-0 rounded-lg border border-border/70 bg-background/70 px-2 py-1.5"><SaveIndicator state={state} msg={errMsg} onRetry={() => void save(true)} /></div>
-          </div>
-          <div className="mt-3 hidden flex-wrap items-center justify-end gap-1.5 border-t border-border/60 pt-3 md:flex">{toolbar}</div>          <div className="mt-3 flex gap-1 overflow-x-auto border-t border-border/60 pt-3 md:hidden" role="toolbar" aria-label="Ações principais do convite">
-            <Button type="button" size="sm" variant="outline" className="shrink-0 h-9 px-3 text-[11px]" onClick={() => setEventOpen(true)}><SlidersHorizontal className="mr-1.5 h-3.5 w-3.5" />Dados</Button>
-            <Button type="button" size="sm" variant="outline" className="shrink-0 h-9 px-3 text-[11px]" onClick={() => setRsvpOpen(true)}><UserCheck className="mr-1.5 h-3.5 w-3.5" />RSVP</Button>
-            <Button type="button" size="sm" variant="outline" className="shrink-0 h-9 px-3 text-[11px]" onClick={openEditorPreview}><Eye className="mr-1.5 h-3.5 w-3.5" />Preview</Button>
-            <Button type="button" size="sm" variant="default" className="shrink-0 h-9 px-3 text-[11px]" onClick={() => void save(true)} disabled={state === "saving"}>{state === "saving" && <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />}Salvar</Button>
-            {isPublic ? <Button type="button" size="sm" variant="secondary" className="shrink-0 h-9 px-3 text-[11px]" onClick={() => setShareOpen(true)}><Share2 className="mr-1.5 h-3.5 w-3.5" />Compartilhar</Button> : <Button type="button" size="sm" variant="secondary" className="shrink-0 h-9 px-3 text-[11px]" onClick={() => void publish()} disabled={publishing}>{publishing ? <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" /> : <Send className="mr-1.5 h-3.5 w-3.5" />}Publicar</Button>}
-          </div>
-        </header>
-
-        <VisualEditor h={h} bg={bg} onBg={setBg} ctx={ctx} assets={{ kind: "invitation", id: inv.id, companyId: inv.company_id }} />
-
-        <ShareDialog slug={inv.slug} open={shareOpen} onOpenChange={setShareOpen} />
-        <RsvpPanel invitationId={inv.id} open={rsvpOpen} onOpenChange={setRsvpOpen} />
-        <AlertDialog open={warnOpen}>
-          <AlertDialogContent><AlertDialogHeader><AlertDialogTitle>Convite publicado</AlertDialogTitle><AlertDialogDescription>Este convite já está publicado. A alteração será refletida imediatamente para os convidados.</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel onClick={() => void navigate({ to: "/invitations" })}>Cancelar</AlertDialogCancel><AlertDialogAction onClick={() => setWarnOpen(false)}>Continuar</AlertDialogAction></AlertDialogFooter></AlertDialogContent>
-        </AlertDialog>
-
-        <Sheet open={eventOpen} onOpenChange={setEventOpen}>
-          <SheetContent className="w-full overflow-y-auto sm:max-w-lg"><SheetHeader><SheetTitle>Dados do evento</SheetTitle></SheetHeader><div className="mt-4 space-y-4"><div className="space-y-1.5"><Label>Cliente</Label><Select value={customerId} onValueChange={setCustomerId}><SelectTrigger><SelectValue placeholder={inv.customer?.name ?? "Selecione"} /></SelectTrigger><SelectContent>{options.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent></Select></div><EventFields v={v} setV={setV} errors={errors} /><p className="text-xs text-muted-foreground">Blocos de data, horário, local e contagem usam estes dados quando a origem é "Dados do evento".</p></div></SheetContent>
-        </Sheet>
+      <div className="hidden shrink-0 rounded-lg border border-white/[0.08] bg-white/[0.025] px-2.5 py-1.5 lg:block">
+        <SaveIndicator state={state} msg={errMsg} onRetry={() => void save(true)} />
       </div>
     </div>
   );
-}
 
+  const desktopHeaderRight = (
+    <>
+      <Button type="button" size="sm" variant="ghost" className="h-9 text-white/65 hover:bg-white/[0.06] hover:text-white" onClick={() => setEventOpen(true)}>
+        <Settings2 className="h-4 w-4" />Dados
+      </Button>
+      <Button type="button" size="sm" variant="ghost" className="h-9 text-white/65 hover:bg-white/[0.06] hover:text-white" onClick={openEditorPreview}>
+        <Eye className="h-4 w-4" />Prévia
+      </Button>
+      <Button type="button" size="sm" className="h-9 bg-[#d4af37] font-semibold text-[#16130b] hover:bg-[#e5c66b]" onClick={() => void save(true)} disabled={state === "saving"}>
+        {state === "saving" && <Loader2 className="h-4 w-4 animate-spin" />}
+        Salvar
+      </Button>
+      {isPublic ? (
+        <Button type="button" size="sm" variant="secondary" className="h-9 border-white/[0.08] bg-white/[0.05] text-white hover:bg-white/[0.09]" onClick={() => setShareOpen(true)}>
+          <Share2 className="h-4 w-4" />Compartilhar
+        </Button>
+      ) : (
+        <Button type="button" size="sm" variant="secondary" className="h-9 border-[#d4af37]/20 bg-[#d4af37]/[0.08] text-[#e5c66b] hover:bg-[#d4af37]/[0.13]" onClick={() => void publish()} disabled={publishing}>
+          {publishing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+          Publicar
+        </Button>
+      )}
+      <details className="relative hidden xl:block">
+        <summary className="inline-flex h-9 cursor-pointer list-none items-center justify-center rounded-md border border-white/[0.08] bg-white/[0.025] px-2.5 text-white/55 transition hover:bg-white/[0.06] hover:text-white [&::-webkit-details-marker]:hidden" aria-label="Mais ações">
+          <MoreHorizontal className="h-4 w-4" />
+        </summary>
+        <div className="absolute right-0 top-11 z-50 grid min-w-[185px] gap-1 rounded-xl border border-white/[0.08] bg-[#111318] p-1.5 text-white shadow-2xl">
+          <Button type="button" variant="ghost" size="sm" className="justify-start text-white/70 hover:bg-white/[0.06] hover:text-white" onClick={() => setRsvpOpen(true)}><UserCheck className="h-4 w-4" />RSVP</Button>
+          <Button type="button" variant="ghost" size="sm" className="justify-start text-white/70 hover:bg-white/[0.06] hover:text-white" asChild><Link to="/invitations/$id/guests" params={{ id: inv.id }}><Users className="h-4 w-4" />Convidados</Link></Button>
+          <Button type="button" variant="ghost" size="sm" className="justify-start text-white/70 hover:bg-white/[0.06] hover:text-white" asChild><Link to="/invitations/$id/checkin" params={{ id: inv.id }}><QrCode className="h-4 w-4" />Check-in</Link></Button>
+        </div>
+      </details>
+    </>
+  );
+
+  return (
+    <div className="dark h-[100dvh] w-full overflow-hidden bg-[#08090d] text-foreground">
+      <VisualEditor
+        h={h}
+        bg={bg}
+        onBg={setBg}
+        ctx={ctx}
+        assets={{ kind: "invitation", id: inv.id, companyId: inv.company_id }}
+        toolbarExtra={toolbar}
+        desktopHeaderLeft={desktopHeaderLeft}
+        desktopHeaderRight={desktopHeaderRight}
+        fullHeight
+      />
+
+      <ShareDialog slug={inv.slug} open={shareOpen} onOpenChange={setShareOpen} />
+      <RsvpPanel invitationId={inv.id} open={rsvpOpen} onOpenChange={setRsvpOpen} />
+      <AlertDialog open={warnOpen}>
+        <AlertDialogContent><AlertDialogHeader><AlertDialogTitle>Convite publicado</AlertDialogTitle><AlertDialogDescription>Este convite já está publicado. A alteração será refletida imediatamente para os convidados.</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel onClick={() => void navigate({ to: "/invitations" })}>Cancelar</AlertDialogCancel><AlertDialogAction onClick={() => setWarnOpen(false)}>Continuar</AlertDialogAction></AlertDialogFooter></AlertDialogContent>
+      </AlertDialog>
+
+      <Sheet open={eventOpen} onOpenChange={setEventOpen}>
+        <SheetContent className="w-full overflow-y-auto sm:max-w-lg"><SheetHeader><SheetTitle>Dados do evento</SheetTitle></SheetHeader><div className="mt-4 space-y-4"><div className="space-y-1.5"><Label>Cliente</Label><Select value={customerId} onValueChange={setCustomerId}><SelectTrigger><SelectValue placeholder={inv.customer?.name ?? "Selecione"} /></SelectTrigger><SelectContent>{options.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent></Select></div><EventFields v={v} setV={setV} errors={errors} /><p className="text-xs text-muted-foreground">Blocos de data, horário, local e contagem usam estes dados quando a origem é "Dados do evento".</p></div></SheetContent>
+      </Sheet>
+    </div>
+  );
+}
 function SaveIndicator({ state, msg, onRetry }: { state: SaveState; msg: string; onRetry: () => void }) {
   if (state === "saving") return <span className="flex items-center gap-1.5 text-xs text-muted-foreground" role="status"><Loader2 className="h-3.5 w-3.5 animate-spin" />Salvando...</span>;
   if (state === "saved") return <span className="flex items-center gap-1.5 text-xs text-muted-foreground" role="status"><Check className="h-3.5 w-3.5" />Salvo</span>;
