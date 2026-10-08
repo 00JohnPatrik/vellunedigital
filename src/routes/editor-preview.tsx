@@ -177,15 +177,11 @@ function LocalEditorDemo() {
             </div>
             <div className="min-w-0">
               <h1 className="truncate font-display text-base font-semibold sm:text-lg">Preview do Editor Visual</h1>
-              <p className="text-xs text-muted-foreground">
-                {snapshot
-                  ? "Prévia do convite atual · alterações nesta tela não serão salvas no convite"
-                  : "Demonstração local · nenhum dado real será lido ou salvo"}
-              </p>
+              <p className="text-xs text-muted-foreground">Demonstração local · nenhum dado real será lido ou salvo</p>
             </div>
           </div>
           <span className="rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-xs font-medium text-emerald-700 dark:text-emerald-300">
-            {snapshot ? "Prévia atual" : "Modo isolado"}
+            Modo isolado
           </span>
         </div>
 
