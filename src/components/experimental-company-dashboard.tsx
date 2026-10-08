@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
-import { Link, useNavigate } from "@tanstack/react-router";
+import { useMemo, useState } from "react";
+import { Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import {
   ArrowUpRight,
@@ -20,10 +20,7 @@ import {
   Sparkles,
   Users,
 } from "lucide-react";
-import { VelluneTopBar } from "@/components/vellune-top-bar";
-import { VelluneCreativeDock } from "@/components/vellune-creative-dock";
 import { InvitationRender, InvitationStatusBadge } from "@/components/invitation-ui";
-import { NotificationCenter } from "@/components/phase7-ui";
 import { LoadingState } from "@/components/admin-ui";
 import { listInvitations, fmtEventDate, invitationsKey, type Invitation } from "@/lib/invitations";
 import { type ReportRow, type RecentResponse } from "@/lib/reports";
@@ -107,23 +104,7 @@ function ProjectThumbnail({ invitation }: { invitation: Invitation }) {
 }
 
 export function ExperimentalCompanyDashboard({ appUser, reportRows, recentResponses }: Props) {
-  const [search, setSearch] = useState("");
-  const [createSheetOpen, setCreateSheetOpen] = useState(false);
   const [openProjectMenu, setOpenProjectMenu] = useState<string | null>(null);
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    const onKeyDown = (event: KeyboardEvent) => {
-      const isShortcut = (event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k";
-      if (!isShortcut) return;
-      event.preventDefault();
-      const input = document.querySelector('header[aria-label="Menu superior da Vellune Digital"] input[aria-label="Buscar"]') as HTMLInputElement | null;
-      input?.focus();
-      input?.select();
-    };
-    window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
-  }, []);
 
   const invitations = useQuery({ queryKey: [...invitationsKey, "dashboard-experimental"], queryFn: listInvitations, staleTime: 30_000 });
   const rows = invitations.data ?? [];
@@ -140,16 +121,10 @@ export function ExperimentalCompanyDashboard({ appUser, reportRows, recentRespon
     [reportRows],
   );
 
-  const filteredInvitations = useMemo(() => {
-    const term = search.trim().toLowerCase();
-    return [...rows]
-      .sort((a, b) => b.updated_at.localeCompare(a.updated_at))
-      .filter((invitation) => {
-        if (!term) return true;
-        return invitation.name.toLowerCase().includes(term) || String(invitation.customer?.name ?? "").toLowerCase().includes(term);
-      })
-      .slice(0, 6);
-  }, [rows, search]);
+  const recentInvitations = useMemo(
+    () => [...rows].sort((a, b) => b.updated_at.localeCompare(a.updated_at)).slice(0, 6),
+    [rows],
+  );
 
   const nextEvent = useMemo(() => {
     const today = new Date().toISOString().slice(0, 10);
@@ -157,20 +132,43 @@ export function ExperimentalCompanyDashboard({ appUser, reportRows, recentRespon
       .filter((row) => row.event_date >= today)
       .sort((a, b) => (a.event_date + a.event_time).localeCompare(b.event_date + b.event_time))[0] ?? null;
   }, [reportRows]);
+  const continueInvitation = useMemo(
+    () => [...rows].sort((a, b) => b.updated_at.localeCompare(a.updated_at)).find((item) => item.status === "draft") ?? recentInvitations[0] ?? null,
+    [rows, recentInvitations],
+  );
+
+  const nextAction = useMemo(() => {
+    if (!continueInvitation) {
+      return { eyebrow: "Primeiro passo", title: "Crie seu primeiro convite", description: "Comece com um modelo pronto ou monte uma criação do zero.", label: "Criar convite", to: "/invitations/new" as const };
+    }
+    if (continueInvitation.status === "draft") {
+      return { eyebrow: "Próximo passo", title: "Finalize seu rascunho", description: `“${continueInvitation.name}” está pronto para você continuar a edição.`, label: "Continuar edição", to: "/invitations/$id/editor" as const, params: { id: continueInvitation.id } };
+    }
+    if (nextEvent) {
+      return { eyebrow: "Próximo passo", title: "Acompanhe o convite que está no ar", description: `“${nextEvent.name}” é seu próximo evento. Confira respostas e desempenho.`, label: "Ver resultados", to: "/invitations/$id/report" as const, params: { id: nextEvent.id } };
+    }
+    return { eyebrow: "Próximo passo", title: "Crie a próxima experiência", description: "Seu último convite já está encaminhado. Comece uma nova criação quando estiver pronto.", label: "Novo convite", to: "/invitations/new" as const };
+  }, [continueInvitation, nextEvent]);
+
+  const activity = useMemo(() => [
+    ...recentInvitations.slice(0, 4).map((item) => ({
+      id: `inv-${item.id}`,
+      date: item.updated_at,
+      title: item.status === "published" ? "Convite publicado ou atualizado" : "Rascunho atualizado",
+      description: item.name,
+    })),
+    ...recentResponses.slice(0, 4).map((item) => ({
+      id: `rsvp-${item.id}`,
+      date: item.created_at,
+      title: "Nova confirmação de presença",
+      description: `${item.name} · ${item.invitation?.name ?? "Convite"}`,
+    })),
+  ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 6), [recentInvitations, recentResponses]);
+
 
   return (
-    <div className="vellune-platform-root dark min-h-[100dvh] bg-[#08090d] text-[#F5F7FA]">
-      <VelluneTopBar
-        avatarFallback={initials(appUser.name)}
-        searchValue={search}
-        onSearchChange={setSearch}
-        searchPlaceholder="Buscar convite ou cliente"
-        showNotifications={false}
-        onAvatarClick={() => navigate({ to: "/settings" })}
-        trailingActions={<NotificationCenter appUser={appUser} />}
-      />
-
-      <main className="mx-auto w-full max-w-[1540px] px-4 pb-32 pt-20 sm:px-6 sm:pt-24 lg:px-8">
+    <div className="w-full">
+      <main className="w-full">
         <section className="relative overflow-hidden rounded-[28px] border border-[#2a2b31] bg-[#111318] px-5 py-6 shadow-[0_30px_100px_-55px_rgba(212,175,55,0.6)] sm:px-7 sm:py-8 lg:px-10 lg:py-10">
           <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_75%_0%,rgba(212,175,55,0.14),transparent_34%),radial-gradient(circle_at_8%_100%,rgba(212,175,55,0.035),transparent_32%)]" />
           <div className="relative grid gap-8 xl:grid-cols-[1.35fr_0.65fr] xl:items-end">
@@ -214,18 +212,53 @@ export function ExperimentalCompanyDashboard({ appUser, reportRows, recentRespon
           </div>
         </section>
 
-        {filteredInvitations[0] && (
+        <section className="mt-6 grid gap-4 xl:grid-cols-[1.2fr_0.8fr]">
+          <div className="rounded-[24px] border border-[#d4af37]/28 bg-[#111318] p-5 shadow-[0_22px_70px_-48px_rgba(212,175,55,0.55)] sm:p-6">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#d4af37]">{nextAction.eyebrow}</p>
+                <h2 className="mt-2 font-display text-xl font-semibold tracking-[-0.025em] text-[#F5F7FA]">{nextAction.title}</h2>
+                <p className="mt-2 max-w-xl text-xs leading-5 text-[#A9B1BF]">{nextAction.description}</p>
+              </div>
+              <span className="hidden h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#d4af37]/10 text-[#d4af37] sm:flex"><Sparkles className="h-5 w-5" /></span>
+            </div>
+            <div className="mt-5">
+              {"params" in nextAction ? (
+                <Link to={nextAction.to} params={nextAction.params} className="inline-flex h-10 items-center gap-2 rounded-full bg-[#d4af37] px-4 text-xs font-semibold text-[#16130b] transition hover:bg-[#e5c66b]">{nextAction.label}<ArrowUpRight className="h-3.5 w-3.5" /></Link>
+              ) : (
+                <Link to={nextAction.to} className="inline-flex h-10 items-center gap-2 rounded-full bg-[#d4af37] px-4 text-xs font-semibold text-[#16130b] transition hover:bg-[#e5c66b]">{nextAction.label}<ArrowUpRight className="h-3.5 w-3.5" /></Link>
+              )}
+            </div>
+          </div>
+          <div className="rounded-[24px] border border-[#2a2b31] bg-[#111318] p-5 shadow-[0_20px_70px_-52px_rgba(212,175,55,0.4)] sm:p-6">
+            <div className="flex items-center justify-between gap-3">
+              <div><p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#A9B1BF]">Agora</p><h2 className="mt-1 font-display text-lg font-semibold text-[#F5F7FA]">Atividade recente</h2></div>
+              <Clock3 className="h-5 w-5 text-[#d4af37]" />
+            </div>
+            <div className="mt-4 space-y-2.5">
+              {activity.length ? activity.map((item) => (
+                <div key={item.id} className="flex items-center gap-3 rounded-2xl border border-[#2a2b31] bg-[#08090d] p-3">
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#d4af37]/10 text-[#d4af37]"><CheckCircle2 className="h-3.5 w-3.5" /></span>
+                  <div className="min-w-0 flex-1"><p className="truncate text-[11px] font-semibold text-[#F5F7FA]">{item.title}</p><p className="truncate text-[10px] text-[#A9B1BF]">{item.description}</p></div>
+                  <span className="shrink-0 text-[9px] text-[#A9B1BF]">{new Date(item.date).toLocaleDateString("pt-BR")}</span>
+                </div>
+              )) : <div className="rounded-2xl border border-dashed border-[#2a2b31] bg-[#08090d] p-5 text-center text-[10px] text-[#A9B1BF]">Sua atividade aparecerá aqui conforme você criar e publicar.</div>}
+            </div>
+          </div>
+        </section>
+
+        {continueInvitation && (
           <section className="mt-6">
             <div className="rounded-[24px] border border-[#2a2b31] bg-[#111318] p-4 shadow-[0_20px_70px_-52px_rgba(212,175,55,0.55)] sm:p-5">
               <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-                <div className="w-full shrink-0 sm:w-[180px]"><ProjectThumbnail invitation={filteredInvitations[0]} /></div>
+                <div className="w-full shrink-0 sm:w-[180px]"><ProjectThumbnail invitation={continueInvitation} /></div>
                 <div className="min-w-0 flex-1">
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#A9B1BF]">Continuar trabalhando</p>
-                  <h2 className="mt-1 truncate font-display text-xl font-semibold tracking-[-0.03em] text-[#F5F7FA]">{filteredInvitations[0].name}</h2>
-                  <p className="mt-1 truncate text-xs text-[#A9B1BF]">{filteredInvitations[0].customer?.name ?? "Sem cliente"} · atualizado em {new Date(filteredInvitations[0].updated_at).toLocaleDateString("pt-BR")}</p>
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#A9B1BF]">{continueInvitation.status === "draft" ? "Continuar trabalhando" : "Revisar criação"}</p>
+                  <h2 className="mt-1 truncate font-display text-xl font-semibold tracking-[-0.03em] text-[#F5F7FA]">{continueInvitation.name}</h2>
+                  <p className="mt-1 truncate text-xs text-[#A9B1BF]">{continueInvitation.customer?.name ?? "Sem cliente"} · atualizado em {new Date(continueInvitation.updated_at).toLocaleDateString("pt-BR")}</p>
                   <div className="mt-4 flex flex-wrap gap-2">
-                    <Link to="/invitations/$id/editor" params={{ id: filteredInvitations[0].id }} className="inline-flex h-10 items-center gap-2 rounded-full bg-[#d4af37] px-4 text-xs font-semibold text-[#F5F7FA] shadow-[0_14px_32px_-18px_rgba(212,175,55,0.85)] transition hover:bg-[#e5c66b] active:scale-[0.98]">Continuar edição<ArrowUpRight className="h-3.5 w-3.5" /></Link>
-                    <Link to="/invitations/$id/preview" params={{ id: filteredInvitations[0].id }} className="inline-flex h-10 items-center gap-2 rounded-full border border-[#2a2b31] bg-[#08090d] px-4 text-xs font-semibold text-[#F5F7FA] transition hover:border-[#d4af37]/45"><Eye className="h-3.5 w-3.5" />Prévia</Link>
+                    <Link to="/invitations/$id/editor" params={{ id: continueInvitation.id }} className="inline-flex h-10 items-center gap-2 rounded-full bg-[#d4af37] px-4 text-xs font-semibold text-[#16130b] shadow-[0_14px_32px_-18px_rgba(212,175,55,0.85)] transition hover:bg-[#e5c66b] active:scale-[0.98]">{continueInvitation.status === "draft" ? "Continuar edição" : "Editar criação"}<ArrowUpRight className="h-3.5 w-3.5" /></Link>
+                    <Link to="/invitations/$id/preview" params={{ id: continueInvitation.id }} className="inline-flex h-10 items-center gap-2 rounded-full border border-[#2a2b31] bg-[#08090d] px-4 text-xs font-semibold text-[#F5F7FA] transition hover:border-[#d4af37]/45"><Eye className="h-3.5 w-3.5" />Prévia</Link>
                   </div>
                 </div>
               </div>
@@ -278,16 +311,16 @@ export function ExperimentalCompanyDashboard({ appUser, reportRows, recentRespon
                 <Plus className="h-4 w-4" />Criar convite
               </Link>
             </div>
-          ) : filteredInvitations.length === 0 ? (
+          ) : recentInvitations.length === 0 ? (
             <div className="rounded-2xl border border-dashed border-[#2a2b31] bg-[#111318] p-10 text-center">
               <FolderOpen className="mx-auto h-7 w-7 text-[#A9B1BF]" />
-              <p className="mt-3 text-sm font-semibold text-[#F5F7FA]">{search ? "Nenhum design encontrado" : "Seu espaço começa aqui"}</p>
-              <p className="mt-1 text-xs text-[#A9B1BF]">{search ? "Tente outro termo de busca." : "Crie o primeiro convite da sua empresa e ele aparecerá aqui."}</p>
-              {!search && <Link to="/invitations/new" className="mt-4 inline-flex h-10 items-center gap-2 rounded-full bg-[#d4af37] px-4 text-xs font-semibold text-[#F5F7FA] hover:bg-[#e5c66b]"><Plus className="h-4 w-4" />Criar primeiro convite</Link>}
+              <p className="mt-3 text-sm font-semibold text-[#F5F7FA]">Seu espaço começa aqui</p>
+              <p className="mt-1 text-xs text-[#A9B1BF]">Crie o primeiro convite da sua empresa e ele aparecerá aqui.</p>
+              <Link to="/invitations/new" className="mt-4 inline-flex h-10 items-center gap-2 rounded-full bg-[#d4af37] px-4 text-xs font-semibold text-[#F5F7FA] hover:bg-[#e5c66b]"><Plus className="h-4 w-4" />Criar primeiro convite</Link>
             </div>
           ) : (
             <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-              {filteredInvitations.map((invitation) => (
+              {recentInvitations.map((invitation) => (
                 <article key={invitation.id} className="group relative overflow-visible rounded-2xl border border-[#2a2b31] bg-[#111318] transition duration-200 hover:-translate-y-0.5 hover:border-[#d4af37]/45 hover:shadow-[0_24px_55px_-38px_rgba(212,175,55,0.75)]">
                   <Link to="/invitations/$id/editor" params={{ id: invitation.id }} className="block overflow-hidden rounded-2xl">
                     <ProjectThumbnail invitation={invitation} />
@@ -407,41 +440,6 @@ export function ExperimentalCompanyDashboard({ appUser, reportRows, recentRespon
           </Link>
         </section>
       </main>
-
-      <VelluneCreativeDock
-        activeItem="home"
-        onCreate={() => setCreateSheetOpen(true)}
-        onNavigate={(item) => {
-          if (item === "home") return;
-          if (item === "projects") navigate({ to: "/invitations" });
-          if (item === "templates") navigate({ to: "/templates" });
-          if (item === "settings") navigate({ to: "/settings" });
-        }}
-      />
-      {createSheetOpen && (
-        <div className="fixed inset-0 z-[240] flex items-end justify-center bg-[#08090d]/72 p-3 backdrop-blur-sm sm:items-center sm:p-6" role="presentation" onMouseDown={() => setCreateSheetOpen(false)}>
-          <section className="w-full max-w-lg rounded-[28px] border border-[#2a2b31] bg-[#111318] p-4 shadow-[0_30px_90px_-28px_rgba(11,13,18,0.98)] sm:p-5" role="dialog" aria-modal="true" aria-label="Criar novo" onMouseDown={(event) => event.stopPropagation()}>
-            <div className="mx-auto mb-3 h-1.5 w-12 rounded-full bg-[#2a2b31]" aria-hidden="true" />
-            <div className="flex items-start justify-between gap-3">
-              <div><p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[#A9B1BF]">Criação rápida</p><h2 className="mt-1 font-display text-xl font-semibold text-[#F5F7FA]">O que vamos criar?</h2></div>
-              <button type="button" onClick={() => setCreateSheetOpen(false)} className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-[#2a2b31] bg-[#08090d] text-[#A9B1BF] hover:text-[#F5F7FA]" aria-label="Fechar">×</button>
-            </div>
-            <div className="mt-5 grid grid-cols-1 gap-2.5 sm:grid-cols-3">
-              {[
-                ["Novo convite", "Começar do zero", "/invitations/new"],
-                ["Usar modelo", "Escolher composição pronta", "/templates"],
-                ["Ver projetos", "Abrir seus convites", "/invitations"],
-              ].map(([title, description, to]) => (
-                <Link key={to} to={to as any} onClick={() => setCreateSheetOpen(false)} className="rounded-2xl border border-[#2a2b31] bg-[#08090d]/55 p-4 transition hover:-translate-y-0.5 hover:border-[#d4af37]/45">
-                  <span className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-[#d4af37]/10 text-[#d4af37]"><Plus className="h-4 w-4" /></span>
-                  <p className="mt-3 text-sm font-semibold text-[#F5F7FA]">{title}</p>
-                  <p className="mt-1 text-[10px] leading-4 text-[#A9B1BF]">{description}</p>
-                </Link>
-              ))}
-            </div>
-          </section>
-        </div>
-      )}
 
     </div>
   );
