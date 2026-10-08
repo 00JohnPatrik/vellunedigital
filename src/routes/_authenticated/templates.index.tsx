@@ -29,7 +29,7 @@ function CompanyTemplates() {
   const match = (t: Template) => (category === "all" || t.category === category)
     && t.name.toLowerCase().includes(search.trim().toLowerCase())
     && (!favoritesOnly || favoriteIds.has(t.id));
-  const official = useMemo(() => (q.data ?? []).filter((t) => t.type === "official" && t.status === "active" && match(t)), [q.data, search, category]);
+  const official = useMemo(() => (q.data ?? []).filter((t) => t.type === "official" && t.status === "active" && match(t)), [q.data, search, category, favoritesOnly, favoritesQ.data]);
   const mine = useMemo(() => (q.data ?? []).filter((t) => t.type === "company" && match(t)), [q.data, search, category]);
   const refresh = () => qc.invalidateQueries({ queryKey: templatesKey });
   const toggleFavorite = async (t: Template) => {
