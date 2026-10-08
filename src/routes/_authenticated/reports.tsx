@@ -1,5 +1,4 @@
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
-import { AppShell } from "@/components/app-shell";
 import { VelluneCompanyShell } from "@/components/vellune-company-shell";
 
 // Company reports: company_admin with active company only (super admin uses /admin/reports).
