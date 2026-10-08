@@ -176,8 +176,40 @@ async function count(table: string, companyId: string, column = "id") {
   return total ?? 0;
 }
 
+async function sumCompanyFileStorage(companyId: string): Promise<{ files: number; storageBytes: number }> {
+  // PostgREST caps each response at the configured row limit (commonly 1,000).
+  // Use a stable cursor so companies with large libraries are not undercounted.
+  const pageSize = 1000;
+  let lastId: string | null = null;
+  let files = 0;
+  let storageBytes = 0;
+
+  while (true) {
+    let query = supabase
+      .from("files")
+      .select("id, size")
+      .eq("company_id", companyId)
+      .order("id", { ascending: true })
+      .limit(pageSize);
+
+    if (lastId) query = query.gt("id", lastId);
+
+    const { data, error } = await query;
+    if (error) throw error;
+
+    const batch = data ?? [];
+    files += batch.length;
+    storageBytes += batch.reduce((total, file) => total + Number(file.size || 0), 0);
+
+    if (batch.length < pageSize) break;
+    lastId = batch[batch.length - 1]!.id;
+  }
+
+  return { files, storageBytes };
+}
+
 export async function getSubscriptionUsage(companyId: string): Promise<SubscriptionUsage> {
-  const [{ count: invitations, error: invitationsError }, { count: customers, error: customersError }, { count: guests, error: guestsError }, filesResult] = await Promise.all([
+  const [{ count: invitations, error: invitationsError }, { count: customers, error: customersError }, { count: guests, error: guestsError }, fileUsage] = await Promise.all([
     supabase
       .from("invitations")
       .select("id", { count: "exact", head: true })
@@ -196,21 +228,19 @@ export async function getSubscriptionUsage(companyId: string): Promise<Subscript
       .eq("company_id", companyId)
       .eq("status", "active")
       .is("deleted_at", null),
-    supabase.from("files").select("size").eq("company_id", companyId),
+    sumCompanyFileStorage(companyId),
   ]);
 
   if (invitationsError) throw invitationsError;
   if (customersError) throw customersError;
   if (guestsError) throw guestsError;
-  if (filesResult.error) throw filesResult.error;
 
-  const sizes = (filesResult.data ?? []) as { size: number }[];
   return {
     invitations: invitations ?? 0,
     customers: customers ?? 0,
     guests: guests ?? 0,
-    files: sizes.length,
-    storageBytes: sizes.reduce((sum, file) => sum + Number(file.size || 0), 0),
+    files: fileUsage.files,
+    storageBytes: fileUsage.storageBytes,
   };
 }
 
