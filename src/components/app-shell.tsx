@@ -218,7 +218,7 @@ export function AppShell({ base, nav, appUser, children }: Props) {
   }, [nav, search]);
 
   return (
-    <div className={cn("vellune-platform-root min-h-screen", density === "compact" && "[& main]:p-3 [& main]:sm:p-4 [& main]:lg:p-6")}>
+    <div className={cn("vellune-platform-root dark min-h-[100dvh] bg-[#08090d] text-[#F5F7FA]", density === "compact" && "[& main]:p-3 [& main]:sm:p-4 [& main]:lg:p-6")}>
       <aside
         aria-label="Navegação principal"
         className={cn(
