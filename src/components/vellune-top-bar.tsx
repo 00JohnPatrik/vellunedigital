@@ -99,10 +99,12 @@ export function VelluneTopBar({
           title="Notificações"
         >
           <Bell className="h-[18px] w-[18px]" />
-          <span
-            aria-hidden="true"
-            className="absolute right-2 top-2 h-2 w-2 rounded-full bg-[#F59E0B] ring-2 ring-[#08090d]"
-          />
+          {notificationCount > 0 && (
+            <span
+              aria-hidden="true"
+              className="absolute right-2 top-2 h-2 w-2 rounded-full bg-[#F59E0B] ring-2 ring-[#08090d]"
+            />
+          )}
         </button>}
 
         <button
