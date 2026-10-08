@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { CalendarDays, CheckCircle2, Image as ImageIcon, Link2, MapPin, Palette, Search, Shapes, Sparkles, Type, X } from "lucide-react";
 import type { BlockType } from "@/lib/templates";
+import type { LucideIcon } from "lucide-react";
 
 type PaletteAction = {
   id: string;
@@ -8,7 +9,7 @@ type PaletteAction = {
   description: string;
   type?: BlockType;
   kind: "element" | "template" | "background";
-  Icon: typeof Sparkles;
+  Icon: LucideIcon;
 };
 
 const ACTIONS: PaletteAction[] = [
@@ -109,7 +110,7 @@ export function EditorCommandPalette({
             aria-label="Buscar no editor"
             className="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-white/30"
           />
-          <kbd className="hidden rounded-md border border-white/[0.08] bg-white/[0.04] px-1.5 py-1 text-[10px] text-white/35 sm:inline">ESC</kbd>
+          <kbd className="hidden rounded-md border border-white/[0.08] bg-white/[0.04] px-1.5 py-1 text-[10px] text-white/35 sm:inline">Esc</kbd>
           <button type="button" onClick={onClose} aria-label="Fechar busca" className="inline-flex h-7 w-7 items-center justify-center rounded-lg text-white/45 transition hover:bg-white/[0.06] hover:text-white">
             <X className="h-4 w-4" />
           </button>
@@ -155,7 +156,7 @@ export function EditorCommandPalette({
         </div>
 
         <div className="flex items-center justify-between gap-3 border-t border-white/[0.07] bg-black/10 px-4 py-2.5 text-[10px] text-white/30">
-          <span>Use ↑ ↓ para navegar · Enter para adicionar</span>
+          <span>↑ ↓ navegar · Enter adicionar · Esc fechar</span>
           <span>{selectedCount ? `${selectedCount} selecionado(s)` : "Nada selecionado"}</span>
         </div>
       </div>
