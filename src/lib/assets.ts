@@ -6,7 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 export const BUCKET = "invitation-assets";
 export const STORAGE_PREFIX = "storage:";
 export const MAX_BYTES = 10 * 1024 * 1024;
-const TYPES: Record<string, string[]> = { "image/jpeg": ["jpg", "jpeg"], "image/png": ["png"], "image/webp": ["webp"] };
+const TYPES: Record<string, string[]> = { "image/jpeg": ["jpg", "jpeg"], "image/png": ["png"], "image/webp": ["webp"], "image/gif": ["gif"] };
 
 export type AssetScope =
   | { kind: "invitation"; id: string; companyId: string }
@@ -17,7 +17,7 @@ export type FileRow = { id: string; storage_path: string; file_name: string; mim
 export function validateImage(file: File): string | null {
   const ext = file.name.split(".").pop()?.toLowerCase() ?? "";
   const allowed = TYPES[file.type];
-  if (!allowed || !allowed.includes(ext)) return "Formato não permitido. Envie JPG, PNG ou WebP.";
+  if (!allowed || !allowed.includes(ext)) return "Formato não permitido. Envie JPG, PNG, WebP ou GIF.";
   if (file.size > MAX_BYTES) return "Arquivo muito grande. O limite é 10 MB.";
   if (file.size === 0) return "Arquivo vazio.";
   return null;
