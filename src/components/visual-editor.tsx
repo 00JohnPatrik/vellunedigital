@@ -9,7 +9,7 @@ import { EditorCommandPalette } from "@/components/editor-command-palette";
 import { TemplateGallery } from "@/components/template-gallery";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-import { CalendarDays, CheckCircle2, Eye, EyeOff, Grid3X3, Minus, Plus, Redo2, Undo2, PanelLeft, PanelRight, Sparkles, Smartphone, Tablet, Monitor, BringToFront, SendToBack, Trash2, X, Pencil, RotateCcw, RotateCw, Lock, Unlock, AlignCenterHorizontal, AlignCenterVertical, Link2, Unlink2, MapPin, Type, Image as ImageIcon, Palette, MoreHorizontal, Maximize2, Minimize2, Search, LayoutGrid, Magnet } from "lucide-react";
+import { CalendarDays, CheckCircle2, Eye, EyeOff, Grid3X3, Minus, Plus, Redo2, Undo2, PanelLeft, PanelRight, Sparkles, Smartphone, Tablet, Monitor, BringToFront, SendToBack, Trash2, X, Pencil, RotateCcw, RotateCw, Lock, Unlock, AlignCenterHorizontal, AlignCenterVertical, Link2, Unlink2, MapPin, Type, Image as ImageIcon, Palette, MoreHorizontal, Maximize2, Minimize2, Search, LayoutGrid, Magnet, UploadCloud } from "lucide-react";
 
 function useIsCompact() {
   const [compact, setCompact] = useState(false);
