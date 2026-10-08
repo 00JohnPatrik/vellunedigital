@@ -342,7 +342,7 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHe
     setSelectedIds([id]);
     if (action === "replace") {
       setImageReplaceId(id);
-      setToolCategory("Imagens");
+      setToolCategory("Fotos");
       if (compact) setMobileSheet("elements");
       requestAnimationFrame(() => document.getElementById("editor-elements-library")?.scrollIntoView({ behavior: "smooth", block: "nearest" }));
     }
