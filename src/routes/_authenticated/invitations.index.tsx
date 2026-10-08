@@ -188,7 +188,7 @@ function InvitationsPage() {
         </div>
       ) : (
         <>
-          <div className="hidden overflow-x-auto rounded-xl border lg:block">
+          <div className="vellune-data-surface hidden overflow-x-auto lg:block">
             <table className="w-full text-sm">
               <thead className="bg-muted/50 text-left text-muted-foreground">
                 <tr>
@@ -216,7 +216,7 @@ function InvitationsPage() {
           </div>
           <div className="grid gap-3 sm:grid-cols-2 lg:hidden">
             {rows.map((i) => (
-              <div key={i.id} className="rounded-xl border bg-card p-4 shadow-sm transition-colors hover:border-primary/40 hover:shadow-md">
+              <div key={i.id} className="vellune-platform-card p-4">
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0">
                     <div className="truncate font-medium">{i.name}</div>
