@@ -3,7 +3,7 @@ import { BlockView } from "@/components/block-render";
 import { EditorProToolbar } from "@/components/editor-pro-toolbar";
 import { resolveBlockGeometry, type Block, type BlockType } from "@/lib/templates";
 import { fontCss } from "@/lib/blocks";
-import { Copy, RotateCw } from "lucide-react";
+import { RotateCw } from "lucide-react";
 
 type Point = { x: number; y: number };
 type Guide = { axis: "x" | "y"; value: number; kind?: "edge" | "center" | "grid" };
@@ -791,34 +791,6 @@ export function VisualTransformCanvas({ blocks, selectedIds: selectedIdsProp, zo
         }}
       />
     )}
-    {selectedBounds && selectedBlocks.length > 0 && (
-      <div
-        className="pointer-events-auto absolute z-[90] hidden max-w-[calc(100%-1rem)] -translate-x-1/2 -translate-y-full pb-2 sm:block"
-        style={{ left: toolbarPosition?.left ? toolbarPosition.left + (toolbarPosition.width / 2) : 8, top: toolbarPosition?.top ?? 76, width: toolbarPosition?.width ?? "auto" }}
-        onPointerDown={(event) => {
-          event.stopPropagation();
-        }}
-      >
-        <EditorQuickToolbar
-          selected={selectedBlocks}
-          onProp={updateSelectedProps}
-          onDuplicate={duplicateSelected}
-          onDelete={deleteSelected}
-          onAdvanced={() => onAdvanced?.()}
-          onImage={imageAction}
-          onLock={toggleLockSelected}
-          onLayer={(direction) => onLayer?.(direction, selectedIds)}
-          onAlign={(mode) => onAlign?.(mode, selectedIds)}
-          onOpacity={(value) => onOpacity?.(value, selectedIds)}
-          onRotate={(amount) => onRotate?.(amount, selectedIds)}
-          onAutoArrange={() => onAutoArrange?.(selectedIds)}
-          onMagicArrange={(preset) => onMagicArrange?.(selectedIds, preset)}
-          onSmartAlign={() => onSmartAlign?.(selectedIds)}
-          onAddElement={(type) => onAddBlock?.(type)}
-        />
-      </div>
-    )}
-
     {selectedBounds && selectedBlocks.length > 0 && toolbarPosition && (
       <div
         className="pointer-events-auto absolute z-[135] -translate-x-1/2"
