@@ -138,7 +138,7 @@ function InvitationLoading() {
 function PublicInvitationPage() {
   const res = Route.useLoaderData();
   const { slug } = Route.useParams();
-  const { guest } = Route.useSearch();
+  const { guest } = Route.useSearch() as { guest?: string };
   const ok = res.state === "ok";
   const invitation = ok ? res.invitation : null;
   const [motionReady, setMotionReady] = useState(false);
