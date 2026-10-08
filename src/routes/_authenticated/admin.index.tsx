@@ -84,15 +84,6 @@ function AdminDashboard() {
     staleTime: 30_000,
   });
 
-  if (counts.isLoading || report.isLoading || users.isLoading) return <LoadingState />;
-  if (counts.error || report.error || !counts.data) {
-    return <div className="rounded-xl border border-destructive/30 bg-destructive/5 p-6 text-sm text-destructive">Não foi possível carregar os dados reais do dashboard.</div>;
-  }
-
-  const metrics = totals(report.data ?? []);
-  const totalInvitations = metrics.invitations;
-  const confirmedRate = totalInvitations > 0 ? Math.round((metrics.confirmed / totalInvitations) * 100) : 0;
-
   const commercial = useMemo(() => {
     const rows = subscriptions.data ?? [];
     const active = rows.filter((item) => commercialState(item) === "active" || commercialState(item) === "expiring");
@@ -110,6 +101,15 @@ function AdminDashboard() {
       .slice(0, 6);
     return { active, expiring, attention, companiesWithoutActivePlan, monthlyValue, upcoming };
   }, [companies.data, subscriptions.data]);
+
+  if (counts.isLoading || report.isLoading || users.isLoading) return <LoadingState />;
+  if (counts.error || report.error || !counts.data) {
+    return <div className="rounded-xl border border-destructive/30 bg-destructive/5 p-6 text-sm text-destructive">Não foi possível carregar os dados reais do dashboard.</div>;
+  }
+
+  const metrics = totals(report.data ?? []);
+  const totalInvitations = metrics.invitations;
+  const confirmedRate = totalInvitations > 0 ? Math.round((metrics.confirmed / totalInvitations) * 100) : 0;
 
   return (
     <div className="space-y-8">
