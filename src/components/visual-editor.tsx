@@ -1402,6 +1402,10 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHe
           addBlockByType(type);
           if (compact) setMobileSheet(null);
         }}
+        onAddComposition={(kind) => {
+          addComposition(kind);
+          if (compact) setMobileSheet(null);
+        }}
         onOpenTemplates={() => {
           setToolCategory("Modelos");
           setSidebarOpen(true);
