@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
-import { Plus, Search } from "lucide-react";
+import { CheckCircle2, CircleDashed, Plus, Search, UserRoundX } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,7 @@ import { dbErrorMessage, EmptyState, fmtDate, LoadingState, PageHeader, StatusBa
 import { CustomerDialog, emptyCustomer } from "@/components/customer-dialog";
 import { customersKey, findDuplicate, listCustomers, toRow, type Customer } from "@/lib/customers-data";
 import { setCustomerStatus } from "@/lib/customer-actions";
+import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/customers/")({
   head: () => ({ meta: [{ title: "Clientes — Vellune Digital" }] }),
@@ -48,6 +49,33 @@ function CustomersPage() {
     <div>
       <PageHeader title="Clientes" description={isSuper ? "Clientes de todas as empresas." : "Clientes da sua empresa."}
         action={companyId && <Button onClick={() => setOpen(true)}><Plus className="h-4 w-4" />Novo cliente</Button>} />
+      <div className="mb-5 grid gap-3 sm:grid-cols-3">
+        {([
+          ["all", "Clientes", q.data?.length ?? 0, CircleDashed],
+          ["active", "Ativos", (q.data ?? []).filter((c) => c.status === "active").length, CheckCircle2],
+          ["inactive", "Inativos", (q.data ?? []).filter((c) => c.status === "inactive").length, UserRoundX],
+        ] as const).map(([key, label, count, Icon]) => (
+          <button
+            key={key}
+            type="button"
+            onClick={() => setFilter(key as StatusFilter)}
+            aria-pressed={filter === key}
+            className={cn(
+              "vellune-platform-card flex items-center gap-3 p-4 text-left",
+              filter === key && "border-[#d4af37]/55",
+            )}
+          >
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#d4af37]/10 text-[#d4af37]">
+              <Icon className="h-4 w-4" />
+            </span>
+            <span className="min-w-0">
+              <span className="block font-display text-xl font-semibold tabular-nums text-[#F5F7FA]">{count}</span>
+              <span className="text-[11px] text-[#A9B1BF]">{label}</span>
+            </span>
+          </button>
+        ))}
+      </div>
+
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center">
         <div className="relative flex-1 sm:max-w-sm">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
