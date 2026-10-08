@@ -123,8 +123,8 @@ function FirstAccessPage() {
 
   return (
     <AuthCard
-      title="Comece seu primeiro acesso"
-      subtitle="Use o e-mail cadastrado pelo administrador para ativar sua conta."
+      title="Ative seu acesso"
+      subtitle="Use o e-mail cadastrado pelo administrador para criar sua senha."
     >
       {sent ? (
         <div role="status" aria-live="polite">
@@ -171,6 +171,7 @@ function FirstAccessPage() {
               <Mail className="pointer-events-none absolute left-3.5 top-1/2 z-20 h-4 w-4 -translate-y-1/2 text-white/25" />
               <Input
                 id="email"
+                name="email"
                 type="email"
                 ref={emailRef}
                 enterKeyHint="send"
@@ -212,7 +213,7 @@ function FirstAccessPage() {
 
           <Button
             type="submit"
-            className="group relative mt-1 h-12 w-full overflow-hidden rounded-xl bg-[#d4af37] font-semibold text-[#16130b] shadow-[0_12px_34px_rgba(212,175,55,0.10)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#e5c66b] hover:shadow-[0_16px_38px_rgba(212,175,55,0.16)] active:translate-y-0 disabled:cursor-default disabled:opacity-100"
+            className="vellune-auth-cta group relative mt-1 h-12 w-full overflow-hidden rounded-xl bg-[#d4af37] font-semibold text-[#16130b] shadow-[0_12px_34px_rgba(212,175,55,0.10)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#e5c66b] hover:shadow-[0_16px_38px_rgba(212,175,55,0.16)] active:translate-y-0 disabled:cursor-default disabled:opacity-100"
             disabled={loading}
           >
             {loading ? (
@@ -221,7 +222,7 @@ function FirstAccessPage() {
                 Enviando link...
               </span>
             ) : (
-              <span className="flex items-center justify-center gap-2">Receber link de acesso <span aria-hidden="true">→</span></span>
+              <span className="flex items-center justify-center gap-2">Enviar link de acesso <span aria-hidden="true">→</span></span>
             )}
           </Button>
         </form>
