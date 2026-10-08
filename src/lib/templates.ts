@@ -183,6 +183,123 @@ export type TemplateValues = { name: string; category: Category | ""; preview_im
 
 export const newBlock = (type: BlockType): Block => ({ id: crypto.randomUUID(), type, props: { ...BLOCKS[type].defaults } });
 
+const PREMIUM_PHOTO_IMAGES = {
+  wedding: "https://images.unsplash.com/photo-1779055660455-0fd20ba8ef56?auto=format&fit=crop&w=1000&q=82",
+  birthday: "https://images.unsplash.com/photo-1774290687045-726c356643f9?auto=format&fit=crop&w=1000&q=82",
+  baby: "https://images.unsplash.com/photo-1542387960-f8197d82db42?auto=format&fit=crop&w=1000&q=82",
+  reveal: "https://images.unsplash.com/photo-1788462809817-9d8391169aac?auto=format&fit=crop&w=1000&q=82",
+  quince: "https://images.unsplash.com/photo-1629482244660-a2b96d5fa3b8?auto=format&fit=crop&w=1000&q=82",
+  graduation: "https://images.unsplash.com/photo-1627556704290-2b1f5853ff78?auto=format&fit=crop&w=1000&q=82",
+  kids: "https://images.unsplash.com/photo-1765530950709-67e6af4ce3ad?auto=format&fit=crop&w=1000&q=82",
+  event: "https://images.unsplash.com/photo-1767050241759-a35754ea2471?auto=format&fit=crop&w=1000&q=82",
+} as const;
+
+type PremiumPhotoOptions = {
+  image: string;
+  imageAlt: string;
+  kicker: string;
+  title: string;
+  body: string;
+  accent: string;
+  ink: string;
+  muted: string;
+  background: string;
+  gradient: string;
+  buttonStyle?: "solid" | "outline";
+  includeCountdown?: boolean;
+};
+
+function buildPremiumPhotoTemplate(options: PremiumPhotoOptions): TemplateContent {
+  const {
+    image, imageAlt, kicker, title, body, accent, ink, muted, background, gradient,
+    buttonStyle = "solid", includeCountdown = false,
+  } = options;
+
+  const blocks: Block[] = [
+    {
+      ...newBlock("image"),
+      x: 24, y: 24, width: 342, height: 232, zIndex: 1,
+      props: {
+        url: image, alt: imageAlt, width: "full", height: "wide", align: "center",
+        objectFit: "cover", objectPosition: "center", imageZoom: "108",
+      },
+    },
+    {
+      ...newBlock("text"),
+      x: 34, y: 282, width: 322, height: 26, zIndex: 3,
+      props: {
+        text: kicker, font: "sans", fontSize: "10", letterSpacing: "3", color: accent,
+        align: "center", width: "full", textTransform: "uppercase",
+      },
+    },
+    {
+      ...newBlock("text"),
+      x: 26, y: 324, width: 338, height: 92, zIndex: 4,
+      props: {
+        text: title, font: "display", fontSize: "44", lineHeight: "1.02",
+        letterSpacing: "-1.1", color: ink, align: "center", width: "full",
+      },
+    },
+    {
+      ...newBlock("text"),
+      x: 42, y: 438, width: 306, height: 70, zIndex: 5,
+      props: {
+        text: body, font: "sans", fontSize: "15.5", lineHeight: "1.45",
+        color: muted, align: "center", width: "full",
+      },
+    },
+    {
+      ...newBlock("date"),
+      x: 48, y: 528, width: 294, height: 58, zIndex: 6,
+      props: { source: "event", format: "weekday", label: "DATA", align: "center" },
+    },
+    {
+      ...newBlock("time"),
+      x: 48, y: 598, width: 294, height: 58, zIndex: 7,
+      props: { source: "event", format: "text", label: "HORÁRIO", align: "center" },
+    },
+  ];
+
+  let z = 8;
+  let y = 676;
+  if (includeCountdown) {
+    blocks.push({
+      ...newBlock("countdown"),
+      x: 42, y, width: 306, height: 78, zIndex: z++,
+      props: { source: "event", target: "", title: "FALTAM", align: "center" },
+    });
+    y += 92;
+  }
+
+  blocks.push(
+    {
+      ...newBlock("location"),
+      x: 34, y, width: 328, height: 104, zIndex: z++,
+      props: { source: "event", show_name: "1", show_address: "1", show_city: "1", show_directions: "1", align: "center" },
+    },
+    {
+      ...newBlock("rsvp"),
+      x: 52, y: y + 130, width: 316, height: 94, zIndex: z++,
+      props: {
+        title: "Será uma alegria ter você conosco.",
+        label: "Confirmar presença",
+        preset: "pill", style: buttonStyle,
+        fontFamily: "sans", fontSize: "15", fontWeight: "600",
+        textColor: buttonStyle === "solid" ? "#ffffff" : ink,
+        backgroundColor: buttonStyle === "solid" ? accent : "transparent",
+        borderColor: accent, borderWidth: "1", radius: "999",
+        paddingX: "26", paddingY: "12", shadow: "soft", align: "center",
+      },
+    },
+  );
+
+  return {
+    version: 1,
+    settings: { background: { color: background, gradient } },
+    blocks,
+  };
+}
+
 export const STARTERS: Record<string, { label: string; build: () => TemplateContent }> = {
   editorial: {
     label: "Vellune Editorial — base profissional",
@@ -385,6 +502,143 @@ export const STARTERS: Record<string, { label: string; build: () => TemplateCont
         { ...newBlock("time"), x: 48, y: 502, width: 324, height: 58, zIndex: 8, props: { source: "event", format: "24h", label: "HORÁRIO", align: "center" } },
         { ...newBlock("location"), x: 34, y: 576, width: 352, height: 104, zIndex: 9, props: { source: "event", show_name: "1", show_address: "1", show_city: "1", show_directions: "1", align: "center" } },
         { ...newBlock("rsvp"), x: 58, y: 712, width: 304, height: 90, zIndex: 10, props: { title: "Confirme e venha celebrar.", label: "Confirmar presença", preset: "pill", style: "outline", backgroundColor: "transparent", borderColor: "#d6bf8a", textColor: "#f5efe4", radius: "999", paddingX: "24", paddingY: "12", shadow: "none", align: "center" } },
+      ] as Block[],
+    }),
+  },
+  wedding_photo: {
+    label: "Casamento — Fotográfico sofisticado",
+    build: () => buildPremiumPhotoTemplate({
+      image: PREMIUM_PHOTO_IMAGES.wedding,
+      imageAlt: "Casal celebrando uma cerimônia de casamento",
+      kicker: "Nosso grande dia",
+      title: "Ana & Lucas",
+      body: "Um dia especial merece ser vivido ao lado de quem faz parte da nossa história.",
+      accent: "#9a766e", ink: "#372e2d", muted: "#665a58",
+      background: "#fbf7f4",
+      gradient: "linear-gradient(155deg, #fbf7f4 0%, #f1e4e2 52%, #fffdfb 100%)",
+      buttonStyle: "solid", includeCountdown: false,
+    }),
+  },
+  birthday_photo: {
+    label: "Aniversário — Festa contemporânea",
+    build: () => buildPremiumPhotoTemplate({
+      image: PREMIUM_PHOTO_IMAGES.birthday,
+      imageAlt: "Decoração de aniversário com balões",
+      kicker: "Vamos celebrar",
+      title: "Mariana faz 40",
+      body: "Uma noite leve, elegante e cheia de bons encontros. Espero você para brindar comigo.",
+      accent: "#a06b68", ink: "#342b2b", muted: "#645958",
+      background: "#faf4f1",
+      gradient: "linear-gradient(155deg, #faf4f1 0%, #ead9d7 55%, #fffaf8 100%)",
+      buttonStyle: "solid", includeCountdown: true,
+    }),
+  },
+  baby_photo: {
+    label: "Chá de bebê — Minimalista e delicado",
+    build: () => buildPremiumPhotoTemplate({
+      image: PREMIUM_PHOTO_IMAGES.baby,
+      imageAlt: "Cantinho de bebê em tons neutros",
+      kicker: "Uma nova história começa",
+      title: "Chá da Isabela",
+      body: "Prepare o coração: queremos dividir com você a alegria de celebrar a chegada da nossa pequena.",
+      accent: "#7d9991", ink: "#405550", muted: "#64746f",
+      background: "#f7f5f0",
+      gradient: "linear-gradient(155deg, #f7f5f0 0%, #e9f0ed 50%, #fbfaf7 100%)",
+      buttonStyle: "solid", includeCountdown: false,
+    }),
+  },
+  reveal_photo: {
+    label: "Chá revelação — Surpresa em cores",
+    build: () => buildPremiumPhotoTemplate({
+      image: PREMIUM_PHOTO_IMAGES.reveal,
+      imageAlt: "Casal em uma celebração de chá revelação com balões",
+      kicker: "Menino ou menina?",
+      title: "Uma surpresa está chegando",
+      body: "Venha descobrir com a gente e viver esse momento cheio de emoção, carinho e expectativa.",
+      accent: "#6e8fa0", ink: "#33424b", muted: "#5f6d74",
+      background: "#f5f8fa",
+      gradient: "linear-gradient(145deg, #f5f8fa 0%, #e9eef4 48%, #fff5f8 100%)",
+      buttonStyle: "outline", includeCountdown: true,
+    }),
+  },
+  quince_photo: {
+    label: "15 anos — Editorial glam",
+    build: () => buildPremiumPhotoTemplate({
+      image: PREMIUM_PHOTO_IMAGES.quince,
+      imageAlt: "Jovem em vestido rosa celebrando um marco especial",
+      kicker: "Uma noite para lembrar",
+      title: "Sofia • 15 anos",
+      body: "Quero você comigo para transformar esta noite em uma memória inesquecível.",
+      accent: "#b889a4", ink: "#332b37", muted: "#6b5c68",
+      background: "#f8f3f7",
+      gradient: "radial-gradient(circle at 15% 10%, #f1dce8 0%, transparent 34%), linear-gradient(155deg, #fbf7fa 0%, #eee3eb 60%, #fffdfd 100%)",
+      buttonStyle: "solid", includeCountdown: true,
+    }),
+  },
+  graduation_photo: {
+    label: "Formatura — Celebração editorial",
+    build: () => buildPremiumPhotoTemplate({
+      image: PREMIUM_PHOTO_IMAGES.graduation,
+      imageAlt: "Formandos comemorando com capelos ao alto",
+      kicker: "Conquistamos",
+      title: "Nossa formatura",
+      body: "Depois de tanto esforço, chegou a hora de celebrar essa conquista ao lado de pessoas especiais.",
+      accent: "#7d6b4b", ink: "#2f2d2a", muted: "#665f54",
+      background: "#f7f3ea",
+      gradient: "linear-gradient(155deg, #f7f3ea 0%, #e8dfca 58%, #fffdf8 100%)",
+      buttonStyle: "solid", includeCountdown: false,
+    }),
+  },
+  kids_party_photo: {
+    label: "Festa infantil — Alegre e colorido",
+    build: () => buildPremiumPhotoTemplate({
+      image: PREMIUM_PHOTO_IMAGES.kids,
+      imageAlt: "Crianças comemorando aniversário com bolo e balões",
+      kicker: "Uma festa para brincar",
+      title: "Theo faz 5!",
+      body: "Prepare a fantasia e venha se divertir com a gente. Vai ter bolo, brincadeiras e muita alegria.",
+      accent: "#7b82bd", ink: "#39415d", muted: "#646c80",
+      background: "#f8f7fb",
+      gradient: "linear-gradient(155deg, #f8f7fb 0%, #eeeaf7 54%, #fff8f0 100%)",
+      buttonStyle: "solid", includeCountdown: true,
+    }),
+  },
+  elegant_event_photo: {
+    label: "Outros — Evento elegante",
+    build: () => buildPremiumPhotoTemplate({
+      image: PREMIUM_PHOTO_IMAGES.event,
+      imageAlt: "Mesa elegante preparada para um evento",
+      kicker: "Uma ocasião especial",
+      title: "Você está convidado",
+      body: "Uma composição versátil para jantar, recepção, confraternização ou qualquer celebração que mereça presença.",
+      accent: "#8a7357", ink: "#35312b", muted: "#676056",
+      background: "#f7f4ee",
+      gradient: "linear-gradient(155deg, #f7f4ee 0%, #ebe3d6 54%, #fffdf8 100%)",
+      buttonStyle: "outline", includeCountdown: false,
+    }),
+  },
+  complete_showcase: {
+    label: "Completo — galeria + RSVP + WhatsApp + QR",
+    build: () => ({
+      version: 1,
+      settings: {
+        background: {
+          color: "#11141d",
+          gradient: "radial-gradient(circle at 50% 0%, #3b4162 0%, #171a27 48%, #0d0f17 100%)",
+        },
+      },
+      blocks: [
+        { ...newBlock("image"), x: 24, y: 24, width: 342, height: 220, zIndex: 1, props: { url: PREMIUM_PHOTO_IMAGES.event, alt: "Evento elegante", width: "full", height: "wide", align: "center", objectFit: "cover", imageZoom: "104" } },
+        { ...newBlock("text"), x: 34, y: 270, width: 322, height: 24, zIndex: 3, props: { text: "EXEMPLO COMPLETO", font: "sans", fontSize: "10", letterSpacing: "3", color: "#d9c59b", align: "center", width: "full", textTransform: "uppercase" } },
+        { ...newBlock("text"), x: 28, y: 310, width: 334, height: 66, zIndex: 4, props: { text: "Uma experiência feita para celebrar", font: "display", fontSize: "33", lineHeight: "1.05", color: "#f8f3e7", align: "center", width: "full" } },
+        { ...newBlock("gallery"), x: 34, y: 402, width: 322, height: 168, zIndex: 5, props: { images: JSON.stringify([{ url: PREMIUM_PHOTO_IMAGES.wedding, alt: "Casamento" }, { url: PREMIUM_PHOTO_IMAGES.birthday, alt: "Aniversário" }, { url: PREMIUM_PHOTO_IMAGES.graduation, alt: "Formatura" }]), mode: "grid", columns: "3", height: "square", align: "center", captions: "0", autoplay: "0" } },
+        { ...newBlock("countdown"), x: 40, y: 594, width: 310, height: 76, zIndex: 6, props: { source: "event", target: "", title: "FALTAM", align: "center" } },
+        { ...newBlock("date"), x: 46, y: 690, width: 298, height: 54, zIndex: 7, props: { source: "event", format: "long", label: "DATA", align: "center" } },
+        { ...newBlock("time"), x: 46, y: 756, width: 298, height: 54, zIndex: 8, props: { source: "event", format: "24h", label: "HORÁRIO", align: "center" } },
+        { ...newBlock("location"), x: 34, y: 824, width: 322, height: 98, zIndex: 9, props: { source: "event", show_name: "1", show_address: "1", show_city: "1", show_directions: "1", align: "center" } },
+        { ...newBlock("rsvp"), x: 54, y: 944, width: 282, height: 88, zIndex: 10, props: { title: "Confirme sua presença.", label: "Confirmar presença", preset: "pill", style: "solid", textColor: "#16130b", backgroundColor: "#d9c59b", borderColor: "#d9c59b", radius: "999", paddingX: "24", paddingY: "12", shadow: "soft", align: "center" } },
+        { ...newBlock("whatsapp"), x: 54, y: 1052, width: 282, height: 60, zIndex: 11, props: { label: "Fale pelo WhatsApp", phone: "", message: "Olá! Gostaria de falar sobre o evento.", style: "outline", borderWidth: "1", borderColor: "#d9c59b", textColor: "#f8f3e7", radius: "999", paddingX: "22", paddingY: "12", shadow: "none", align: "center" } },
+        { ...newBlock("qr_code"), x: 105, y: 1132, width: 180, height: 196, zIndex: 12, props: { value: "", size: "lg", align: "center", backgroundColor: "#ffffff", foregroundColor: "#11141d", padding: "10", radius: "12", caption: "QR Code do convite" } },
       ] as Block[],
     }),
   },
