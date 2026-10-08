@@ -437,7 +437,7 @@ export function InvitationCanvas({ blocks, ctx, className, background, immersive
     <div
       ref={canvasHostRef}
       className={cn(
-        cn(\n          "relative isolate mx-auto w-full overflow-hidden bg-card",\n          immersive\n            ? "max-w-none rounded-none border-0 shadow-none sm:max-w-3xl sm:rounded-2xl sm:border sm:shadow-2xl"\n            : "max-w-md rounded-2xl border shadow-sm",\n        ),
+        "relative isolate mx-auto w-full overflow-hidden bg-card",\n        immersive\n          ? "max-w-none rounded-none border-0 shadow-none sm:max-w-3xl sm:rounded-2xl sm:border sm:shadow-2xl"\n          : "max-w-md rounded-2xl border shadow-sm",
         hasFreeCanvasBlock ? "min-h-[640px] p-0" : "flex flex-col gap-5 p-6",
         className,
       )}
