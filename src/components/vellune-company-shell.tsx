@@ -1,6 +1,6 @@
 import { useMemo, useState, type ReactNode } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
-import { Bell, BarChart3, CreditCard, LayoutDashboard, LayoutTemplate, Mail, Palette, Search, Settings2, Users, X } from "lucide-react";
+import { BarChart3, CreditCard, LayoutDashboard, LayoutTemplate, Mail, Palette, Search, Settings2, Users, X } from "lucide-react";
 import { VelluneTopBar } from "@/components/vellune-top-bar";
 import { VelluneCreativeDock } from "@/components/vellune-creative-dock";
 import { NotificationCenter } from "@/components/phase7-ui";
