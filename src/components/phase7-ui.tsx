@@ -78,7 +78,15 @@ export function NotificationCenter({ appUser }: { appUser: AppUser }) {
 
   const readMarkersQuery = useQuery({
     queryKey: notificationReadMarkersKey(appUser.id),
-    queryFn: () => listNotificationReadMarkers(appUser.id),
+    queryFn: async () => {
+      try {
+        return await listNotificationReadMarkers(appUser.id);
+      } catch {
+        // Read markers are an enhancement; notifications must remain available
+        // even before a pending production migration is applied.
+        return [];
+      }
+    },
     staleTime: 30_000,
   });
 
@@ -196,7 +204,7 @@ export function NotificationCenter({ appUser }: { appUser: AppUser }) {
         return next;
       });
     } catch {
-      // Falha persistente não deve fechar nem quebrar o centro de notificações.
+      toast.error("Não foi possível marcar este grupo como lido.");
     } finally {
       setMarkingGroup(null);
     }
