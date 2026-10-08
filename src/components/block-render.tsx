@@ -115,7 +115,7 @@ function Countdown({ p, ctx }: { p: Record<string, string>; ctx?: EventCtx | und
     [Math.floor(diff / 60000) % 60, "min"], [Math.floor(diff / 1000) % 60, "seg"],
   ] as const;
   return (
-    <div className={cn("space-y-2", ALIGN[p["align"] ?? "center"])}>
+    <div className={cn("space-y-2", ALIGN[p["align"] ?? "center"])} style={p["color"] ? { color: p["color"] } : undefined}>
       {p["title"] && <p className="text-sm text-muted-foreground">{p["title"]}</p>}
       {diff !== 0 && <Row align={p["align"]}>
         <div className="flex gap-2">
@@ -172,11 +172,11 @@ function BlockContent({ block, ctx, interactive = false }: { block: Block; ctx?:
       return <GalleryBlock p={p} />;
     case "date": {
       const d = formatDate(pick(p, p["date"], ctx?.event_date), p["format"]);
-      return <Info align={p["align"]} label={p["label"]} icon={<CalendarDays className="h-4 w-4" />}>{d ?? "Data a definir"}</Info>;
+      return <Info align={p["align"]} label={p["label"]} color={p["color"]} icon={<CalendarDays className="h-4 w-4" />}>{d ?? "Data a definir"}</Info>;
     }
     case "time": {
       const t = formatTime(pick(p, p["time"], ctx?.event_time), p["format"]);
-      return <Info align={p["align"]} label={p["label"]} icon={<Clock className="h-4 w-4" />}>{t ?? "Horário a definir"}</Info>;
+      return <Info align={p["align"]} label={p["label"]} color={p["color"]} icon={<Clock className="h-4 w-4" />}>{t ?? "Horário a definir"}</Info>;
     }
     case "location": {
       const custom = p["source"] === "custom";
@@ -297,9 +297,9 @@ export function BlockView({ block, ctx, interactive = false, selected = false, i
   );
 }
 
-function Info({ align = "center", label, icon, children }: { align?: string | undefined; label?: string | undefined; icon: ReactNode; children: ReactNode }) {
+function Info({ align = "center", label, icon, children, color }: { align?: string | undefined; label?: string | undefined; icon: ReactNode; children: ReactNode; color?: string }) {
   return (
-    <div className={cn("space-y-0.5", ALIGN[align])}>
+    <div className={cn("space-y-0.5", ALIGN[align])} style={color ? { color } : undefined}>
       {label && <p className="text-xs uppercase tracking-wide text-muted-foreground">{label}</p>}
       <Row align={align}><span className="flex items-center gap-2 text-base">{icon}{children}</span></Row>
     </div>

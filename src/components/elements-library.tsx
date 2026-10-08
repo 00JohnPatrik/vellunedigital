@@ -20,7 +20,7 @@ import { Input } from "@/components/ui/input";
 import { ImageUpload } from "@/components/image-upload";
 import type { AssetScope } from "@/lib/assets";
 import type { BlockType } from "@/lib/templates";
-import { BLOCKS } from "@/lib/templates";
+import { BLOCKS, EDITOR_STOCK_IMAGES } from "@/lib/templates";
 import { cn } from "@/lib/utils";
 
 type ElementsLibraryProps = {
@@ -218,11 +218,48 @@ export function ElementsLibrary({ availableTypes, onAdd, assets, onAddImage, ima
       </div>
 
       {category === "Mídia" && availableTypes.includes("image") && (
+        <>
+        <div className="rounded-xl border border-primary/15 bg-background/45 p-3" aria-label="Galeria Vellune de imagens">
+          <div className="mb-3 flex items-start gap-2">
+            <Sparkles className="mt-0.5 h-4 w-4 text-primary" aria-hidden="true" />
+            <div>
+              <p className="text-xs font-semibold text-foreground">Galeria Vellune</p>
+              <p className="mt-0.5 text-[11px] leading-4 text-muted-foreground">Imagens de referência para testar layouts e substituir fotos rapidamente.</p>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+            {Object.entries(EDITOR_STOCK_IMAGES).map(([key, url]) => {
+              const labels: Record<string, string> = {
+                wedding: "Casamento",
+                birthday: "Aniversário",
+                baby: "Bebê",
+                reveal: "Chá revelação",
+                quince: "15 anos",
+                graduation: "Formatura",
+                kids: "Festa infantil",
+                event: "Evento",
+              };
+              return (
+                <button
+                  key={key}
+                  type="button"
+                  onClick={() => imageMode === "replace" ? onSelectImage?.(url) : onAddImage?.(url)}
+                  className="group overflow-hidden rounded-xl border border-border/70 bg-card text-left transition hover:-translate-y-0.5 hover:border-primary/50 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  aria-label={imageMode === "replace" ? `Usar imagem de ${labels[key] ?? key}` : `Adicionar imagem de ${labels[key] ?? key}`}
+                >
+                  <img src={url} alt="" loading="lazy" className="aspect-[4/5] w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]" />
+                  <span className="block truncate px-2 py-1.5 text-[10px] font-medium text-foreground">{labels[key] ?? key}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
         <div className="rounded-xl border border-primary/20 bg-primary/5 p-3" aria-label="Biblioteca de imagens">
           <div className="mb-3 flex items-start gap-2"><ImageIcon className="mt-0.5 h-4 w-4 text-primary" aria-hidden="true" /><div><p className="text-xs font-semibold text-foreground">{imageMode === "replace" ? "Escolher substituta" : "Imagens do convite"}</p><p className="mt-0.5 text-[11px] leading-4 text-muted-foreground">{imageMode === "replace" ? "Escolha uma imagem existente ou envie uma nova para substituir a imagem selecionada." : "Escolha uma imagem existente ou envie uma nova para usar no canvas."}</p></div></div>
           <ImageUpload scope={assets} value={uploadedImage} onChange={handleImage} />
           {imageMode === "replace" ? <p className="mt-2 rounded-md border border-primary/20 bg-primary/5 p-2 text-[10px] leading-4 text-primary">A escolha será aplicada imediatamente à imagem selecionada, preservando posição, tamanho, rotação e demais ajustes.</p> : !onAddImage && assets && <p className="mt-2 rounded-md border border-dashed p-2 text-[10px] leading-4 text-muted-foreground">A imagem ficará disponível na biblioteca. Selecione o card Imagem para inseri-la e ajuste a URL no painel de propriedades.</p>}
         </div>
+        </>
       )}
 
       {filtered.length > 0 ? <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">{filtered.map((item) => <button key={item.id} type="button" draggable={imageMode !== "replace"} onDragStart={(event) => { if (imageMode === "replace") return; event.dataTransfer.effectAllowed = "copy"; event.dataTransfer.setData("application/x-vellune-block-type", item.type); }} onClick={() => add(item)} className="group min-w-0 rounded-xl border bg-background p-2 text-left transition-all hover:-translate-y-0.5 hover:border-primary/60 hover:bg-primary/[0.03] hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" title={`${item.description} Você também pode arrastar este elemento para o canvas.`} aria-label={`Adicionar ${item.label}: ${item.description}`}><Preview kind={item.preview} /><span className="mt-2 flex items-center gap-1 text-[10px] font-medium uppercase tracking-wide text-primary"><Check className="h-3 w-3 opacity-0 transition-opacity group-hover:opacity-100" aria-hidden="true" />{item.eyebrow}</span><span className="mt-1 block truncate text-xs font-semibold text-foreground">{item.label}</span><span className="mt-1 line-clamp-2 min-h-8 text-[10px] leading-4 text-muted-foreground">{item.description}</span>{recents.includes(item.id) && <span className="mt-2 inline-flex items-center gap-1 text-[9px] font-medium text-primary"><Clock3 className="h-3 w-3" aria-hidden="true" />Usado recentemente</span>}</button>)}</div> : <div className="rounded-xl border border-dashed bg-muted/20 p-7 text-center"><Star className="mx-auto h-5 w-5 text-muted-foreground" aria-hidden="true" /><p className="mt-2 text-xs font-medium text-foreground">Nenhum elemento encontrado</p><p className="mt-1 text-[11px] text-muted-foreground">Tente outra busca ou escolha uma categoria diferente.</p><Button type="button" variant="ghost" size="sm" className="mt-2 h-8 text-xs" onClick={() => { setSearch(""); setCategory("Todos"); }}>Limpar filtros</Button></div>}
