@@ -130,6 +130,127 @@ const SWITCH_DEFAULT_ON = new Set(["show_name", "show_address", "show_city", "sh
 type Device = "mobile" | "tablet" | "desktop";
 const DEVICE_W: Record<Device, string> = { mobile: "max-w-[390px]", tablet: "max-w-[768px]", desktop: "max-w-[1024px]" };
 
+type EditorTheme = {
+  id: string;
+  label: string;
+  caption: string;
+  accent: string;
+  ink: string;
+  muted: string;
+  background: { color: string; gradient: string };
+};
+
+const EDITOR_THEMES: EditorTheme[] = [
+  {
+    id: "champagne",
+    label: "Champagne",
+    caption: "Claro e sofisticado",
+    accent: "#9a7a58",
+    ink: "#342d27",
+    muted: "#6d6258",
+    background: { color: "#faf7f2", gradient: "linear-gradient(155deg, #faf7f2 0%, #eee4d7 54%, #fffdf9 100%)" },
+  },
+  {
+    id: "blush",
+    label: "Rosé",
+    caption: "Romântico e delicado",
+    accent: "#a66f73",
+    ink: "#3d3032",
+    muted: "#6e5d60",
+    background: { color: "#fbf6f5", gradient: "linear-gradient(155deg, #fbf6f5 0%, #f0dddf 52%, #fffafb 100%)" },
+  },
+  {
+    id: "sage",
+    label: "Sálvia",
+    caption: "Natural e leve",
+    accent: "#6f8d82",
+    ink: "#354740",
+    muted: "#627069",
+    background: { color: "#f7f6f1", gradient: "linear-gradient(155deg, #f7f6f1 0%, #e5eee9 52%, #fcfbf7 100%)" },
+  },
+  {
+    id: "midnight",
+    label: "Midnight",
+    caption: "Escuro e elegante",
+    accent: "#d4ba83",
+    ink: "#f5f0e5",
+    muted: "#d4cbbb",
+    background: { color: "#11141c", gradient: "radial-gradient(circle at 50% 0%, #39405d 0%, #171a27 48%, #0c0e15 100%)" },
+  },
+  {
+    id: "lavender",
+    label: "Lavanda",
+    caption: "Suave e contemporâneo",
+    accent: "#8772a5",
+    ink: "#3d3548",
+    muted: "#6d6478",
+    background: { color: "#f8f6fb", gradient: "linear-gradient(155deg, #f8f6fb 0%, #ece5f5 56%, #fffcff 100%)" },
+  },
+];
+
+function themedBlocks(blocks: Block[], theme: EditorTheme): Block[] {
+  const brightTheme = theme.id !== "midnight";
+  return blocks.map((block) => {
+    const p = { ...(block.props ?? {}) };
+
+    if (block.type === "text") {
+      p.color = theme.ink;
+    }
+    if (block.type === "shape") {
+      if (p.fill !== "none") p.fillColor = theme.accent;
+      if (Number(p.borderWidth) > 0) p.borderColor = theme.accent;
+    }
+    if (block.type === "decoration") {
+      p.borderColor = theme.accent;
+      if (p.fill !== "none" && p.fill !== undefined) p.fillColor = theme.accent;
+    }
+    if (block.type === "divider") {
+      p.color = theme.accent;
+      p.borderColor = theme.accent;
+    }
+    if (block.type === "rsvp") {
+      p.backgroundColor = brightTheme ? theme.accent : "#d4ba83";
+      p.borderColor = brightTheme ? theme.accent : "#d4ba83";
+      p.textColor = brightTheme ? "#ffffff" : "#17130c";
+    }
+    if (block.type === "whatsapp" || block.type === "button") {
+      const outline = p.style === "outline";
+      p.borderColor = theme.accent;
+      p.backgroundColor = outline ? "transparent" : theme.accent;
+      p.textColor = outline ? theme.accent : (brightTheme ? "#ffffff" : "#17130c");
+    }
+    if (block.type === "qr_code") {
+      p.foregroundColor = brightTheme ? theme.ink : "#11141c";
+      p.backgroundColor = "#ffffff";
+      p.borderColor = theme.accent;
+    }
+    return { ...block, props: p };
+  });
+}
+
+function ThemeSwatch({ theme, active, onClick }: { theme: EditorTheme; active?: boolean; onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={active}
+      title={`${theme.label} — ${theme.caption}`}
+      className={cn(
+        "group rounded-xl border p-2 text-left transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-md",
+        active ? "border-primary bg-primary/5 ring-2 ring-primary/15" : "border-border/70 bg-background/40",
+      )}
+    >
+      <span className="flex h-10 items-center gap-1 overflow-hidden rounded-lg border border-black/5 p-1 shadow-inner">
+        <span className="h-full w-1/3 rounded-md" style={{ background: theme.background.gradient }} />
+        <span className="h-2.5 w-2.5 rounded-full" style={{ background: theme.accent }} />
+        <span className="h-2.5 flex-1 rounded-full" style={{ background: theme.ink }} />
+      </span>
+      <span className="mt-2 block truncate text-[11px] font-semibold text-foreground">{theme.label}</span>
+      <span className="mt-0.5 block truncate text-[9px] text-muted-foreground">{theme.caption}</span>
+    </button>
+  );
+}
+
 const RSVP_DUP = "Este convite já possui confirmação de presença.";
 const ELEMENT_ICONS: Partial<Record<BlockType, ComponentType<{ className?: string }>>> = {
   text: Type,
@@ -233,6 +354,13 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHe
   const clipboard = useRef<any[]>([]);
   const blocks = Array.isArray(h?.blocks) ? h.blocks : [];
   const selected = blocks.filter((block: any) => selectedIds.includes(block.id));
+  const applyEditorTheme = (theme: EditorTheme) => {
+    h.set((items) => themedBlocks(items, theme), `theme:${theme.id}`);
+    onBg?.({ ...(bg as Record<string, unknown>), ...theme.background, image: undefined, overlay: 0, imageOpacity: 1 });
+    setSelectedIds([]);
+    setToolCategory("Fundo");
+  };
+
   const applyStarterTemplate = (content: any) => {
     h.set(structuredClone(content.blocks ?? []), "template:apply");
     onBg?.(structuredClone(content.settings?.background ?? {}));
@@ -864,8 +992,22 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHe
               <div className="space-y-3">
                 <div>
                   <p className="text-xs font-semibold text-foreground">Aparência do convite</p>
-                  <p className="mt-1 text-[11px] leading-5 text-muted-foreground">Troque a cor ou a imagem de fundo. Ajustes mais finos ficam disponíveis quando necessário.</p>
+                  <p className="mt-1 text-[11px] leading-5 text-muted-foreground">Comece com um estilo pronto e personalize depois. Fotos e conteúdo permanecem no lugar.</p>
                 </div>
+
+                <div className="rounded-xl border border-primary/15 bg-primary/5 p-3">
+                  <div className="mb-2 flex items-center justify-between gap-2">
+                    <div>
+                      <p className="text-[11px] font-semibold text-foreground">Tema</p>
+                      <p className="mt-0.5 text-[10px] text-muted-foreground">Troca a linguagem visual de todo o convite.</p>
+                    </div>
+                    <Sparkles className="h-4 w-4 text-primary" aria-hidden="true" />
+                  </div>
+                  <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                    {EDITOR_THEMES.map((theme) => <ThemeSwatch key={theme.id} theme={theme} onClick={() => applyEditorTheme(theme)} />)}
+                  </div>
+                </div>
+
                 <BackgroundPropertiesPanel background={(bg as Record<string, unknown>) || {}} assets={assets as any} onChange={(value) => onBg?.(value)} />
               </div>
             )}
