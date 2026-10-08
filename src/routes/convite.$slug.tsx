@@ -10,7 +10,7 @@ import { toast } from "sonner";
 
 export const Route = createFileRoute("/convite/$slug")({
   validateSearch: z.object({ guest: z.string().optional() }),
-  loader: ({ params, location }) => getPublicInvitation({ data: { slug: params.slug, guestToken: location.search.guest } }),
+  loader: ({ params, location }) => getPublicInvitation({ data: { slug: params.slug, guestToken: (location.search as { guest?: string }).guest } }),
   pendingComponent: InvitationLoading,
   head: ({ loaderData }) => {
     if (!loaderData || loaderData.state !== "ok") {
