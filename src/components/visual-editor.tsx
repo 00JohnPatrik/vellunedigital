@@ -921,6 +921,26 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHe
       else if (command && key === "d") {
         if (selectedIds.length) { event.preventDefault(); duplicateByIds(selectedIds); }
       }
+      else if (event.key === "PageUp" && selectedIds.length) {
+        event.preventDefault();
+        reorderSelectedLayers(event.shiftKey ? "front" : "up");
+      }
+      else if (event.key === "PageDown" && selectedIds.length) {
+        event.preventDefault();
+        reorderSelectedLayers(event.shiftKey ? "back" : "down");
+      }
+      else if (event.key === "[" && selectedIds.length) {
+        event.preventDefault();
+        rotate(event.shiftKey ? -5 : -15);
+      }
+      else if (event.key === "]" && selectedIds.length) {
+        event.preventDefault();
+        rotate(event.shiftKey ? 5 : 15);
+      }
+      else if (event.key === "0" && !event.ctrlKey && !event.metaKey && !event.altKey) {
+        event.preventDefault();
+        setZoom(100);
+      }
       else if (event.key === "Escape") {
         setSelectedIds([]);
         setCommandOpen(false);
