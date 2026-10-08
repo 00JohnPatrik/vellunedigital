@@ -158,7 +158,9 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHe
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [commandOpen, setCommandOpen] = useState(false);
   const [focusMode, setFocusMode] = useState(false);
+  const [spaceHeld, setSpaceHeld] = useState(false);
   const canvasDragDepth = useRef(0);
+  const panRef = useRef<{ pointerId: number; x: number; y: number; scrollLeft: number; scrollTop: number } | null>(null);
   const compact = useIsCompact();
   const fitCanvasToViewport = useCallback(() => {
     if (!compact) return;
@@ -179,6 +181,31 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHe
     if (!compact) return;
     setDevice("mobile");
   }, [compact]);
+
+  useEffect(() => {
+    const isTypingTarget = (target: EventTarget | null) => {
+      const element = target as HTMLElement | null;
+      return !!element?.closest?.("input, textarea, [contenteditable=true], [role=combobox]");
+    };
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== " " || isTypingTarget(event.target)) return;
+      event.preventDefault();
+      setSpaceHeld(true);
+    };
+    const onKeyUp = (event: KeyboardEvent) => {
+      if (event.key === " ") {
+        event.preventDefault();
+        setSpaceHeld(false);
+        panRef.current = null;
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    window.addEventListener("keyup", onKeyUp);
+    return () => {
+      window.removeEventListener("keydown", onKeyDown);
+      window.removeEventListener("keyup", onKeyUp);
+    };
+  }, []);
 
   useEffect(() => {
     if (!compact) return;
@@ -902,6 +929,38 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHe
           </div>
           <div
             ref={viewportRef}
+            onPointerDownCapture={(event) => {
+              if (!spaceHeld || event.pointerType === "touch" || event.button !== 0 || !viewportRef.current) return;
+              event.preventDefault();
+              event.stopPropagation();
+              panRef.current = {
+                pointerId: event.pointerId,
+                x: event.clientX,
+                y: event.clientY,
+                scrollLeft: viewportRef.current.scrollLeft,
+                scrollTop: viewportRef.current.scrollTop,
+              };
+              (event.currentTarget as HTMLElement).setPointerCapture?.(event.pointerId);
+            }}
+            onPointerMoveCapture={(event) => {
+              const pan = panRef.current;
+              const viewport = viewportRef.current;
+              if (!pan || pan.pointerId !== event.pointerId || !viewport) return;
+              event.preventDefault();
+              event.stopPropagation();
+              viewport.scrollLeft = pan.scrollLeft - (event.clientX - pan.x);
+              viewport.scrollTop = pan.scrollTop - (event.clientY - pan.y);
+            }}
+            onPointerUpCapture={(event) => {
+              if (panRef.current?.pointerId === event.pointerId) {
+                event.preventDefault();
+                event.stopPropagation();
+                panRef.current = null;
+              }
+            }}
+            onPointerCancelCapture={(event) => {
+              if (panRef.current?.pointerId === event.pointerId) panRef.current = null;
+            }}
             className="vellune-editor-viewport min-h-0 flex-1 overflow-auto overscroll-contain rounded-2xl border border-primary/10 bg-background/25 p-2 shadow-inner backdrop-blur-[2px] sm:p-4 lg:p-6"
             onWheel={(event) => {
               if (!event.ctrlKey && !event.metaKey) return;
@@ -909,7 +968,7 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHe
               const direction = event.deltaY > 0 ? -1 : 1;
               setZoom((value) => Math.min(150, Math.max(50, value + direction * 5)));
             }}
-            title="Ctrl/Cmd + roda do mouse para ajustar o zoom"
+            title={spaceHeld ? "Arraste para mover a área de trabalho" : "Ctrl/Cmd + roda do mouse para ajustar o zoom"}
           ><div className="mx-auto origin-top transition-transform" style={{ width: `${100 / (zoom / 100)}%`, minHeight: canvasHeight / (zoom / 100) }}><div ref={canvasRef} className={`vellune-editor-canvas relative isolate mx-auto w-full ${DEVICE_W[device]} overflow-hidden border bg-card ${device === "mobile" ? "rounded-[1.75rem] border-[5px] border-black/20 shadow-[0_30px_80px_-34px_rgba(0,0,0,0.78),0_10px_30px_-16px_rgba(0,0,0,0.5)]" : device === "tablet" ? "rounded-2xl border-black/10 shadow-[0_28px_70px_-36px_rgba(0,0,0,0.68),0_8px_24px_-12px_rgba(0,0,0,0.4)]" : "rounded-lg border-black/10 shadow-[0_24px_60px_-36px_rgba(0,0,0,0.62),0_6px_20px_-12px_rgba(0,0,0,0.34)]"} ${showGrid ? "[background-image:linear-gradient(to_right,hsl(var(--border)/.25)_1px,transparent_1px),linear-gradient(to_bottom,hsl(var(--border)/.25)_1px,transparent_1px)] [background-size:16px_16px]" : ""}`} style={{ minHeight: canvasHeight, backgroundColor: bg && (bg as any).color ? (bg as any).color : undefined, transform: `scale(${zoom / 100})`, transformOrigin: "top center" }}
               onDragEnter={(event) => {
                 if (event.dataTransfer.types.includes("application/x-vellune-block-type")) {
