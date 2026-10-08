@@ -3,6 +3,7 @@ import { BlockView } from "@/components/block-render";
 import { EditorQuickToolbar, type ImageAction } from "@/components/editor-quick-toolbar";
 import { resolveBlockGeometry, type Block } from "@/lib/templates";
 import { fontCss } from "@/lib/blocks";
+import { Copy, Lock, Unlock, Pencil, SlidersHorizontal, Trash2, Crop } from "lucide-react";
 
 type Point = { x: number; y: number };
 type Guide = { axis: "x" | "y"; value: number; kind?: "edge" | "center" | "grid" };
@@ -773,6 +774,82 @@ export function VisualTransformCanvas({ blocks, selectedIds: selectedIdsProp, zo
           onOpacity={(value) => onOpacity?.(value, selectedIds)}
           onRotate={(amount) => onRotate?.(amount, selectedIds)}
         />
+      </div>
+    )}
+
+    {selectedBounds && selectedBlocks.length > 0 && (
+      <div
+        className="pointer-events-auto absolute z-[95] flex -translate-x-1/2 items-center gap-1 rounded-2xl border border-primary/20 bg-popover/95 p-1.5 text-popover-foreground shadow-2xl shadow-black/25 backdrop-blur-xl sm:hidden"
+        style={{
+          left: clamp(selectedBounds.left + selectedBounds.width / 2, 54, Math.max(54, canvasSize().width - 54)),
+          top: Math.max(8, selectedBounds.top - 54),
+        }}
+        role="toolbar"
+        aria-label="Ações rápidas do elemento"
+        onPointerDown={(event) => event.stopPropagation()}
+      >
+        {selectedBlocks.length === 1 && selectedBlocks[0]?.type === "text" && !selectedBlocks[0]?.locked && (
+          <button
+            type="button"
+            className="inline-flex h-9 min-w-9 items-center justify-center gap-1 rounded-xl px-2 text-[10px] font-medium text-foreground transition hover:bg-primary/10 hover:text-primary"
+            aria-label="Editar texto"
+            title="Editar texto"
+            onClick={() => startTextEditing(selectedBlocks[0]!, false)}
+          >
+            <Pencil className="h-4 w-4" />
+            <span>Editar</span>
+          </button>
+        )}
+        {selectedBlocks.length === 1 && selectedBlocks[0]?.type === "image" && !selectedBlocks[0]?.locked && (
+          <button
+            type="button"
+            className="inline-flex h-9 min-w-9 items-center justify-center gap-1 rounded-xl px-2 text-[10px] font-medium text-foreground transition hover:bg-primary/10 hover:text-primary"
+            aria-label="Enquadrar imagem"
+            title="Enquadrar imagem"
+            onClick={() => imageAction("crop")}
+          >
+            <Crop className="h-4 w-4" />
+            <span>Enquadrar</span>
+          </button>
+        )}
+        <button
+          type="button"
+          className="inline-flex h-9 w-9 items-center justify-center rounded-xl text-muted-foreground transition hover:bg-primary/10 hover:text-primary disabled:opacity-40"
+          disabled={selectedBlocks.every((block: any) => block.locked || block.type === "rsvp")}
+          aria-label="Duplicar seleção"
+          title="Duplicar"
+          onClick={duplicateSelected}
+        >
+          <Copy className="h-4 w-4" />
+        </button>
+        <button
+          type="button"
+          className={`inline-flex h-9 w-9 items-center justify-center rounded-xl transition hover:bg-primary/10 hover:text-primary ${selectedBlocks.some((block: any) => block.locked) ? "bg-primary/10 text-primary" : "text-muted-foreground"}`}
+          aria-label={selectedBlocks.some((block: any) => block.locked) ? "Desbloquear seleção" : "Bloquear seleção"}
+          title={selectedBlocks.some((block: any) => block.locked) ? "Desbloquear" : "Bloquear"}
+          onClick={toggleLockSelected}
+        >
+          {selectedBlocks.some((block: any) => block.locked) ? <Unlock className="h-4 w-4" /> : <Lock className="h-4 w-4" />}
+        </button>
+        <button
+          type="button"
+          className="inline-flex h-9 w-9 items-center justify-center rounded-xl text-muted-foreground transition hover:bg-primary/10 hover:text-primary"
+          aria-label="Mais ajustes"
+          title="Mais ajustes"
+          onClick={() => onAdvanced?.()}
+        >
+          <SlidersHorizontal className="h-4 w-4" />
+        </button>
+        <button
+          type="button"
+          className="inline-flex h-9 w-9 items-center justify-center rounded-xl text-destructive transition hover:bg-destructive/10"
+          disabled={selectedBlocks.some((block: any) => block.locked)}
+          aria-label="Excluir seleção"
+          title="Excluir"
+          onClick={deleteSelected}
+        >
+          <Trash2 className="h-4 w-4" />
+        </button>
       </div>
     )}
         {showGrid && <div aria-hidden className="pointer-events-none absolute inset-0 z-0 opacity-30" style={{ backgroundImage: "linear-gradient(to right, hsl(var(--border)) 1px, transparent 1px), linear-gradient(to bottom, hsl(var(--border)) 1px, transparent 1px)", backgroundSize: `${GRID_UNIT}px ${GRID_UNIT}px` }} />}
