@@ -61,7 +61,28 @@ function CheckinPage() {
       const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
       streamRef.current = stream; if (videoRef.current) videoRef.current.srcObject = stream; setCameraOn(true);
       const detector = new (window as Window & { BarcodeDetector: new (options?: { formats: string[] }) => { detect: (source: HTMLVideoElement) => Promise<Array<{ rawValue: string }>> } }).BarcodeDetector({ formats: ["qr_code"] });
-      const scan = async () => { if (!streamRef.current || !videoRef.current) return; try { const codes = await detector.detect(videoRef.current); if (codes[0]?.rawValue) { setToken(codes[0].rawValue.split("/checkin/").pop() ?? codes[0].rawValue); await lookup(codes[0].rawValue.split("/checkin/").pop() ?? codes[0].rawValue); toggleCamera(); return; } } catch { /* câmera ainda sem quadro legível */ } window.requestAnimationFrame(() => void scan()); };
+      const scan = async () => {
+        if (!streamRef.current || !videoRef.current) return;
+        try {
+          const codes = await detector.detect(videoRef.current);
+          const rawValue = codes[0]?.rawValue;
+          if (rawValue) {
+            const scannedToken = rawValue.split("/checkin/").pop() ?? rawValue;
+            // Stop the active stream directly. Calling toggleCamera here would
+            // use the stale render closure (cameraOn === false) and start another stream.
+            streamRef.current?.getTracks().forEach((track) => track.stop());
+            streamRef.current = null;
+            if (videoRef.current) videoRef.current.srcObject = null;
+            setCameraOn(false);
+            setToken(scannedToken);
+            await lookup(scannedToken);
+            return;
+          }
+        } catch {
+          // The camera may not have a readable frame yet.
+        }
+        if (streamRef.current) window.requestAnimationFrame(() => void scan());
+      };
       void videoRef.current?.play(); void scan();
     } catch { toast.error("Não foi possível acessar a câmera."); }
   };
