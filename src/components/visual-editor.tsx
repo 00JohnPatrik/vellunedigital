@@ -193,7 +193,7 @@ function themedBlocks(blocks: Block[], theme: EditorTheme): Block[] {
   return blocks.map((block) => {
     const p = { ...(block.props ?? {}) };
 
-    if (block.type === "text") {
+    if (block.type === "text" || block.type === "date" || block.type === "time" || block.type === "location" || block.type === "countdown") {
       p.color = theme.ink;
     }
     if (block.type === "shape") {
