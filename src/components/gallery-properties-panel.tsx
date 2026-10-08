@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { ChevronDown, GripVertical, Image as ImageIcon, Minus, RotateCcw, Trash2, Upload, X } from "lucide-react";
+import { ChevronDown, GripVertical, Image as ImageIcon, RotateCcw, Trash2, Upload } from "lucide-react";
 import { ImageUpload } from "@/components/image-upload";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
