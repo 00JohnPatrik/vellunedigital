@@ -132,7 +132,13 @@ function ResetPage() {
       }
 
       setPasswordUpdated(true);
-      await supabase.auth.signOut();
+      // The password is already updated at this point. Signing out is cleanup;
+      // a transient sign-out failure must not report a false password-update error.
+      try {
+        await supabase.auth.signOut();
+      } catch {
+        // Continue to the login screen even if cleanup of the recovery session fails.
+      }
       const prefersReducedMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
       await new Promise((resolve) => window.setTimeout(resolve, prefersReducedMotion ? 420 : 1250));
       navigate({ to: "/login", replace: true });
