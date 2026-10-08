@@ -76,7 +76,7 @@ function DockButton({
       onClick={onClick}
       aria-current={active ? "page" : undefined}
       className={cn(
-        "flex h-12 w-12 flex-col items-center justify-center gap-0.5 rounded-full transition duration-180 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B5CF6]/55 sm:h-14 sm:w-14",
+        "flex h-12 w-12 flex-col items-center justify-center gap-0.5 rounded-full transition duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8B5CF6]/55 sm:h-14 sm:w-14",
         active
           ? "bg-[#8B5CF6]/10 text-[#8B5CF6]"
           : "text-[#A9B1BF] hover:bg-[#171B23] hover:text-[#F5F7FA]",
