@@ -1,6 +1,7 @@
 import { Bell, ChevronDown, Search } from "lucide-react";
 import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
+import { useEffect, useState } from "react";
 
 export type VelluneTopBarProps = {
   avatarSrc?: string;
@@ -37,6 +38,19 @@ export function VelluneTopBar({
   showNotifications = true,
   onAvatarClick,
 }: VelluneTopBarProps) {
+  const [online, setOnline] = useState(() => typeof navigator === "undefined" ? true : navigator.onLine);
+
+  useEffect(() => {
+    const onOnline = () => setOnline(true);
+    const onOffline = () => setOnline(false);
+    window.addEventListener("online", onOnline);
+    window.addEventListener("offline", onOffline);
+    return () => {
+      window.removeEventListener("online", onOnline);
+      window.removeEventListener("offline", onOffline);
+    };
+  }, []);
+
   return (
     <header
       className={cn(
@@ -54,12 +68,17 @@ export function VelluneTopBar({
             <span className="font-display text-[14px] font-extrabold tracking-[0.08em] text-[#F5F7FA] sm:text-[15px]">
               VELLUNE
             </span>
-            <span className="hidden items-center gap-1.5 text-[10px] font-medium text-[#A9B1BF] sm:inline-flex">
+            <span className="hidden items-center gap-1.5 text-[10px] font-medium text-[#A9B1BF] sm:inline-flex" title={online ? "Conexão ativa" : "Sem conexão com a internet"}>
               <span
                 aria-hidden="true"
-                className="h-1.5 w-1.5 rounded-full bg-[#22C55E] shadow-[0_0_10px_rgba(34,197,94,0.45)]"
+                className={cn(
+                  "h-1.5 w-1.5 rounded-full",
+                  online
+                    ? "bg-[#22C55E] shadow-[0_0_10px_rgba(34,197,94,0.45)]"
+                    : "bg-[#F59E0B] shadow-[0_0_10px_rgba(245,158,11,0.35)]",
+                )}
               />
-              Live Sync
+              {online ? "Live Sync" : "Sem conexão"}
             </span>
           </div>
         </div>
