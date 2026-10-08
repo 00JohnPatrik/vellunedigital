@@ -3,7 +3,7 @@ import { AlertTriangle, CalendarDays, ChevronLeft, ChevronRight, Clock, Maximize
 import { QRCodeSVG } from "qrcode.react";
 import { RsvpForm } from "@/components/rsvp-form";
 import { BLOCKS, getBlockGeometry, type Background, type Block } from "@/lib/templates";
-import { fontCss, formatDate, formatTime, isKnownType, pick, type EventCtx } from "@/lib/blocks";
+import { fontCss, formatDate, formatTime, isKnownType, pick, resolvePublicText, type EventCtx } from "@/lib/blocks";
 import { cn } from "@/lib/utils";
 import { useAssetUrl } from "@/lib/assets";
 import { animationStyle, normalizeAnimation, parallaxStyle, requestMotionPermission, useMotionOffset } from "@/lib/invitation-editor-animation";
@@ -159,7 +159,7 @@ function BlockContent({ block, ctx, interactive = false }: { block: Block; ctx?:
       };
       return (
         <Row align={p["align"]}>
-          <p style={style} className={cn("whitespace-pre-line break-words", !p["fontSize"] && TEXT_SIZE[p["size"] ?? "lg"], WIDTH[p["width"] ?? "full"])}>{p["text"]}</p>
+          <p style={style} className={cn("whitespace-pre-line break-words", !p["fontSize"] && TEXT_SIZE[p["size"] ?? "lg"], WIDTH[p["width"] ?? "full"])}>{resolvePublicText(String(p["text"] ?? ""), ctx)}</p>
         </Row>
       );
     }
@@ -220,6 +220,7 @@ function BlockContent({ block, ctx, interactive = false }: { block: Block; ctx?:
       return <Btn p={p} fallback="WhatsApp" href={href} interactive={interactive} icon={<MessageCircle className="h-4 w-4" />} />;
     }
     case "button": return <Btn p={p} fallback="Botão" href={/^https?:\/\//i.test(p["url"] ?? "") ? p["url"] : null} interactive={interactive} />;
+    case "gifts": return <GiftBlock p={p} />;
     case "qr_code": {
       const size = p["size"] === "sm" ? 96 : p["size"] === "lg" ? 176 : p["size"] === "xl" ? 224 : 128;
       const value = p["value"] || ctx?.publicUrl || "https://convitely.app/convite/previa";
@@ -487,6 +488,38 @@ function ShapeBlock({ p }: { p: Record<string, string> }) {
     clipPath: shape === "circle" ? "circle(50% at 50% 50%)" : shape === "triangle" ? "polygon(50% 0%, 100% 100%, 0% 100%)" : shape === "star" ? "polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 100%, 50% 73%, 21% 100%, 32% 57%, 2% 35%, 39% 35%)" : shape === "heart" ? "path(\"M50 90 C20 68 0 50 0 28 C0 8 24 0 50 24 C76 0 100 8 100 28 C100 50 80 68 50 90 Z\")" : undefined,
   };
   return <div className="flex h-full w-full items-center justify-center" aria-label={`${shape} visual`}><div className="h-full w-full" style={style} /></div>;
+}
+
+function GiftBlock({ p }: { p: Record<string, string> }) {
+  const [copied, setCopied] = useState(false);
+  const pixKey = p["pix_key"]?.trim() || "";
+  const giftUrl = /^https?:\\/\\//i.test(p["gift_url"] ?? "") ? p["gift_url"] : "";
+  const copyPix = async () => {
+    if (!pixKey) return;
+    try {
+      await navigator.clipboard.writeText(pixKey);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 2200);
+    } catch {
+      setCopied(false);
+    }
+  };
+  return (
+    <div className="space-y-3 rounded-2xl border border-current/10 bg-background/25 p-4 text-center backdrop-blur-sm">
+      {p["title"] && <p className="font-display text-xl">{p["title"]}</p>}
+      {p["description"] && <p className="mx-auto max-w-md text-sm leading-6 text-muted-foreground">{p["description"]}</p>}
+      {pixKey && (
+        <div className="mx-auto max-w-sm space-y-2 rounded-xl border bg-background/55 p-3 text-left">
+          {p["pix_name"] && <p className="text-xs font-medium text-foreground">PIX · {p["pix_name"]}</p>}
+          <div className="flex items-center gap-2">
+            <code className="min-w-0 flex-1 break-all rounded-md bg-muted/60 px-2.5 py-2 text-xs text-foreground">{pixKey}</code>
+            <Button type="button" size="sm" variant="outline" onClick={() => void copyPix()} className="shrink-0 rounded-full">{copied ? "Copiada" : "Copiar"}</Button>
+          </div>
+        </div>
+      )}
+      {giftUrl && <Row align={p["align"]}><a href={giftUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center rounded-full border border-primary px-5 py-2.5 text-sm font-medium text-primary transition hover:bg-primary/10">{p["gift_label"] || "Ver lista de presentes"}</a></Row>}
+    </div>
+  );
 }
 
 function ImageBlock({ p }: { p: Record<string, string> }) {
