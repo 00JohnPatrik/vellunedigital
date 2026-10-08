@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useRouteContext } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
-import { AlertCircle, BarChart3, CheckCircle2, CircleDashed, Copy, Eye, Link2, MessageCircle, Pencil, Plus, Search, Trash2 } from "lucide-react";
+import { AlertCircle, BarChart3, CheckCircle2, CircleDashed, Copy, Eye, Link2, MessageCircle, MoreHorizontal, Pencil, Plus, Search, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,6 +13,7 @@ import { EmptyState, fmtDate, LoadingState, PageHeader } from "@/components/admi
 import { InvitationStatusBadge } from "@/components/invitation-ui";
 import { deleteInvitation, fmtEventDate, invitationsKey, listInvitations, publicUrl, whatsappShareUrl, type Invitation } from "@/lib/invitations";
 import { cn } from "@/lib/utils";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 export const Route = createFileRoute("/_authenticated/invitations/")({
   head: () => ({ meta: [{ title: "Convites — Vellune Digital" }] }),
@@ -55,20 +56,73 @@ function InvitationsPage() {
     finally { setBusy(false); setToDelete(null); }
   }
 
+  const copyPublicLink = (i: Invitation) => {
+    navigator.clipboard.writeText(publicUrl(i.slug));
+    toast.success("Link do convite copiado.");
+  };
+
+  const copyHostLink = (i: Invitation) => {
+    if (!i.access_token) return;
+    navigator.clipboard.writeText(`${window.location.origin}/painel-convite/${i.access_token}`);
+    toast.success("Link do anfitrião copiado.");
+  };
+
   const actions = (i: Invitation, variant: "ghost" | "outline") => {
     const shareable = i.status === "published";
     return (
-      <>
-        <Button variant={variant} size="sm" asChild><Link to="/invitations/$id/editor" params={{ id: i.id }}><Pencil className="h-4 w-4" />Editar</Link></Button>
-        <Button variant={variant} size="sm" asChild><Link to="/invitations/$id/preview" params={{ id: i.id }}><Eye className="h-4 w-4" />Visualizar</Link></Button>
-        {shareable && <>
-          <Button variant={variant} size="sm" onClick={() => { navigator.clipboard.writeText(publicUrl(i.slug)); toast.success("Link copiado."); }}><Copy className="h-4 w-4" />Copiar link</Button>
-          <Button variant={variant} size="sm" asChild><a href={whatsappShareUrl(i.slug)} target="_blank" rel="noreferrer"><MessageCircle className="h-4 w-4" />WhatsApp</a></Button>
-          {i.access_token && <Button variant={variant} size="sm" onClick={() => { navigator.clipboard.writeText(`${window.location.origin}/painel-convite/${i.access_token}`); toast.success("Link do anfitrião copiado."); }}><Link2 className="h-4 w-4" />Copiar link do anfitrião</Button>}
-        </>}
-        <Button variant={variant} size="sm" asChild><Link to="/invitations/$id/report" params={{ id: i.id }}><BarChart3 className="h-4 w-4" />Relatório</Link></Button>
-        {isSuper && <Button variant={variant} size="sm" className="text-destructive" onClick={() => setToDelete(i)}><Trash2 className="h-4 w-4" />Excluir</Button>}
-      </>
+      <div className="flex items-center gap-1.5">
+        <Button variant={variant} size="sm" asChild>
+          <Link to="/invitations/$id/editor" params={{ id: i.id }}>
+            <Pencil className="h-4 w-4" />Editar
+          </Link>
+        </Button>
+        <Button variant={variant} size="sm" asChild>
+          <Link to="/invitations/$id/preview" params={{ id: i.id }}>
+            <Eye className="h-4 w-4" />Visualizar
+          </Link>
+        </Button>
+
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant={variant} size="icon" aria-label={`Mais ações para ${i.name}`} title="Mais ações">
+              <MoreHorizontal className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-52">
+            {shareable && (
+              <>
+                <DropdownMenuItem onSelect={() => copyPublicLink(i)}>
+                  <Copy className="h-4 w-4" />Copiar link
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <a href={whatsappShareUrl(i.slug)} target="_blank" rel="noreferrer">
+                    <MessageCircle className="h-4 w-4" />Compartilhar no WhatsApp
+                  </a>
+                </DropdownMenuItem>
+                {i.access_token && (
+                  <DropdownMenuItem onSelect={() => copyHostLink(i)}>
+                    <Link2 className="h-4 w-4" />Link do anfitrião
+                  </DropdownMenuItem>
+                )}
+                <DropdownMenuSeparator />
+              </>
+            )}
+            <DropdownMenuItem asChild>
+              <Link to="/invitations/$id/report" params={{ id: i.id }}>
+                <BarChart3 className="h-4 w-4" />Ver relatório
+              </Link>
+            </DropdownMenuItem>
+            {isSuper && (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem className="text-destructive focus:text-destructive" onSelect={() => setToDelete(i)}>
+                  <Trash2 className="h-4 w-4" />Excluir convite
+                </DropdownMenuItem>
+              </>
+            )}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
     );
   };
 
