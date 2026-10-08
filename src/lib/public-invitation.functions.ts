@@ -40,6 +40,32 @@ export const getPublicInvitation = createServerFn({ method: "GET" })
   .validator((d) => z.object({ slug: z.string().min(1).max(120), guestToken: z.string().trim().min(1).max(120).optional() }).parse(d))
   .handler(async ({ data }): Promise<PublicInvitationResult> => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    // Apply time-based auto-close before resolving the public payload. Without this,
+    // an invitation could stay published indefinitely unless the host portal or RSVP
+    // endpoint happened to be opened after the event deadline.
+    const { data: tenant, error: tenantError } = await supabaseAdmin
+      .from("invitations")
+      .select("id, company_id, template_id, status")
+      .eq("slug", data.slug)
+      .maybeSingle();
+
+    if (tenantError) {
+      console.error("get_public_invitation tenant", tenantError.message);
+      throw new Error("Falha ao validar o estado do convite.");
+    }
+
+    if (tenant?.status === "published") {
+      const { error: automationError } = await supabaseAdmin.rpc(
+        "apply_invitation_automation" as never,
+        { _invitation_id: tenant.id } as never,
+      );
+      if (automationError) {
+        console.error("get_public_invitation automation", automationError.message);
+        throw new Error("Falha ao validar o estado do convite.");
+      }
+    }
+
     const { data: res, error } = await supabaseAdmin.rpc("get_public_invitation" as never, { _slug: data.slug } as never);
     if (error) { console.error("get_public_invitation", error.message); throw new Error("Falha ao carregar o convite."); }
     const out = res as unknown as PublicInvitationResult;
@@ -48,20 +74,9 @@ export const getPublicInvitation = createServerFn({ method: "GET" })
     let publicTemplateId: string | null = null;
 
     // The public SQL function intentionally does not expose internal tenant identifiers.
-    // Resolve them only inside the server boundary for branding and private asset authorization.
+    // Resolve identifiers only inside the server boundary for branding and private asset authorization.
     if (out.state === "ok") {
-      const { data: tenant, error: tenantError } = await supabaseAdmin
-        .from("invitations")
-        .select("id, company_id, template_id")
-        .eq("slug", out.invitation.slug)
-        .in("status", ["published", "closed"])
-        .maybeSingle();
-
-      if (tenantError) {
-        console.error("get_public_invitation tenant", tenantError.message);
-      }
-
-      if (tenant?.company_id) {
+      if (tenant?.company_id && ["published", "closed"].includes(tenant.status)) {
         publicCompanyId = tenant.company_id;
         if (data.guestToken) {
           const { data: guest } = await supabaseAdmin
