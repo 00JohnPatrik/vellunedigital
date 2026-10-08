@@ -148,7 +148,10 @@ function SubscriptionsPage() {
     return {
       total: all.length,
       active: all.filter((item) => getAdminState(item).key === "active").length,
-      expiring: all.filter((item) => getAdminState(item).daysRemaining != null && getAdminState(item).daysRemaining <= 7 && getAdminState(item).daysRemaining > 0).length,
+      expiring: all.filter((item) => {
+        const state = getAdminState(item);
+        return state.daysRemaining != null && state.daysRemaining <= 7 && state.daysRemaining > 0;
+      }).length,
       attention: all.filter((item) => ["expired", "suspended", "cancelled"].includes(getAdminState(item).key)).length,
     };
   }, [subscriptions.data]);
