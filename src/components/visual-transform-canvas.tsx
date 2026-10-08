@@ -260,6 +260,7 @@ function isTextInput(target: EventTarget | null) {
 export function VisualTransformCanvas({ blocks, selectedIds: selectedIdsProp, zoom, canvasRef, ctx, onSelect, onChange, onDuplicate, onDelete, onAdvanced, onLayer, onAlign, onOpacity, onRotate, onGroup, onUngroup, onImageAction, startEditingId, onStartEditingHandled, showGrid = true }: Props) {
   const interaction = useRef<Interaction | null>(null);
   const [guides, setGuides] = useState<Guide[]>([]);
+  const [marquee, setMarquee] = useState<{ start: Point; current: Point; additive: boolean } | null>(null);
   const [editingTextId, setEditingTextId] = useState<string | null>(null);
   const [editingTextValue, setEditingTextValue] = useState("");
   const [selectAllOnTextEdit, setSelectAllOnTextEdit] = useState(true);
@@ -308,6 +309,66 @@ export function VisualTransformCanvas({ blocks, selectedIds: selectedIdsProp, zo
     cancelTextLongPress();
     interaction.current = null;
     setGuides([]);
+  };
+
+  const marqueeBounds = marquee ? {
+    left: Math.min(marquee.start.x, marquee.current.x),
+    top: Math.min(marquee.start.y, marquee.current.y),
+    right: Math.max(marquee.start.x, marquee.current.x),
+    bottom: Math.max(marquee.start.y, marquee.current.y),
+  } : null;
+
+  const beginMarquee = (event: React.PointerEvent) => {
+    if (event.pointerType === "touch" || event.button !== 0 || interaction.current) return;
+    event.preventDefault();
+    event.stopPropagation();
+    const point = pointerPoint(event, canvasRef.current, zoom);
+    setMarquee({ start: point, current: point, additive: event.shiftKey || event.ctrlKey || event.metaKey });
+    (event.currentTarget as HTMLElement).setPointerCapture?.(event.pointerId);
+  };
+
+  const moveMarquee = (event: React.PointerEvent) => {
+    if (!marquee) return;
+    event.preventDefault();
+    event.stopPropagation();
+    setMarquee((current) => current ? { ...current, current: pointerPoint(event, canvasRef.current, zoom) } : current);
+  };
+
+  const endMarquee = (event: React.PointerEvent) => {
+    if (!marquee) return;
+    event.preventDefault();
+    event.stopPropagation();
+    const point = pointerPoint(event, canvasRef.current, zoom);
+    const left = Math.min(marquee.start.x, point.x);
+    const top = Math.min(marquee.start.y, point.y);
+    const right = Math.max(marquee.start.x, point.x);
+    const bottom = Math.max(marquee.start.y, point.y);
+    const isClick = right - left < 4 && bottom - top < 4;
+
+    if (isClick) {
+      if (!marquee.additive) onSelect("", false);
+    } else {
+      const ids = blocks
+        .map((block: any, index) => ({ block, bounds: rotatedBounds(geometry(block, index)) }))
+        .filter(({ block, bounds }) => {
+          if (block.hidden === true || block.visibility === false || block.locked) return false;
+          return bounds.right >= left && bounds.left <= right && bounds.bottom >= top && bounds.top <= bottom;
+        })
+        .map(({ block }) => block.id);
+
+      if (!marquee.additive) {
+        if (ids.length) {
+          onSelect(ids[0]!, false);
+          ids.slice(1).forEach((id) => onSelect(id, true));
+        } else {
+          onSelect("", false);
+        }
+      } else {
+        ids.forEach((id) => onSelect(id, true));
+      }
+    }
+
+    setMarquee(null);
   };
 
   const startTextEditing = (block: Block, selectAll = true) => {
@@ -672,6 +733,25 @@ export function VisualTransformCanvas({ blocks, selectedIds: selectedIdsProp, zo
   };
 
   return <>
+    <div
+      className="pointer-events-auto absolute inset-0 z-0"
+      aria-hidden="true"
+      onPointerDown={beginMarquee}
+      onPointerMove={moveMarquee}
+      onPointerUp={endMarquee}
+      onPointerCancel={() => setMarquee(null)}
+    />
+    {marqueeBounds && (
+      <div
+        className="pointer-events-none absolute z-[75] border border-primary bg-primary/10 shadow-[0_0_0_1px_hsl(var(--primary)/.16)]"
+        style={{
+          left: marqueeBounds.left,
+          top: marqueeBounds.top,
+          width: Math.max(1, marqueeBounds.right - marqueeBounds.left),
+          height: Math.max(1, marqueeBounds.bottom - marqueeBounds.top),
+        }}
+      />
+    )}
     {selectedBounds && selectedBlocks.length > 0 && (
       <div
         className="pointer-events-auto absolute z-[90] hidden max-w-[calc(100%-1rem)] -translate-x-1/2 -translate-y-full pb-2 sm:block"
