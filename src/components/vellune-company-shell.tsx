@@ -1,4 +1,4 @@
-import { useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { BarChart3, CreditCard, LayoutDashboard, LayoutTemplate, Mail, Palette, Search, Settings2, Users, X } from "lucide-react";
 import { VelluneTopBar } from "@/components/vellune-top-bar";
@@ -35,6 +35,19 @@ export function VelluneCompanyShell({ appUser, children, activeItem = "home", cl
   const [searchOpen, setSearchOpen] = useState(false);
   const navigate = useNavigate();
 
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      const isShortcut = (event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k";
+      if (isShortcut) {
+        event.preventDefault();
+        setSearchOpen(true);
+      }
+      if (event.key === "Escape") setSearchOpen(false);
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, []);
+
   const filtered = useMemo(() => {
     const term = search.trim().toLowerCase();
     return term
@@ -43,7 +56,7 @@ export function VelluneCompanyShell({ appUser, children, activeItem = "home", cl
   }, [search]);
 
   return (
-    <div className={cn("dark min-h-[100dvh] bg-[#08090d] text-[#F5F7FA]", className)}>
+    <div className={cn("vellune-platform-root dark min-h-[100dvh] bg-[#08090d] text-[#F5F7FA]", className)}>
       <VelluneTopBar
         avatarFallback={initials(appUser.name)}
         searchValue={search}
