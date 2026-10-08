@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { Check, Copy, ExternalLink, Loader2, MailX, MessageCircle, Share2, Sparkles } from "lucide-react";
+import { CalendarPlus, Check, Copy, ExternalLink, Loader2, MailX, MessageCircle, Share2, Sparkles } from "lucide-react";
 import { InvitationCanvas } from "@/components/block-render";
 import { Button } from "@/components/ui/button";
 import { getPublicInvitation, recordInvitationView } from "@/lib/public-invitation.functions";
@@ -93,6 +93,9 @@ function PublicInvitationPage() {
   );
   const publicUrl = typeof window !== "undefined" ? `${window.location.origin}/convite/${slug}` : `/convite/${slug}`;
   const whatsappNumber = branding?.whatsapp_number?.replace(/\D/g, "");
+  const calendarEnd = (() => { const start = new Date(`${i.event_date}T${String(i.event_time).slice(0, 5)}`); return new Date(start.getTime() + 2 * 60 * 60 * 1000); })();
+  const pad = (value: number) => String(value).padStart(2, "0");
+  const calendarUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(i.name)}&dates=${i.event_date.replaceAll("-", "")}T${String(i.event_time).slice(0,5).replace(":", "")}00/${calendarEnd.getFullYear()}${pad(calendarEnd.getMonth()+1)}${pad(calendarEnd.getDate())}T${pad(calendarEnd.getHours())}${pad(calendarEnd.getMinutes())}00&details=${encodeURIComponent(i.message ?? "Convite digital Vellune Digital")}&location=${encodeURIComponent([i.venue_name, i.address, i.city, i.state].filter(Boolean).join(", "))}`;
   const whatsappMessage = `${i.name} — ${publicUrl}`;
   const whatsappUrl = whatsappNumber
     ? `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(whatsappMessage)}`
@@ -143,12 +146,16 @@ function PublicInvitationPage() {
   };
 
   return (
-    <main className="min-h-screen bg-[#08090d] px-4 py-8 text-[#F5F7FA] sm:py-14" style={{ "--brand-primary": branding?.primary_color ?? undefined, "--brand-accent": branding?.accent_color ?? undefined } as CSSProperties} aria-label="Convite digital">
-      <div className="mx-auto w-full max-w-2xl">
+    <main className="relative min-h-screen overflow-x-hidden bg-[#08090d] px-4 py-8 text-[#F5F7FA] sm:py-14" style={{ "--brand-primary": branding?.primary_color ?? undefined, "--brand-accent": branding?.accent_color ?? undefined } as CSSProperties} aria-label="Convite digital">
+      <div className="pointer-events-none fixed inset-0 -z-0 overflow-hidden" aria-hidden="true"><div className="absolute -left-28 top-16 h-72 w-72 rounded-full bg-[#d4af37]/7 blur-3xl" /><div className="absolute -right-24 bottom-20 h-80 w-80 rounded-full bg-[#6f8d82]/6 blur-3xl" /></div>
+      <div className="relative z-10 mx-auto w-full max-w-2xl">
         <div className="mb-5 flex flex-wrap items-center justify-center gap-2" aria-label="Ações do convite">
           <Button type="button" variant="outline" size="sm" className="rounded-full border-[#2a2b31] bg-[#111318] text-[#F5F7FA] hover:bg-[#171a20]" onClick={copyLink}>
             {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
             {copied ? "Copiado" : "Copiar link"}
+          </Button>
+          <Button type="button" variant="outline" size="sm" className="rounded-full border-[#2a2b31] bg-[#111318] text-[#F5F7FA] hover:bg-[#171a20]" asChild>
+            <a href={calendarUrl} target="_blank" rel="noopener noreferrer"><CalendarPlus className="h-4 w-4" />Adicionar à agenda</a>
           </Button>
           <Button type="button" variant="outline" size="sm" className="rounded-full border-[#2a2b31] bg-[#111318] text-[#F5F7FA] hover:bg-[#171a20]" onClick={() => void share()}>
             <Share2 className="h-4 w-4" />Compartilhar
