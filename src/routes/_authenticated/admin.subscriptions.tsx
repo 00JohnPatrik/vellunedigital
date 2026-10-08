@@ -166,26 +166,10 @@ function SubscriptionsPage() {
       />
 
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        {[
-          ["Empresas com assinatura", summary.total, CheckCircle2],
-          ["Ativas", summary.active, CheckCircle2],
-          ["Vencendo em até 7 dias", summary.expiring, CalendarClock],
-          ["Precisam de atenção", summary.attention, ShieldAlert],
-        ].map(([label, value, Icon]) => (
-          <Card key={String(label)}>
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between gap-3">
-                <div>
-                  <p className="text-xs text-muted-foreground">{label}</p>
-                  <p className="mt-1 text-2xl font-semibold">{value as number}</p>
-                </div>
-                <span className="grid h-9 w-9 place-items-center rounded-xl bg-muted">
-                  <Icon className="h-4 w-4" />
-                </span>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+        <Card><CardContent className="p-4"><div className="flex items-center justify-between gap-3"><div><p className="text-xs text-muted-foreground">Empresas com assinatura</p><p className="mt-1 text-2xl font-semibold">{summary.total}</p></div><span className="grid h-9 w-9 place-items-center rounded-xl bg-muted"><CheckCircle2 className="h-4 w-4" /></span></div></CardContent></Card>
+        <Card><CardContent className="p-4"><div className="flex items-center justify-between gap-3"><div><p className="text-xs text-muted-foreground">Ativas</p><p className="mt-1 text-2xl font-semibold">{summary.active}</p></div><span className="grid h-9 w-9 place-items-center rounded-xl bg-muted"><CheckCircle2 className="h-4 w-4" /></span></div></CardContent></Card>
+        <Card><CardContent className="p-4"><div className="flex items-center justify-between gap-3"><div><p className="text-xs text-muted-foreground">Vencendo em até 7 dias</p><p className="mt-1 text-2xl font-semibold">{summary.expiring}</p></div><span className="grid h-9 w-9 place-items-center rounded-xl bg-muted"><CalendarClock className="h-4 w-4" /></span></div></CardContent></Card>
+        <Card><CardContent className="p-4"><div className="flex items-center justify-between gap-3"><div><p className="text-xs text-muted-foreground">Precisam de atenção</p><p className="mt-1 text-2xl font-semibold">{summary.attention}</p></div><span className="grid h-9 w-9 place-items-center rounded-xl bg-muted"><ShieldAlert className="h-4 w-4" /></span></div></CardContent></Card>
       </div>
 
       <Card>
