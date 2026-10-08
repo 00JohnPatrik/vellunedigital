@@ -118,6 +118,13 @@ export function ElementsLibrary({ availableTypes, onAdd, assets, onAddImage, ima
     setRecents(readRecents());
   }, []);
 
+  useEffect(() => {
+    if (imageMode === "replace") {
+      setCategory("Mídia");
+      setSearch("");
+    }
+  }, [imageMode]);
+
   const items = useMemo<LibraryItem[]>(() => {
     const has = (type: BlockType) => availableTypes.includes(type);
     const result: LibraryItem[] = [];
