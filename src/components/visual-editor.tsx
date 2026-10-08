@@ -610,7 +610,18 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHe
       else if (command && key === "d") {
         if (selectedIds.length) { event.preventDefault(); duplicateByIds(selectedIds); }
       }
-      else if (event.key === "Escape") setSelectedIds([]);
+      else if (event.key === "Escape") {
+        setSelectedIds([]);
+        setCommandOpen(false);
+      }
+      else if (!event.ctrlKey && !event.metaKey && !event.altKey && (event.key === "+" || event.key === "=")) {
+        event.preventDefault();
+        setZoom((value) => Math.min(150, value + 10));
+      }
+      else if (!event.ctrlKey && !event.metaKey && !event.altKey && event.key === "-") {
+        event.preventDefault();
+        setZoom((value) => Math.max(50, value - 10));
+      }
     };
     window.addEventListener("keydown", onKey); return () => window.removeEventListener("keydown", onKey);
   }, [selectedIds, blocks, h]);
@@ -885,7 +896,17 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHe
               <span className="rounded-lg bg-muted/70 px-2 py-1.5 text-[11px] font-medium tabular-nums text-foreground">{zoom}%</span>
             </div>
           </div>
-          <div ref={viewportRef} className="vellune-editor-viewport min-h-0 flex-1 overflow-auto overscroll-contain rounded-2xl border border-primary/10 bg-background/25 p-2 shadow-inner backdrop-blur-[2px] sm:p-4 lg:p-6"><div className="mx-auto origin-top transition-transform" style={{ width: `${100 / (zoom / 100)}%`, minHeight: canvasHeight / (zoom / 100) }}><div ref={canvasRef} className={`vellune-editor-canvas relative isolate mx-auto w-full ${DEVICE_W[device]} overflow-hidden border bg-card ${device === "mobile" ? "rounded-[1.75rem] border-[5px] border-black/20 shadow-[0_30px_80px_-34px_rgba(0,0,0,0.78),0_10px_30px_-16px_rgba(0,0,0,0.5)]" : device === "tablet" ? "rounded-2xl border-black/10 shadow-[0_28px_70px_-36px_rgba(0,0,0,0.68),0_8px_24px_-12px_rgba(0,0,0,0.4)]" : "rounded-lg border-black/10 shadow-[0_24px_60px_-36px_rgba(0,0,0,0.62),0_6px_20px_-12px_rgba(0,0,0,0.34)]"} ${showGrid ? "[background-image:linear-gradient(to_right,hsl(var(--border)/.25)_1px,transparent_1px),linear-gradient(to_bottom,hsl(var(--border)/.25)_1px,transparent_1px)] [background-size:16px_16px]" : ""}`} style={{ minHeight: canvasHeight, backgroundColor: bg && (bg as any).color ? (bg as any).color : undefined, transform: `scale(${zoom / 100})`, transformOrigin: "top center" }}
+          <div
+            ref={viewportRef}
+            className="vellune-editor-viewport min-h-0 flex-1 overflow-auto overscroll-contain rounded-2xl border border-primary/10 bg-background/25 p-2 shadow-inner backdrop-blur-[2px] sm:p-4 lg:p-6"
+            onWheel={(event) => {
+              if (!event.ctrlKey && !event.metaKey) return;
+              event.preventDefault();
+              const direction = event.deltaY > 0 ? -1 : 1;
+              setZoom((value) => Math.min(150, Math.max(50, value + direction * 5)));
+            }}
+            title="Ctrl/Cmd + roda do mouse para ajustar o zoom"
+          ><div className="mx-auto origin-top transition-transform" style={{ width: `${100 / (zoom / 100)}%`, minHeight: canvasHeight / (zoom / 100) }}><div ref={canvasRef} className={`vellune-editor-canvas relative isolate mx-auto w-full ${DEVICE_W[device]} overflow-hidden border bg-card ${device === "mobile" ? "rounded-[1.75rem] border-[5px] border-black/20 shadow-[0_30px_80px_-34px_rgba(0,0,0,0.78),0_10px_30px_-16px_rgba(0,0,0,0.5)]" : device === "tablet" ? "rounded-2xl border-black/10 shadow-[0_28px_70px_-36px_rgba(0,0,0,0.68),0_8px_24px_-12px_rgba(0,0,0,0.4)]" : "rounded-lg border-black/10 shadow-[0_24px_60px_-36px_rgba(0,0,0,0.62),0_6px_20px_-12px_rgba(0,0,0,0.34)]"} ${showGrid ? "[background-image:linear-gradient(to_right,hsl(var(--border)/.25)_1px,transparent_1px),linear-gradient(to_bottom,hsl(var(--border)/.25)_1px,transparent_1px)] [background-size:16px_16px]" : ""}`} style={{ minHeight: canvasHeight, backgroundColor: bg && (bg as any).color ? (bg as any).color : undefined, transform: `scale(${zoom / 100})`, transformOrigin: "top center" }}
               onDragEnter={(event) => {
                 if (event.dataTransfer.types.includes("application/x-vellune-block-type")) {
                   canvasDragDepth.current += 1;
