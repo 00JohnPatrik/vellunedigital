@@ -1,4 +1,4 @@
-import { createFileRoute, Outlet, redirect, useRouteContext } from "@tanstack/react-router";
+import { createFileRoute, Outlet, redirect, useMatchRoute, useRouteContext } from "@tanstack/react-router";
 import { AppShell } from "@/components/app-shell";
 import { adminNav, companyNav } from "@/lib/nav";
 
@@ -13,10 +13,20 @@ export const Route = createFileRoute("/_authenticated/invitations")({
 });
 
 function InvitationsLayout() {
-  // Read the authenticated parent context explicitly. This avoids relying on the
-  // child route's generated Route API while the invitations branch is mounting.
+  // Read the authenticated parent context explicitly. This keeps the editor
+  // inside the same auth boundary while allowing it to escape the application shell.
   const { appUser } = useRouteContext({ from: "/_authenticated" });
+  const matchRoute = useMatchRoute();
   if (!appUser) return null;
+
+  const isEditor = Boolean(matchRoute({ to: "/invitations/$id/editor", fuzzy: false }));
+  if (isEditor) {
+    return (
+      <div className="min-h-[100dvh] w-full overflow-hidden bg-[#08090d]">
+        <Outlet />
+      </div>
+    );
+  }
 
   const isSuper = appUser.role === "super_admin";
   return (
