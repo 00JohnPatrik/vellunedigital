@@ -534,6 +534,47 @@ export type Database = {
           },
         ]
       }
+      invitation_automation_settings: {
+        Row: {
+          auto_close_after_hours: number;
+          auto_close_enabled: boolean;
+          client_portal_enabled: boolean;
+          client_portal_hours_after_event: number;
+          created_at: string;
+          invitation_id: string;
+          timezone: string;
+          updated_at: string;
+        }
+        Insert: {
+          auto_close_after_hours?: number;
+          auto_close_enabled?: boolean;
+          client_portal_enabled?: boolean;
+          client_portal_hours_after_event?: number;
+          created_at?: string;
+          invitation_id: string;
+          timezone?: string;
+          updated_at?: string;
+        }
+        Update: {
+          auto_close_after_hours?: number;
+          auto_close_enabled?: boolean;
+          client_portal_enabled?: boolean;
+          client_portal_hours_after_event?: number;
+          created_at?: string;
+          invitation_id?: string;
+          timezone?: string;
+          updated_at?: string;
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invitation_automation_settings_invitation_id_fkey"
+            columns: ["invitation_id"]
+            isOneToOne: true
+            referencedRelation: "invitations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       invitation_views: {
         Row: {
           created_at: string

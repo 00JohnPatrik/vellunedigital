@@ -13,6 +13,10 @@ export type HostDashboardResponse = {
 };
 
 export type HostDashboard = {
+  portal: {
+    expires_at: string | null;
+    timezone: string;
+  };
   invitation: {
     name: string;
     slug: string;
@@ -70,6 +74,30 @@ export const getHostDashboard = createServerFn({ method: "GET" })
 
     if (!invitation) return { state: "not_found" };
 
+    const { data: automationState, error: automationError } = await supabaseAdmin
+      .rpc("apply_invitation_automation" as never, { _invitation_id: invitation.id } as never);
+
+    if (automationError) {
+      console.error("getHostDashboard automation", automationError.message);
+      throw new Error("Falha ao validar o acesso do portal.");
+    }
+
+    const automation = (automationState ?? {}) as {
+      state?: string;
+      client_portal_enabled?: boolean;
+      portal_open?: boolean;
+      portal_expires_at?: string;
+      timezone?: string;
+    };
+
+    if (
+      automation.state !== "ok" ||
+      automation.client_portal_enabled !== true ||
+      automation.portal_open !== true
+    ) {
+      return { state: "not_found" };
+    }
+
     const [viewsResult, responsesResult] = await Promise.all([
       supabaseAdmin
         .from("invitation_views")
@@ -94,6 +122,10 @@ export const getHostDashboard = createServerFn({ method: "GET" })
     return {
       state: "ok",
       dashboard: {
+        portal: {
+          expires_at: automation.portal_expires_at ?? null,
+          timezone: automation.timezone ?? "America/Sao_Paulo",
+        },
         invitation: {
           name: invitation.name,
           slug: invitation.slug,
