@@ -962,7 +962,10 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHe
             onPointerCancelCapture={(event) => {
               if (panRef.current?.pointerId === event.pointerId) panRef.current = null;
             }}
-            className="vellune-editor-viewport min-h-0 flex-1 overflow-auto overscroll-contain rounded-2xl border border-primary/10 bg-background/25 p-2 shadow-inner backdrop-blur-[2px] sm:p-4 lg:p-6"
+            className={cn(
+              "vellune-editor-viewport min-h-0 flex-1 overflow-auto overscroll-contain rounded-2xl border border-primary/10 bg-background/25 p-2 shadow-inner backdrop-blur-[2px] sm:p-4 lg:p-6",
+              spaceHeld ? "lg:cursor-grab" : "lg:cursor-default",
+            )}
             onWheel={(event) => {
               if (!event.ctrlKey && !event.metaKey) return;
               event.preventDefault();
