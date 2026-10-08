@@ -13,7 +13,7 @@ export type StatusFilter = "all" | Status;
 
 export function PageHeader({ title, description, action }: { title: string; description?: string | undefined; action?: ReactNode }) {
   return (
-    <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+    <div className="vellune-page-header mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
       <div>
         <h1 className="font-display text-2xl font-semibold tracking-tight">{title}</h1>
         {description && <p className="mt-1 text-sm text-muted-foreground">{description}</p>}
@@ -24,16 +24,16 @@ export function PageHeader({ title, description, action }: { title: string; desc
 }
 
 export function StatusBadge({ status }: { status: Status }) {
-  return <Badge variant={status === "active" ? "default" : "secondary"}>{status === "active" ? "Ativo" : "Inativo"}</Badge>;
+  return <span className="vellune-status-badge" data-state={status}>{status === "active" ? "Ativo" : "Inativo"}</span>;
 }
 
 export function StatusTabs({ value, onChange, labels }: { value: StatusFilter; onChange: (v: StatusFilter) => void; labels: [string, string, string] }) {
   const opts: StatusFilter[] = ["all", "active", "inactive"];
   return (
-    <div className="inline-flex rounded-md border p-0.5">
+    <div className="vellune-segmented inline-flex p-0.5">
       {opts.map((o, i) => (
         <button key={o} type="button" onClick={() => onChange(o)}
-          className={cn("rounded px-3 py-1.5 text-sm", value === o ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground")}>
+          className={cn("px-3 py-1.5 text-sm", value === o ? "font-medium" : "text-muted-foreground hover:text-foreground")}>
           {labels[i]}
         </button>
       ))}
@@ -71,11 +71,11 @@ export function StatusToggle({ status, name, onConfirm, size = "sm" }: { status:
 }
 
 export function EmptyState({ children }: { children: ReactNode }) {
-  return <div className="rounded-xl border border-dashed p-10 text-center text-sm text-muted-foreground">{children}</div>;
+  return <div className="vellune-empty-state p-10 text-center text-sm text-muted-foreground">{children}</div>;
 }
 
 export function LoadingState() {
-  return <div className="flex items-center justify-center p-10 text-muted-foreground"><Loader2 className="h-5 w-5 animate-spin" /></div>;
+  return <div className="vellune-loading-state p-10 text-muted-foreground"><Loader2 className="h-5 w-5 animate-spin" /></div>;
 }
 
 export const fmtDate = (s: string) => new Date(s).toLocaleDateString("pt-BR");
