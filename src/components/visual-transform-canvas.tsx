@@ -539,7 +539,7 @@ export function VisualTransformCanvas({ blocks, selectedIds: selectedIdsProp, zo
     };
     document.addEventListener("keydown", onKeyDown);
     return () => document.removeEventListener("keydown", onKeyDown);
-  }, [blocks, selectedIds, onChange, onSelect, onGroup, onUngroup]);
+  }, [blocks, selectedIds, onChange, onSelect, onDuplicate, onDelete, onGroup, onUngroup]);
 
   const begin = (event: React.PointerEvent, mode: Interaction["mode"], handle?: string, block?: any) => {
     event.stopPropagation();
@@ -1125,7 +1125,8 @@ export function VisualTransformCanvas({ blocks, selectedIds: selectedIdsProp, zo
         >
           <RotateCw className="h-4 w-4 sm:h-3 sm:w-3" aria-hidden="true" />
         </button>
-      )}      {HANDLES.map((handle) => {
+      )}
+      {HANDLES.map((handle) => {
         const position = {
           nw: "-left-3 -top-3", n: "left-1/2 -top-3 -translate-x-1/2",
           ne: "-right-3 -top-3", e: "-right-3 top-1/2 -translate-y-1/2",
