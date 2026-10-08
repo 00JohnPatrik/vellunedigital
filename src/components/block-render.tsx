@@ -116,7 +116,7 @@ function Countdown({ p, ctx }: { p: Record<string, string>; ctx?: EventCtx | und
   ] as const;
   return (
     <div className={cn("space-y-2", ALIGN[p["align"] ?? "center"])} style={p["color"] ? { color: p["color"] } : undefined}>
-      {p["title"] && <p className="text-sm text-muted-foreground">{p["title"]}</p>
+      {p["title"] && <p className="text-sm text-muted-foreground">{p["title"]}</p>}
       {diff !== 0 && <Row align={p["align"]}>
         <div className="flex gap-2">
           {(parts ?? [["–", "dias"], ["–", "horas"], ["–", "min"], ["–", "seg"]]).map(([n, l]) => (
