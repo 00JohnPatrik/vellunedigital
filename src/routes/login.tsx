@@ -47,6 +47,7 @@ function LoginPage() {
   const [touched, setTouched] = useState(false);
   const [rememberAccess, setRememberAccess] = useState(false);
   const [loginSuccess, setLoginSuccess] = useState(false);
+  const [loginButtonPress, setLoginButtonPress] = useState(false);
   const [focusedField, setFocusedField] = useState<string | null>(null);
   const [capsLockOn, setCapsLockOn] = useState(false);
   const [loginCooldown, setLoginCooldown] = useState(0);
@@ -365,11 +366,10 @@ function LoginPage() {
         <AuthPremiumVisual />
 
         {/* Authentication side */}
-        <section ref={authScrollRef} className="flex h-full min-h-0 items-stretch justify-start overflow-x-clip bg-[#08090d] overflow-y-auto overscroll-contain px-3 pt-[max(1rem,env(safe-area-inset-top))] pb-[max(1rem,env(safe-area-inset-bottom))] sm:px-8 sm:py-5 lg:h-full lg:min-h-0 lg:items-stretch lg:justify-start lg:overflow-y-auto lg:border-l lg:border-white/[0.045] lg:bg-white/[0.012] xl:px-16">
+        <section ref={authScrollRef} className="vellune-auth-section flex h-full min-h-0 items-stretch justify-start overflow-x-clip bg-[#08090d] overflow-y-auto overscroll-contain px-3 pt-[max(1rem,env(safe-area-inset-top))] pb-[max(1rem,env(safe-area-inset-bottom))] sm:px-8 sm:py-5 lg:h-full lg:min-h-0 lg:items-stretch lg:justify-start lg:overflow-y-auto lg:border-l lg:border-white/[0.045] lg:bg-white/[0.012] xl:px-16">
           <div className="my-auto mx-auto w-full max-w-[430px] shrink-0 py-1 sm:py-2">
-            <div className="mb-4 flex w-full shrink-0 flex-col items-center justify-center lg:hidden sm:mb-9">
-              <Logo className="h-12 w-auto max-w-[78vw] text-white transition-opacity duration-500 hover:opacity-90 sm:h-16" />
-              <span className="mt-2 text-[8px] font-semibold uppercase tracking-[0.28em] text-white/25">Seu espaço de criação</span>
+            <div className="vellune-auth-mobile-logo mb-4 flex w-full shrink-0 flex-col items-center justify-center lg:hidden sm:mb-9">
+              <Logo className="h-11 w-auto max-w-[78vw] text-white transition-opacity duration-500 hover:opacity-90 sm:h-16" />
             </div>
 
             <div className="relative w-full overflow-hidden rounded-[20px] border border-white/[0.075] bg-[#111318]/94 p-4 shadow-[0_30px_100px_rgba(0,0,0,0.46),inset_0_1px_0_rgba(255,255,255,0.035)] ring-1 ring-white/[0.018] backdrop-blur-xl sm:rounded-[28px] sm:p-9 vellune-motion" style={{ animation: "velluneFadeUp 800ms cubic-bezier(.22,1,.36,1)" }}>
@@ -464,9 +464,10 @@ function LoginPage() {
                       <Input
                         ref={identifierRef}
                         id="identifier"
+                        name="username"
                         type="text"
                         autoComplete="username"
-                        inputMode="text"
+                        inputMode={isPhoneLike ? "tel" : "email"}
                         enterKeyHint="next"
                         autoCapitalize="none"
                         autoCorrect="off"
@@ -516,8 +517,10 @@ function LoginPage() {
                       <Input
                         ref={passwordRef}
                         id="password"
+                        name="password"
                         type={showPassword ? "text" : "password"}
                         autoComplete="current-password"
+                        enterKeyHint="go"
                         value={password}
                         maxLength={200}
                         onChange={(e) => {
@@ -577,7 +580,7 @@ function LoginPage() {
                     </div>
                   )}
 
-                  <Button type="submit" disabled={loading || loginCooldown > 0} className="group mt-2 flex h-12 w-full min-h-12 items-center justify-center rounded-xl bg-[#d4af37] font-semibold text-[#16130b] shadow-[0_12px_34px_rgba(212,175,55,0.10)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#e5c66b] hover:shadow-[0_16px_38px_rgba(212,175,55,0.16)] active:translate-y-0 disabled:cursor-default disabled:opacity-100">
+                  <Button type="submit" disabled={loading || loginCooldown > 0} onPointerDown={() => setLoginButtonPress(true)} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") setLoginButtonPress(true); }} onAnimationEnd={() => setLoginButtonPress(false)} className={`vellune-auth-cta group mt-2 flex h-12 w-full min-h-12 items-center justify-center rounded-xl bg-[#d4af37] font-semibold text-[#16130b] shadow-[0_12px_34px_rgba(212,175,55,0.10)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#e5c66b] hover:shadow-[0_16px_38px_rgba(212,175,55,0.16)] active:translate-y-0 disabled:cursor-default disabled:opacity-100 ${loginButtonPress ? "vellune-auth-cta-press" : ""}`}>
                     {loginSuccess ? (
                       <span className="flex items-center justify-center gap-2">
                         <CheckCircle2 className="h-4 w-4" style={{ animation: "velluneSuccess 260ms cubic-bezier(.22,1,.36,1)" }} />
