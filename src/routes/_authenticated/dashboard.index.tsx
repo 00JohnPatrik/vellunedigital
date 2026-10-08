@@ -17,23 +17,8 @@ function CompanyDashboard() {
   const experimentalLayout = typeof window !== "undefined" && new URLSearchParams(window.location.search).get("legacy") !== "1";
   const report = useQuery({ queryKey: ["reports", "company"], queryFn: () => fetchReport() });
   const recent = useQuery({ queryKey: ["reports", "recent"], queryFn: () => recentResponses(5) });
-  if (report.isLoading) return <LoadingState />;
-  const rows = report.data ?? [];
-  const t = totals(rows);
 
-  if (experimentalLayout) {
-    return (
-      <>
-        <SubscriptionStatusBanner companyId={appUser!.company!.id} />
-      <CommercialOnboarding userId={appUser!.id} userName={appUser!.name} />
-        <ExperimentalCompanyDashboard
-        appUser={appUser!}
-        reportRows={rows}
-        recentResponses={recent.data ?? []}
-        />
-      </>
-    );
-  }
+  if (report.isLoading) return <LoadingState />;
 
   if (report.error) {
     return (
@@ -44,27 +29,44 @@ function CompanyDashboard() {
     );
   }
 
+  const rows = report.data ?? [];
+  const t = totals(rows);
+
+  if (experimentalLayout) {
+    return (
+      <>
+        <SubscriptionStatusBanner companyId={appUser!.company!.id} />
+        <CommercialOnboarding userId={appUser!.id} userName={appUser!.name} />
+        <ExperimentalCompanyDashboard
+          appUser={appUser!}
+          reportRows={rows}
+          recentResponses={recent.data ?? []}
+        />
+      </>
+    );
+  }
+
   return (
     <>
       <CommercialOnboarding userId={appUser!.id} userName={appUser!.name} />
       <div>
-      <PageHeader title="Dashboard" description="Resumo da sua empresa." />
-      <StatGrid>
-        <StatCard label="Convites ativos" value={t.invitations} />
-        <StatCard label="Visualizações" value={t.views} />
-        <StatCard label="Confirmações" value={t.confirmed} />
-        <StatCard label="Pessoas confirmadas" value={t.people} />
-      </StatGrid>
-      {rows.length === 0 && <p className="mt-4 text-sm text-muted-foreground">Você ainda não possui convites.</p>}
-      <Section title="Próximos eventos"><UpcomingList rows={upcoming(rows)} /></Section>
-      <Section title="Confirmações recentes">
-        {recent.isLoading ? <LoadingState /> : recent.error ? (
-          <div role="alert" className="rounded-xl border border-destructive/30 bg-destructive/5 p-5 text-sm text-destructive">
-            Não foi possível carregar as confirmações recentes.
-          </div>
-        ) : <RecentResponses rows={recent.data ?? []} />}
-      </Section>
-      <CompanyDashboardEnhancements companyId={appUser!.company!.id} />
+        <PageHeader title="Dashboard" description="Resumo da sua empresa." />
+        <StatGrid>
+          <StatCard label="Convites ativos" value={t.invitations} />
+          <StatCard label="Visualizações" value={t.views} />
+          <StatCard label="Confirmações" value={t.confirmed} />
+          <StatCard label="Pessoas confirmadas" value={t.people} />
+        </StatGrid>
+        {rows.length === 0 && <p className="mt-4 text-sm text-muted-foreground">Você ainda não possui convites.</p>}
+        <Section title="Próximos eventos"><UpcomingList rows={upcoming(rows)} /></Section>
+        <Section title="Confirmações recentes">
+          {recent.isLoading ? <LoadingState /> : recent.error ? (
+            <div role="alert" className="rounded-xl border border-destructive/30 bg-destructive/5 p-5 text-sm text-destructive">
+              Não foi possível carregar as confirmações recentes.
+            </div>
+          ) : <RecentResponses rows={recent.data ?? []} />}
+        </Section>
+        <CompanyDashboardEnhancements companyId={appUser!.company!.id} />
       </div>
     </>
   );
