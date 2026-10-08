@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { LayoutTemplate, Loader2, Search, X } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -10,25 +10,65 @@ import { InvitationCanvas } from "@/components/block-render";
 import { useBlocksHistory, VisualEditor } from "@/components/visual-editor";
 import type { AssetScope } from "@/lib/assets";
 import { buildContent, CATEGORIES, categoryLabel, STARTERS, type Background, type Block, type Template, type TemplateValues } from "@/lib/templates";
+import { useAssetUrl } from "@/lib/assets";
 import { normalizeBlocks, validateContent } from "@/lib/blocks";
 
-export function PreviewImage({ src, name, className = "aspect-[4/5]" }: { src: string | null; name: string; className?: string }) {
+export function PreviewImage({
+  src,
+  name,
+  className = "aspect-[4/5]",
+  blocks = [],
+  background,
+}: {
+  src: string | null;
+  name: string;
+  className?: string;
+  blocks?: Block[];
+  background?: Background;
+}) {
+  const firstImage = blocks.find((block) => block.type === "image" && typeof block.props?.url === "string" && block.props.url.trim())?.props.url;
   const [broken, setBroken] = useState(false);
-  if (!src || broken) {
-    return (
-      <div className={`${className} flex w-full flex-col items-center justify-center gap-2 bg-muted text-muted-foreground`}>
-        <LayoutTemplate className="h-8 w-8" />
-        <span className="px-4 text-center text-xs">Sem preview</span>
-      </div>
-    );
+  useEffect(() => { setBroken(false); }, [src, firstImage]);
+  const candidate = broken ? firstImage ?? null : src || firstImage || null;
+  const resolved = useAssetUrl(candidate);
+  const firstText = blocks.find((block) => block.type === "text" && typeof block.props?.text === "string" && block.props.text.trim())?.props.text?.trim();
+  const firstLine = firstText?.split(/\n+/)[0]?.trim() || name;
+  const secondText = firstText?.split(/\n+/).slice(1).join(" ").trim();
+  const safeGradient = typeof background?.gradient === "string" ? background.gradient : undefined;
+  const safeColor = typeof background?.color === "string" ? background.color : undefined;
+
+  if (resolved) {
+    return <img src={resolved} alt={name} loading="lazy" onError={() => setBroken(true)} className={`${className} w-full object-cover`} />;
   }
-  return <img src={src} alt={name} loading="lazy" onError={() => setBroken(true)} className={`${className} w-full object-cover`} />;
+  return (
+    <div
+      className={`${className} relative w-full overflow-hidden bg-muted text-foreground`}
+      style={{ backgroundColor: safeColor, backgroundImage: safeGradient }}
+      aria-label={`Prévia do modelo ${name}`}
+    >
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_15%,hsl(var(--primary)/.16),transparent_38%),linear-gradient(180deg,transparent,hsl(var(--background)/.48))]" />
+      <div className="relative flex h-full flex-col justify-end p-5">
+        <span className="mb-2 text-[9px] font-semibold uppercase tracking-[0.22em] text-primary/80">Vellune • modelo</span>
+        <p className="line-clamp-2 font-display text-xl font-semibold leading-tight">{firstLine}</p>
+        {secondText && <p className="mt-2 line-clamp-2 text-[11px] leading-4 text-muted-foreground">{secondText}</p>}
+        <div className="mt-4 flex items-center gap-1.5">
+          <span className="h-1.5 w-10 rounded-full bg-primary/60" />
+          <span className="h-1.5 w-4 rounded-full bg-primary/25" />
+        </div>
+      </div>
+    </div>
+  );
 }
 
 export function TemplateCard({ t, actions }: { t: Template; actions: ReactNode }) {
   return (
     <div className="flex flex-col overflow-hidden rounded-xl border bg-card">
-      <PreviewImage src={t.preview_image} name={t.name} />
+      <PreviewImage
+        src={t.preview_image}
+        name={t.name}
+        blocks={t.content?.blocks ?? []}
+        background={t.content?.settings?.background}
+      />
       <div className="flex flex-1 flex-col gap-2 p-3">
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0">

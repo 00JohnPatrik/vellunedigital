@@ -56,25 +56,26 @@ const cache = new Map<string, { url: string; exp: number }>();
 
 /** Resolves a block image value: external URLs pass through; `storage:` refs become signed URLs. */
 export function useAssetUrl(value: string | undefined | null): string | null {
-  const isRef = !!value && value.startsWith(STORAGE_PREFIX);
+  const normalizedValue = typeof value === "string" && value.length > 0 ? value : null;
+  const isRef = !!normalizedValue && normalizedValue.startsWith(STORAGE_PREFIX);
   const [url, setUrl] = useState<string | null>(() => {
-    if (!value) return null;
-    if (!isRef) return value;
-    const c = cache.get(value);
+    if (!normalizedValue) return null;
+    if (!isRef) return normalizedValue;
+    const c = cache.get(normalizedValue);
     return c && c.exp > Date.now() ? c.url : null;
   });
   useEffect(() => {
-    if (!value) { setUrl(null); return; }
-    if (!isRef) { setUrl(value); return; }
-    const c = cache.get(value);
+    if (!normalizedValue) { setUrl(null); return; }
+    if (!isRef) { setUrl(normalizedValue); return; }
+    const c = cache.get(normalizedValue);
     if (c && c.exp > Date.now()) { setUrl(c.url); return; }
     let alive = true;
-    supabase.storage.from(BUCKET).createSignedUrl(value.slice(STORAGE_PREFIX.length), 3600).then(({ data }) => {
+    supabase.storage.from(BUCKET).createSignedUrl(normalizedValue.slice(STORAGE_PREFIX.length), 3600).then(({ data }) => {
       if (!data?.signedUrl) return;
-      cache.set(value, { url: data.signedUrl, exp: Date.now() + 50 * 60 * 1000 });
+      cache.set(normalizedValue, { url: data.signedUrl, exp: Date.now() + 50 * 60 * 1000 });
       if (alive) setUrl(data.signedUrl);
     });
     return () => { alive = false; };
-  }, [value, isRef]);
+  }, [normalizedValue, isRef]);
   return url;
 }
