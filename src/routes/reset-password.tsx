@@ -46,11 +46,16 @@ function PasswordField({
         ref={inputRef}
         id={id}
         type={visible ? "text" : "password"}
+        name={id === "pw" ? "new-password" : "confirm-password"}
         autoComplete={autoComplete}
+        enterKeyHint={id === "pw" ? "next" : "done"}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         maxLength={200}
+        autoCapitalize="none"
+        autoCorrect="off"
+        spellCheck={false}
         aria-invalid={error}
         className="h-12 w-full rounded-xl border border-white/[0.08] bg-[#111318]/90 px-4 pr-11 text-sm text-white placeholder:text-white/20 outline-none transition-[border-color,box-shadow,background-color] duration-300 focus:border-[#d4af37]/55 focus:ring-2 focus:ring-[#d4af37]/12 focus:shadow-[0_0_0_1px_rgba(212,175,55,0.14),0_10px_35px_rgba(212,175,55,0.05)]"
       />
@@ -229,7 +234,7 @@ function ResetPage() {
             </div>
           )}
 
-          <Button type="submit" className="group relative flex h-12 min-h-12 w-full items-center justify-center overflow-hidden rounded-xl bg-[#d4af37] font-semibold text-[#16130b] shadow-[0_12px_34px_rgba(212,175,55,0.10)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#e5c66b] hover:shadow-[0_16px_38px_rgba(212,175,55,0.16)] active:translate-y-0 disabled:cursor-default disabled:opacity-100" disabled={loading}>
+          <Button type="submit" className="vellune-auth-cta group relative flex h-12 min-h-12 w-full items-center justify-center overflow-hidden rounded-xl bg-[#d4af37] font-semibold text-[#16130b] shadow-[0_12px_34px_rgba(212,175,55,0.10)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#e5c66b] hover:shadow-[0_16px_38px_rgba(212,175,55,0.16)] active:translate-y-0 disabled:cursor-default disabled:opacity-100" disabled={loading}>
             {loading ? (
               <span className="flex items-center justify-center gap-2"><LoaderCircle className="h-4 w-4 animate-spin" />Salvando senha...</span>
             ) : (
