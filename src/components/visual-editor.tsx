@@ -1008,6 +1008,7 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHe
               canvasRef={canvasRef}
               ctx={ctx as any}
               onSelect={select}
+              onAddBlock={(type, point) => addBlockByType(type, undefined, point)}
               onChange={(update, group) => h.set(update, group)}
               onDuplicate={duplicateByIds}
               onDelete={removeByIds}
