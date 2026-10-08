@@ -74,6 +74,7 @@ export function NotificationCenter({ appUser }: { appUser: AppUser }) {
       };
     },
     staleTime: 30_000,
+    refetchInterval: 30_000,
   });
 
   const readMarkersQuery = useQuery({
