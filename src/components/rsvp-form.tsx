@@ -51,13 +51,13 @@ export function RsvpForm({ slug, cfg, title, label, visual = {} }: { slug: strin
     return e;
   };
 
-  const submit = async (update = false) => {
+  const submit = async () => {
     if (!status) return;
     const e = validate(); setErr(e);
     if (Object.keys(e).length) return;
     setBusy(true);
     try {
-      const res = await send({ data: { slug, status, name: name.trim(), people: status === "confirmed" ? Number(people) : null, phone: cfg.allow_phone ? phone : "", email: cfg.allow_email ? email : "", update } });
+      const res = await send({ data: { slug, status, name: name.trim(), people: status === "confirmed" ? Number(people) : null, phone: cfg.allow_phone ? phone : "", email: cfg.allow_email ? email : "" } });
       if (res.state === "ok") { setDone(res); setDup(false); }
       else if (res.state === "duplicate") setDup(true);
       else if (res.state === "closed" || res.state === "unavailable") setClosed(true);
@@ -88,7 +88,7 @@ export function RsvpForm({ slug, cfg, title, label, visual = {} }: { slug: strin
         ))}
       </div>
       {status && (
-        <form className="space-y-3" onSubmit={(e) => { e.preventDefault(); void submit(false); }} noValidate>
+        <form className="space-y-3" onSubmit={(e) => { e.preventDefault(); void submit(); }} noValidate>
           <Field id="rsvp-name" label="Nome" error={err["name"]}><Input id="rsvp-name" value={name} maxLength={120} onChange={(e) => setName(e.target.value)} autoComplete="name" className="h-11 bg-background text-foreground border-input" /></Field>
           {status === "confirmed" && (
             <Field id="rsvp-people" label={`Número de pessoas${cfg.max_people ? ` (máx. ${cfg.max_people})` : ""}`} error={err["people"]}>
@@ -99,12 +99,8 @@ export function RsvpForm({ slug, cfg, title, label, visual = {} }: { slug: strin
           {cfg.allow_email && <Field id="rsvp-email" label="E-mail (opcional)" error={err["email"]}><Input id="rsvp-email" type="email" maxLength={200} value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" className="h-11" /></Field>}
           {err["form"] && <p className="text-sm text-destructive" role="alert">{err["form"]}</p>}
           {dup ? (
-            <div className="space-y-2 rounded-md bg-muted p-3 text-sm" role="alert">
-              <p>Já encontramos uma confirmação para este contato.</p>
-              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                <Button type="button" size="lg" onClick={() => void submit(true)} disabled={busy}>{busy && <Loader2 className="h-4 w-4 animate-spin" />}Atualizar resposta</Button>
-                <Button type="button" size="lg" variant="outline" onClick={() => setDup(false)} disabled={busy}>Cancelar</Button>
-              </div>
+            <div className="rounded-md bg-muted p-3 text-center text-sm" role="alert">
+              Já encontramos uma confirmação para este contato. Para alterar a resposta, entre em contato com os anfitriões.
             </div>
           ) : (
             <Button type="submit" size="lg" className={cn("h-12 w-full", buttonClass)} style={buttonStyle} disabled={busy}>{busy && <Loader2 className="h-4 w-4 animate-spin" />}Enviar</Button>
