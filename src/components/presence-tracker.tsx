@@ -32,7 +32,9 @@ export function PresenceTracker() {
       if (!userId || disposed) return;
       if (!initialized.current) {
         initialized.current = true;
-        await writePresence(true);
+        // A page reload is not a new login. Only the SIGNED_IN auth event
+        // should advance last_login_at; startup merely refreshes presence.
+        await writePresence();
       } else {
         await writePresence();
       }
