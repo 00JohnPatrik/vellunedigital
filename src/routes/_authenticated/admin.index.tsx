@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowUpRight, Building2, CheckCircle2, ExternalLink, FileText, Gauge, Users, Eye, UserCheck } from "lucide-react";
+import { AlertTriangle, ArrowUpRight, Building2, CalendarClock, CheckCircle2, CreditCard, ExternalLink, FileText, Gauge, Users, Eye, UserCheck } from "lucide-react";
 import { LoadingState, PageHeader } from "@/components/admin-ui";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,6 +8,8 @@ import { ActivitySummary } from "@/components/phase7-ui";
 import { fetchReport, globalCounts, totals } from "@/lib/reports";
 import { listUsersPresence, type PresenceUser } from "@/lib/admin-data";
 import { getPresenceStatus, presenceClass, presenceLabel } from "@/components/presence-tracker";
+import { listCompanySubscriptions, type CompanySubscription } from "@/lib/subscriptions";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/_authenticated/admin/")({
   component: AdminDashboard,
@@ -49,6 +51,15 @@ function ProgressMetric({ label, value, total, color }: { label: string; value: 
   );
 }
 
+function commercialState(subscription: CompanySubscription) {
+  if (subscription.status !== "active") return subscription.status;
+  if (!subscription.expires_at) return "active";
+  const days = Math.ceil((new Date(subscription.expires_at).getTime() - Date.now()) / 86_400_000);
+  if (days <= 0) return "expired";
+  if (days <= 7) return "expiring";
+  return "active";
+}
+
 function AdminDashboard() {
   const counts = useQuery({ queryKey: ["reports", "global-counts"], queryFn: globalCounts });
   const report = useQuery({ queryKey: ["reports", "global"], queryFn: () => fetchReport() });
@@ -56,6 +67,20 @@ function AdminDashboard() {
     queryKey: ["admin", "users", "presence"],
     queryFn: listUsersPresence,
     refetchInterval: 30_000,
+  });
+  const subscriptions = useQuery({
+    queryKey: ["admin", "subscriptions"],
+    queryFn: listCompanySubscriptions,
+    staleTime: 30_000,
+  });
+  const companies = useQuery({
+    queryKey: ["admin", "companies", "commercial-overview"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("companies").select("id, name").is("deleted_at", null).order("name");
+      if (error) throw error;
+      return data ?? [];
+    },
+    staleTime: 30_000,
   });
 
   if (counts.isLoading || report.isLoading || users.isLoading) return <LoadingState />;
@@ -66,6 +91,24 @@ function AdminDashboard() {
   const metrics = totals(report.data ?? []);
   const totalInvitations = metrics.invitations;
   const confirmedRate = totalInvitations > 0 ? Math.round((metrics.confirmed / totalInvitations) * 100) : 0;
+
+  const commercial = useMemo(() => {
+    const rows = subscriptions.data ?? [];
+    const active = rows.filter((item) => commercialState(item) === "active" || commercialState(item) === "expiring");
+    const expiring = rows.filter((item) => commercialState(item) === "expiring");
+    const attention = rows.filter((item) => ["expired", "suspended", "cancelled"].includes(commercialState(item)));
+    const activeCompanyIds = new Set(active.map((item) => item.company_id));
+    const companiesWithoutActivePlan = (companies.data ?? []).filter((company) => !activeCompanyIds.has(company.id));
+    const monthlyValue = active.reduce((sum, item) => sum + Number(item.plan?.price_monthly ?? 0), 0);
+    const upcoming = rows
+      .filter((item) => {
+        const state = commercialState(item);
+        return state === "expiring";
+      })
+      .sort((a, b) => new Date(a.expires_at ?? 0).getTime() - new Date(b.expires_at ?? 0).getTime())
+      .slice(0, 6);
+    return { active, expiring, attention, companiesWithoutActivePlan, monthlyValue, upcoming };
+  }, [companies.data, subscriptions.data]);
 
   return (
     <div className="space-y-8">
@@ -81,6 +124,56 @@ function AdminDashboard() {
         <MetricCard label="Usuários ativos" value={counts.data.users} description="Contas com acesso liberado" icon={Users} accent="bg-[#d4af37] text-[#d4af37]" />
         <MetricCard label="Convites criados" value={metrics.invitations} description="Total consolidado" icon={FileText} accent="bg-[#d4af37] text-[#d4af37]" />
         <MetricCard label="Visualizações" value={metrics.views} description="Acessos aos convites" icon={Eye} accent="bg-emerald-500 text-emerald-600" />
+      </section>
+
+      <section className="space-y-4" aria-label="Visão comercial">
+        <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <h2 className="font-display text-xl font-semibold">Visão comercial</h2>
+            <p className="text-sm text-muted-foreground">Sinais de assinatura e oportunidades de renovação em tempo real.</p>
+          </div>
+          <Button asChild variant="outline"><Link to="/admin/subscriptions"><CreditCard className="h-4 w-4" />Gerenciar assinaturas<ArrowUpRight className="h-4 w-4" /></Link></Button>
+        </div>
+
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <MetricCard label="Assinaturas ativas" value={commercial.active.length} description="Inclui as que vencem em até 7 dias" icon={CreditCard} accent="bg-emerald-500 text-emerald-600" />
+          <MetricCard label="Vencem em 7 dias" value={commercial.expiring.length} description="Renovações que merecem contato" icon={CalendarClock} accent="bg-amber-500 text-amber-600" />
+          <MetricCard label="Sem assinatura ativa" value={commercial.companiesWithoutActivePlan.length} description="Empresas prontas para conversão" icon={AlertTriangle} accent="bg-[#d4af37] text-[#d4af37]" />
+          <MetricCard label="Valor mensal contratado" value={commercial.monthlyValue} description="Soma dos planos ativos; não é receita recebida" icon={CreditCard} accent="bg-[#d4af37] text-[#d4af37]" />
+        </div>
+
+        <div className="grid gap-6 xl:grid-cols-2">
+          <Card>
+            <CardHeader><CardTitle>Próximos vencimentos</CardTitle><CardDescription>Empresas com assinatura ativa vencendo em até 7 dias.</CardDescription></CardHeader>
+            <CardContent className="space-y-3">
+              {commercial.upcoming.map((item) => {
+                const days = Math.max(0, Math.ceil((new Date(item.expires_at!).getTime() - Date.now()) / 86_400_000));
+                return <div key={item.id} className="flex items-center justify-between gap-3 rounded-xl border p-3">
+                  <div className="min-w-0"><p className="truncate text-sm font-medium">{item.company?.name ?? item.company_id}</p><p className="text-xs text-muted-foreground">{item.plan?.name ?? "Plano removido"} · vence {new Date(item.expires_at!).toLocaleDateString("pt-BR")}</p></div>
+                  <span className="shrink-0 rounded-full bg-amber-500/10 px-2.5 py-1 text-xs font-medium text-amber-700 dark:text-amber-300">{days}d</span>
+                </div>;
+              })}
+              {commercial.upcoming.length === 0 && <p className="py-5 text-sm text-muted-foreground">Nenhum vencimento nos próximos 7 dias.</p>}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader><CardTitle>Empresas sem assinatura ativa</CardTitle><CardDescription>Oportunidades de ativação, recuperação ou reativação.</CardDescription></CardHeader>
+            <CardContent className="space-y-3">
+              {commercial.companiesWithoutActivePlan.slice(0, 6).map((company) => <div key={company.id} className="flex items-center justify-between gap-3 rounded-xl border p-3"><p className="truncate text-sm font-medium">{company.name}</p><Button asChild size="sm" variant="outline"><Link to="/admin/subscriptions">Ativar</Link></Button></div>)}
+              {commercial.companiesWithoutActivePlan.length === 0 && <p className="py-5 text-sm text-muted-foreground">Todas as empresas têm uma assinatura ativa.</p>}
+            </CardContent>
+          </Card>
+        </div>
+
+        {commercial.attention.length > 0 && (
+          <Card className="border-amber-500/20 bg-amber-500/5">
+            <CardContent className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
+              <div><p className="font-medium">Há {commercial.attention.length} assinatura(s) que precisam de atenção</p><p className="text-sm text-muted-foreground">Vencidas, suspensas ou canceladas aparecem na gestão comercial.</p></div>
+              <Button asChild variant="outline"><Link to="/admin/subscriptions">Abrir fila de atenção</Link></Button>
+            </CardContent>
+          </Card>
+        )}
       </section>
 
       <section className="grid gap-6 xl:grid-cols-[minmax(0,1.35fr)_minmax(320px,0.65fr)]">
