@@ -25,12 +25,14 @@ function CompanyTemplates() {
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("all");
   const [favoritesOnly, setFavoritesOnly] = useState(false);
+  const [sort, setSort] = useState<"recent" | "az">("recent");
+  const sortTemplates = (items: Template[]) => [...items].sort((a, b) => sort === "az" ? a.name.localeCompare(b.name, "pt-BR") : String(b.created_at).localeCompare(String(a.created_at)));
   const favoriteIds = new Set(favoritesQ.data ?? []);
   const match = (t: Template) => (category === "all" || t.category === category)
     && t.name.toLowerCase().includes(search.trim().toLowerCase())
     && (!favoritesOnly || favoriteIds.has(t.id));
-  const official = useMemo(() => (q.data ?? []).filter((t) => t.type === "official" && t.status === "active" && match(t)), [q.data, search, category, favoritesOnly, favoritesQ.data]);
-  const mine = useMemo(() => (q.data ?? []).filter((t) => t.type === "company" && match(t)), [q.data, search, category]);
+  const official = useMemo(() => sortTemplates((q.data ?? []).filter((t) => t.type === "official" && t.status === "active" && match(t))), [q.data, search, category, favoritesOnly, favoritesQ.data, sort]);
+  const mine = useMemo(() => sortTemplates((q.data ?? []).filter((t) => t.type === "company" && match(t))), [q.data, search, category, favoritesOnly, favoritesQ.data, sort]);
   const refresh = () => qc.invalidateQueries({ queryKey: templatesKey });
   const toggleFavorite = async (t: Template) => {
     const favorite = favoriteIds.has(t.id);
@@ -74,6 +76,9 @@ function CompanyTemplates() {
       ) : (
         <>
           <div className="mb-5 flex flex-wrap items-center gap-2">
+        <label className="inline-flex items-center gap-2 rounded-full border border-[#2a2b31] bg-[#111318] px-3 py-1.5 text-[10px] font-medium text-[#A9B1BF]">Ordenar
+          <select value={sort} onChange={(event) => setSort(event.target.value as "recent" | "az")} className="bg-transparent text-[10px] font-semibold text-[#F5F7FA] outline-none"><option value="recent">Mais recentes</option><option value="az">A–Z</option></select>
+        </label>
         <Button type="button" variant={favoritesOnly ? "default" : "outline"} size="sm" className="rounded-full" onClick={() => setFavoritesOnly((value) => !value)}>
           <Heart className="h-4 w-4" fill={favoritesOnly ? "currentColor" : "none"} />
           {favoritesOnly ? "Favoritos" : "Todos os modelos"}

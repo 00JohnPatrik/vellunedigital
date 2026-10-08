@@ -9,6 +9,7 @@ import { VelluneTopBar } from "@/components/vellune-top-bar";
 import { VelluneCreativeDock } from "@/components/vellune-creative-dock";
 import { EditorCommandPalette } from "@/components/editor-command-palette";
 import { TemplateGallery } from "@/components/template-gallery";
+import { EditorProToolbar } from "@/components/editor-pro-toolbar";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { CalendarDays, CheckCircle2, Eye, EyeOff, Grid3X3, Minus, Plus, Redo2, Undo2, PanelLeft, PanelRight, Sparkles, Smartphone, Tablet, Monitor, BringToFront, SendToBack, Trash2, X, Pencil, RotateCcw, RotateCw, Lock, Unlock, AlignCenterHorizontal, AlignCenterVertical, Link2, Unlink2, MapPin, Type, Image as ImageIcon, Palette, MoreHorizontal, Maximize2, Minimize2, Search, LayoutGrid, Magnet, UploadCloud } from "lucide-react";
@@ -477,6 +478,7 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHe
     requestAnimationFrame(fitCanvas);
   }, [compact, device, fitCanvas]);
   const clipboard = useRef<any[]>([]);
+  const [styleClipboard, setStyleClipboard] = useState<Record<string, unknown> | null>(null);
   const blocks = Array.isArray(h?.blocks) ? h.blocks : [];
   const selected = blocks.filter((block: any) => selectedIds.includes(block.id));
   const applyEditorTheme = (theme: EditorTheme) => {
@@ -733,6 +735,43 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHe
       return [...current, ...inserted];
     });
     setSelectedIds(copies.map((block: any) => block.id));
+  };
+  const copySelectedStyle = () => {
+    const source = selected[0];
+    if (!source) return;
+    const styleKeys = new Set([
+      "font", "fontSize", "fontWeight", "fontStyle", "textDecoration", "align", "color", "letterSpacing", "lineHeight",
+      "fill", "fillColor", "fillGradient", "borderColor", "borderWidth", "borderStyle", "borderRadius", "radiusTopLeft", "radiusTopRight",
+      "radiusBottomRight", "radiusBottomLeft", "shadow", "shadowColor", "shadowX", "shadowY", "shadowBlur", "shadowSpread",
+      "filterBlur", "filterBrightness", "textColor", "backgroundColor", "radius", "paddingX", "paddingY"
+    ]);
+    setStyleClipboard(Object.fromEntries(Object.entries(source.props ?? {}).filter(([key]) => styleKeys.has(key))));
+    toast.success("Estilo copiado.");
+  };
+  const pasteSelectedStyle = () => {
+    if (!styleClipboard || !selected.length) return;
+    h.set((items) => items.map((item: any) => selectedIds.includes(item.id) && !item.locked ? { ...item, props: { ...(item.props ?? {}), ...styleClipboard } } : item), "selection:paste-style");
+    toast.success("Estilo aplicado.");
+  };
+  const toggleLockSelected = () => {
+    if (!selected.length) return;
+    const nextLocked = !selected.every((item: any) => Boolean(item.locked));
+    h.set((items) => items.map((item: any) => selectedIds.includes(item.id) ? { ...item, locked: nextLocked } : item), "selection:lock");
+    if (nextLocked) setStartEditingTextId(null);
+  };
+  const centerSelection = () => {
+    if (!selected.length) return;
+    if (selected.length === 1) {
+      const target = selected[0];
+      h.set((items) => items.map((item: any, index: number) => {
+        if (item.id !== target?.id || item.locked) return item;
+        const size = getSize(item, index);
+        const width = canvasRef.current?.clientWidth || 390;
+        return { ...item, x: Math.round((width - size.width) / 2) };
+      }), "selection:center");
+      return;
+    }
+    alignSelectedOnCanvas("canvasCenterX", selectedIds);
   };
   const removeByIds = (ids: string[]) => {
     if (!ids.length) return;

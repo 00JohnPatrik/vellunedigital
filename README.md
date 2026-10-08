@@ -24,3 +24,6 @@ cd <repository-name>
 npm i
 npm run dev
 ```
+
+## Vellune Pro — Fases 1 e 2
+Camada comercial e de produto com onboarding guiado, ações rápidas no Editor Pro, convite público premium, analytics de RSVP, evolução do espaço de clientes e descoberta aprimorada de modelos.

@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { LoadingState, PageHeader } from "@/components/admin-ui";
 import { ReportTable, Section, StatCard } from "@/components/reports-ui";
 import { fetchReport, reportToCsv, totals } from "@/lib/reports";
+import { InsightsAnalytics } from "@/components/insights-analytics";
 
 export const Route = createFileRoute("/_authenticated/reports/")({
   component: CompanyReports,
@@ -67,6 +68,7 @@ function CompanyReports() {
         <StatCard label="Recusas" value={t.declined} />
         <StatCard label="Pessoas confirmadas" value={t.people} />
       </div>
+      <InsightsAnalytics rows={report.data ?? []} />
       <div className="flex flex-col gap-3 rounded-xl border bg-card p-4 sm:flex-row sm:items-center">
         <div className="relative min-w-0 flex-1">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />

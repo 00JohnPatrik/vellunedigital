@@ -72,6 +72,40 @@ export async function recentResponses(limit = 5): Promise<RecentResponse[]> {
   return data as unknown as RecentResponse[];
 }
 
+export type RsvpAnalyticsDay = { date: string; label: string; confirmed: number; declined: number; people: number };
+
+export async function fetchRsvpAnalytics(days = 90): Promise<RsvpAnalyticsDay[]> {
+  if (isDemoMode()) {
+    const source = listDemoRsvpResponses("demo-invitation-ana-lucas");
+    return aggregateRsvpResponses(source.map((item) => ({ created_at: item.created_at, status: item.status, people_count: item.people_count })), days);
+  }
+  const start = new Date();
+  start.setDate(start.getDate() - Math.max(1, Math.min(days, 365)));
+  const { data, error } = await supabase.from("rsvp_responses").select("created_at,status,people_count").gte("created_at", start.toISOString()).order("created_at", { ascending: true }).limit(2000);
+  if (error) throw error;
+  return aggregateRsvpResponses((data ?? []) as Array<{ created_at: string; status: "confirmed" | "declined"; people_count: number | null }>, days);
+}
+
+function aggregateRsvpResponses(rows: Array<{ created_at: string; status: "confirmed" | "declined"; people_count: number | null }>, days: number) {
+  const count = Math.max(1, Math.min(days, 365));
+  const map = new Map<string, RsvpAnalyticsDay>();
+  for (let index = count - 1; index >= 0; index -= 1) {
+    const date = new Date();
+    date.setHours(0, 0, 0, 0);
+    date.setDate(date.getDate() - index);
+    const key = date.toISOString().slice(0, 10);
+    map.set(key, { date: key, label: date.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" }), confirmed: 0, declined: 0, people: 0 });
+  }
+  rows.forEach((row) => {
+    const key = new Date(row.created_at).toISOString().slice(0, 10);
+    const target = map.get(key);
+    if (!target) return;
+    if (row.status === "confirmed") { target.confirmed += 1; target.people += Number(row.people_count ?? 0); }
+    else target.declined += 1;
+  });
+  return [...map.values()];
+}
+
 export async function globalCounts() {
   if (isDemoMode()) return { companies: 1, users: 1 };
   const [c, u] = await Promise.all([
