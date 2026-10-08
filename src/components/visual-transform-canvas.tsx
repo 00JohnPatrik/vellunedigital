@@ -1160,7 +1160,7 @@ export function VisualTransformCanvas({ blocks, selectedIds: selectedIdsProp, zo
           onPointerCancel={end}
         >
           <span className="h-2 w-2 rounded-full bg-primary-foreground/95 shadow-sm sm:h-1.5 sm:w-1.5" aria-hidden="true" />
-        </button> />;
+        </button>;
       })}
       {selected.length > 1 && <span className="pointer-events-none absolute -top-7 left-1 rounded-full border border-primary/20 bg-primary px-2 py-1 text-[9px] font-semibold text-primary-foreground shadow-sm">{selected.length} selecionados</span>}
     </div>}
