@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { CATEGORIES, STARTERS, cloneContent, listTemplates, resolveBlockGeometry, type Block, type Category, type Template, type TemplateContent } from "@/lib/templates";
 import { cn } from "@/lib/utils";
+import { useAssetUrl } from "@/lib/assets";
 
 type TemplateGalleryProps = {
   open: boolean;
@@ -21,6 +22,7 @@ type GalleryItem = {
   content: TemplateContent;
   source: "curated" | "official" | "company";
   sourceLabel: string;
+  previewImage?: string | null;
 };
 
 const STARTER_CATEGORIES: Record<string, Category> = {
@@ -45,6 +47,7 @@ function starterItems(): GalleryItem[] {
     content: starter.build(),
     source: "curated",
     sourceLabel: "Vellune",
+    previewImage: null,
   }));
 }
 
@@ -58,6 +61,7 @@ function databaseTemplateItems(templates: Template[] | undefined): GalleryItem[]
       content: template.content,
       source: template.type === "company" ? "company" : "official",
       sourceLabel: template.type === "company" ? "Meu modelo" : "Oficial",
+      previewImage: template.preview_image,
     }));
 }
 
@@ -167,7 +171,93 @@ function GalleryBlockPreview({ block, geometry }: { block: Block; geometry: Retu
   );
 }
 
-function PreviewCanvas({ content }: { content: TemplateContent }) {
+function GalleryImagePreview({ item, className }: { item: { url?: string }; className?: string }) {
+  const src = useAssetUrl(item.url);
+  return src ? <img src={src} alt="" className={className} loading="lazy" /> : <div className="h-full w-full rounded-lg bg-muted-foreground/10" />;
+}
+
+function GalleryBlockPreview({ block, geometry }: { block: Block; geometry: ReturnType<typeof resolveBlockGeometry> }) {
+  const p = block.props ?? {};
+  const base: CSSProperties = {
+    position: "absolute",
+    left: geometry.x,
+    top: geometry.y,
+    width: geometry.width,
+    height: geometry.height,
+    zIndex: geometry.zIndex,
+    opacity: geometry.opacity,
+    transform: `rotate(${geometry.rotation}deg) scale(${geometry.scale})`,
+    transformOrigin: "center",
+    overflow: "hidden",
+  };
+
+  if (block.type === "image") {
+    return (
+      <div style={base} className="rounded-xl bg-muted">
+        {p.url ? <GalleryImagePreview item={{ url: p.url }} className="h-full w-full object-cover" /> : <div className="flex h-full items-center justify-center text-[10px] text-muted-foreground">Imagem</div>}
+      </div>
+    );
+  }
+
+  if (block.type === "gallery") {
+    let images: Array<{ url?: string; alt?: string }> = [];
+    try { images = JSON.parse(p.images || "[]"); } catch { images = []; }
+    const columns = Math.max(1, Math.min(4, Number(p.columns) || 2));
+    return (
+      <div style={{ ...base, display: "grid", gridTemplateColumns: `repeat(${columns}, minmax(0,1fr))`, gap: 4 }} className="rounded-xl bg-muted p-1">
+        {images.slice(0, 4).map((item, index) => <GalleryImagePreview key={index} item={item} className="h-full min-h-0 w-full rounded-lg object-cover" />)}
+      </div>
+    );
+  }
+
+  if (block.type === "text") {
+    return (
+      <div
+        style={{
+          ...base,
+          display: "flex", alignItems: "center",
+          justifyContent: p.align === "left" ? "flex-start" : p.align === "right" ? "flex-end" : "center",
+          padding: "4px 8px", textAlign: (p.align as CSSProperties["textAlign"]) || "center",
+          fontFamily: galleryFont(p.font),
+          fontSize: `${Math.max(9, Math.min(48, Number(p.fontSize) || 16))}px`,
+          fontWeight: p.fontWeight || (p.bold === "1" ? 700 : 500),
+          lineHeight: Number(p.lineHeight) || 1.15,
+          letterSpacing: `${Number(p.letterSpacing) || 0}px`,
+          color: p.color || "currentColor",
+          textTransform: p.textTransform as CSSProperties["textTransform"] || undefined,
+        }}
+      >
+        {p.text || "Seu texto aqui"}
+      </div>
+    );
+  }
+
+  const accent = p.backgroundColor || p.borderColor || "#a78bfa";
+  const color = p.textColor || p.color || "currentColor";
+  const labels: Record<string, string> = {
+    date: "DATA • evento", time: "HORÁRIO • evento", location: "LOCAL • evento",
+    countdown: "FALTAM • contagem", rsvp: p.label || "CONFIRMAR PRESENÇA",
+    whatsapp: p.label || "WHATSAPP", button: p.label || "BOTÃO",
+  };
+
+  if (block.type === "divider") return <div style={{ ...base, display: "flex", alignItems: "center", padding: "0 12px" }}><div className="w-full border-t border-current opacity-40" /></div>;
+  if (block.type === "shape" || block.type === "decoration") {
+    const shape = p.shape || "rectangle";
+    return <div style={{ ...base, background: p.fill === "none" ? "transparent" : (p.fillColor || accent), border: `${Math.max(0, Number(p.borderWidth) || 0)}px solid ${p.borderColor || accent}`, borderRadius: shape === "circle" ? "999px" : `${Number(p.borderRadius) || 12}px` }} />;
+  }
+  if (block.type === "qr_code") return <div style={{ ...base, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 4, padding: 8 }}><div className="aspect-square w-2/3 rounded-md border-4 border-foreground bg-background" /><span className="text-[8px] text-muted-foreground">QR Code</span></div>;
+
+  return (
+    <div style={{ ...base, display: "flex", alignItems: "center", justifyContent: "center", padding: 6 }}>
+      <span className="rounded-full border px-3 py-2 text-[9px] font-semibold shadow-sm" style={{ color, borderColor: p.borderColor || accent, background: p.backgroundColor || "rgba(255,255,255,.62)" }}>
+        {labels[block.type] || "Elemento"}
+      </span>
+    </div>
+  );
+}
+
+function PreviewCanvas({ content, previewImage }: { content: TemplateContent; previewImage?: string | null }) {
+  const coverSrc = useAssetUrl(previewImage);
   const blocks = content.blocks ?? [];
   const background = content.settings?.background;
   const geometries = blocks.map((block, index) => resolveBlockGeometry(block, index));
@@ -177,16 +267,21 @@ function PreviewCanvas({ content }: { content: TemplateContent }) {
 
   return (
     <div className="relative mx-auto w-full max-w-[240px] overflow-hidden rounded-xl border border-border/70 bg-card shadow-inner" style={{ minHeight: Math.max(180, height * scale) }}>
-      <div className="absolute inset-0 origin-top-left" style={{ width: canvasWidth, minHeight: height, transform: `scale(${scale})` }}>
-        <div className="relative isolate h-full w-[390px] overflow-hidden bg-card" style={{ minHeight: height }}>
-          <BackgroundLayers bg={background} />
-          {blocks.length === 0 ? (
-            <div className="absolute inset-0 flex items-center justify-center p-6 text-center text-sm text-muted-foreground">Canvas em branco</div>
-          ) : (
-            blocks.map((block, index) => <GalleryBlockPreview key={block.id} block={block} geometry={geometries[index] ?? resolveBlockGeometry(block, index)} />)
-          )}
+      {coverSrc ? (
+        <img src={coverSrc} alt="" className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
+      ) : (
+        <div className="absolute inset-0 origin-top-left" style={{ width: canvasWidth, minHeight: height, transform: `scale(${scale})` }}>
+          <div className="relative isolate h-full w-[390px] overflow-hidden bg-card" style={{ minHeight: height }}>
+            <BackgroundLayers bg={background} />
+            {blocks.length === 0 ? (
+              <div className="absolute inset-0 flex items-center justify-center p-6 text-center text-sm text-muted-foreground">Canvas em branco</div>
+            ) : (
+              blocks.map((block, index) => <GalleryBlockPreview key={block.id} block={block} geometry={geometries[index] ?? resolveBlockGeometry(block, index)} />)
+            )}
+          </div>
         </div>
-      </div>
+      )}
+      {coverSrc && <span className="pointer-events-none absolute inset-x-2 bottom-2 rounded-full border border-white/20 bg-black/35 px-2 py-1 text-center text-[8px] font-medium uppercase tracking-wide text-white/80 backdrop-blur-sm">Capa do modelo</span>}
       <span className="pointer-events-none absolute right-2 top-2 rounded-full border border-white/20 bg-black/35 px-2 py-1 text-[8px] font-medium uppercase tracking-wide text-white/80 backdrop-blur-sm">Prévia</span>
     </div>
   );
@@ -292,7 +387,7 @@ export function TemplateGallery({ open, onClose, onApply, hasContent }: Template
               <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
                 {filtered.map((item) => (
                   <button key={item.id} type="button" onClick={() => select(item.id)} className={cn("group touch-manipulation rounded-xl border bg-card p-2 text-left shadow-sm transition-all active:scale-[.99] hover:-translate-y-0.5 hover:border-primary/60 hover:shadow-lg", selected?.id === item.id && "border-primary ring-2 ring-primary/20 shadow-md shadow-primary/10")}>
-                    <PreviewCanvas content={item.content} />
+                    <PreviewCanvas content={item.content} previewImage={item.previewImage} />
                     <div className="p-1.5">
                       <div className="flex items-start gap-2">
                         <p className="min-w-0 flex-1 truncate text-sm font-semibold text-foreground">{item.label}</p>
@@ -324,7 +419,7 @@ export function TemplateGallery({ open, onClose, onApply, hasContent }: Template
                   <Eye className="h-4 w-4 text-primary" />
                   <p className="text-sm font-semibold text-foreground">Prévia do modelo</p>
                 </div>
-                <PreviewCanvas content={selected.content} />
+                <PreviewCanvas content={selected.content} previewImage={selected.previewImage} />
                 <div>
                   <p className="font-medium text-foreground">{selected.label}</p>
                   <p className="mt-1 text-xs leading-5 text-muted-foreground">{selected.source === "company" ? "Modelo da sua empresa. Você pode ajustar o conteúdo, estilo e posição no editor." : "A composição será aplicada ao convite e poderá ser ajustada bloco a bloco no editor."}</p>
