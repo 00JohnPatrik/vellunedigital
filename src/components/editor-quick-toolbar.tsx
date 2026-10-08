@@ -24,11 +24,15 @@ import {
   Underline,
   Strikethrough,
   Sparkles,
+  Plus,
+  CalendarDays,
+  MapPin,
+  MousePointerClick,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { FONTS } from "@/lib/blocks";
-import type { Block } from "@/lib/templates";
+import type { Block, BlockType } from "@/lib/templates";
 
 export type ImageAction = "replace" | "crop" | "adjust";
 
@@ -70,6 +74,9 @@ export function EditorQuickToolbar({
   onOpacity?: (value: number) => void;
   onRotate?: (amount: number) => void;
   onAutoArrange?: () => void;
+  onMagicArrange?: (preset: "balanced" | "editorial" | "minimal" | "romantic") => void;
+  onSmartAlign?: () => void;
+  onAddElement?: (type: BlockType) => void;
 }) {
   const primary = selected[0];
   if (!primary) return null;
@@ -161,10 +168,35 @@ export function EditorQuickToolbar({
         </fieldset>
       )}
 
-      {selected.length > 1 && !text && onAutoArrange && (
-        <Button variant="secondary" size="sm" className="h-8 px-2 text-[10px]" title="Organizar seleção automaticamente" aria-label="Organizar seleção automaticamente" onClick={onAutoArrange}>
-          <Sparkles className="mr-1.5 h-3.5 w-3.5" />Organizar
-        </Button>
+      {onAddElement && (
+        <details className="relative">
+          <summary className="inline-flex h-8 cursor-pointer list-none items-center gap-1 rounded-md border border-input bg-background px-2 text-xs font-medium text-foreground hover:bg-accent [&::-webkit-details-marker]:hidden">
+            <Plus className="h-3.5 w-3.5" />Adicionar
+          </summary>
+          <div className="absolute left-0 top-10 z-[130] grid min-w-[215px] gap-1 rounded-xl border border-border/80 bg-popover p-1.5 shadow-2xl">
+            <p className="px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">Continuar a partir daqui</p>
+            <Button size="sm" variant="ghost" className="justify-start text-xs" onClick={() => onAddElement("text")}><Type className="mr-2 h-3.5 w-3.5" />Texto</Button>
+            <Button size="sm" variant="ghost" className="justify-start text-xs" onClick={() => onAddElement("image")}><ImageIcon className="mr-2 h-3.5 w-3.5" />Imagem</Button>
+            <Button size="sm" variant="ghost" className="justify-start text-xs" onClick={() => onAddElement("date")}><CalendarDays className="mr-2 h-3.5 w-3.5" />Data do evento</Button>
+            <Button size="sm" variant="ghost" className="justify-start text-xs" onClick={() => onAddElement("location")}><MapPin className="mr-2 h-3.5 w-3.5" />Local</Button>
+            <Button size="sm" variant="ghost" className="justify-start text-xs" onClick={() => onAddElement("button")}><MousePointerClick className="mr-2 h-3.5 w-3.5" />Botão de ação</Button>
+          </div>
+        </details>
+      )}
+
+      {selected.length > 1 && !text && (onMagicArrange || onAutoArrange) && (
+        <details className="relative">
+          <summary className="inline-flex h-8 cursor-pointer list-none items-center gap-1 rounded-md border border-input bg-background px-2 text-xs font-medium text-foreground hover:bg-accent [&::-webkit-details-marker]:hidden">
+            <Sparkles className="h-3.5 w-3.5 text-primary" />Magic Layout
+          </summary>
+          <div className="absolute left-0 top-10 z-[130] grid min-w-[205px] gap-1 rounded-xl border border-border/80 bg-popover p-1.5 shadow-2xl">
+            <p className="px-2 py-1 text-[10px] text-muted-foreground">Escolha uma distribuição visual pronta.</p>
+            <Button size="sm" variant="ghost" className="justify-start text-xs" onClick={() => onAutoArrange?.()}><Sparkles className="mr-2 h-3.5 w-3.5" />Equilibrado</Button>
+            <Button size="sm" variant="ghost" className="justify-start text-xs" onClick={() => onMagicArrange?.("editorial")}><Sparkles className="mr-2 h-3.5 w-3.5" />Editorial</Button>
+            <Button size="sm" variant="ghost" className="justify-start text-xs" onClick={() => onMagicArrange?.("minimal")}><Sparkles className="mr-2 h-3.5 w-3.5" />Minimalista</Button>
+            <Button size="sm" variant="ghost" className="justify-start text-xs" onClick={() => onMagicArrange?.("romantic")}><Sparkles className="mr-2 h-3.5 w-3.5" />Romântico</Button>
+          </div>
+        </details>
       )}
 
       {selected.length > 1 && !text && onAlign && (
@@ -181,6 +213,11 @@ export function EditorQuickToolbar({
               <Button variant="outline" size="icon" title="Centralizar verticalmente" aria-label="Centralizar verticalmente" onClick={() => onAlign("middle")}><AlignVerticalJustifyCenter className="h-4 w-4" /></Button>
               <Button variant="outline" size="icon" title="Alinhar à base" aria-label="Alinhar à base" onClick={() => onAlign("bottom")}><AlignEndVertical className="h-4 w-4" /></Button>
             </div>
+            {onSmartAlign && (
+              <Button variant="secondary" size="sm" className="w-full justify-start text-xs" onClick={onSmartAlign}>
+                <Sparkles className="mr-1.5 h-3.5 w-3.5 text-primary" />Alinhamento inteligente
+              </Button>
+            )}
             <div className="grid grid-cols-2 gap-1">
               <Button variant="outline" size="sm" className="text-xs" onClick={() => onAlign("canvasCenterX")}><AlignCenterHorizontal className="mr-1.5 h-3.5 w-3.5" />No centro X</Button>
               <Button variant="outline" size="sm" className="text-xs" onClick={() => onAlign("canvasCenterY")}><AlignCenterVertical className="mr-1.5 h-3.5 w-3.5" />No centro Y</Button>
