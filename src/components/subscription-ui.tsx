@@ -88,7 +88,7 @@ export function SubscriptionStatusBanner({ companyId }: { companyId: string }) {
 
   const data = query.data;
   const lifecycle = getSubscriptionLifecycle(data);
-  if (lifecycle.state === "active" && lifecycle.daysRemaining !== null && lifecycle.daysRemaining > 7) return null;
+  if (lifecycle.state === "active" && (lifecycle.daysRemaining === null || lifecycle.daysRemaining > 7)) return null;
 
   const whatsapp = whatsappHref(
     lifecycle.state === "missing"
