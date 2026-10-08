@@ -1270,6 +1270,7 @@
 /* -------------------------------------------------------------------------- */
 
 .vellune-auth-cta {
+  overflow: visible !important;
   --vellune-cta-rx: 0deg;
   --vellune-cta-ry: 0deg;
   --vellune-cta-lift: 0px;
