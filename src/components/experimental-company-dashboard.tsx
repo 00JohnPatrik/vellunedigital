@@ -274,22 +274,42 @@ export function ExperimentalCompanyDashboard({ appUser, reportRows, recentRespon
           ) : (
             <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
               {filteredInvitations.map((invitation) => (
-                <Link key={invitation.id} to="/invitations/$id/editor" params={{ id: invitation.id }} className="group overflow-hidden rounded-2xl border border-[#292F3A] bg-[#171B23] transition duration-200 hover:-translate-y-0.5 hover:border-[#8B5CF6]/45 hover:shadow-[0_24px_55px_-38px_rgba(139,92,246,0.75)]">
-                  <ProjectThumbnail invitation={invitation} />
-                  <div className="p-4 sm:p-5">
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="min-w-0">
-                        <p className="truncate text-sm font-semibold text-[#F5F7FA]">{invitation.name}</p>
-                        <p className="mt-1 truncate text-xs text-[#A9B1BF]">{invitation.customer?.name ?? "Sem cliente"}</p>
+                <article key={invitation.id} className="group relative overflow-visible rounded-2xl border border-[#292F3A] bg-[#171B23] transition duration-200 hover:-translate-y-0.5 hover:border-[#8B5CF6]/45 hover:shadow-[0_24px_55px_-38px_rgba(139,92,246,0.75)]">
+                  <Link to="/invitations/$id/editor" params={{ id: invitation.id }} className="block overflow-hidden rounded-2xl">
+                    <ProjectThumbnail invitation={invitation} />
+                    <div className="p-4 sm:p-5">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-semibold text-[#F5F7FA]">{invitation.name}</p>
+                          <p className="mt-1 truncate text-xs text-[#A9B1BF]">{invitation.customer?.name ?? "Sem cliente"}</p>
+                        </div>
+                        <InvitationStatusBadge status={invitation.status} />
                       </div>
-                      <InvitationStatusBadge status={invitation.status} />
+                      <div className="mt-4 flex items-center justify-between gap-3 text-[10px] text-[#A9B1BF]">
+                        <span className="inline-flex items-center gap-1.5"><CalendarDays className="h-3.5 w-3.5" />{fmtEventDate(invitation.event_date)}</span>
+                        <span>{new Date(invitation.updated_at).toLocaleDateString("pt-BR")}</span>
+                      </div>
                     </div>
-                    <div className="mt-4 flex items-center justify-between gap-3 text-[10px] text-[#A9B1BF]">
-                      <span className="inline-flex items-center gap-1.5"><CalendarDays className="h-3.5 w-3.5" />{fmtEventDate(invitation.event_date)}</span>
-                      <span>{new Date(invitation.updated_at).toLocaleDateString("pt-BR")}</span>
-                    </div>
+                  </Link>
+                  <div className="absolute right-3 top-[135px] z-20 flex items-center gap-1 opacity-100 sm:opacity-0 sm:transition sm:group-hover:opacity-100">
+                    <Link to="/invitations/$id/editor" params={{ id: invitation.id }} className="inline-flex h-8 items-center gap-1.5 rounded-full border border-[#292F3A] bg-[#171B23]/92 px-2.5 text-[10px] font-semibold text-[#F5F7FA] backdrop-blur-md hover:border-[#8B5CF6]/45" aria-label="Editar convite" title="Editar" onClick={(event) => event.stopPropagation()}>
+                      <Pencil className="h-3.5 w-3.5" />Editar
+                    </Link>
+                    <Link to="/invitations/$id/preview" params={{ id: invitation.id }} className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-[#292F3A] bg-[#171B23]/92 text-[#A9B1BF] backdrop-blur-md hover:text-[#F5F7FA]" aria-label="Prévia" title="Prévia" onClick={(event) => event.stopPropagation()}>
+                      <Eye className="h-3.5 w-3.5" />
+                    </Link>
+                    <button type="button" className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-[#292F3A] bg-[#171B23]/92 text-[#A9B1BF] backdrop-blur-md hover:text-[#F5F7FA]" aria-label="Mais ações" title="Mais ações" onClick={(event) => { event.preventDefault(); event.stopPropagation(); setOpenProjectMenu((current) => current === invitation.id ? null : invitation.id); }}>
+                      <MoreHorizontal className="h-3.5 w-3.5" />
+                    </button>
+                    {openProjectMenu === invitation.id && (
+                      <div className="absolute right-0 top-10 grid min-w-[170px] gap-1 rounded-2xl border border-[#292F3A] bg-[#171B23]/98 p-1.5 shadow-[0_24px_60px_-24px_rgba(11,13,18,0.95)] backdrop-blur-xl">
+                        <Link to="/invitations/$id/report" params={{ id: invitation.id }} onClick={() => setOpenProjectMenu(null)} className="rounded-xl px-3 py-2 text-left text-[11px] text-[#A9B1BF] hover:bg-[#0B0D12] hover:text-[#F5F7FA]">Resultados do convite</Link>
+                        <Link to="/invitations/$id/guests" params={{ id: invitation.id }} onClick={() => setOpenProjectMenu(null)} className="rounded-xl px-3 py-2 text-left text-[11px] text-[#A9B1BF] hover:bg-[#0B0D12] hover:text-[#F5F7FA]">Convidados</Link>
+                        <Link to="/invitations/$id/preview" params={{ id: invitation.id }} onClick={() => setOpenProjectMenu(null)} className="rounded-xl px-3 py-2 text-left text-[11px] text-[#A9B1BF] hover:bg-[#0B0D12] hover:text-[#F5F7FA]">Abrir prévia</Link>
+                      </div>
+                    )}
                   </div>
-                </Link>
+                </article>
               ))}
             </div>
           )}
