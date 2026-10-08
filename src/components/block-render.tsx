@@ -375,6 +375,7 @@ export function BackgroundLayers({ bg }: { bg?: Background | undefined }) {
 
 /** Read-only rendering of a whole invitation (hidden blocks are skipped). */
 export function InvitationCanvas({ blocks, ctx, className, background }: { blocks: Block[]; ctx?: EventCtx | undefined; className?: string | undefined; background?: Background | undefined }) {
+  const canvasHostRef = useRef<HTMLDivElement | null>(null);
   const visible = blocks.filter((b) => b.visibility !== false && !b.hidden);
   const geometries = visible.map((block) => getBlockGeometry(block));
   const hasFreeCanvasBlock = geometries.some((geometry) => Object.keys(geometry).length > 0);
@@ -382,15 +383,35 @@ export function InvitationCanvas({ blocks, ctx, className, background }: { block
     640,
     ...geometries.map((geometry) => (geometry.y ?? 24) + (geometry.height ?? 0) + 24),
   );
-  return (
-    <div
-      className={cn(
-        "relative isolate mx-auto w-full max-w-md overflow-hidden rounded-2xl border bg-card shadow-sm",
-        hasFreeCanvasBlock ? "min-h-[640px] p-0" : "flex flex-col gap-5 p-6",
-        className,
-      )}
-      style={{ ...bgColorStyle(background), ...(hasFreeCanvasBlock ? { minHeight: canvasHeight } : {}) }}
-    >
+  const designWidth = hasFreeCanvasBlock
+    ? Math.max(
+        390,
+        ...geometries.map((geometry) => (geometry.x ?? 24) + (geometry.width ?? 0) + 24),
+      )
+    : 0;
+  const [freeScale, setFreeScale] = useState(1);
+
+  useEffect(() => {
+    if (!hasFreeCanvasBlock) {
+      setFreeScale(1);
+      return;
+    }
+    const host = canvasHostRef.current;
+    if (!host) return;
+
+    const updateScale = () => {
+      const availableWidth = Math.max(1, host.clientWidth);
+      setFreeScale(Math.min(1, availableWidth / designWidth));
+    };
+
+    updateScale();
+    const observer = new ResizeObserver(updateScale);
+    observer.observe(host);
+    return () => observer.disconnect();
+  }, [designWidth, hasFreeCanvasBlock]);
+
+  const content = (
+    <>
       <BackgroundLayers bg={background} />
       {visible.length ? visible.map((b, index) => {
         const geometry = geometries[index] ?? {};
@@ -409,6 +430,37 @@ export function InvitationCanvas({ blocks, ctx, className, background }: { block
         } : {};
         return <div key={b.id} className={cn("min-w-0", free && "overflow-visible")} style={frame}><BlockView block={b} ctx={ctx} interactive index={index} /></div>;
       }) : <p className="py-10 text-center text-sm text-muted-foreground">Este convite ainda não possui blocos.</p>}
+    </>
+  );
+
+  return (
+    <div
+      ref={canvasHostRef}
+      className={cn(
+        "relative isolate mx-auto w-full max-w-md overflow-hidden rounded-2xl border bg-card shadow-sm",
+        hasFreeCanvasBlock ? "min-h-[640px] p-0" : "flex flex-col gap-5 p-6",
+        className,
+      )}
+      style={{
+        ...bgColorStyle(background),
+        ...(hasFreeCanvasBlock
+          ? { minHeight: canvasHeight * freeScale }
+          : {}),
+      }}
+    >
+      {hasFreeCanvasBlock ? (
+        <div
+          className="relative mx-auto"
+          style={{
+            width: designWidth,
+            minHeight: canvasHeight,
+            transform: `scale(${freeScale})`,
+            transformOrigin: "top center",
+          }}
+        >
+          {content}
+        </div>
+      ) : content}
     </div>
   );
 }
