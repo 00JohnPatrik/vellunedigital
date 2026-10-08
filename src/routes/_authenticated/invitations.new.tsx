@@ -14,6 +14,7 @@ import { customersKey, findDuplicate, listCustomers, toRow, type Customer } from
 import { createInvitation, emptyEvent, invitationError, invitationsKey, validateEvent, type EventValues } from "@/lib/invitations";
 import { categoryLabel, listTemplates, templatesKey } from "@/lib/templates";
 import { cn } from "@/lib/utils";
+import { SubscriptionUsageAlert } from "@/components/subscription-ui";
 
 export const Route = createFileRoute("/_authenticated/invitations/new")({
   head: () => ({ meta: [{ title: "Novo convite — Vellune Digital" }] }),
@@ -49,6 +50,7 @@ function NewInvitationPage() {
 
   return (
     <div className="mx-auto max-w-3xl">
+      {companyId && <SubscriptionUsageAlert companyId={companyId} />}
       <Link to="/invitations" className="mb-3 inline-block text-sm text-muted-foreground hover:text-foreground">← Convites</Link>
       <PageHeader title="Novo convite" />
       <ol className="mb-6 grid grid-cols-4 gap-2" aria-label="Etapas para criar convite">
