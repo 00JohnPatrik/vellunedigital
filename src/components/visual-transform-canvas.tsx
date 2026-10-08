@@ -3,7 +3,7 @@ import { BlockView } from "@/components/block-render";
 import { EditorQuickToolbar, type ImageAction } from "@/components/editor-quick-toolbar";
 import { resolveBlockGeometry, type Block, type BlockType } from "@/lib/templates";
 import { fontCss } from "@/lib/blocks";
-import { Copy, Lock, Unlock, Pencil, SlidersHorizontal, Trash2, Crop, Sparkles } from "lucide-react";
+import { Copy, Lock, Unlock, Pencil, SlidersHorizontal, Trash2, Crop, Sparkles, RotateCw } from "lucide-react";
 
 type Point = { x: number; y: number };
 type Guide = { axis: "x" | "y"; value: number; kind?: "edge" | "center" | "grid" };
@@ -269,6 +269,7 @@ export function VisualTransformCanvas({ blocks, selectedIds: selectedIdsProp, zo
   const [editingTextValue, setEditingTextValue] = useState("");
   const [selectAllOnTextEdit, setSelectAllOnTextEdit] = useState(true);
   const [rotationHint, setRotationHint] = useState<number | null>(null);
+  const [resizeHint, setResizeHint] = useState<{ width: number; height: number } | null>(null);
   const editingTextRef = useRef<HTMLTextAreaElement | null>(null);
   const textLongPress = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastTextTap = useRef<{ id: string; at: number; x: number; y: number } | null>(null);
@@ -348,6 +349,7 @@ export function VisualTransformCanvas({ blocks, selectedIds: selectedIdsProp, zo
     interaction.current = null;
     setGuides([]);
     setRotationHint(null);
+    setResizeHint(null);
   };
 
   const marqueeBounds = marquee ? {
@@ -473,6 +475,22 @@ export function VisualTransformCanvas({ blocks, selectedIds: selectedIdsProp, zo
       }
 
       const groupCommand = event.ctrlKey || event.metaKey;
+      if (event.key === "Escape") {
+        event.preventDefault();
+        stopTextEditing();
+        onSelect("", false);
+        return;
+      }
+      if ((event.key === "Delete" || event.key === "Backspace") && selectedIds.length) {
+        event.preventDefault();
+        onDelete?.(selectedIds);
+        return;
+      }
+      if (groupCommand && event.key.toLowerCase() === "d" && selectedIds.length) {
+        event.preventDefault();
+        onDuplicate?.(selectedIds);
+        return;
+      }
       if (groupCommand && event.key.toLowerCase() === "g" && !event.shiftKey) {
         event.preventDefault();
         if (selectedIds.length > 1) onGroup?.(selectedIds);
@@ -960,7 +978,7 @@ export function VisualTransformCanvas({ blocks, selectedIds: selectedIdsProp, zo
       const hit = isSelected ? 10 : 6;
       return <div
         key={block.id || index}
-        className={`group absolute left-0 top-0 rounded-xl transition-[border-color,box-shadow] duration-150 ${isSelected ? "border-2 border-primary ring-2 ring-primary/25 shadow-[0_0_0_1px_hsl(var(--primary)/.10)]" : "border border-transparent hover:border-primary/40"} ${hidden ? "opacity-35" : ""}`}
+        className={`group absolute left-0 top-0 rounded-xl transition-[border-color,box-shadow] duration-150 ${isSelected ? "border-2 border-primary ring-2 ring-primary/25 shadow-[0_0_0_1px_hsl(var(--primary)/.10)]" : "border border-transparent hover:border-primary/40"} ${hidden ? "opacity-35" : ""} ${block.locked ? "cursor-default" : "cursor-grab active:cursor-grabbing"}`}
         style={{
           width: value.width + hit * 2,
           height: value.height + hit * 2,
