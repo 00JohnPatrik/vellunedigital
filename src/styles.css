@@ -1299,3 +1299,79 @@
     transform: none !important;
   }
 }
+
+
+/* Vellune Digital — opt-in experimental editor shell.
+   Scoped under .vellune-editor-experimental so the standard editor is unchanged. */
+.vellune-editor-experimental {
+  --vellune-experimental-accent: #8B5CF6;
+  --vellune-experimental-surface: rgba(17, 20, 27, 0.80);
+}
+
+@media (max-width: 1023px) {
+  .vellune-editor-experimental .vellune-editor-topbar {
+    position: relative;
+    z-index: 60;
+    min-height: 58px;
+    border-bottom-color: rgba(255,255,255,.07);
+    background: rgba(11,13,18,.72);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    padding-inline: 12px;
+  }
+
+  .vellune-editor-experimental .vellune-editor-topbar .vellune-editor-history-cluster {
+    border-color: rgba(255,255,255,.08);
+    background: rgba(255,255,255,.04);
+    backdrop-filter: blur(18px);
+  }
+
+  .vellune-editor-experimental .vellune-editor-body {
+    background:
+      radial-gradient(circle at 50% 12%, rgba(139,92,246,.10), transparent 34%),
+      #0B0D12;
+  }
+
+  .vellune-editor-experimental .vellune-editor-viewport {
+    border: 0;
+    border-radius: 0;
+    background:
+      radial-gradient(circle at 50% 40%, rgba(139,92,246,.08), transparent 38%),
+      rgba(11,13,18,.88);
+    padding: 12px 10px 10px;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.03);
+  }
+
+  .vellune-editor-experimental .vellune-editor-canvas {
+    border-color: rgba(255,255,255,.10) !important;
+    box-shadow:
+      0 28px 70px -28px rgba(0,0,0,.84),
+      0 8px 26px -16px rgba(139,92,246,.32) !important;
+  }
+
+  .vellune-editor-experimental .vellune-editor-mobile-bar-experimental {
+    position: relative;
+    z-index: 70;
+    margin-inline: 8px;
+    margin-bottom: max(8px, env(safe-area-inset-bottom));
+  }
+
+  .vellune-editor-experimental .vellune-editor-mobile-bar-experimental button {
+    min-height: 42px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .vellune-editor-experimental .vellune-editor-sidebar {
+    border-right-color: rgba(255,255,255,.07);
+    background: rgba(13,15,20,.88);
+    backdrop-filter: blur(22px);
+    -webkit-backdrop-filter: blur(22px);
+  }
+
+  .vellune-editor-experimental .vellune-editor-viewport {
+    background:
+      radial-gradient(circle at 50% 45%, rgba(139,92,246,.06), transparent 34%),
+      rgba(11,13,18,.86);
+  }
+}
