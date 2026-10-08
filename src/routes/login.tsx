@@ -13,6 +13,7 @@ import Logo from "@/components/Logo";
 import { AuthPremiumVisual } from "@/components/auth-premium-visual";
 import { AuthJourneySteps } from "@/components/auth-journey";
 import { AuthUnavailableState } from "@/components/auth-unavailable-state";
+import { AuthSuccessTransition } from "@/components/auth-success-transition";
 
 export const Route = createFileRoute("/login")({
   validateSearch: z.object({ error: z.enum(["inactive"]).optional(), mode: z.enum(["recovery"]).optional() }),
@@ -51,6 +52,7 @@ function LoginPage() {
   const [loginCooldown, setLoginCooldown] = useState(0);
   const [recoveryCooldown, setRecoveryCooldown] = useState(0);
   const [authUnavailable, setAuthUnavailable] = useState(false);
+  const [authSuccessOpen, setAuthSuccessOpen] = useState(false);
   const identifierRef = useRef<HTMLInputElement | null>(null);
   const passwordRef = useRef<HTMLInputElement | null>(null);
   const recoveryEmailRef = useRef<HTMLInputElement | null>(null);
@@ -266,8 +268,9 @@ function LoginPage() {
       } catch {
         // Login must continue even if browser storage is unavailable.
       }
-      // O acesso foi validado. Evitamos uma tela intermediária para manter a entrada fluida.
-      await new Promise((resolve) => window.setTimeout(resolve, 180));
+      // O acesso foi validado: exibir a transição premium antes de entrar no sistema.
+      setAuthSuccessOpen(true);
+      await new Promise((resolve) => window.setTimeout(resolve, 1050));
       navigate({ to: homeFor(appUser), replace: true });
     } catch (err) {
       if (isAuthServiceUnavailable(err)) {
@@ -644,6 +647,7 @@ function LoginPage() {
           </div>
         </section>
       </div>
+      <AuthSuccessTransition open={authSuccessOpen} />
     </main>
   );
 }
