@@ -70,7 +70,7 @@ export function VelluneCompanyShell({ appUser, children, activeItem = "home", cl
         onSearchChange={setSearch}
         searchPlaceholder="Buscar convites, clientes ou áreas"
         onSearchActivate={() => setSearchOpen(true)}
-        onAvatarClick={() => navigate({ to: "/dashboard/configuracoes" })}
+        onAvatarClick={() => navigate({ to: "/settings" })}
         showNotifications={false}
         trailingActions={<NotificationCenter appUser={appUser} />}
       />
