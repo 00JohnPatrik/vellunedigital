@@ -98,7 +98,7 @@ export function AppShell({ base, nav, appUser, children }: Props) {
 
   useEffect(() => {
     const channelName = appUser.company?.id ? `presence:company:${appUser.company.id}` : "presence:super-admin";
-    const channel = supabase.channel(channelName, { config: { presence: { key: appUser.id } } });
+    const channel = supabase.channel(channelName, { config: { private: true, presence: { key: appUser.id } } });
 
     const updateCount = () => {
       const state = channel.presenceState();
