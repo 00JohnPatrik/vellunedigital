@@ -48,8 +48,15 @@ export const normalizePhone = (v: string) => {
   return digits;
 };
 
+async function authRateKey(scope: string, value: string): Promise<string> {
+  const bytes = new TextEncoder().encode(value.trim().toLowerCase());
+  const digest = await crypto.subtle.digest("SHA-256", bytes);
+  const hex = Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, "0")).join("");
+  return `${scope}:${hex}`;
+}
+
 async function allowAuthRequest(scope: string, value: string, limit: number, windowSeconds: number): Promise<boolean> {
-  const key = `${scope}:${value.trim().toLowerCase()}`;
+  const key = await authRateKey(scope, value);
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const { data, error } = await supabaseAdmin.rpc("consume_auth_rate_limit", {
     p_key: key,
