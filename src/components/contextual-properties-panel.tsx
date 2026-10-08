@@ -151,6 +151,9 @@ export function BackgroundPropertiesPanel({ background = {}, assets, onChange }:
   const overlayColor = typeof bg.overlayColor === "string" && /^#[0-9a-f]{6}$/i.test(bg.overlayColor) ? bg.overlayColor : "#000000";
   const scale = Math.max(25, Math.min(300, Number(bg.imageScale) || 100));
   const opacity = Math.max(0, Math.min(1, Number(bg.imageOpacity ?? 1)));
+  const offsetX = Math.max(-300, Math.min(300, Number(bg.imageOffsetX) || 0));
+  const offsetY = Math.max(-300, Math.min(300, Number(bg.imageOffsetY) || 0));
+  const size = bg.size === "contain" ? "contain" : "cover";
   const preset = (value: typeof backgroundPresets[number]) => update({ color: value.color, gradient: value.gradient });
 
   return <section className="space-y-3 rounded-xl border bg-muted/15 p-3" aria-label="Fundo do convite">
@@ -173,8 +176,20 @@ export function BackgroundPropertiesPanel({ background = {}, assets, onChange }:
       />
       <Input type="url" value={image.startsWith("storage:") ? "" : image} placeholder="Ou cole uma URL https://..." onChange={(event) => update({ image: event.target.value })} className="h-8 text-xs" />
       {image && <Button type="button" size="sm" variant="ghost" className="h-7 px-2 text-[11px]" onClick={() => update({ image: "" })}>Remover imagem</Button>}
-      <div className="grid grid-cols-2 gap-2"><BackgroundSelect label="Posição horizontal" value={String(bg.x || "center")} options={[["left", "Esquerda"], ["center", "Centro"], ["right", "Direita"]]} onChange={(value) => update({ x: value })} /><BackgroundSelect label="Posição vertical" value={String(bg.y || "center")} options={[["top", "Topo"], ["center", "Centro"], ["bottom", "Base"]]} onChange={(value) => update({ y: value })} /></div>
+      <div className="grid grid-cols-2 gap-2">
+        <BackgroundSelect label="Preenchimento" value={size} options={[["cover", "Preencher tela"], ["contain", "Mostrar inteira"]]} onChange={(value) => update({ size: value })} />
+        <BackgroundSelect label="Posição horizontal" value={String(bg.x || "center")} options={[["left", "Esquerda"], ["center", "Centro"], ["right", "Direita"]]} onChange={(value) => update({ x: value })} />
+      </div>
+      <div className="grid grid-cols-2 gap-2">
+        <BackgroundSelect label="Posição vertical" value={String(bg.y || "center")} options={[["top", "Topo"], ["center", "Centro"], ["bottom", "Base"]]} onChange={(value) => update({ y: value })} />
+        <div className="flex items-end"><Button type="button" size="sm" variant="outline" className="h-8 w-full text-[11px]" onClick={() => update({ x: "center", y: "center", imageOffsetX: 0, imageOffsetY: 0 })}>Centralizar</Button></div>
+      </div>
       <label className="block space-y-1 text-[11px] text-muted-foreground">Zoom: {scale}%<input type="range" min="25" max="300" step="5" value={scale} onChange={(event) => update({ imageScale: Number(event.target.value) })} className="w-full accent-primary" /></label>
+      <div className="space-y-2 rounded-lg border border-primary/10 bg-background/35 p-2">
+        <p className="text-[11px] font-semibold text-foreground">Ajuste fino da posição</p>
+        <label className="block space-y-1 text-[11px] text-muted-foreground">Horizontal: {offsetX}px<input type="range" min="-300" max="300" step="1" value={offsetX} onChange={(event) => update({ imageOffsetX: Number(event.target.value) })} className="w-full accent-primary" aria-label="Deslocamento horizontal do fundo" /></label>
+        <label className="block space-y-1 text-[11px] text-muted-foreground">Vertical: {offsetY}px<input type="range" min="-300" max="300" step="1" value={offsetY} onChange={(event) => update({ imageOffsetY: Number(event.target.value) })} className="w-full accent-primary" aria-label="Deslocamento vertical do fundo" /></label>
+      </div>
       <label className="block space-y-1 text-[11px] text-muted-foreground">Opacidade: {Math.round(opacity * 100)}%<input type="range" min="0" max="1" step="0.05" value={opacity} onChange={(event) => update({ imageOpacity: Number(event.target.value) })} className="w-full accent-primary" /></label>
     </div>
     <div className="space-y-2 rounded-lg border bg-background/40 p-2"><BackgroundSelect label="Sobreposição" value={overlay > 0 ? "on" : "off"} options={[["off", "Nenhuma"], ["on", "Ativada"]]} onChange={(value) => update({ overlay: value === "on" ? Math.max(overlay, 20) : 0 })} />{overlay > 0 && <><label className="block space-y-1 text-[11px] text-muted-foreground">Intensidade: {overlay}%<input type="range" min="1" max="80" value={overlay} onChange={(event) => update({ overlay: Number(event.target.value) })} className="w-full accent-primary" /></label><div className="space-y-1"><Label className="text-[11px] text-muted-foreground">Cor da sobreposição</Label><div className="flex gap-1.5"><input type="color" aria-label="Selecionar cor da sobreposição" value={overlayColor} onChange={(event) => update({ overlayColor: event.target.value })} className="h-8 w-10 cursor-pointer rounded border bg-transparent p-1" /><Input value={typeof bg.overlayColor === "string" ? bg.overlayColor : ""} maxLength={7} placeholder="#000000" onChange={(event) => update({ overlayColor: event.target.value })} className="h-8 text-xs" /></div></div></>}</div>
