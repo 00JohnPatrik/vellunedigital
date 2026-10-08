@@ -625,6 +625,42 @@ export type Database = {
           },
         ]
       }
+      invitation_favorites: {
+        Row: {
+          created_at: string
+          id: string
+          invitation_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          invitation_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          invitation_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invitation_favorites_invitation_id_fkey"
+            columns: ["invitation_id"]
+            isOneToOne: false
+            referencedRelation: "invitations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invitation_favorites_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       rsvp_configs: {
         Row: {
           allow_email: boolean
