@@ -311,7 +311,7 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHe
   const [zoom, setZoom] = useState(() => viewPreferences.current?.zoom ?? 60);
   const [showGrid, setShowGrid] = useState(false);
   const [snapEnabled, setSnapEnabled] = useState(() => viewPreferences.current?.snapEnabled ?? true);
-  const [mobileSheet, setMobileSheet] = useState<"elements" | "layers" | "properties" | "background" | "view" | null>(null);
+  const [mobileSheet, setMobileSheet] = useState<"elements" | "layers" | "properties" | "background" | "view" | "experimental-add" | "experimental-elements" | "experimental-uploads" | "experimental-text" | null>(null);
   const [toolCategory, setToolCategory] = useState("Modelos");
   const [templateOpen, setTemplateOpen] = useState(false);
   const [startEditingTextId, setStartEditingTextId] = useState<string | null>(null);
@@ -1118,6 +1118,22 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHe
           {desktopHeaderRight}
         </div>
       </div>
+      {experimentalLayout && (
+        <div className="vellune-editor-topbar vellune-editor-topbar-experimental flex items-center gap-2 border-b border-white/[0.08] bg-[#0B0D12]/78 px-3 py-2 backdrop-blur-2xl lg:hidden" role="toolbar" aria-label="Barra principal do editor experimental">
+          <div className="min-w-0 flex-1 overflow-hidden [&_.vellune-auth-cta]:!shadow-none">
+            <div className="flex min-w-0 items-center gap-2">
+              {desktopHeaderLeft}
+            </div>
+          </div>
+          <div className="flex shrink-0 items-center gap-1">
+            <button type="button" aria-label="Desfazer" title="Desfazer" disabled={!h.canUndo} onClick={h.undo} className="inline-flex h-8 w-8 items-center justify-center rounded-xl border border-white/[0.08] bg-white/[0.04] text-white/65 disabled:opacity-30"><Undo2 className="h-3.5 w-3.5" /></button>
+            <button type="button" aria-label="Refazer" title="Refazer" disabled={!h.canRedo} onClick={h.redo} className="inline-flex h-8 w-8 items-center justify-center rounded-xl border border-white/[0.08] bg-white/[0.04] text-white/65 disabled:opacity-30"><Redo2 className="h-3.5 w-3.5" /></button>
+          </div>
+          <div className="max-w-[48vw] shrink-0 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            <div className="flex w-max items-center gap-1">{toolbarExtra}</div>
+          </div>
+        </div>
+      )}
       <div className="vellune-editor-topbar flex flex-wrap items-center justify-between gap-2 border-b border-primary/10 bg-card/90 px-3 py-2.5 shadow-sm backdrop-blur-xl lg:hidden" role="toolbar" aria-label="Barra principal do editor">
         <div className="flex min-w-0 items-center gap-2">
           <div className="vellune-editor-device-switcher hidden items-center gap-0.5 rounded-xl border border-primary/10 bg-background/80 p-1 shadow-sm sm:flex" role="group" aria-label="Tamanho da tela do convite">
@@ -1527,6 +1543,14 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHe
                 setInspectorOpen(true);
               }}
             /></div></div></div>
+          {experimentalLayout && compact && (
+            <div className="vellune-experimental-canvas-controls" role="group" aria-label="Controles rápidos do canvas">
+              <button type="button" aria-label="Diminuir zoom" title="Diminuir zoom" onClick={() => setZoom((value) => Math.max(50, value - 10))}><Minus className="h-3.5 w-3.5" /></button>
+              <span aria-live="polite">{zoom}%</span>
+              <button type="button" aria-label="Aumentar zoom" title="Aumentar zoom" onClick={() => setZoom((value) => Math.min(150, value + 10))}><Plus className="h-3.5 w-3.5" /></button>
+              <button type="button" aria-label="Ajustar canvas" title="Ajustar canvas à área disponível" onClick={fitCanvasToViewport}><Maximize2 className="h-3.5 w-3.5" /></button>
+            </div>
+          )}
         </main>
         {inspectorOpen && <aside id="editor-contextual-properties" className={cn("vellune-editor-inspector hidden w-[288px] shrink-0 overflow-y-auto rounded-2xl border border-primary/10 bg-card/75 p-3 shadow-xl shadow-black/10 backdrop-blur-xl lg:block lg:absolute lg:right-4 lg:top-4 lg:bottom-4 lg:z-50 lg:max-h-[calc(100%-2rem)] xl:relative xl:right-auto xl:top-auto xl:bottom-auto xl:z-auto xl:max-h-none", focusMode && "lg:hidden")} aria-label="Ajustes avançados do elemento">
           <div className="mb-2 flex items-center justify-between gap-2 rounded-xl border border-primary/10 bg-background/35 px-3 py-2.5">
@@ -1542,10 +1566,10 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHe
       {experimentalLayout ? (
         <div className="vellune-editor-mobile-bar vellune-editor-mobile-bar-experimental shrink-0 flex items-center justify-between gap-1.5 rounded-[24px] border border-white/10 bg-[#11141B]/80 p-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))] shadow-[0_18px_60px_-20px_rgba(0,0,0,0.75)] backdrop-blur-2xl lg:hidden" role="toolbar" aria-label="Ferramentas principais do editor experimental">
           <button type="button" className="flex flex-1 flex-col items-center gap-0.5 rounded-2xl px-1 py-1.5 text-[10px] text-white/60 transition active:scale-95 hover:bg-white/[0.06] hover:text-white" onClick={() => { setToolCategory("Modelos"); setTemplateOpen(true); }}><LayoutGrid className="h-4 w-4" />Layouts</button>
-          <button type="button" className="flex flex-1 flex-col items-center gap-0.5 rounded-2xl px-1 py-1.5 text-[10px] text-white/60 transition active:scale-95 hover:bg-white/[0.06] hover:text-white" onClick={() => { setToolCategory("Adicionar"); setMobileSheet("elements"); }}><Sparkles className="h-4 w-4" />Elementos</button>
-          <button type="button" className="relative -mt-7 flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-[#8B5CF6] text-white shadow-[0_16px_34px_-10px_rgba(139,92,246,0.75)] ring-4 ring-[#0B0D12]/90 transition active:scale-95 hover:brightness-110" aria-label="Adicionar ao convite" onClick={() => { setToolCategory("Adicionar"); setMobileSheet("elements"); }}><Plus className="h-6 w-6" /></button>
-          <button type="button" className="flex flex-1 flex-col items-center gap-0.5 rounded-2xl px-1 py-1.5 text-[10px] text-white/60 transition active:scale-95 hover:bg-white/[0.06] hover:text-white" onClick={() => { setToolCategory("Adicionar"); setMobileSheet("elements"); }}><UploadCloud className="h-4 w-4" />Uploads</button>
-          <button type="button" className="flex flex-1 flex-col items-center gap-0.5 rounded-2xl px-1 py-1.5 text-[10px] text-white/60 transition active:scale-95 hover:bg-white/[0.06] hover:text-white" onClick={() => { addBlockByType("text"); }}><Type className="h-4 w-4" />Texto</button>
+          <button type="button" className="flex flex-1 flex-col items-center gap-0.5 rounded-2xl px-1 py-1.5 text-[10px] text-white/60 transition active:scale-95 hover:bg-white/[0.06] hover:text-white" onClick={() => { setToolCategory("Adicionar"); setMobileSheet("experimental-elements"); }}><Sparkles className="h-4 w-4" />Elementos</button>
+          <button type="button" className="relative -mt-7 flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-[#8B5CF6] text-white shadow-[0_16px_34px_-10px_rgba(139,92,246,0.75)] ring-4 ring-[#0B0D12]/90 transition active:scale-95 hover:brightness-110" aria-label="Adicionar ao convite" onClick={() => { setToolCategory("Adicionar"); setMobileSheet("experimental-add"); }}><Plus className="h-6 w-6" /></button>
+          <button type="button" className="flex flex-1 flex-col items-center gap-0.5 rounded-2xl px-1 py-1.5 text-[10px] text-white/60 transition active:scale-95 hover:bg-white/[0.06] hover:text-white" onClick={() => { setToolCategory("Adicionar"); setMobileSheet("experimental-uploads"); }}><UploadCloud className="h-4 w-4" />Uploads</button>
+          <button type="button" className="flex flex-1 flex-col items-center gap-0.5 rounded-2xl px-1 py-1.5 text-[10px] text-white/60 transition active:scale-95 hover:bg-white/[0.06] hover:text-white" onClick={() => setMobileSheet("experimental-text")}><Type className="h-4 w-4" />Texto</button>
         </div>
       ) : (
       <div className="vellune-editor-mobile-bar shrink-0 flex items-center justify-between gap-1.5 rounded-2xl border border-primary/15 bg-card/95 p-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))] shadow-2xl shadow-black/25 backdrop-blur-xl lg:hidden" role="toolbar" aria-label="Ferramentas móveis do editor"> 
@@ -1559,14 +1583,125 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHe
       {compact && mobileSheet && (
         <>
           <button type="button" aria-label="Fechar painel" className="fixed inset-0 z-40 bg-black/35 backdrop-blur-[2px]" onClick={() => setMobileSheet(null)} />
-          <div className={cn("fixed inset-x-2 bottom-2 z-50 overflow-y-auto border border-border/80 bg-card p-4 shadow-2xl", experimentalLayout ? "max-h-[50vh] rounded-t-[28px] rounded-b-[22px] backdrop-blur-2xl" : "max-h-[70vh] rounded-2xl")}>
+          <div className={cn("fixed inset-x-2 bottom-2 z-50 overflow-y-auto border border-border/80 bg-card p-4 shadow-2xl", experimentalLayout ? "max-h-[56svh] rounded-t-[28px] rounded-b-[22px] border-white/[0.08] bg-[#11141B]/94 p-3.5 backdrop-blur-2xl" : "max-h-[70vh] rounded-2xl")}>
             {experimentalLayout && <div className="mx-auto mb-3 h-1 w-12 rounded-full bg-muted-foreground/30" aria-hidden="true" />}
           <div className="mb-3 flex items-center justify-between gap-3">
             <p className="text-sm font-semibold">
-              {mobileSheet === "properties" ? "Ajustar" : mobileSheet === "background" ? "Fundo" : mobileSheet === "view" ? "Visualizar" : mobileSheet === "layers" ? "Organizar" : "Elementos"}
+              {mobileSheet === "properties" ? "Ajustar" : mobileSheet === "background" ? "Fundo" : mobileSheet === "view" ? "Visualizar" : mobileSheet === "layers" ? "Organizar" : mobileSheet === "experimental-add" ? "Adicionar" : mobileSheet === "experimental-elements" ? "Elementos" : mobileSheet === "experimental-uploads" ? "Uploads" : mobileSheet === "experimental-text" ? "Texto" : "Elementos"}
             </p>
-            <button type="button" className="rounded-md border px-2 py-1 text-xs" onClick={() => setMobileSheet(null)}>Fechar</button>
+            <button type="button" className="inline-flex h-8 items-center justify-center rounded-xl border border-border/70 bg-background/35 px-3 text-[10px] font-medium text-muted-foreground hover:bg-muted hover:text-foreground" onClick={() => setMobileSheet(null)}>Fechar</button>
           </div>
+          {experimentalLayout && mobileSheet?.startsWith("experimental-") && (
+            <div className="space-y-3">
+              <div className="vellune-experimental-sheet-tabs flex items-center gap-1 overflow-x-auto pb-0.5" role="tablist" aria-label="Ferramentas rápidas">
+                {([
+                  ["experimental-add", "Adicionar", Plus],
+                  ["experimental-elements", "Elementos", Sparkles],
+                  ["experimental-uploads", "Uploads", UploadCloud],
+                  ["experimental-text", "Texto", Type],
+                ] as const).map(([value, label, Icon]) => (
+                  <button
+                    key={value}
+                    type="button"
+                    role="tab"
+                    aria-selected={mobileSheet === value}
+                    onClick={() => setMobileSheet(value)}
+                    className={cn(
+                      "inline-flex min-h-8 shrink-0 items-center gap-1.5 rounded-xl border px-2.5 text-[10px] font-medium transition",
+                      mobileSheet === value ? "border-primary/30 bg-primary/10 text-primary" : "border-border/60 bg-background/25 text-muted-foreground hover:bg-muted hover:text-foreground",
+                    )}
+                  >
+                    <Icon className="h-3.5 w-3.5" />
+                    {label}
+                  </button>
+                ))}
+              </div>
+
+              {mobileSheet === "experimental-add" && (
+                <div className="grid grid-cols-2 gap-2">
+                  {([
+                    ["text", "Texto", "Comece uma hierarquia tipográfica.", Type],
+                    ["image", "Foto", "Adicione uma imagem ao canvas.", ImageIcon],
+                    ["date", "Data", "Mostre a data do evento.", CalendarDays],
+                    ["location", "Local", "Inclua endereço e acesso.", MapPin],
+                    ["button", "Botão", "Crie uma ação com link.", Link2],
+                    ["rsvp", "RSVP", "Confirmação de presença.", CheckCircle2],
+                  ] as const).map(([type, label, description, Icon]) => (
+                    <button
+                      key={type}
+                      type="button"
+                      onClick={() => { addBlockByType(type); setMobileSheet(null); }}
+                      className="rounded-2xl border border-border/70 bg-background/30 p-3 text-left transition hover:-translate-y-0.5 hover:border-primary/30 hover:bg-primary/5 active:scale-[0.99]"
+                    >
+                      <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary"><Icon className="h-4 w-4" /></span>
+                      <span className="mt-2 block text-xs font-semibold text-foreground">{label}</span>
+                      <span className="mt-1 block text-[10px] leading-4 text-muted-foreground">{description}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {mobileSheet === "experimental-elements" && (
+                <ElementsLibrary
+                  id="editor-elements-library-experimental"
+                  initialCategory="Todos"
+                  availableTypes={(Object.keys(BLOCKS) as BlockType[])}
+                  assets={assets as any}
+                  onAdd={(type) => { addBlockByType(type); setMobileSheet(null); }}
+                  onAddComposition={(kind) => { addComposition(kind); setMobileSheet(null); }}
+                  onAddImage={(url) => { addImageByUrl(url); setMobileSheet(null); }}
+                  imageMode={imageReplaceId ? "replace" : "add"}
+                  onSelectImage={(url) => { replaceSelectedImage(url); setMobileSheet(null); }}
+                  onCancelImageReplace={() => setMobileSheet(null)}
+                />
+              )}
+
+              {mobileSheet === "experimental-uploads" && (
+                <ElementsLibrary
+                  id="editor-elements-library-experimental-uploads"
+                  initialCategory="Mídia"
+                  availableTypes={(Object.keys(BLOCKS) as BlockType[])}
+                  assets={assets as any}
+                  onAdd={(type) => { addBlockByType(type); setMobileSheet(null); }}
+                  onAddComposition={(kind) => { addComposition(kind); setMobileSheet(null); }}
+                  onAddImage={(url) => { addImageByUrl(url); setMobileSheet(null); }}
+                  imageMode={imageReplaceId ? "replace" : "add"}
+                  onSelectImage={(url) => { replaceSelectedImage(url); setMobileSheet(null); }}
+                  onCancelImageReplace={() => setMobileSheet(null)}
+                />
+              )}
+
+              {mobileSheet === "experimental-text" && (
+                <div className="grid grid-cols-2 gap-2">
+                  {([
+                    ["Título principal", "Uma abertura marcante", { text: "Seu título", size: "2xl", font: "display", bold: "1", align: "center" }],
+                    ["Subtítulo", "Apoio elegante para o convite", { text: "Seu subtítulo", size: "xl", font: "display", bold: "", align: "center" }],
+                    ["Mensagem", "Texto afetivo e contextual", { text: "Sua mensagem começa aqui.", size: "md", font: "body", bold: "", align: "center" }],
+                    ["Destaque", "Frase curta para chamar atenção", { text: "Um momento especial", size: "lg", font: "display", bold: "1", align: "center" }],
+                  ] as const).map(([label, description, props]) => (
+                    <button
+                      key={label}
+                      type="button"
+                      onClick={() => { addBlockByType("text", props); setMobileSheet(null); }}
+                      className="rounded-2xl border border-border/70 bg-background/30 p-3 text-left transition hover:-translate-y-0.5 hover:border-primary/30 hover:bg-primary/5 active:scale-[0.99]"
+                    >
+                      <span className="font-display text-base font-semibold text-foreground">{props.text}</span>
+                      <span className="mt-2 block text-[10px] leading-4 text-muted-foreground">{description}</span>
+                    </button>
+                  ))}
+                  <button
+                    type="button"
+                    onClick={() => { addBlockByType("text", { text: "Digite seu texto", size: "md", font: "body", bold: "", align: "left" }); setMobileSheet(null); }}
+                    className="col-span-2 rounded-2xl border border-dashed border-primary/25 bg-primary/5 px-3 py-3 text-left"
+                  >
+                    <span className="text-xs font-semibold text-primary">Texto livre</span>
+                    <span className="ml-2 text-[10px] text-muted-foreground">Adiciona e abre a edição do texto no canvas.</span>
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+
           {mobileSheet === "properties" && (
             <ContextualPropertiesPanel
               blocks={blocks}
