@@ -602,7 +602,7 @@ export function VisualTransformCanvas({ blocks, selectedIds: selectedIdsProp, zo
 
       // Smart guides: snap edges and centers automatically when an element
       // gets close to another element or to the safe canvas margins.
-      const xSnap = snapEnabled ? nearestSnap(
+      const xSnap = snapEnabled && !event.altKey ? nearestSnap(
         [
           { value: moved.left, kind: "edge" },
           { value: (moved.left + moved.right) / 2, kind: "center" },
@@ -610,7 +610,7 @@ export function VisualTransformCanvas({ blocks, selectedIds: selectedIdsProp, zo
         ],
         xCandidates,
       ) : null;
-      const ySnap = snapEnabled ? nearestSnap(
+      const ySnap = snapEnabled && !event.altKey ? nearestSnap(
         [
           { value: moved.top, kind: "edge" },
           { value: (moved.top + moved.bottom) / 2, kind: "center" },
