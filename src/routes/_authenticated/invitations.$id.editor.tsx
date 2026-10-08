@@ -257,7 +257,7 @@ function EditorForm({ inv, experimentalLayout = false }: { inv: Invitation; expe
       />
 
       {experimentalLayout && (
-        <div className="pointer-events-none fixed inset-x-0 top-2 z-[300] flex justify-center px-3">
+        <div className="vellune-experimental-build-badge pointer-events-none fixed inset-x-0 top-2 z-[300] flex justify-center px-3">
           <div className="pointer-events-auto flex items-center gap-2 rounded-full border border-white/10 bg-[#11141B]/85 px-3 py-1.5 text-[10px] font-medium text-white/70 shadow-2xl backdrop-blur-xl">
             <span className="h-1.5 w-1.5 rounded-full bg-[#8B5CF6] shadow-[0_0_12px_rgba(139,92,246,0.8)]" />
             Layout experimental · Mobile-first
