@@ -672,18 +672,42 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHe
     h.set((items) => {
       const entries = items
         .map((block: any, index: number) => ({ block, index, position: getPosition(block, index), size: getSize(block, index) }))
-        .filter(({ block }) => targetIds.includes(block.id) && !block.locked)
-        .sort((a, b) => a.position.y - b.position.y || a.position.x - b.position.x);
+        .filter(({ block }) => targetIds.includes(block.id) && !block.locked);
 
       if (entries.length < 2) return items;
 
       const canvasWidth = canvasRef.current?.clientWidth || 390;
-      const firstY = Math.min(...entries.map((entry) => entry.position.y));
+      const centers = entries.map((entry) => entry.position.y + entry.size.height / 2);
+      const avgHeight = entries.reduce((sum, entry) => sum + entry.size.height, 0) / entries.length;
+      const centerSpread = Math.max(...centers) - Math.min(...centers);
+      const rowTolerance = Math.max(48, avgHeight * 0.45);
+      const rowWidth = entries.reduce((sum, entry) => sum + entry.size.width, 0) + 24 * (entries.length - 1);
+      const canKeepRow = centerSpread <= rowTolerance && rowWidth <= canvasWidth - 24;
+
+      if (canKeepRow) {
+        const sorted = [...entries].sort((a, b) => a.position.x - b.position.x);
+        const firstY = Math.round(centers.reduce((sum, value) => sum + value, 0) / centers.length);
+        let cursorX = Math.max(12, Math.round((canvasWidth - rowWidth) / 2));
+        return items.map((block: any) => {
+          const entry = sorted.find((item) => item.block.id === block.id);
+          if (!entry) return block;
+          const next = {
+            ...block,
+            x: Math.round(cursorX),
+            y: Math.round(firstY - entry.size.height / 2),
+          };
+          cursorX += entry.size.width + 24;
+          return next;
+        });
+      }
+
+      const sorted = [...entries].sort((a, b) => a.position.y - b.position.y || a.position.x - b.position.x);
+      const firstY = Math.min(...sorted.map((entry) => entry.position.y));
       const gap = 24;
       let cursorY = firstY;
 
       return items.map((block: any) => {
-        const entry = entries.find((item) => item.block.id === block.id);
+        const entry = sorted.find((item) => item.block.id === block.id);
         if (!entry) return block;
         const nextX = Math.max(12, Math.round((canvasWidth - entry.size.width) / 2));
         const next = { ...block, x: nextX, y: Math.round(cursorY) };

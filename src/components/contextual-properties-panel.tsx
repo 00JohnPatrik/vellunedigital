@@ -35,6 +35,81 @@ const appearancePresets = [
   { id: "outline", label: "Contorno", props: { fill: "none", borderWidth: "1", borderStyle: "solid", borderColor: "#8f8173", borderRadius: "18", shadow: "none" } },
 ] as const;
 
+const selectionStylePresets = [
+  { id: "editorial", label: "Editorial", caption: "Quente e sofisticado", accent: "#9a7a58", ink: "#342d27", muted: "#6d6258", font: "display" },
+  { id: "romantic", label: "Romântico", caption: "Suave e delicado", accent: "#a66f73", ink: "#3d3032", muted: "#6e5d60", font: "display" },
+  { id: "natural", label: "Natural", caption: "Leve e orgânico", accent: "#6f8d82", ink: "#354740", muted: "#627069", font: "sans" },
+  { id: "midnight", label: "Noturno", caption: "Escuro e elegante", accent: "#d4ba83", ink: "#f5f0e5", muted: "#d4cbbb", font: "display" },
+] as const;
+
+function SelectionStylePresets({ selected, onChange }: { selected: Block[]; onChange: PanelProps["onChange"] }) {
+  if (selected.length < 2) return null;
+
+  const applyStyle = (style: typeof selectionStylePresets[number]) => onChange(
+    (items) => items.map((item) => {
+      if (!selected.some((chosen) => chosen.id === item.id) || item.locked) return item;
+      const props = { ...item.props };
+      const isMidnight = style.id === "midnight";
+
+      if (item.type === "text") {
+        props.color = style.ink;
+        props.font = style.font;
+      } else if (["date", "time", "location", "countdown"].includes(item.type)) {
+        props.color = style.ink;
+      }
+
+      if (item.type === "divider" || item.type === "decoration") {
+        props.color = style.accent;
+        props.borderColor = style.accent;
+        if (item.type === "decoration" && props.fill && props.fill !== "none") props.fillColor = style.accent;
+      }
+
+      if (item.type === "shape") {
+        if (props.fill && props.fill !== "none") props.fillColor = style.accent;
+        if (Number(props.borderWidth) > 0) props.borderColor = style.accent;
+      }
+
+      if (["rsvp", "whatsapp", "button"].includes(item.type)) {
+        const outline = props.style === "outline";
+        props.borderColor = style.accent;
+        props.backgroundColor = outline ? "transparent" : style.accent;
+        props.textColor = outline ? style.accent : (isMidnight ? "#17130c" : "#ffffff");
+      }
+
+      if (item.type === "qr_code") {
+        props.foregroundColor = isMidnight ? "#11141c" : style.ink;
+        props.backgroundColor = "#ffffff";
+      }
+
+      return { ...item, props };
+    }),
+    "selection:style",
+  );
+
+  return (
+    <section className="space-y-3 rounded-xl border border-primary/15 bg-primary/5 p-3" aria-label="Estilos da seleção">
+      <div className="flex items-start justify-between gap-2">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-wide text-foreground">Estilo da seleção</p>
+          <p className="mt-0.5 text-[10px] leading-4 text-muted-foreground">Cria unidade visual sem alterar posição, tamanho ou imagens.</p>
+        </div>
+        <Palette className="mt-0.5 h-4 w-4 text-primary" aria-hidden="true" />
+      </div>
+      <div className="grid grid-cols-2 gap-2">
+        {selectionStylePresets.map((style) => (
+          <Button key={style.id} type="button" size="sm" variant="outline" className="h-auto items-start justify-start rounded-lg px-3 py-2 text-left" onClick={() => applyStyle(style)}>
+            <span className="min-w-0">
+              <span className="block text-[11px] font-semibold text-foreground">{style.label}</span>
+              <span className="mt-0.5 block text-[9px] leading-4 text-muted-foreground">{style.caption}</span>
+            </span>
+            <span className="ml-auto mt-0.5 h-3 w-3 shrink-0 rounded-full border border-black/10" style={{ background: style.accent }} aria-hidden="true" />
+          </Button>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 function TextTypography({ selected, onChange }: { selected: Block[]; onChange: PanelProps["onChange"] }) {
   const primary = selected[0]; const props = primary?.props ?? {}; const [drafts, setDrafts] = useState<Record<string, string>>({});
   useEffect(() => { setDrafts({ fontSize: props.fontSize ?? "", letterSpacing: props.letterSpacing ?? "", lineHeight: props.lineHeight ?? "" }); }, [primary?.id, props.fontSize, props.letterSpacing, props.lineHeight]);
@@ -269,5 +344,5 @@ export function ContextualPropertiesPanel({ blocks, selectedIds, assets, onChang
   <section className="space-y-3 rounded-xl border bg-muted/15 p-3"><div className="flex items-center gap-2"><Move className="h-4 w-4 text-primary" /><p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Posição e tamanho</p></div><div className="grid grid-cols-2 gap-2">{field("x", "Posição X")}{field("y", "Posição Y")}{field("width", "Largura", { min: 1 })}{field("height", "Altura", { min: 1 })}{field("rotation", "Rotação")}</div><label className="flex items-center gap-2 text-xs text-muted-foreground"><input type="checkbox" checked={keepRatio} onChange={(event) => setKeepRatio(event.target.checked)} className="accent-primary" />Manter proporção</label></section><section className="space-y-3 rounded-xl border bg-muted/15 p-3"><div className="flex items-center gap-2"><AlignHorizontalJustifyCenter className="h-4 w-4 text-primary" /><p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Alinhamento</p></div><div className="grid grid-cols-3 gap-1"><Button type="button" size="sm" variant="outline" onClick={() => align("x", "start")}><AlignLeft className="h-3.5 w-3.5" /></Button><Button type="button" size="sm" variant="outline" onClick={() => align("x", "center")}><AlignCenter className="h-3.5 w-3.5" /></Button><Button type="button" size="sm" variant="outline" onClick={() => align("x", "end")}><AlignRight className="h-3.5 w-3.5" /></Button></div><div className="grid grid-cols-2 gap-1"><Button type="button" size="sm" variant="outline" disabled={selected.length < 3} onClick={() => distribute("x")}><AlignHorizontalDistributeCenter className="mr-1 h-3.5 w-3.5" />Distribuir X</Button><Button type="button" size="sm" variant="outline" disabled={selected.length < 3} onClick={() => distribute("y")}><AlignVerticalDistributeCenter className="mr-1 h-3.5 w-3.5" />Distribuir Y</Button></div></section><section className="space-y-2 rounded-xl border bg-muted/15 p-3"><div className="flex items-center gap-2"><Layers3 className="h-4 w-4 text-primary" /><p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Organizar</p></div><div className="grid grid-cols-2 gap-2">{field("zIndex", "Ordem")}{field("scale", "Escala", { min: 0.1, step: 0.1 })}</div><div className="grid grid-cols-2 gap-1"><Button type="button" size="sm" variant="outline" onClick={() => apply({ zIndex: numberValue(primary?.zIndex) + 1 }, "properties:layer-up")}><ArrowUp className="mr-1 h-3.5 w-3.5" />Subir</Button><Button type="button" size="sm" variant="outline" onClick={() => apply({ zIndex: Math.max(0, numberValue(primary?.zIndex) - 1) }, "properties:layer-down")}><ArrowDown className="mr-1 h-3.5 w-3.5" />Descer</Button></div></section>
   </div>
 </details>
-<Separator /><div className="grid grid-cols-2 gap-2"><Button type="button" size="sm" variant="outline" onClick={() => apply({ locked: !anyLocked }, "properties:lock")}>{anyLocked ? <Unlock className="mr-1 h-3.5 w-3.5" /> : <Lock className="mr-1 h-3.5 w-3.5" />}{anyLocked ? "Desbloquear" : "Bloquear"}</Button><Button type="button" size="sm" variant="outline" onClick={() => apply({ hidden: !allHidden, visibility: allHidden }, "properties:visibility")}>{allHidden ? <Eye className="mr-1 h-3.5 w-3.5" /> : <EyeOff className="mr-1 h-3.5 w-3.5" />}{allHidden ? "Mostrar" : "Ocultar"}</Button></div><div className="grid grid-cols-2 gap-2"><Button type="button" size="sm" variant="outline" onClick={() => onDuplicate(selectedIds)}><Copy className="mr-1 h-3.5 w-3.5" />Duplicar</Button><Button type="button" size="sm" variant="outline" className="text-destructive hover:text-destructive" onClick={() => onDelete(selectedIds)}><Trash2 className="mr-1 h-3.5 w-3.5" />Excluir</Button></div><div className="grid grid-cols-2 gap-2"><Button type="button" size="sm" variant="outline" disabled={!grouped} onClick={groupSelected}><Layers3 className="mr-1 h-3.5 w-3.5" />Agrupar</Button><Button type="button" size="sm" variant="outline" disabled={!hasGroups} onClick={ungroupSelected}><Layers3 className="mr-1 h-3.5 w-3.5" />Desagrupar</Button></div><Button type="button" size="sm" variant="ghost" className="w-full text-xs" onClick={() => apply({ rotation: 0 }, "properties:reset-rotation")}><RotateCcw className="mr-1 h-3.5 w-3.5" />Redefinir rotação</Button>{textSelected && <div className="grid grid-cols-2 gap-2"><Button type="button" size="sm" variant="outline" onClick={copyTypography}>Copiar estilo</Button><Button type="button" size="sm" variant="outline" disabled={!copiedStyle} onClick={pasteTypography}>Aplicar estilo</Button></div>}</div>;
+<SelectionStylePresets selected={selected} onChange={onChangeUnlocked} /><Separator /><div className="grid grid-cols-2 gap-2"><Button type="button" size="sm" variant="outline" onClick={() => apply({ locked: !anyLocked }, "properties:lock")}>{anyLocked ? <Unlock className="mr-1 h-3.5 w-3.5" /> : <Lock className="mr-1 h-3.5 w-3.5" />}{anyLocked ? "Desbloquear" : "Bloquear"}</Button><Button type="button" size="sm" variant="outline" onClick={() => apply({ hidden: !allHidden, visibility: allHidden }, "properties:visibility")}>{allHidden ? <Eye className="mr-1 h-3.5 w-3.5" /> : <EyeOff className="mr-1 h-3.5 w-3.5" />}{allHidden ? "Mostrar" : "Ocultar"}</Button></div><div className="grid grid-cols-2 gap-2"><Button type="button" size="sm" variant="outline" onClick={() => onDuplicate(selectedIds)}><Copy className="mr-1 h-3.5 w-3.5" />Duplicar</Button><Button type="button" size="sm" variant="outline" className="text-destructive hover:text-destructive" onClick={() => onDelete(selectedIds)}><Trash2 className="mr-1 h-3.5 w-3.5" />Excluir</Button></div><div className="grid grid-cols-2 gap-2"><Button type="button" size="sm" variant="outline" disabled={!grouped} onClick={groupSelected}><Layers3 className="mr-1 h-3.5 w-3.5" />Agrupar</Button><Button type="button" size="sm" variant="outline" disabled={!hasGroups} onClick={ungroupSelected}><Layers3 className="mr-1 h-3.5 w-3.5" />Desagrupar</Button></div><Button type="button" size="sm" variant="ghost" className="w-full text-xs" onClick={() => apply({ rotation: 0 }, "properties:reset-rotation")}><RotateCcw className="mr-1 h-3.5 w-3.5" />Redefinir rotação</Button>{textSelected && <div className="grid grid-cols-2 gap-2"><Button type="button" size="sm" variant="outline" onClick={copyTypography}>Copiar estilo</Button><Button type="button" size="sm" variant="outline" disabled={!copiedStyle} onClick={pasteTypography}>Aplicar estilo</Button></div>}</div>;
 }
