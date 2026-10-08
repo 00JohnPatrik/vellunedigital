@@ -92,7 +92,7 @@ function CustomerStep({ companyId, selected, onSelect }: { companyId: string | u
   const [open, setOpen] = useState(false);
   const rows = useMemo(() => {
     const s = search.trim().toLowerCase(); const d = s.replace(/\D/g, "");
-    return (q.data ?? []).filter((c) => c.status === "active" && (!s || c.name.toLowerCase().includes(s) || !!c.email?.includes(s) || (!!d && !!c.phone?.includes(d))));
+    return (q.data ?? []).filter((c) => c.status === "active" && (!s || c.name.toLowerCase().includes(s) || !!c.email?.toLowerCase().includes(s) || (!!d && !!c.phone?.includes(d))));
   }, [q.data, search]);
 
   return (
