@@ -268,6 +268,7 @@ export function VisualTransformCanvas({ blocks, selectedIds: selectedIdsProp, zo
   const [editingTextId, setEditingTextId] = useState<string | null>(null);
   const [editingTextValue, setEditingTextValue] = useState("");
   const [selectAllOnTextEdit, setSelectAllOnTextEdit] = useState(true);
+  const [rotationHint, setRotationHint] = useState<number | null>(null);
   const editingTextRef = useRef<HTMLTextAreaElement | null>(null);
   const textLongPress = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastTextTap = useRef<{ id: string; at: number; x: number; y: number } | null>(null);
@@ -346,6 +347,7 @@ export function VisualTransformCanvas({ blocks, selectedIds: selectedIdsProp, zo
     cancelTextLongPress();
     interaction.current = null;
     setGuides([]);
+    setRotationHint(null);
   };
 
   const marqueeBounds = marquee ? {
@@ -543,6 +545,7 @@ export function VisualTransformCanvas({ blocks, selectedIds: selectedIdsProp, zo
     interaction.current = { mode, ids, pointerId: event.pointerId, start: point, originals, bounds, handle, aspect: bounds.width / Math.max(MIN_SIZE, bounds.height), center: { x: bounds.left + bounds.width / 2, y: bounds.top + bounds.height / 2 } };
     (event.currentTarget as HTMLElement).setPointerCapture?.(event.pointerId);
     setGuides([]);
+    setRotationHint(null);
   };
 
   const move = (event: React.PointerEvent) => {
@@ -627,9 +630,11 @@ export function VisualTransformCanvas({ blocks, selectedIds: selectedIdsProp, zo
       let delta = angle - base;
       if (delta > 180) delta -= 360;
       if (delta < -180) delta += 360;
+      let snappedRotation: number | null = null;
       if (event.shiftKey) {
         // Shift mantém um passo angular previsível, mesmo com o magnetismo desligado.
         delta = Math.round(delta / 15) * 15;
+        snappedRotation = delta;
       } else if (snapEnabled && !event.altKey) {
         // Magnetismo também controla a rotação: ângulos úteis ficam magnéticos,
         // enquanto Alt/Option permite rotação totalmente livre.
@@ -642,8 +647,10 @@ export function VisualTransformCanvas({ blocks, selectedIds: selectedIdsProp, zo
         const angleDistance = Math.abs(nearestAngle - normalized);
         if (angleDistance <= 3 || 360 - angleDistance <= 3) {
           delta += nearestAngle - normalized;
+          snappedRotation = delta;
         }
       }
+      setRotationHint(snappedRotation);
       const radians = delta * Math.PI / 180;
       const cos = Math.cos(radians);
       const sin = Math.sin(radians);
@@ -1059,6 +1066,18 @@ export function VisualTransformCanvas({ blocks, selectedIds: selectedIdsProp, zo
         )}
       </div>;
     })}
+    {selectedBounds && rotationHint !== null && (
+      <div
+        className="pointer-events-none absolute z-[105] -translate-y-1/2 rounded-full border border-primary/25 bg-primary px-2.5 py-1 text-[10px] font-semibold tabular-nums text-primary-foreground shadow-lg shadow-primary/25"
+        style={{
+          left: clamp(selectedBounds.left + selectedBounds.width / 2, 42, Math.max(42, canvasSize().width - 42)),
+          top: Math.max(24, selectedBounds.top - 18),
+        }}
+        aria-hidden="true"
+      >
+        {Math.round(rotationHint)}°
+      </div>
+    )}
     {selectedBounds && <div className="pointer-events-none absolute z-[80] rounded-[2px] border-2 border-primary shadow-[0_0_0_1px_hsl(var(--primary)/.12),0_4px_14px_hsl(var(--primary)/.08)]" style={{ left: selectedBounds.left, top: selectedBounds.top, width: selectedBounds.width, height: selectedBounds.height }}>
       {selected.length === 1 && <span className="pointer-events-none absolute -left-0.5 -top-8 rounded-full border border-primary/20 bg-primary px-2 py-1 text-[9px] font-semibold text-primary-foreground shadow-lg shadow-primary/20">
         {selected[0]?.type === "text" ? "Texto" : selected[0]?.type === "image" ? "Imagem" : selected[0]?.type === "gallery" ? "Galeria" : selected[0]?.type === "shape" ? "Forma" : selected[0]?.type === "decoration" ? "Decoração" : "Elemento"}
