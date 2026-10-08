@@ -31,6 +31,7 @@ type Props = {
   startEditingId?: string | null;
   onStartEditingHandled?: () => void;
   showGrid?: boolean;
+  snapEnabled?: boolean;
 };
 
 type Bounds = {
@@ -260,7 +261,7 @@ function isTextInput(target: EventTarget | null) {
   return element.tagName === "INPUT" || element.tagName === "TEXTAREA" || element.tagName === "SELECT" || element.isContentEditable;
 }
 
-export function VisualTransformCanvas({ blocks, selectedIds: selectedIdsProp, zoom, canvasRef, ctx, onSelect, onAddBlock, onChange, onDuplicate, onDelete, onAdvanced, onLayer, onAlign, onOpacity, onRotate, onAutoArrange, onGroup, onUngroup, onImageAction, startEditingId, onStartEditingHandled, showGrid = true }: Props) {
+export function VisualTransformCanvas({ blocks, selectedIds: selectedIdsProp, zoom, canvasRef, ctx, onSelect, onAddBlock, onChange, onDuplicate, onDelete, onAdvanced, onLayer, onAlign, onOpacity, onRotate, onAutoArrange, onGroup, onUngroup, onImageAction, startEditingId, onStartEditingHandled, showGrid = true, snapEnabled = true }: Props) {
   const interaction = useRef<Interaction | null>(null);
   const [guides, setGuides] = useState<Guide[]>([]);
   const [marquee, setMarquee] = useState<{ start: Point; current: Point; additive: boolean } | null>(null);
@@ -552,22 +553,22 @@ export function VisualTransformCanvas({ blocks, selectedIds: selectedIdsProp, zo
 
       // Smart guides: snap edges and centers automatically when an element
       // gets close to another element or to the safe canvas margins.
-      const xSnap = nearestSnap(
+      const xSnap = snapEnabled ? nearestSnap(
         [
           { value: moved.left, kind: "edge" },
           { value: (moved.left + moved.right) / 2, kind: "center" },
           { value: moved.right, kind: "edge" },
         ],
         xCandidates,
-      );
-      const ySnap = nearestSnap(
+      ) : null;
+      const ySnap = snapEnabled ? nearestSnap(
         [
           { value: moved.top, kind: "edge" },
           { value: (moved.top + moved.bottom) / 2, kind: "center" },
           { value: moved.bottom, kind: "edge" },
         ],
         yCandidates,
-      );
+      ) : null;
 
       if (xSnap) {
         offsetX += xSnap.offset;
@@ -645,7 +646,7 @@ export function VisualTransformCanvas({ blocks, selectedIds: selectedIdsProp, zo
     // Professional-editor feedback: when resizing a single unrotated element,
     // the dragged edge can magnetically align with canvas margins, centerlines
     // and nearby element edges/centers.
-    if (current.ids.length === 1 && !centered && Math.abs((current.originals[current.ids[0]!]?.rotation ?? 0) % 360) < 0.001) {
+    if (snapEnabled && current.ids.length === 1 && !centered && Math.abs((current.originals[current.ids[0]!]?.rotation ?? 0) % 360) < 0.001) {
       const others = blocks.filter((block: any) => !current.ids.includes(block.id));
       const xCandidates = [SAFE_MARGIN, size.width / 2, size.width - SAFE_MARGIN];
       const yCandidates = [SAFE_MARGIN, size.height / 2, size.height - SAFE_MARGIN];
