@@ -792,6 +792,24 @@
   line-height: 1.6;
 }
 
+.vellune-platform-root .rounded-xl.border.bg-card {
+  position: relative;
+  border-color: var(--vellune-platform-line) !important;
+  border-radius: 1.1rem;
+  background: var(--vellune-platform-surface);
+  box-shadow:
+    0 1px 0 oklch(1 0 0 / 3%),
+    0 14px 34px -30px oklch(0 0 0 / 34%);
+  transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+}
+
+.vellune-platform-root .rounded-xl.border.bg-card:hover {
+  border-color: var(--vellune-platform-line-strong) !important;
+  box-shadow:
+    0 1px 0 oklch(1 0 0 / 4%),
+    0 18px 42px -30px oklch(0 0 0 / 38%);
+}
+
 .vellune-platform-card {
   position: relative;
   overflow: hidden;
