@@ -3,7 +3,7 @@ import { BlockView } from "@/components/block-render";
 import { EditorQuickToolbar, type ImageAction } from "@/components/editor-quick-toolbar";
 import { resolveBlockGeometry, type Block, type BlockType } from "@/lib/templates";
 import { fontCss } from "@/lib/blocks";
-import { Copy, Lock, Unlock, Pencil, SlidersHorizontal, Trash2, Crop } from "lucide-react";
+import { Copy, Lock, Unlock, Pencil, SlidersHorizontal, Trash2, Crop, Sparkles } from "lucide-react";
 
 type Point = { x: number; y: number };
 type Guide = { axis: "x" | "y"; value: number; kind?: "edge" | "center" | "grid" };
@@ -834,6 +834,18 @@ export function VisualTransformCanvas({ blocks, selectedIds: selectedIdsProp, zo
           >
             <Crop className="h-4 w-4" />
             <span>Enquadrar</span>
+          </button>
+        )}
+        {selectedBlocks.length > 1 && onAutoArrange && (
+          <button
+            type="button"
+            className="inline-flex h-9 min-w-9 items-center justify-center gap-1 rounded-xl px-2 text-[10px] font-medium text-primary transition hover:bg-primary/10"
+            aria-label="Organizar seleção automaticamente"
+            title="Organizar seleção"
+            onClick={() => onAutoArrange(selectedIds)}
+          >
+            <Sparkles className="h-4 w-4" />
+            <span>Organizar</span>
           </button>
         )}
         <button
