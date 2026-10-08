@@ -154,6 +154,7 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHe
   const [device, setDevice] = useState<"mobile" | "tablet" | "desktop">("desktop");
   const [canvasDragOver, setCanvasDragOver] = useState(false);
   const [inspectorOpen, setInspectorOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
   const canvasDragDepth = useRef(0);
   const compact = useIsCompact();
   const fitCanvasToViewport = useCallback(() => {
@@ -684,18 +685,25 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHe
         {toolbarExtra && <div className="mt-2 flex items-center justify-end gap-1.5 border-t border-primary/10 pt-2 md:hidden">{toolbarExtra}</div>}
       </div>
       <div className="vellune-editor-body flex min-h-0 flex-1 flex-col lg:flex-row">
-        <aside className="vellune-editor-sidebar hidden w-[330px] shrink-0 grid-cols-[74px_minmax(0,1fr)] grid-rows-[auto_minmax(0,1fr)] border-r border-white/[0.06] bg-[#0d0f14]/95 backdrop-blur-xl lg:grid" aria-label="Ferramentas do editor">
-          <div className="col-span-2 border-b border-white/[0.06] bg-[#101217]/80 p-3.5">
+        <aside className={cn("vellune-editor-sidebar hidden shrink-0 grid-rows-[auto_minmax(0,1fr)] border-r border-white/[0.06] bg-[#0d0f14]/95 backdrop-blur-xl lg:grid", sidebarOpen ? "w-[330px] grid-cols-[74px_minmax(0,1fr)]" : "w-[74px] grid-cols-[74px]")} aria-label="Ferramentas do editor">
+          <div className={cn("border-b border-white/[0.06] bg-[#101217]/80 p-3.5", sidebarOpen ? "col-span-2" : "hidden")}>
             <div className="flex items-center gap-2">
               <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary"><Sparkles className="h-4 w-4" /></div>
-              <div className="min-w-0">
+              <div className="min-w-0 flex-1">
                 <p className="text-sm font-semibold text-foreground">Criar convite</p>
                 <p className="mt-0.5 text-[10px] leading-4 text-muted-foreground">Tudo o que você precisa, na ordem certa.</p>
               </div>
+              <button type="button" onClick={() => setSidebarOpen(false)} className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-white/[0.08] bg-white/[0.03] text-white/45 transition hover:bg-white/[0.06] hover:text-white" aria-label="Recolher biblioteca lateral" title="Recolher biblioteca lateral">
+                <PanelLeft className="h-3.5 w-3.5" />
+              </button>
             </div>
           </div>
 
           <nav className="row-start-2 col-start-1 flex flex-col gap-1 border-r border-white/[0.06] bg-[#0a0c10]/70 p-2" aria-label="Ferramentas principais">
+            <button type="button" onClick={() => setSidebarOpen((value) => !value)} className="mb-1 flex min-h-[42px] w-full items-center justify-center gap-1 rounded-lg border border-white/[0.06] bg-white/[0.02] text-white/35 transition hover:bg-white/[0.05] hover:text-white" aria-label={sidebarOpen ? "Recolher biblioteca lateral" : "Expandir biblioteca lateral"} title={sidebarOpen ? "Recolher biblioteca lateral" : "Expandir biblioteca lateral"}>
+              <PanelLeft className="h-3.5 w-3.5" />
+              {sidebarOpen && <span className="text-[8px] font-medium">Recolher</span>}
+            </button>
             {[
               ["Modelos", Sparkles, "Comece por um modelo pronto"],
               ["Texto", Type, "Títulos, subtítulos e mensagens"],
@@ -709,7 +717,7 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHe
               <button
                 key={key as string}
                 type="button"
-                onClick={() => setToolCategory(key as string)}
+                onClick={() => { setToolCategory(key as string); setSidebarOpen(true); }}
                 className={cn(
                   "group flex min-h-[64px] w-full flex-col items-center justify-center gap-1 rounded-xl border border-transparent px-1.5 py-2 text-center transition-all",
                   toolCategory === key
@@ -726,7 +734,7 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHe
             })}
           </nav>
 
-          <div className="row-start-2 col-start-2 min-h-0 overflow-y-auto bg-[#0f1117]/65 p-3.5">
+          <div className={cn("row-start-2 col-start-2 min-h-0 overflow-y-auto bg-[#0f1117]/65 p-3.5", !sidebarOpen && "hidden")}>
             {toolCategory === "Modelos" && (
               <div className="space-y-3">
                 <div>
