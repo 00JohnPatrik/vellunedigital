@@ -333,6 +333,8 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHe
     startDistance: number;
     startZoom: number;
   } | null>(null);
+  const sheetDragRef = useRef<{ pointerId: number; startY: number; currentY: number } | null>(null);
+  const [sheetDragY, setSheetDragY] = useState(0);
   const compact = useIsCompact();
   const fitCanvasToViewport = useCallback(() => {
     if (!compact) return;
@@ -449,6 +451,13 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHe
   useEffect(() => {
     if (selectedIds.length > 0) setInspectorOpen(true);
   }, [selectedIds]);
+
+  useEffect(() => {
+    if (!mobileSheet) {
+      sheetDragRef.current = null;
+      setSheetDragY(0);
+    }
+  }, [mobileSheet]);
   useEffect(() => {
     if (compact) return;
     requestAnimationFrame(fitCanvas);
@@ -1583,8 +1592,48 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHe
       {compact && mobileSheet && (
         <>
           <button type="button" aria-label="Fechar painel" className="fixed inset-0 z-40 bg-black/35 backdrop-blur-[2px]" onClick={() => setMobileSheet(null)} />
-          <div className={cn("fixed inset-x-2 bottom-2 z-50 overflow-y-auto border border-border/80 bg-card p-4 shadow-2xl", experimentalLayout ? "max-h-[56svh] rounded-t-[28px] rounded-b-[22px] border-white/[0.08] bg-[#11141B]/94 p-3.5 backdrop-blur-2xl" : "max-h-[70vh] rounded-2xl")}>
-            {experimentalLayout && <div className="mx-auto mb-3 h-1 w-12 rounded-full bg-muted-foreground/30" aria-hidden="true" />}
+          <div className={cn("fixed inset-x-2 bottom-2 z-50 overflow-y-auto border border-border/80 bg-card p-4 shadow-2xl", experimentalLayout ? "vellune-experimental-sheet max-h-[56svh] rounded-t-[28px] rounded-b-[22px] border-white/[0.08] bg-[#11141B]/94 p-3.5 backdrop-blur-2xl" : "max-h-[70vh] rounded-2xl")} style={experimentalLayout ? ({ "--vellune-sheet-drag": `${sheetDragY}px` } as React.CSSProperties) : undefined}>
+            {experimentalLayout && (
+              <div
+                className="mx-auto mb-3 flex h-6 w-16 touch-none cursor-grab items-center justify-center active:cursor-grabbing"
+                role="button"
+                tabIndex={0}
+                aria-label="Arraste para fechar o painel"
+                title="Arraste para baixo para fechar"
+                onPointerDown={(event) => {
+                  if (event.pointerType === "mouse" && event.button !== 0) return;
+                  sheetDragRef.current = { pointerId: event.pointerId, startY: event.clientY, currentY: event.clientY };
+                  setSheetDragY(0);
+                  (event.currentTarget as HTMLElement).setPointerCapture?.(event.pointerId);
+                }}
+                onPointerMove={(event) => {
+                  const drag = sheetDragRef.current;
+                  if (!drag || drag.pointerId !== event.pointerId) return;
+                  drag.currentY = event.clientY;
+                  setSheetDragY(Math.max(0, Math.min(260, drag.currentY - drag.startY)));
+                }}
+                onPointerUp={(event) => {
+                  const drag = sheetDragRef.current;
+                  if (!drag || drag.pointerId !== event.pointerId) return;
+                  const delta = Math.max(0, drag.currentY - drag.startY);
+                  sheetDragRef.current = null;
+                  if (delta > 90) setMobileSheet(null);
+                  else setSheetDragY(0);
+                }}
+                onPointerCancel={() => {
+                  sheetDragRef.current = null;
+                  setSheetDragY(0);
+                }}
+                onKeyDown={(event) => {
+                  if (event.key === "Escape" || event.key === "Enter" || event.key === " ") {
+                    event.preventDefault();
+                    setMobileSheet(null);
+                  }
+                }}
+              >
+                <span className="h-1.5 w-12 rounded-full bg-muted-foreground/30 transition-colors" />
+              </div>
+            )}
           <div className="mb-3 flex items-center justify-between gap-3">
             <p className="text-sm font-semibold">
               {mobileSheet === "properties" ? "Ajustar" : mobileSheet === "background" ? "Fundo" : mobileSheet === "view" ? "Visualizar" : mobileSheet === "layers" ? "Organizar" : mobileSheet === "experimental-add" ? "Adicionar" : mobileSheet === "experimental-elements" ? "Elementos" : mobileSheet === "experimental-uploads" ? "Uploads" : mobileSheet === "experimental-text" ? "Texto" : "Elementos"}
