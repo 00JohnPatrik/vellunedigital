@@ -32,7 +32,7 @@ function EditorPage() {
   if (!q.data) {
     return <div className="mx-auto flex min-h-[50vh] max-w-lg flex-col items-center justify-center rounded-2xl border border-dashed bg-card/60 px-6 py-12 text-center"><BackLink /><EmptyState>Convite não encontrado.</EmptyState></div>;
   }
-  const experimentalLayout = typeof window !== "undefined" && new URLSearchParams(window.location.search).get("experimental") === "1";
+  const experimentalLayout = typeof window !== "undefined" && new URLSearchParams(window.location.search).get("legacy") !== "1";
   return <EditorForm key={q.data.id} inv={q.data} experimentalLayout={experimentalLayout} />;
 }
 
