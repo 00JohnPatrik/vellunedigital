@@ -25,7 +25,6 @@ function CompanyDashboard() {
     return (
       <>
         <SubscriptionStatusBanner companyId={appUser!.company!.id} />
-        <SubscriptionStatusBanner companyId={appUser!.company!.id} />
       <CommercialOnboarding userId={appUser!.id} userName={appUser!.name} />
         <ExperimentalCompanyDashboard
         appUser={appUser!}
