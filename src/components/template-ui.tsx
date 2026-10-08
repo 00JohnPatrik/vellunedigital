@@ -62,24 +62,29 @@ export function PreviewImage({
 
 export function TemplateCard({ t, actions }: { t: Template; actions: ReactNode }) {
   return (
-    <div className="flex flex-col overflow-hidden rounded-xl border bg-card">
-      <PreviewImage
-        src={t.preview_image}
-        name={t.name}
-        blocks={t.content?.blocks ?? []}
-        background={t.content?.settings?.background}
-      />
-      <div className="flex flex-1 flex-col gap-2 p-3">
-        <div className="flex items-start justify-between gap-2">
-          <div className="min-w-0">
-            <div className="truncate font-medium">{t.name}</div>
-            <div className="text-xs text-muted-foreground">{categoryLabel(t.category)}</div>
-          </div>
+    <article className="group flex flex-col overflow-hidden rounded-[22px] border border-[#2a2b31] bg-[#111318] shadow-[0_18px_55px_-42px_rgba(0,0,0,0.95)] transition duration-200 hover:-translate-y-0.5 hover:border-[#d4af37]/45 hover:shadow-[0_26px_65px_-40px_rgba(212,175,55,0.35)]">
+      <div className="relative overflow-hidden">
+        <PreviewImage
+          src={t.preview_image}
+          name={t.name}
+          blocks={t.content?.blocks ?? []}
+          background={t.content?.settings?.background}
+          className="aspect-[4/5] transition duration-300 group-hover:scale-[1.015]"
+        />
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-[#111318] to-transparent" />
+        <div className="absolute left-3 top-3 flex items-center gap-2">
+          <span className="rounded-full border border-[#2a2b31] bg-[#08090d]/80 px-2.5 py-1 text-[9px] font-semibold uppercase tracking-[0.12em] text-[#A9B1BF] backdrop-blur-md">{t.type === "official" ? "Oficial" : "Sua coleção"}</span>
           <StatusBadge status={t.status} />
+        </div>
+      </div>
+      <div className="flex flex-1 flex-col gap-3 p-4">
+        <div className="min-w-0">
+          <h3 className="truncate font-display text-base font-semibold tracking-[-0.02em] text-[#F5F7FA]">{t.name}</h3>
+          <p className="mt-1 text-xs text-[#A9B1BF]">{categoryLabel(t.category)}</p>
         </div>
         <div className="mt-auto flex flex-wrap gap-1.5 pt-1">{actions}</div>
       </div>
-    </div>
+    </article>
   );
 }
 
