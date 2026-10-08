@@ -323,6 +323,11 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHe
   const [spaceHeld, setSpaceHeld] = useState(false);
   const canvasDragDepth = useRef(0);
   const panRef = useRef<{ pointerId: number; x: number; y: number; scrollLeft: number; scrollTop: number } | null>(null);
+  const pinchRef = useRef<{
+    pointers: Map<number, { x: number; y: number }>;
+    startDistance: number;
+    startZoom: number;
+  } | null>(null);
   const compact = useIsCompact();
   const fitCanvasToViewport = useCallback(() => {
     if (!compact) return;
@@ -1225,7 +1230,23 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHe
           <div
             ref={viewportRef}
             onPointerDownCapture={(event) => {
-              if (!spaceHeld || event.pointerType === "touch" || event.button !== 0 || !viewportRef.current) return;
+              if (event.pointerType === "touch") {
+                const pointers = pinchRef.current?.pointers ?? new Map<number, { x: number; y: number }>();
+                pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+                const nextPinch = pinchRef.current ?? { pointers, startDistance: 0, startZoom: zoom };
+                nextPinch.pointers = pointers;
+
+                if (pointers.size >= 2) {
+                  const [first, second] = Array.from(pointers.values());
+                  nextPinch.startDistance = Math.max(1, Math.hypot(second.x - first.x, second.y - first.y));
+                  nextPinch.startZoom = zoom;
+                  event.preventDefault();
+                }
+                pinchRef.current = nextPinch;
+                return;
+              }
+
+              if (!spaceHeld || event.button !== 0 || !viewportRef.current) return;
               event.preventDefault();
               event.stopPropagation();
               panRef.current = {
@@ -1238,6 +1259,26 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHe
               (event.currentTarget as HTMLElement).setPointerCapture?.(event.pointerId);
             }}
             onPointerMoveCapture={(event) => {
+              if (event.pointerType === "touch" && pinchRef.current) {
+                const pinch = pinchRef.current;
+                const point = pinch.pointers.get(event.pointerId);
+                if (point) {
+                  point.x = event.clientX;
+                  point.y = event.clientY;
+                }
+
+                if (pinch.pointers.size >= 2 && pinch.startDistance > 0) {
+                  const [first, second] = Array.from(pinch.pointers.values());
+                  const distance = Math.max(1, Math.hypot(second.x - first.x, second.y - first.y));
+                  const scale = distance / pinch.startDistance;
+                  const nextZoom = Math.min(150, Math.max(50, pinch.startZoom * scale));
+                  event.preventDefault();
+                  event.stopPropagation();
+                  setZoom(Math.round(nextZoom));
+                }
+                return;
+              }
+
               const pan = panRef.current;
               const viewport = viewportRef.current;
               if (!pan || pan.pointerId !== event.pointerId || !viewport) return;
@@ -1247,6 +1288,11 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHe
               viewport.scrollTop = pan.scrollTop - (event.clientY - pan.y);
             }}
             onPointerUpCapture={(event) => {
+              if (event.pointerType === "touch" && pinchRef.current) {
+                pinchRef.current.pointers.delete(event.pointerId);
+                if (pinchRef.current.pointers.size < 2) pinchRef.current = null;
+                return;
+              }
               if (panRef.current?.pointerId === event.pointerId) {
                 event.preventDefault();
                 event.stopPropagation();
@@ -1254,19 +1300,25 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHe
               }
             }}
             onPointerCancelCapture={(event) => {
+              if (event.pointerType === "touch" && pinchRef.current) {
+                pinchRef.current.pointers.delete(event.pointerId);
+                if (pinchRef.current.pointers.size < 2) pinchRef.current = null;
+                return;
+              }
               if (panRef.current?.pointerId === event.pointerId) panRef.current = null;
             }}
             className={cn(
               "vellune-editor-viewport min-h-0 flex-1 overflow-auto overscroll-contain rounded-2xl border border-primary/10 bg-background/25 p-2 shadow-inner backdrop-blur-[2px] sm:p-4 lg:p-6",
               spaceHeld ? "lg:cursor-grab" : "lg:cursor-default",
             )}
+            style={{ touchAction: "pan-x pan-y" }}
             onWheel={(event) => {
               if (!event.ctrlKey && !event.metaKey) return;
               event.preventDefault();
               const direction = event.deltaY > 0 ? -1 : 1;
               setZoom((value) => Math.min(150, Math.max(50, value + direction * 5)));
             }}
-            title={spaceHeld ? "Arraste para mover a área de trabalho" : "Ctrl/Cmd + roda do mouse para ajustar o zoom"}
+            title={spaceHeld ? "Arraste para mover a área de trabalho" : "Ctrl/Cmd + roda do mouse ou pinça no celular para ajustar o zoom"}
           ><div className="mx-auto origin-top transition-transform" style={{ width: `${100 / (zoom / 100)}%`, minHeight: canvasHeight / (zoom / 100) }}><div ref={canvasRef} className={`vellune-editor-canvas relative isolate mx-auto w-full ${DEVICE_W[device]} overflow-hidden border bg-card ${device === "mobile" ? "rounded-[1.75rem] border-[5px] border-black/20 shadow-[0_30px_80px_-34px_rgba(0,0,0,0.78),0_10px_30px_-16px_rgba(0,0,0,0.5)]" : device === "tablet" ? "rounded-2xl border-black/10 shadow-[0_28px_70px_-36px_rgba(0,0,0,0.68),0_8px_24px_-12px_rgba(0,0,0,0.4)]" : "rounded-lg border-black/10 shadow-[0_24px_60px_-36px_rgba(0,0,0,0.62),0_6px_20px_-12px_rgba(0,0,0,0.34)]"} ${showGrid ? "[background-image:linear-gradient(to_right,hsl(var(--border)/.25)_1px,transparent_1px),linear-gradient(to_bottom,hsl(var(--border)/.25)_1px,transparent_1px)] [background-size:16px_16px]" : ""}`} style={{ minHeight: canvasHeight, backgroundColor: bg && (bg as any).color ? (bg as any).color : undefined, transform: `scale(${zoom / 100})`, transformOrigin: "top center" }}
               onDragEnter={(event) => {
                 if (event.dataTransfer.types.includes("application/x-vellune-block-type")) {
