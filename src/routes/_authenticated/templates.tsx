@@ -1,7 +1,6 @@
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 import { AppShell } from "@/components/app-shell";
 import { VelluneCompanyShell } from "@/components/vellune-company-shell";
-import { companyNav } from "@/lib/nav";
 
 // PermissionGuard + CompanyScopeGuard: company_admin with active company only.
 export const Route = createFileRoute("/_authenticated/templates")({
