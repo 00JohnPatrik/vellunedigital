@@ -356,7 +356,7 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHe
   const selected = blocks.filter((block: any) => selectedIds.includes(block.id));
   const applyEditorTheme = (theme: EditorTheme) => {
     h.set((items) => themedBlocks(items, theme), `theme:${theme.id}`);
-    onBg?.({ ...(bg as Record<string, unknown>), ...theme.background, image: undefined, overlay: 0, imageOpacity: 1 });
+    onBg?.({ ...(bg as Record<string, unknown>), ...theme.background });
     setSelectedIds([]);
     setToolCategory("Fundo");
   };
