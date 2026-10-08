@@ -8,7 +8,7 @@ import { ElementsLibrary } from "@/components/elements-library";
 import { EditorCommandPalette } from "@/components/editor-command-palette";
 import { TemplateGallery } from "@/components/template-gallery";
 import { cn } from "@/lib/utils";
-import { CalendarDays, CheckCircle2, Eye, EyeOff, Grid3X3, Minus, Plus, Redo2, Undo2, PanelLeft, PanelRight, Sparkles, Smartphone, Tablet, Monitor, BringToFront, SendToBack, Trash2, X, Pencil, RotateCcw, RotateCw, Lock, Unlock, AlignCenterHorizontal, AlignCenterVertical, Link2, Unlink2, MapPin, Type, Image as ImageIcon, Palette, MoreHorizontal, Maximize2, Minimize2, Search } from "lucide-react";
+import { CalendarDays, CheckCircle2, Eye, EyeOff, Grid3X3, Minus, Plus, Redo2, Undo2, PanelLeft, PanelRight, Sparkles, Smartphone, Tablet, Monitor, BringToFront, SendToBack, Trash2, X, Pencil, RotateCcw, RotateCw, Lock, Unlock, AlignCenterHorizontal, AlignCenterVertical, Link2, Unlink2, MapPin, Type, Image as ImageIcon, Palette, MoreHorizontal, Maximize2, Minimize2, Search, LayoutGrid } from "lucide-react";
 
 function useIsCompact() {
   const [compact, setCompact] = useState(false);
@@ -773,7 +773,7 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHe
               ["Modelos", Sparkles, "Comece por um modelo pronto"],
               ["Texto", Type, "Títulos, subtítulos e mensagens"],
               ["Fotos", ImageIcon, "Imagens e galerias"],
-              ["Elementos", PanelLeft, "Data, local, botões e mais"],
+              ["Elementos", LayoutGrid, "Data, local, botões e mais"],
               ["Fundo", Palette, "Cor e imagem de fundo"],
               ["Organizar", MoreHorizontal, "Camadas, visibilidade e ajustes avançados"],
             ].map(([key, Icon, description]) => {
@@ -782,7 +782,7 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHe
               <button
                 key={key as string}
                 type="button"
-                onClick={() => { setToolCategory(key as string); setSidebarOpen(true); }}
+                onClick={() => { const category = key as string; setToolCategory(category); setSidebarOpen(true); if (category === "Modelos") setTemplateOpen(true); }}
                 className={cn(
                   "group flex min-h-[64px] w-full flex-col items-center justify-center gap-1 rounded-xl border border-transparent px-1.5 py-2 text-center transition-all",
                   toolCategory === key
@@ -1058,14 +1058,14 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHe
           <ContextualPropertiesPanel blocks={blocks} selectedIds={selectedIds} assets={assets as any} onChange={(update, group) => h.set(update, group)} onDuplicate={duplicateByIds} onDelete={removeByIds} />
         </aside>}
       </div>
-      <div className="vellune-editor-mobile-bar shrink-0 flex items-center justify-between gap-1.5 rounded-2xl border border-primary/15 bg-card/95 p-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))] shadow-2xl shadow-black/25 backdrop-blur-xl lg:hidden" role="toolbar" aria-label="Ferramentas móveis do editor"><button type="button" className="flex flex-1 flex-col items-center gap-0.5 rounded-xl px-1 py-1.5 text-[10px] text-muted-foreground transition hover:bg-primary/10 hover:text-primary" onClick={() => setMobileSheet("layers")}><Grid3X3 className="h-4 w-4" />Camadas</button><button type="button" className="flex flex-1 flex-col items-center gap-0.5 rounded-xl bg-primary px-1 py-1.5 text-[10px] font-semibold text-primary-foreground shadow-[0_8px_20px_hsl(var(--primary)/.24)] transition hover:brightness-105" onClick={() => setMobileSheet("elements")}><Plus className="h-5 w-5" />Adicionar</button><button type="button" className="flex flex-1 flex-col items-center gap-0.5 rounded-xl px-1 py-1.5 text-[10px] text-muted-foreground transition hover:bg-primary/10 hover:text-primary" onClick={() => setMobileSheet("properties")}><PanelRight className="h-4 w-4" />Propriedades</button><button type="button" className="flex flex-1 flex-col items-center gap-0.5 rounded-xl px-1 py-1.5 text-[10px] text-muted-foreground transition hover:bg-primary/10 hover:text-primary" onClick={() => setMobileSheet("background")}><Sparkles className="h-4 w-4" />Fundo</button><button type="button" className="flex flex-1 flex-col items-center gap-0.5 rounded-xl px-1 py-1.5 text-[10px] text-muted-foreground transition hover:bg-primary/10 hover:text-primary" onClick={() => setMobileSheet("view")}><Grid3X3 className="h-4 w-4" />Exibir</button></div>
+      <div className="vellune-editor-mobile-bar shrink-0 flex items-center justify-between gap-1.5 rounded-2xl border border-primary/15 bg-card/95 p-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))] shadow-2xl shadow-black/25 backdrop-blur-xl lg:hidden" role="toolbar" aria-label="Ferramentas móveis do editor"><button type="button" className="flex flex-1 flex-col items-center gap-0.5 rounded-xl px-1 py-1.5 text-[10px] text-muted-foreground transition hover:bg-primary/10 hover:text-primary" onClick={() => setMobileSheet("layers")}><Grid3X3 className="h-4 w-4" />Organizar</button><button type="button" className="flex flex-1 flex-col items-center gap-0.5 rounded-xl bg-primary px-1 py-1.5 text-[10px] font-semibold text-primary-foreground shadow-[0_8px_20px_hsl(var(--primary)/.24)] transition hover:brightness-105" onClick={() => setMobileSheet("elements")}><Plus className="h-5 w-5" />Adicionar</button><button type="button" className="flex flex-1 flex-col items-center gap-0.5 rounded-xl px-1 py-1.5 text-[10px] text-muted-foreground transition hover:bg-primary/10 hover:text-primary" onClick={() => setMobileSheet("properties")}><PanelRight className="h-4 w-4" />Ajustar</button><button type="button" className="flex flex-1 flex-col items-center gap-0.5 rounded-xl px-1 py-1.5 text-[10px] text-muted-foreground transition hover:bg-primary/10 hover:text-primary" onClick={() => setMobileSheet("background")}><Sparkles className="h-4 w-4" />Fundo</button><button type="button" className="flex flex-1 flex-col items-center gap-0.5 rounded-xl px-1 py-1.5 text-[10px] text-muted-foreground transition hover:bg-primary/10 hover:text-primary" onClick={() => setMobileSheet("view")}><Eye className="h-4 w-4" />Visualizar</button></div>
       {compact && mobileSheet && (
         <>
           <button type="button" aria-label="Fechar painel" className="fixed inset-0 z-40 bg-black/35 backdrop-blur-[2px]" onClick={() => setMobileSheet(null)} />
           <div className="fixed inset-x-2 bottom-2 z-50 max-h-[70vh] overflow-y-auto rounded-2xl border border-border/80 bg-card p-4 shadow-2xl">
           <div className="mb-3 flex items-center justify-between gap-3">
             <p className="text-sm font-semibold">
-              {mobileSheet === "properties" ? "Propriedades" : mobileSheet === "background" ? "Fundo" : mobileSheet === "view" ? "Exibição" : "Elementos"}
+              {mobileSheet === "properties" ? "Ajustar" : mobileSheet === "background" ? "Fundo" : mobileSheet === "view" ? "Visualizar" : "Elementos"}
             </p>
             <button type="button" className="rounded-md border px-2 py-1 text-xs" onClick={() => setMobileSheet(null)}>Fechar</button>
           </div>
