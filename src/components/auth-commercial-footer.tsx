@@ -7,7 +7,7 @@ export function AuthCommercialFooter() {
 
   return (
     <div className="mt-3 flex flex-wrap items-center justify-center gap-x-3 gap-y-1.5 px-2 text-center text-[10px] leading-4 text-white/25 sm:mt-4 sm:text-[11px]">
-      <Link to="/privacidade" className="transition-colors hover:text-white/60">
+      <Link to="/protecao-dados" className="transition-colors hover:text-white/60">
         Privacidade
       </Link>
       <span aria-hidden="true" className="text-white/10">•</span>
