@@ -1156,6 +1156,19 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHe
                 <Redo2 className="h-4 w-4" />
               </button>
               {experimentalMobileActions}
+              <button
+                type="button"
+                onClick={() => setFocusMode((value) => !value)}
+                className={cn(
+                  "inline-flex h-8 w-8 items-center justify-center rounded-full transition",
+                  focusMode ? "bg-[#8B5CF6]/10 text-[#8B5CF6]" : "text-[#A9B1BF] hover:bg-[#171B23] hover:text-[#F5F7FA]",
+                )}
+                aria-pressed={focusMode}
+                aria-label={focusMode ? "Sair do modo foco" : "Ativar modo foco"}
+                title={focusMode ? "Sair do modo foco" : "Modo foco"}
+              >
+                {focusMode ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
+              </button>
             </>
           }
           trailingActions={<div className="hidden items-center gap-1 lg:flex">{desktopHeaderRight}</div>}
