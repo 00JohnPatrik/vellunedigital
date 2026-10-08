@@ -180,12 +180,12 @@ export function ExperimentalCompanyDashboard({ appUser, reportRows, recentRespon
             </div>
 
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 xl:grid-cols-2">
-              {[
+              {([
                 ["Convites", totals.invitations, Mail],
                 ["Visualizações", totals.views, Eye],
                 ["Confirmações", totals.confirmed, CheckCircle2],
                 ["Pessoas", totals.people, Users],
-              ].map(([label, value, Icon]) => (
+              ] as const).map(([label, value, Icon]) => (
                 <div key={label as string} className="rounded-2xl border border-[#292F3A] bg-[#0B0D12]/45 p-3.5 backdrop-blur-md">
                   <Icon className="h-4 w-4 text-[#8B5CF6]" />
                   <p className="mt-3 text-[10px] uppercase tracking-[0.12em] text-[#A9B1BF]">{label as string}</p>

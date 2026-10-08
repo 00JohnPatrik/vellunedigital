@@ -1161,7 +1161,6 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHe
           trailingActions={<div className="hidden items-center gap-1 lg:flex">{desktopHeaderRight}</div>}
         />
       )}
-)}
       {!experimentalLayout && <div className="vellune-editor-topbar flex flex-wrap items-center justify-between gap-2 border-b border-primary/10 bg-card/90 px-3 py-2.5 shadow-sm backdrop-blur-xl lg:hidden" role="toolbar" aria-label="Barra principal do editor">
         <div className="flex min-w-0 items-center gap-2">
           <div className="vellune-editor-device-switcher hidden items-center gap-0.5 rounded-xl border border-primary/10 bg-background/80 p-1 shadow-sm sm:flex" role="group" aria-label="Tamanho da tela do convite">
