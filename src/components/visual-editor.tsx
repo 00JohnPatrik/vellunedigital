@@ -684,8 +684,8 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHe
         {toolbarExtra && <div className="mt-2 flex items-center justify-end gap-1.5 border-t border-primary/10 pt-2 md:hidden">{toolbarExtra}</div>}
       </div>
       <div className="vellune-editor-body flex min-h-0 flex-1 flex-col lg:flex-row">
-        <aside className="vellune-editor-sidebar hidden w-[270px] shrink-0 flex-col border-r border-primary/10 bg-card/80 backdrop-blur-xl lg:flex" aria-label="Ferramentas do editor">
-          <div className="border-b border-primary/10 p-3.5">
+        <aside className="vellune-editor-sidebar hidden w-[330px] shrink-0 grid-cols-[74px_minmax(0,1fr)] grid-rows-[auto_minmax(0,1fr)] border-r border-white/[0.06] bg-[#0d0f14]/95 backdrop-blur-xl lg:grid" aria-label="Ferramentas do editor">
+          <div className="col-span-2 border-b border-white/[0.06] bg-[#101217]/80 p-3.5">
             <div className="flex items-center gap-2">
               <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary"><Sparkles className="h-4 w-4" /></div>
               <div className="min-w-0">
@@ -695,7 +695,7 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHe
             </div>
           </div>
 
-          <nav className="grid grid-cols-2 gap-1.5 border-b border-primary/10 bg-background/30 p-2" aria-label="Etapas da criação">
+          <nav className="row-start-2 col-start-1 flex flex-col gap-1 border-r border-white/[0.06] bg-[#0a0c10]/70 p-2" aria-label="Ferramentas principais">
             {[
               ["Modelos", Sparkles, "Comece por um modelo pronto"],
               ["Texto", Type, "Títulos, subtítulos e mensagens"],
@@ -711,22 +711,22 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHe
                 type="button"
                 onClick={() => setToolCategory(key as string)}
                 className={cn(
-                  "group flex min-h-[58px] flex-col items-start justify-center gap-1 rounded-xl border px-2.5 py-2 text-left transition-all",
+                  "group flex min-h-[64px] w-full flex-col items-center justify-center gap-1 rounded-xl border border-transparent px-1.5 py-2 text-center transition-all",
                   toolCategory === key
-                    ? "border-primary/30 bg-primary/10 text-primary shadow-sm"
-                    : "border-transparent text-muted-foreground hover:border-primary/15 hover:bg-accent/50 hover:text-foreground",
+                    ? "border-primary/25 bg-primary/10 text-primary shadow-[0_8px_24px_rgba(0,0,0,0.18)]"
+                    : "text-white/45 hover:bg-white/[0.05] hover:text-white",
                 )}
                 aria-pressed={toolCategory === key}
                 title={description as string}
               >
                 <IconComponent className="h-4 w-4" />
-                <span className="text-[11px] font-medium">{key as string}</span>
+                <span className="text-[9px] font-medium leading-3">{key as string}</span>
               </button>
               );
             })}
           </nav>
 
-          <div className="min-h-0 flex-1 overflow-y-auto p-3.5">
+          <div className="row-start-2 col-start-2 min-h-0 overflow-y-auto bg-[#0f1117]/65 p-3.5">
             {toolCategory === "Modelos" && (
               <div className="space-y-3">
                 <div>
