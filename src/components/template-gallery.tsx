@@ -25,6 +25,36 @@ type GalleryItem = {
   previewImage?: string | null;
 };
 
+function safeTemplateContent(input: unknown): TemplateContent {
+  const source = input && typeof input === "object" ? input as { version?: unknown; blocks?: unknown; settings?: unknown } : {};
+  const blocks = Array.isArray(source.blocks)
+    ? source.blocks.filter((block): block is Block => {
+        if (!block || typeof block !== "object") return false;
+        const candidate = block as { id?: unknown; type?: unknown; props?: unknown };
+        return typeof candidate.id === "string"
+          && typeof candidate.type === "string"
+          && typeof candidate.props === "object"
+          && candidate.props !== null
+          && !Array.isArray(candidate.props);
+      }).map((block) => {
+        const candidate = block as Block;
+        return {
+          ...candidate,
+          props: candidate.props && typeof candidate.props === "object" && !Array.isArray(candidate.props) ? candidate.props : {},
+        };
+      })
+    : [];
+
+  const rawSettings = source.settings && typeof source.settings === "object" ? source.settings as { background?: unknown } : {};
+  const rawBackground = rawSettings.background && typeof rawSettings.background === "object" ? rawSettings.background : undefined;
+
+  return {
+    version: 1,
+    blocks,
+    ...(rawBackground ? { settings: { background: rawBackground as TemplateContent["settings"] extends { background?: infer B } ? B : never } } : {}),
+  };
+}
+
 const STARTER_CATEGORIES: Record<string, Category> = {
   editorial: "casamento",
   wedding: "casamento",
@@ -53,15 +83,15 @@ function starterItems(): GalleryItem[] {
 
 function databaseTemplateItems(templates: Template[] | undefined): GalleryItem[] {
   return (templates ?? [])
-    .filter((template) => template.status === "active")
+    .filter((template) => template && template.status === "active")
     .map((template) => ({
       id: template.id,
-      label: template.name,
+      label: template.name || "Modelo",
       category: template.category,
-      content: template.content,
+      content: safeTemplateContent(template.content),
       source: template.type === "company" ? "company" : "official",
       sourceLabel: template.type === "company" ? "Meu modelo" : "Oficial",
-      previewImage: template.preview_image,
+      previewImage: typeof template.preview_image === "string" ? template.preview_image : null,
     }));
 }
 
@@ -70,12 +100,14 @@ function galleryFont(font?: string) {
 }
 
 function GalleryImagePreview({ item, className }: { item: { url?: string }; className?: string }) {
-  const src = useAssetUrl(item.url);
-  return src ? <img src={src} alt="" className={className} loading="lazy" /> : <div className="h-full w-full rounded-lg bg-muted-foreground/10" />;
+  const value = typeof item.url === "string" ? item.url : undefined;
+  const src = useAssetUrl(value);
+  return src ? <img src={src} alt="" className={className} loading="lazy" onError={(event) => { event.currentTarget.style.display = "none"; }} /> : <div className="h-full w-full rounded-lg bg-muted-foreground/10" />;
 }
 
 function GalleryBlockPreview({ block, geometry }: { block: Block; geometry: ReturnType<typeof resolveBlockGeometry> }) {
-  const p = block.props ?? {};
+  const rawProps = block.props;
+  const p: Record<string, string> = rawProps && typeof rawProps === "object" && !Array.isArray(rawProps) ? rawProps : {};
   const base: CSSProperties = {
     position: "absolute",
     left: geometry.x,
@@ -99,7 +131,10 @@ function GalleryBlockPreview({ block, geometry }: { block: Block; geometry: Retu
 
   if (block.type === "gallery") {
     let images: Array<{ url?: string; alt?: string }> = [];
-    try { images = JSON.parse(p.images || "[]"); } catch { images = []; }
+    try {
+      const parsed = JSON.parse(typeof p.images === "string" ? p.images : "[]");
+      if (Array.isArray(parsed)) images = parsed.filter((item): item is { url?: string; alt?: string } => !!item && typeof item === "object");
+    } catch { images = []; }
     const columns = Math.max(1, Math.min(4, Number(p.columns) || 2));
     return (
       <div style={{ ...base, display: "grid", gridTemplateColumns: `repeat(${columns}, minmax(0,1fr))`, gap: 4 }} className="rounded-xl bg-muted p-1">
@@ -155,9 +190,10 @@ function GalleryBlockPreview({ block, geometry }: { block: Block; geometry: Retu
 }
 
 function PreviewCanvas({ content, previewImage }: { content: TemplateContent; previewImage?: string | null }) {
-  const coverSrc = useAssetUrl(previewImage);
-  const blocks = content.blocks ?? [];
-  const background = content.settings?.background;
+  const safeContent = safeTemplateContent(content);
+  const coverSrc = useAssetUrl(typeof previewImage === "string" ? previewImage : null);
+  const blocks = safeContent.blocks;
+  const background = safeContent.settings?.background;
   const geometries = blocks.map((block, index) => resolveBlockGeometry(block, index));
   const height = Math.max(420, ...geometries.map((geometry) => geometry.y + geometry.height + 24));
   const canvasWidth = 390;
@@ -223,7 +259,7 @@ export function TemplateGallery({ open, onClose, onApply, hasContent }: Template
       setConfirmReplace(true);
       return;
     }
-    onApply(cloneContent(selected.content));
+    onApply(cloneContent(safeTemplateContent(selected.content)));
     setConfirmReplace(false);
     onClose();
   };
@@ -295,7 +331,7 @@ export function TemplateGallery({ open, onClose, onApply, hasContent }: Template
                         <p className="text-[10px] uppercase tracking-wide text-primary">{CATEGORIES.find((categoryItem) => categoryItem.value === item.category)?.label ?? "Modelo"}</p>
                         <span className="rounded-full border border-border/70 bg-muted/50 px-1.5 py-0.5 text-[9px] font-medium text-muted-foreground">{item.sourceLabel}</span>
                       </div>
-                      <p className="mt-1 text-[11px] text-muted-foreground">{item.content.blocks.length} elementos editáveis</p>
+                      <p className="mt-1 text-[11px] text-muted-foreground">{safeTemplateContent(item.content).blocks.length} elementos editáveis</p>
                     </div>
                   </button>
                 ))}
