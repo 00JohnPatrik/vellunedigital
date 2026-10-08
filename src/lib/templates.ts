@@ -183,7 +183,7 @@ export type TemplateValues = { name: string; category: Category | ""; preview_im
 
 export const newBlock = (type: BlockType): Block => ({ id: crypto.randomUUID(), type, props: { ...BLOCKS[type].defaults } });
 
-const PREMIUM_PHOTO_IMAGES = {
+export const EDITOR_STOCK_IMAGES = {
   wedding: "https://images.unsplash.com/photo-1779055660455-0fd20ba8ef56?auto=format&fit=crop&w=1000&q=82",
   birthday: "https://images.unsplash.com/photo-1774290687045-726c356643f9?auto=format&fit=crop&w=1000&q=82",
   baby: "https://images.unsplash.com/photo-1542387960-f8197d82db42?auto=format&fit=crop&w=1000&q=82",
@@ -193,6 +193,8 @@ const PREMIUM_PHOTO_IMAGES = {
   kids: "https://images.unsplash.com/photo-1765530950709-67e6af4ce3ad?auto=format&fit=crop&w=1000&q=82",
   event: "https://images.unsplash.com/photo-1767050241759-a35754ea2471?auto=format&fit=crop&w=1000&q=82",
 } as const;
+
+const PREMIUM_PHOTO_IMAGES = EDITOR_STOCK_IMAGES;
 
 type PremiumPhotoOptions = {
   image: string;
