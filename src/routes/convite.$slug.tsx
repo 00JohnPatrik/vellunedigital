@@ -66,6 +66,18 @@ function PublicInvitationPage() {
 
   useEffect(() => {
     if (!ok || viewed.has(slug)) return;
+
+    const storageKey = `vellune:invitation-viewed:${slug}`;
+    try {
+      if (window.sessionStorage.getItem(storageKey) === "1") {
+        viewed.add(slug);
+        return;
+      }
+      window.sessionStorage.setItem(storageKey, "1");
+    } catch {
+      // The in-memory guard remains as a fallback when storage is unavailable.
+    }
+
     viewed.add(slug);
     recordInvitationView({ data: { slug } }).catch(() => {});
   }, [ok, slug]);
