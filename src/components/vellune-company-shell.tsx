@@ -22,7 +22,7 @@ const MODULES = [
   { label: "Resultados", to: "/reports", icon: BarChart3 },
   { label: "Plano", to: "/dashboard/assinatura", icon: CreditCard },
   { label: "Sua marca", to: "/settings/brand", icon: Palette },
-  { label: "Configurações", to: "/settings", icon: Settings2 },
+  { label: "Configurações", to: "/dashboard/configuracoes", icon: Settings2 },
 ] as const;
 
 function initials(name: string) {
