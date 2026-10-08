@@ -57,6 +57,7 @@ function PasswordField({
         autoCorrect="off"
         spellCheck={false}
         aria-invalid={error}
+        aria-describedby={error ? `${id}-error` : undefined}
         className="h-12 w-full rounded-xl border border-white/[0.08] bg-[#111318]/90 px-4 pr-11 text-sm text-white placeholder:text-white/20 outline-none transition-[border-color,box-shadow,background-color] duration-300 focus:border-[#d4af37]/55 focus:ring-2 focus:ring-[#d4af37]/12 focus:shadow-[0_0_0_1px_rgba(212,175,55,0.14),0_10px_35px_rgba(212,175,55,0.05)]"
       />
       <button
@@ -202,7 +203,7 @@ function ResetPage() {
               placeholder="Mínimo de 8 caracteres"
               error={passwordTooShort}
             />
-            {passwordTooShort && <p className="flex items-center gap-1.5 text-[11px] text-red-300/90"><AlertCircle className="h-3.5 w-3.5" />A senha precisa ter pelo menos 8 caracteres.</p>}
+            {passwordTooShort && <p id="pw-error" className="flex items-center gap-1.5 text-[11px] text-red-300/90"><AlertCircle className="h-3.5 w-3.5" />A senha precisa ter pelo menos 8 caracteres.</p>}
             <div className="pt-1">
               <div className="mb-1.5 flex items-center justify-between text-[9px] font-semibold uppercase tracking-[0.14em]"><span className="text-white/25">Força da senha</span><span className={strengthScore >= 3 ? "text-[#e5c66b]" : "text-white/35"}>{password ? strengthLabel : "—"}</span></div>
               <div className="grid grid-cols-4 gap-1">{[1,2,3,4].map((level)=><span key={level} className={`h-1 rounded-full transition-all duration-300 ${password && strengthScore >= level ? "bg-[#d4af37]" : "bg-white/[0.07]"}`} />)}</div>
@@ -220,7 +221,7 @@ function ResetPage() {
               placeholder="Digite novamente sua senha"
               error={confirmMismatch}
             />
-            {confirmMismatch && <p className="flex items-center gap-1.5 text-[11px] text-red-300/90"><AlertCircle className="h-3.5 w-3.5" />As senhas ainda não coincidem.</p>}
+            {confirmMismatch && <p id="pw2-error" className="flex items-center gap-1.5 text-[11px] text-red-300/90"><AlertCircle className="h-3.5 w-3.5" />As senhas ainda não coincidem.</p>}
           </div>
 
           <p className="flex items-center gap-2 text-xs text-white/35">
