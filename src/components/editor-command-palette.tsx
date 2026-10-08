@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { CalendarDays, CheckCircle2, Image as ImageIcon, Link2, MapPin, Palette, Search, Shapes, Sparkles, Type, X } from "lucide-react";
-import type { BlockType } from "@/lib/templates";
+import type { BlockType, CompositionKind } from "@/lib/templates";
+import { READY_COMPOSITIONS } from "@/lib/templates";
 import type { LucideIcon } from "lucide-react";
 
 type PaletteAction = {
@@ -8,7 +9,8 @@ type PaletteAction = {
   label: string;
   description: string;
   type?: BlockType;
-  kind: "element" | "template" | "background";
+  composition?: CompositionKind;
+  kind: "element" | "template" | "background" | "composition";
   Icon: LucideIcon;
 };
 
@@ -24,6 +26,14 @@ const ACTIONS: PaletteAction[] = [
   { id: "rsvp", label: "Confirmação de presença", description: "Adicionar RSVP ao convite", kind: "element", type: "rsvp", Icon: CheckCircle2 },
   { id: "button", label: "Botão", description: "Adicionar um botão com link", kind: "element", type: "button", Icon: Link2 },
   { id: "background", label: "Fundo", description: "Abrir os ajustes do fundo do convite", kind: "background", Icon: Palette },
+  ...READY_COMPOSITIONS.map((composition) => ({
+    id: `composition-${composition.kind}`,
+    label: composition.label,
+    description: composition.description,
+    kind: "composition" as const,
+    composition: composition.kind,
+    Icon: Sparkles,
+  })),
 ];
 
 export function EditorCommandPalette({
@@ -31,6 +41,7 @@ export function EditorCommandPalette({
   selectedCount,
   onClose,
   onAdd,
+  onAddComposition,
   onOpenTemplates,
   onOpenBackground,
 }: {
@@ -38,6 +49,7 @@ export function EditorCommandPalette({
   selectedCount: number;
   onClose: () => void;
   onAdd: (type: BlockType) => void;
+  onAddComposition: (kind: CompositionKind) => void;
   onOpenTemplates: () => void;
   onOpenBackground: () => void;
 }) {
@@ -81,13 +93,14 @@ export function EditorCommandPalette({
         const item = filtered[active]!;
         if (item.kind === "template") onOpenTemplates();
         else if (item.kind === "background") onOpenBackground();
+        else if (item.kind === "composition" && item.composition) onAddComposition(item.composition);
         else if (item.type) onAdd(item.type);
         onClose();
       }
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [active, filtered, onAdd, onClose, onOpenBackground, onOpenTemplates, open]);
+  }, [active, filtered, onAdd, onAddComposition, onClose, onOpenBackground, onOpenTemplates, open]);
 
   if (!open) return null;
 
@@ -135,6 +148,7 @@ export function EditorCommandPalette({
                     onClick={() => {
                       if (item.kind === "template") onOpenTemplates();
                       else if (item.kind === "background") onOpenBackground();
+                      else if (item.kind === "composition" && item.composition) onAddComposition(item.composition);
                       else if (item.type) onAdd(item.type);
                       onClose();
                     }}
