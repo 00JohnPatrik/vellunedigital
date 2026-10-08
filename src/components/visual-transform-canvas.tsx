@@ -873,6 +873,7 @@ export function VisualTransformCanvas({ blocks, selectedIds: selectedIdsProp, zo
           onAutoArrange={() => onAutoArrange?.(selectedIds)}
           onMagicArrange={(preset) => onMagicArrange?.(selectedIds, preset)}
           onSmartAlign={() => onSmartAlign?.(selectedIds)}
+          onAddElement={(type) => onAddBlock?.(type)}
         />
       </div>
     )}
