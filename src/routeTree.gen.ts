@@ -89,7 +89,7 @@ const ResetPasswordRoute = ResetPasswordRouteImport.update({
   path: '/reset-password',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({const ProtecaoDadosRoute = ProtecaoDadosRouteImport.update({
+const ProtecaoDadosRoute = ProtecaoDadosRouteImport.update({
   id: '/protecao-dados',
   path: '/protecao-dados',
   getParentRoute: () => rootRouteImport,
@@ -104,8 +104,7 @@ const SuporteRoute = SuporteRouteImport.update({
   path: '/suporte',
   getParentRoute: () => rootRouteImport,
 } as any)
-
-  id: '/admin',
+const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({  id: '/admin',
   path: '/admin',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
