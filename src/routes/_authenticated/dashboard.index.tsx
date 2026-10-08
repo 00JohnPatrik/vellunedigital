@@ -16,14 +16,6 @@ function CompanyDashboard() {
   const report = useQuery({ queryKey: ["reports", "company"], queryFn: () => fetchReport() });
   const recent = useQuery({ queryKey: ["reports", "recent"], queryFn: () => recentResponses(5) });
   if (report.isLoading) return <LoadingState />;
-  if (report.error) {
-    return (
-      <div role="alert" className="rounded-xl border border-destructive/30 bg-destructive/5 p-6 text-center">
-        <p className="text-sm font-medium text-destructive">Não foi possível carregar o dashboard.</p>
-        <p className="mt-1 text-sm text-muted-foreground">Atualize a página e tente novamente.</p>
-      </div>
-    );
-  }
   const rows = report.data ?? [];
   const t = totals(rows);
 
@@ -34,6 +26,15 @@ function CompanyDashboard() {
         reportRows={rows}
         recentResponses={recent.data ?? []}
       />
+    );
+  }
+
+  if (report.error) {
+    return (
+      <div role="alert" className="rounded-xl border border-destructive/30 bg-destructive/5 p-6 text-center">
+        <p className="text-sm font-medium text-destructive">Não foi possível carregar o dashboard.</p>
+        <p className="mt-1 text-sm text-muted-foreground">Atualize a página e tente novamente.</p>
+      </div>
     );
   }
 
