@@ -85,7 +85,7 @@ export function NotificationCenter({ appUser }: { appUser: AppUser }) {
   const readAtByGroup = useMemo(() => {
     const map = new Map<string, string>();
     for (const marker of readMarkersQuery.data ?? []) {
-      map.set(\`\${marker.group_type}:\${marker.group_id}\`, marker.last_read_at);
+      map.set(`${marker.group_type}:${marker.group_id}`, marker.last_read_at);
     }
     return map;
   }, [readMarkersQuery.data]);
@@ -94,12 +94,12 @@ export function NotificationCenter({ appUser }: { appUser: AppUser }) {
     if (!query.data) return [];
 
     const invitationItems = query.data.invitations.slice(0, 12).map((item) => ({
-      id: \`invitation-\${item.id}\`,
+      id: `invitation-${item.id}`,
       icon: item.status === "published" ? CheckCircle2 : Clock3,
       title: item.status === "published" ? "Convite publicado" : "Convite atualizado",
       description: item.name,
       date: item.updated_at,
-      href: isSuperAdmin ? "/admin/reports" : \`/invitations/\${item.id}/editor\`,
+      href: isSuperAdmin ? "/admin/reports" : `/invitations/${item.id}/editor`,
       companyId: item.company_id,
       companyName: item.company?.name ?? "Empresa não identificada",
       customerId: item.customer_id,
@@ -112,12 +112,12 @@ export function NotificationCenter({ appUser }: { appUser: AppUser }) {
       .map((item) => {
         const invitation = item.invitation!;
         return {
-          id: \`response-\${item.id}\`,
+          id: `response-${item.id}`,
           icon: UserPlus,
           title: "Nova confirmação de presença",
-          description: \`\${item.name} confirmou presença\`,
+          description: `${item.name} confirmou presença`,
           date: item.created_at,
-          href: isSuperAdmin ? "/admin/reports" : \`/invitations/\${item.invitation_id}/report\`,
+          href: isSuperAdmin ? "/admin/reports" : `/invitations/${item.invitation_id}/report`,
           companyId: invitation.company_id,
           companyName: invitation.company?.name ?? "Empresa não identificada",
           customerId: invitation.customer_id,
@@ -144,7 +144,7 @@ export function NotificationCenter({ appUser }: { appUser: AppUser }) {
     for (const item of notifications) {
       const groupType: NotificationGroupType = isSuperAdmin ? "company" : "customer";
       const groupId = isSuperAdmin ? item.companyId : item.customerId;
-      const key = \`\${groupType}:\${groupId}\`;
+      const key = `${groupType}:${groupId}`;
       const existing = groups.get(key);
       if (existing) {
         existing.items.push(item);
@@ -152,7 +152,7 @@ export function NotificationCenter({ appUser }: { appUser: AppUser }) {
         const readAt = readAtByGroup.get(key);
         const unreadCount = readAt
           ? notifications.filter((candidate) => {
-              const candidateKey = \`\${groupType}:\${isSuperAdmin ? candidate.companyId : candidate.customerId}\`;
+              const candidateKey = `${groupType}:${isSuperAdmin ? candidate.companyId : candidate.customerId}`;
               return candidateKey === key && new Date(candidate.date).getTime() > new Date(readAt).getTime();
             }).length
           : 1;
@@ -251,8 +251,8 @@ export function NotificationCenter({ appUser }: { appUser: AppUser }) {
                         onClick={() => void markGroupRead(group)}
                         disabled={markingGroup === group.key}
                         className="h-8 rounded-full px-2 text-[10px] text-muted-foreground hover:text-foreground"
-                        aria-label={\`Marcar notificações de \${group.label} como lidas\`}
-                        title={\`Marcar todos de \${group.label} como lidos\`}
+                        aria-label={`Marcar notificações de ${group.label} como lidas`}
+                        title={`Marcar todos de ${group.label} como lidos`}
                       >
                         <CheckCheck className="mr-1 h-3.5 w-3.5" />
                         <span className="hidden sm:inline">{markingGroup === group.key ? "Salvando..." : "Marcar lidos"}</span>
@@ -271,7 +271,7 @@ export function NotificationCenter({ appUser }: { appUser: AppUser }) {
                       <Link
                         key={item.id}
                         to={item.href as never}
-                        className={\`flex gap-3 px-3 py-3 transition-colors hover:bg-muted/50 \${isRead ? "opacity-60" : ""}\`}
+                        className={`flex gap-3 px-3 py-3 transition-colors hover:bg-muted/50 ${isRead ? "opacity-60" : ""}`}
                       >
                         <span className="relative mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
                           <Icon className="h-4 w-4" />
