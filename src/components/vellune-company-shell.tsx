@@ -21,6 +21,8 @@ const MODULES = companyNav.filter((item) => Boolean(item.to)).map((item) => ({ l
 
 
 
+function PlusGlyph() { return <span className="text-base font-semibold">+</span>; }
+
 function initials(name: string) {
   const words = name.trim().split(/\s+/).filter(Boolean);
   return (words.slice(0, 2).map((word) => word[0]).join("") || "VD").toUpperCase();
@@ -29,6 +31,7 @@ function initials(name: string) {
 export function VelluneCompanyShell({ appUser, children, activeItem = "home", className }: Props) {
   const [search, setSearch] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
+  const [createOpen, setCreateOpen] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -78,7 +81,7 @@ export function VelluneCompanyShell({ appUser, children, activeItem = "home", cl
 
       <VelluneCreativeDock
         activeItem={activeItem}
-        onCreate={() => navigate({ to: "/invitations/new" })}
+        onCreate={() => setCreateOpen(true)}
         onNavigate={(item) => {
           if (item === "home") { void navigate({ to: "/dashboard" }); return; }
           if (item === "projects") { void navigate({ to: "/invitations" }); return; }
@@ -86,6 +89,31 @@ export function VelluneCompanyShell({ appUser, children, activeItem = "home", cl
           void navigate({ to: "/settings" });
         }}
       />
+
+      {createOpen && (
+        <div className="fixed inset-0 z-[235] flex items-end justify-center bg-[#08090d]/76 p-3 pb-24 backdrop-blur-sm sm:items-center sm:p-6" role="presentation" onMouseDown={() => setCreateOpen(false)}>
+          <section className="w-full max-w-lg rounded-[28px] border border-[#2a2b31] bg-[#111318] p-4 shadow-[0_30px_90px_-28px_rgba(11,13,18,0.98)] sm:p-5" role="dialog" aria-modal="true" aria-label="Criar novo" onMouseDown={(event) => event.stopPropagation()}>
+            <div className="mx-auto mb-3 h-1.5 w-12 rounded-full bg-[#2a2b31]" aria-hidden="true" />
+            <div className="flex items-start justify-between gap-3">
+              <div><p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[#A9B1BF]">Criação rápida</p><h2 className="mt-1 font-display text-xl font-semibold text-[#F5F7FA]">O que vamos criar?</h2></div>
+              <button type="button" onClick={() => setCreateOpen(false)} className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-[#2a2b31] bg-[#08090d] text-[#A9B1BF] hover:text-[#F5F7FA]" aria-label="Fechar">×</button>
+            </div>
+            <div className="mt-5 grid gap-2.5 sm:grid-cols-3">
+              {[
+                ["/invitations/new", "Novo convite", "Começar uma criação"],
+                ["/templates", "Usar modelo", "Escolher uma composição pronta"],
+                ["/invitations", "Ver projetos", "Abrir seus convites"],
+              ].map(([to, title, description]) => (
+                <Link key={to} to={to as any} onClick={() => setCreateOpen(false)} className="rounded-2xl border border-[#2a2b31] bg-[#08090d]/55 p-4 transition hover:-translate-y-0.5 hover:border-[#d4af37]/45">
+                  <span className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-[#d4af37]/10 text-[#d4af37]"><PlusGlyph /></span>
+                  <p className="mt-3 text-sm font-semibold text-[#F5F7FA]">{title}</p>
+                  <p className="mt-1 text-[10px] leading-4 text-[#A9B1BF]">{description}</p>
+                </Link>
+              ))}
+            </div>
+          </section>
+        </div>
+      )}
 
       {searchOpen && (
         <div
