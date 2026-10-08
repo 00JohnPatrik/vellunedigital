@@ -1,7 +1,15 @@
-import { Bell, ChevronDown, Search } from "lucide-react";
+import { Bell, ChevronDown, LogOut, Search, Settings } from "lucide-react";
 import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export type VelluneTopBarProps = {
   avatarSrc?: string;
@@ -19,6 +27,7 @@ export type VelluneTopBarProps = {
   className?: string;
   showNotifications?: boolean;
   onAvatarClick?: () => void;
+  onSignOut?: () => void;
 };
 
 export function VelluneTopBar({
@@ -37,6 +46,7 @@ export function VelluneTopBar({
   className,
   showNotifications = true,
   onAvatarClick,
+  onSignOut,
 }: VelluneTopBarProps) {
   const [online, setOnline] = useState(() => typeof navigator === "undefined" ? true : navigator.onLine);
 
@@ -126,22 +136,45 @@ export function VelluneTopBar({
           )}
         </button>}
 
-        <button
-          type="button"
-          onClick={onAvatarClick}
-          className="group inline-flex items-center gap-2 rounded-full p-0.5 transition hover:bg-[#111318] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d4af37]/55"
-          aria-label="Abrir conta"
-          title="Conta"
-        >
-          <span className="relative inline-flex h-9 w-9 items-center justify-center overflow-hidden rounded-full border border-[#d4af37] bg-[#111318] text-[10px] font-bold text-[#F5F7FA] shadow-[0_0_0_2px_rgba(212,175,55,0.16)] sm:h-10 sm:w-10">
-            {avatarSrc ? (
-              <img src={avatarSrc} alt="" className="h-full w-full object-cover" />
-            ) : (
-              avatarFallback.slice(0, 2).toUpperCase()
-            )}
-          </span>
-          <ChevronDown className="hidden h-3.5 w-3.5 text-[#A9B1BF] transition group-hover:text-[#F5F7FA] md:block" aria-hidden="true" />
-        </button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button
+              type="button"
+              className="group inline-flex items-center gap-2 rounded-full p-0.5 transition hover:bg-[#111318] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d4af37]/55"
+              aria-label="Abrir menu da conta"
+              title="Conta — configurações e sair"
+            >
+              <span className="relative inline-flex h-9 w-9 items-center justify-center overflow-hidden rounded-full border border-[#d4af37] bg-[#111318] text-[10px] font-bold text-[#F5F7FA] shadow-[0_0_0_2px_rgba(212,175,55,0.16)] sm:h-10 sm:w-10">
+                {avatarSrc ? (
+                  <img src={avatarSrc} alt="" className="h-full w-full object-cover" />
+                ) : (
+                  avatarFallback.slice(0, 2).toUpperCase()
+                )}
+              </span>
+              <ChevronDown className="hidden h-3.5 w-3.5 text-[#A9B1BF] transition group-hover:text-[#F5F7FA] md:block" aria-hidden="true" />
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" sideOffset={10} className="w-52 border-[#2a2b31] bg-[#111318] text-[#F5F7FA] shadow-[0_24px_70px_-24px_rgba(0,0,0,0.95)]">
+            <DropdownMenuLabel className="text-xs font-medium text-[#A9B1BF]">Minha conta</DropdownMenuLabel>
+            <DropdownMenuItem
+              onSelect={onAvatarClick}
+              disabled={!onAvatarClick}
+              className="cursor-pointer focus:bg-[#1b1d24] focus:text-[#F5F7FA]"
+            >
+              <Settings className="h-4 w-4" />
+              Configurações
+            </DropdownMenuItem>
+            <DropdownMenuSeparator className="bg-[#2a2b31]" />
+            <DropdownMenuItem
+              onSelect={() => onSignOut?.()}
+              disabled={!onSignOut}
+              className="cursor-pointer text-red-300 focus:bg-red-500/10 focus:text-red-200"
+            >
+              <LogOut className="h-4 w-4" />
+              Sair da conta
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     </header>
   );
