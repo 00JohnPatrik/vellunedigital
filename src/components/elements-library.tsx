@@ -4,6 +4,7 @@ import {
   Check,
   Clock3,
   Image as ImageIcon,
+  Gift,
   Layers3,
   MapPin,
   Minus,
@@ -37,7 +38,7 @@ type ElementsLibraryProps = {
 };
 
 type LibraryCategory = "Todos" | "Recentes" | "Texto" | "Elementos" | "Mídia" | "Interações";
-type PreviewKind = "text" | "circle" | "rectangle" | "line" | "image" | "event" | "action" | "qr" | "rsvp";
+type PreviewKind = "text" | "circle" | "rectangle" | "line" | "image" | "event" | "action" | "qr" | "rsvp" | "gift";
 
 type LibraryItem = {
   id: string;
@@ -102,6 +103,9 @@ function Preview({ kind }: { kind: PreviewKind }) {
   if (kind === "qr") {
     return <div className="flex h-20 items-center justify-center rounded-xl bg-muted/40"><div className="rounded-lg border-4 border-foreground/80 p-1"><QrCode className="h-9 w-9 text-foreground" /></div></div>;
   }
+  if (kind === "gift") {
+    return <div className="flex h-20 items-center justify-center rounded-xl bg-gradient-to-br from-primary/10 via-background to-primary/5"><div className="flex items-center gap-2 rounded-xl border bg-background px-3 py-2 shadow-sm"><Gift className="h-5 w-5 text-primary" /><span className="text-xs font-medium text-foreground">Presentes / Pix</span></div></div>;
+  }
   return <div className="flex h-20 items-center justify-center rounded-xl bg-gradient-to-br from-primary/10 to-background"><Users className="h-8 w-8 text-emerald-600" /></div>;
 }
 
@@ -161,6 +165,7 @@ export function ElementsLibrary({ availableTypes, onAdd, assets, onAddImage, ima
     if (has("whatsapp")) add({ id: "whatsapp", label: typeLabel("whatsapp"), description: "Facilita o contato dos convidados pelo WhatsApp.", category: "Interações", type: "whatsapp", preview: "action", eyebrow: "Contato", tags: ["whatsapp", "contato"] });
     if (has("rsvp")) add({ id: "rsvp", label: typeLabel("rsvp"), description: "Insira a confirmação de presença no convite.", category: "Interações", type: "rsvp", preview: "rsvp", eyebrow: "Confirmação", tags: ["rsvp", "presença"] });
     if (has("qr_code")) add({ id: "qr_code", label: typeLabel("qr_code"), description: "Compartilhe o link do convite ou outro conteúdo por QR Code.", category: "Interações", type: "qr_code", preview: "qr", eyebrow: "Acesso", tags: ["qr", "código"] });
+    if (has("gifts")) add({ id: "gifts", label: typeLabel("gifts"), description: "Mostre chave Pix e link de lista de presentes com cópia rápida.", category: "Interações", type: "gifts", preview: "gift", eyebrow: "Presentes", tags: ["pix", "presente", "lista", "casamento", "chá de bebê"] });
 
     return result;
   }, [availableTypes]);
