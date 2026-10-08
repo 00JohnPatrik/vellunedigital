@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Link, useMatchRoute, useNavigate } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { FileText, LayoutTemplate, Search, UserRound, X } from "lucide-react";
 import { VelluneTopBar } from "@/components/vellune-top-bar";
 import { VelluneCreativeDock } from "@/components/vellune-creative-dock";
@@ -34,7 +34,6 @@ export function VelluneCompanyShell({ appUser, children, activeItem = "home", cl
   const [searchOpen, setSearchOpen] = useState(false);
   const [createOpen, setCreateOpen] = useState(false);
   const navigate = useNavigate();
-  const matchRoute = useMatchRoute();
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
@@ -82,45 +81,9 @@ export function VelluneCompanyShell({ appUser, children, activeItem = "home", cl
         trailingActions={<NotificationCenter appUser={appUser} />}
       />
 
-      <div className="lg:pl-64">
-        <main className="mx-auto w-full max-w-[1540px] px-4 pb-32 pt-20 sm:px-6 sm:pt-24 lg:px-8 lg:pb-10">
-          {children}
-        </main>
-      </div>
-
-      <aside
-        aria-label="Navegação principal"
-        className="fixed inset-y-0 left-0 top-16 z-[160] hidden w-64 flex-col border-r border-[#2a2b31] bg-[#0d0f15]/96 backdrop-blur-xl lg:flex"
-      >
-        <div className="border-b border-[#2a2b31] px-5 py-5">
-          <p className="text-[9px] font-semibold uppercase tracking-[0.18em] text-[#d4af37]">Workspace</p>
-          <p className="mt-1 text-xs text-[#A9B1BF]">Gestão da sua empresa</p>
-        </div>
-        <nav className="min-h-0 flex-1 overflow-y-auto p-3">
-          {MODULES.map((item) => {
-            const active = item.to === "/dashboard"
-              ? Boolean(matchRoute({ to: "/dashboard", fuzzy: false }))
-              : Boolean(matchRoute({ to: item.to as any, fuzzy: true }));
-            const Icon = item.icon;
-            return (
-              <Link
-                key={item.to}
-                to={item.to as any}
-                aria-current={active ? "page" : undefined}
-                className={cn(
-                  "mb-1 flex h-11 items-center gap-3 rounded-xl px-3 text-sm font-medium transition",
-                  active
-                    ? "border border-[#d4af37]/20 bg-[#d4af37]/10 text-[#F5F7FA] shadow-[inset_2px_0_0_#d4af37]"
-                    : "border border-transparent text-[#A9B1BF] hover:border-[#2a2b31] hover:bg-[#111318] hover:text-[#F5F7FA]",
-                )}
-              >
-                <Icon className={cn("h-[18px] w-[18px] shrink-0", active ? "text-[#d4af37]" : "text-[#7f8794]")} />
-                <span className="truncate">{item.label}</span>
-              </Link>
-            );
-          })}
-        </nav>
-      </aside>
+      <main className="mx-auto w-full max-w-[1540px] px-4 pb-32 pt-20 sm:px-6 sm:pt-24 lg:px-8">
+        {children}
+      </main>
 
       <VelluneCreativeDock
         activeItem={activeItem}
