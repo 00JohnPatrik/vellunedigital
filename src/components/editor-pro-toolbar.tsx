@@ -1,4 +1,4 @@
-import { AlignCenterHorizontal, ArrowDown, ArrowUp, Copy, Group, Link2, Lock, Minus, MoreHorizontal, Pencil, RotateCcw, RotateCw, Trash2, Unlock, Ungroup, WandSparkles } from "lucide-react";
+import { AlignCenterHorizontal, ArrowDown, ArrowUp, Copy, Group, Link2, Lock, Pencil, RotateCcw, RotateCw, Trash2, Unlock, Ungroup, WandSparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Block } from "@/lib/templates";
 
