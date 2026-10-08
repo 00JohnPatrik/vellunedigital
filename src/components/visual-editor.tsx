@@ -9,7 +9,6 @@ import { VelluneTopBar } from "@/components/vellune-top-bar";
 import { VelluneCreativeDock } from "@/components/vellune-creative-dock";
 import { EditorCommandPalette } from "@/components/editor-command-palette";
 import { TemplateGallery } from "@/components/template-gallery";
-import { EditorProToolbar } from "@/components/editor-pro-toolbar";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { CalendarDays, CheckCircle2, Eye, EyeOff, Grid3X3, Minus, Plus, Redo2, Undo2, PanelLeft, PanelRight, Sparkles, Smartphone, Tablet, Monitor, BringToFront, SendToBack, Trash2, X, Pencil, RotateCcw, RotateCw, Lock, Unlock, AlignCenterHorizontal, AlignCenterVertical, Link2, Unlink2, MapPin, Type, Image as ImageIcon, Palette, MoreHorizontal, Maximize2, Minimize2, Search, LayoutGrid, Magnet, UploadCloud } from "lucide-react";
@@ -680,17 +679,21 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHe
   };
   const cancelImageReplace = () => setImageReplaceId(null);
   const handleStartEditingHandled = useCallback(() => setStartEditingTextId(null), []);
-  const groupSelected = useCallback(() => {
-    if (selectedIds.length < 2 || selected.some((item: any) => item.locked)) return;
+  const groupSelected = useCallback((ids: string[] = selectedIds) => {
+    const targetIds = Array.from(new Set(ids));
+    if (targetIds.length < 2) return;
+    if (targetIds.some((id) => blocks.find((item: any) => item.id === id)?.locked)) return;
     const groupId = `group-${crypto.randomUUID()}`;
     h.set((items) => items.map((item: any) =>
-      selectedIds.includes(item.id) && !item.locked ? { ...item, groupId } : item
+      targetIds.includes(item.id) && !item.locked ? { ...item, groupId } : item
     ), "selection:group");
-  }, [h, selected, selectedIds]);
-  const ungroupSelected = useCallback(() => {
-    if (!selectedIds.length) return;
+  }, [blocks, h, selectedIds]);
+
+  const ungroupSelected = useCallback((ids: string[] = selectedIds) => {
+    const targetIds = Array.from(new Set(ids));
+    if (!targetIds.length) return;
     h.set((items) => items.map((item: any) =>
-      selectedIds.includes(item.id) && !item.locked ? { ...item, groupId: undefined } : item
+      targetIds.includes(item.id) && !item.locked ? { ...item, groupId: undefined } : item
     ), "selection:ungroup");
   }, [h, selectedIds]);
   const duplicateByIds = (ids: string[]) => {
@@ -736,8 +739,9 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHe
     });
     setSelectedIds(copies.map((block: any) => block.id));
   };
-  const copySelectedStyle = () => {
-    const source = selected[0];
+  const copySelectedStyle = (ids: string[] = selectedIds) => {
+    const targetIds = Array.from(new Set(ids));
+    const source = blocks.find((block: any) => targetIds.includes(block.id)) ?? selected[0];
     if (!source) return;
     const styleKeys = new Set([
       "font", "fontSize", "fontWeight", "fontStyle", "textDecoration", "align", "color", "letterSpacing", "lineHeight",
@@ -748,15 +752,26 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHe
     setStyleClipboard(Object.fromEntries(Object.entries(source.props ?? {}).filter(([key]) => styleKeys.has(key))));
     toast.success("Estilo copiado.");
   };
-  const pasteSelectedStyle = () => {
-    if (!styleClipboard || !selected.length) return;
-    h.set((items) => items.map((item: any) => selectedIds.includes(item.id) && !item.locked ? { ...item, props: { ...(item.props ?? {}), ...styleClipboard } } : item), "selection:paste-style");
+  const pasteSelectedStyle = (ids: string[] = selectedIds) => {
+    const targetIds = Array.from(new Set(ids));
+    if (!styleClipboard || !targetIds.length) return;
+    h.set((items) => items.map((item: any) =>
+      targetIds.includes(item.id) && !item.locked
+        ? { ...item, props: { ...(item.props ?? {}), ...styleClipboard } }
+        : item
+    ), "selection:paste-style");
     toast.success("Estilo aplicado.");
   };
-  const toggleLockSelected = () => {
-    if (!selected.length) return;
-    const nextLocked = !selected.every((item: any) => Boolean(item.locked));
-    h.set((items) => items.map((item: any) => selectedIds.includes(item.id) ? { ...item, locked: nextLocked } : item), "selection:lock");
+
+  const toggleLockSelected = (ids: string[] = selectedIds) => {
+    const targetIds = Array.from(new Set(ids));
+    if (!targetIds.length) return;
+    const targetBlocks = blocks.filter((item: any) => targetIds.includes(item.id));
+    if (!targetBlocks.length) return;
+    const nextLocked = !targetBlocks.every((item: any) => Boolean(item.locked));
+    h.set((items) => items.map((item: any) =>
+      targetIds.includes(item.id) ? { ...item, locked: nextLocked } : item
+    ), "selection:lock");
     if (nextLocked) setStartEditingTextId(null);
   };
   const centerSelection = () => {
@@ -1613,15 +1628,12 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHe
               onAutoArrange={(ids) => autoArrangeSelected(ids)}
               onMagicArrange={(ids, preset) => magicArrangeSelected(ids, preset)}
               onSmartAlign={(ids) => smartAlignSelected(ids)}
-              onGroup={(ids) => {
-                if (ids.length < 2) return;
-                groupSelected();
-              }}
-              onUngroup={(ids) => {
-                if (!ids.length) return;
-                ungroupSelected();
-              }}
-              onImageAction={openImageAction}
+              onGroup={(ids) => groupSelected(ids)}
+              onUngroup={(ids) => ungroupSelected(ids)}
+              onToggleLock={(ids) => toggleLockSelected(ids)}
+              onCopyStyle={(ids) => copySelectedStyle(ids)}
+              onPasteStyle={(ids) => pasteSelectedStyle(ids)}
+              canPasteStyle={Boolean(styleClipboard)}
               startEditingId={startEditingTextId}
               onStartEditingHandled={handleStartEditingHandled}
               showGrid={showGrid}
