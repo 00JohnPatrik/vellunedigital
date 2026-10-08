@@ -253,9 +253,14 @@
   transform: translateZ(0);
   transform-style: preserve-3d;
   perspective: 900px;
-  overflow: hidden;
+  overflow: visible;
   touch-action: manipulation;
   will-change: transform, box-shadow;
+}
+
+.vellune-auth-cta > * {
+  position: relative;
+  z-index: 1;
 }
 
 .vellune-auth-cta::before {
@@ -341,6 +346,16 @@
 }
 
 @media (max-width: 639px) {
+  .vellune-login-root .vellune-auth-section,
+  .vellune-auth-root .vellune-auth-section {
+    scrollbar-width: none;
+  }
+
+  .vellune-login-root .vellune-auth-section::-webkit-scrollbar,
+  .vellune-auth-root .vellune-auth-section::-webkit-scrollbar {
+    display: none;
+  }
+
   .vellune-login-root input,
   .vellune-auth-root input {
     font-size: 16px !important;
