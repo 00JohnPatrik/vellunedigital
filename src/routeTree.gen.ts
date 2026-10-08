@@ -15,6 +15,9 @@ import { Route as FirstAccessRouteImport } from './routes/first-access'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as ProtecaoDadosRouteImport } from './routes/protecao-dados'
+import { Route as TermosRouteImport } from './routes/termos'
+import { Route as SuporteRouteImport } from './routes/suporte'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedCustomersRouteImport } from './routes/_authenticated/customers'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
@@ -86,7 +89,22 @@ const ResetPasswordRoute = ResetPasswordRouteImport.update({
   path: '/reset-password',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
+const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({const ProtecaoDadosRoute = ProtecaoDadosRouteImport.update({
+  id: '/protecao-dados',
+  path: '/protecao-dados',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TermosRoute = TermosRouteImport.update({
+  id: '/termos',
+  path: '/termos',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SuporteRoute = SuporteRouteImport.update({
+  id: '/suporte',
+  path: '/suporte',
+  getParentRoute: () => rootRouteImport,
+} as any)
+
   id: '/admin',
   path: '/admin',
   getParentRoute: () => AuthenticatedRouteRoute,
@@ -328,6 +346,9 @@ export interface FileRoutesByFullPath {
   '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/protecao-dados': typeof ProtecaoDadosRoute
+  '/termos': typeof TermosRoute
+  '/suporte': typeof SuporteRoute
   '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/customers': typeof AuthenticatedCustomersRouteWithChildren
   '/dashboard': typeof AuthenticatedDashboardRouteWithChildren
@@ -470,6 +491,9 @@ export interface FileRouteTypes {
     | '/forgot-password'
     | '/login'
     | '/reset-password'
+    | '/protecao-dados'
+    | '/termos'
+    | '/suporte'
     | '/admin'
     | '/customers'
     | '/dashboard'
@@ -611,6 +635,9 @@ export interface RootRouteChildren {
   ForgotPasswordRoute: typeof ForgotPasswordRoute
   LoginRoute: typeof LoginRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
+  ProtecaoDadosRoute: typeof ProtecaoDadosRoute
+  TermosRoute: typeof TermosRoute
+  SuporteRoute: typeof SuporteRoute
   ConviteSlugRoute: typeof ConviteSlugRoute
   PainelConviteTokenRoute: typeof PainelConviteTokenRoute
 }
@@ -657,6 +684,27 @@ declare module '@tanstack/react-router' {
       path: '/reset-password'
       fullPath: '/reset-password'
       preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/protecao-dados': {
+      id: '/protecao-dados'
+      path: '/protecao-dados'
+      fullPath: '/protecao-dados'
+      preLoaderRoute: typeof ProtecaoDadosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/termos': {
+      id: '/termos'
+      path: '/termos'
+      fullPath: '/termos'
+      preLoaderRoute: typeof TermosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/suporte': {
+      id: '/suporte'
+      path: '/suporte'
+      fullPath: '/suporte'
+      preLoaderRoute: typeof SuporteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/admin': {
@@ -1126,6 +1174,9 @@ const rootRouteChildren: RootRouteChildren = {
   ForgotPasswordRoute: ForgotPasswordRoute,
   LoginRoute: LoginRoute,
   ResetPasswordRoute: ResetPasswordRoute,
+  ProtecaoDadosRoute: ProtecaoDadosRoute,
+  TermosRoute: TermosRoute,
+  SuporteRoute: SuporteRoute,
   ConviteSlugRoute: ConviteSlugRoute,
   PainelConviteTokenRoute: PainelConviteTokenRoute,
 }
