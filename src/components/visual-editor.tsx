@@ -518,6 +518,10 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHe
     return blocks.filter((item: any) => item.groupId === block.groupId).map((item: any) => item.id);
   };
   const select = (id: string, additive: boolean) => {
+    if (!id) {
+      setSelectedIds([]);
+      return;
+    }
     const targetIds = selectionGroupIds(id);
     setSelectedIds((current) => {
       if (!additive) return targetIds;
