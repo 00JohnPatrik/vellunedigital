@@ -549,6 +549,53 @@ export function VisualTransformCanvas({ blocks, selectedIds: selectedIdsProp, zo
     const proportional = event.shiftKey || (current.ids.length === 1 && ["image", "gallery"].includes(blocks.find((block: any) => block.id === current.ids[0])?.type ?? ""));
     const centered = event.altKey;
     const resized = resizeBounds(current, point, proportional, centered, size.width, size.height);
+    const nextResizeGuides: Guide[] = [];
+
+    // Professional-editor feedback: when resizing a single unrotated element,
+    // the dragged edge can magnetically align with canvas margins, centerlines
+    // and nearby element edges/centers.
+    if (current.ids.length === 1 && !centered && Math.abs((current.originals[current.ids[0]!]?.rotation ?? 0) % 360) < 0.001) {
+      const others = blocks.filter((block: any) => !current.ids.includes(block.id));
+      const xCandidates = [SAFE_MARGIN, size.width / 2, size.width - SAFE_MARGIN];
+      const yCandidates = [SAFE_MARGIN, size.height / 2, size.height - SAFE_MARGIN];
+      for (const other of others) {
+        const box = rotatedBounds(geometry(other, blocks.indexOf(other)));
+        xCandidates.push(box.left, box.right, (box.left + box.right) / 2);
+        yCandidates.push(box.top, box.bottom, (box.top + box.bottom) / 2);
+      }
+
+      if (!proportional && (current.handle?.includes("w") || current.handle?.includes("e"))) {
+        const draggedEdge = current.handle.includes("w") ? resized.left : resized.left + resized.width;
+        const snapped = nearest(draggedEdge, xCandidates, 7);
+        if (Math.abs(snapped - draggedEdge) <= 7) {
+          if (current.handle.includes("w")) {
+            const right = resized.left + resized.width;
+            resized.left = clamp(snapped, 0, right - MIN_SIZE);
+            resized.width = right - resized.left;
+          } else {
+            resized.width = clamp(snapped - resized.left, MIN_SIZE, size.width - resized.left);
+          }
+          nextResizeGuides.push({ axis: "x", value: snapped, kind: "edge" });
+        }
+      }
+
+      if (!proportional && (current.handle?.includes("n") || current.handle?.includes("s"))) {
+        const draggedEdge = current.handle.includes("n") ? resized.top : resized.top + resized.height;
+        const snapped = nearest(draggedEdge, yCandidates, 7);
+        if (Math.abs(snapped - draggedEdge) <= 7) {
+          if (current.handle.includes("n")) {
+            const bottom = resized.top + resized.height;
+            resized.top = clamp(snapped, 0, bottom - MIN_SIZE);
+            resized.height = bottom - resized.top;
+          } else {
+            resized.height = clamp(snapped - resized.top, MIN_SIZE, size.height - resized.top);
+          }
+          nextResizeGuides.push({ axis: "y", value: snapped, kind: "edge" });
+        }
+      }
+    }
+
+    setGuides(nextResizeGuides);
     const sx = resized.width / Math.max(MIN_SIZE, current.bounds.width);
     const sy = resized.height / Math.max(MIN_SIZE, current.bounds.height);
     onChange((items: any[]) => items.map((item: any) => {
