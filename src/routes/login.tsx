@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { AlertCircle, ArrowRight, CheckCircle2, Eye, EyeOff, LoaderCircle, LockKeyhole, Mail, MailCheck, ShieldCheck, Smartphone, UserRound } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
@@ -450,10 +450,9 @@ function LoginPage() {
                 </div>
               ) : (
                 <div>
-                <AuthJourneySteps activeStep={1} compact />
                 <form onSubmit={onLogin} className="space-y-4 sm:space-y-5" noValidate>
                   <div className="mb-5 sm:mb-8">
-                    <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.25em] text-[#d4af37]">Área exclusiva</p>
+                    <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.25em] text-[#d4af37]">Vellune Digital</p>
                     <h1 className="font-display text-[32px] font-medium tracking-[-0.04em]">Bem-vindo de volta</h1>
                     <p className="mt-3 text-sm leading-6 text-white/45">Entre para continuar criando experiências memoráveis.</p>
                   </div>
@@ -562,7 +561,7 @@ function LoginPage() {
                         )}
                       </span>
                     </span>
-                    <span>Lembrar e-mail ou telefone neste dispositivo</span>
+                    <span>Lembrar meu e-mail ou telefone</span>
                   </label>
 
 
@@ -593,7 +592,7 @@ function LoginPage() {
                       <span className="flex items-center justify-center gap-2">Aguarde {loginCooldown}s</span>
                     ) : (
                       <span className="flex items-center justify-center gap-2">
-                        Entrar na conta
+                        Entrar
                         <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
                       </span>
                     )}
@@ -604,7 +603,7 @@ function LoginPage() {
                       <ShieldCheck className="h-3.5 w-3.5 text-[#d4af37]/60" />
                       Vellune Secure · Ambiente protegido
                     </p>
-                    <p className="text-center text-[11px] leading-5 text-white/35 sm:text-xs">Primeira vez aqui? <a href="/first-access" className="font-semibold text-white/65 transition-colors hover:text-[#e5c66b]">Faça seu primeiro acesso</a></p>
+                    <p className="text-center text-[11px] leading-5 text-white/35 sm:text-xs">Primeira vez aqui? <Link to="/first-access" className="font-semibold text-white/65 transition-colors hover:text-[#e5c66b]">Faça seu primeiro acesso</Link></p>
                   </div>
                 </form>
                 </div>
