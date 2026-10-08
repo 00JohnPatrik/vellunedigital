@@ -15,6 +15,7 @@ type Props = {
   canvasRef: React.RefObject<HTMLDivElement | null>;
   ctx?: unknown;
   onSelect: (id: string, additive: boolean) => void;
+  onAddBlock?: (type: BlockType, point?: Point) => void;
   onChange: (update: (blocks: Block[]) => Block[], group?: string) => void;
   onDuplicate?: (ids: string[]) => void;
   onDelete?: (ids: string[]) => void;
@@ -258,7 +259,7 @@ function isTextInput(target: EventTarget | null) {
   return element.tagName === "INPUT" || element.tagName === "TEXTAREA" || element.tagName === "SELECT" || element.isContentEditable;
 }
 
-export function VisualTransformCanvas({ blocks, selectedIds: selectedIdsProp, zoom, canvasRef, ctx, onSelect, onChange, onDuplicate, onDelete, onAdvanced, onLayer, onAlign, onOpacity, onRotate, onGroup, onUngroup, onImageAction, startEditingId, onStartEditingHandled, showGrid = true }: Props) {
+export function VisualTransformCanvas({ blocks, selectedIds: selectedIdsProp, zoom, canvasRef, ctx, onSelect, onAddBlock, onChange, onDuplicate, onDelete, onAdvanced, onLayer, onAlign, onOpacity, onRotate, onGroup, onUngroup, onImageAction, startEditingId, onStartEditingHandled, showGrid = true }: Props) {
   const interaction = useRef<Interaction | null>(null);
   const [guides, setGuides] = useState<Guide[]>([]);
   const [marquee, setMarquee] = useState<{ start: Point; current: Point; additive: boolean } | null>(null);
@@ -755,6 +756,13 @@ export function VisualTransformCanvas({ blocks, selectedIds: selectedIdsProp, zo
       onPointerMove={moveMarquee}
       onPointerUp={endMarquee}
       onPointerCancel={() => setMarquee(null)}
+      onDoubleClick={(event) => {
+        if (event.pointerType === "touch" || event.button !== 0 || !onAddBlock) return;
+        event.preventDefault();
+        event.stopPropagation();
+        const point = pointerPoint(event, canvasRef.current, zoom);
+        onAddBlock("text", point);
+      }}
     />
     {marqueeBounds && (
       <div
