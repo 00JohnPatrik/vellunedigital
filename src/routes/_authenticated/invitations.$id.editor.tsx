@@ -17,6 +17,7 @@ import { useBlocksHistory, VisualEditor } from "@/components/visual-editor";
 import { customersKey, listCustomers } from "@/lib/customers-data";
 import { getInvitation, invitationError, invitationsKey, publishInvitation, toEventValues, updateInvitation, validateEvent, type EventValues, type Invitation } from "@/lib/invitations";
 import { normalizeBlocks, validateContent } from "@/lib/blocks";
+import { companyHasFeature } from "@/lib/subscriptions";
 
 export const Route = createFileRoute("/_authenticated/invitations/$id/editor")({
   head: () => ({ meta: [{ title: "Editor do convite — Vellune Digital" }] }),
@@ -25,7 +26,14 @@ export const Route = createFileRoute("/_authenticated/invitations/$id/editor")({
 
 function EditorPage() {
   const { id } = Route.useParams();
+  const { appUser } = Route.useRouteContext();
   const q = useQuery({ queryKey: [...invitationsKey, id], queryFn: () => getInvitation(id), refetchOnWindowFocus: false });
+  const checkinFeature = useQuery({
+    queryKey: ["subscription-feature", "checkin", q.data?.company_id],
+    queryFn: () => companyHasFeature(q.data!.company_id, "checkin"),
+    enabled: !!q.data && appUser?.role === "company_admin",
+    staleTime: 60_000,
+  });
   if (q.isLoading) {
     return <div className="flex min-h-[50vh] items-center justify-center rounded-2xl border bg-card/50 p-8"><LoadingState /></div>;
   }
@@ -33,7 +41,8 @@ function EditorPage() {
     return <div className="mx-auto flex min-h-[50vh] max-w-lg flex-col items-center justify-center rounded-2xl border border-dashed bg-card/60 px-6 py-12 text-center"><BackLink /><EmptyState>Convite não encontrado.</EmptyState></div>;
   }
   const experimentalLayout = typeof window !== "undefined" && new URLSearchParams(window.location.search).get("legacy") !== "1";
-  return <EditorForm key={q.data.id} inv={q.data} experimentalLayout={experimentalLayout} />;
+  const checkinEnabled = appUser?.role === "super_admin" || checkinFeature.data === true;
+  return <EditorForm key={q.data.id} inv={q.data} experimentalLayout={experimentalLayout} checkinEnabled={checkinEnabled} />;
 }
 
 const BackLink = () => <Link to="/invitations" className="mb-4 inline-flex items-center rounded-md px-2 py-1 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"><ArrowLeft className="mr-1 h-4 w-4" />Convites</Link>;
@@ -41,7 +50,7 @@ const BackLink = () => <Link to="/invitations" className="mb-4 inline-flex items
 type SaveState = "saved" | "dirty" | "saving" | "error";
 const AUTOSAVE_MS = 1500;
 
-function EditorForm({ inv, experimentalLayout = false }: { inv: Invitation; experimentalLayout?: boolean }) {
+function EditorForm({ inv, experimentalLayout = false, checkinEnabled = false }: { inv: Invitation; experimentalLayout?: boolean; checkinEnabled?: boolean }) {
   const qc = useQueryClient();
   const customers = useQuery({ queryKey: customersKey, queryFn: listCustomers });
   const [v, setV] = useState<EventValues>(() => toEventValues(inv));
@@ -193,7 +202,7 @@ function EditorForm({ inv, experimentalLayout = false }: { inv: Invitation; expe
         <Button type="button" variant="ghost" size="sm" className="justify-start" onClick={() => setEventOpen(true)}><Settings2 className="h-4 w-4" />Dados do evento</Button>
         <Button type="button" variant="ghost" size="sm" className="justify-start" onClick={() => setRsvpOpen(true)}><UserCheck className="h-4 w-4" />RSVP</Button>
         <Button type="button" variant="ghost" size="sm" className="justify-start" asChild><Link to="/invitations/$id/guests" params={{ id: inv.id }}><Users className="h-4 w-4" />Convidados</Link></Button>
-        <Button type="button" variant="ghost" size="sm" className="justify-start" asChild><Link to="/invitations/$id/checkin" params={{ id: inv.id }}><QrCode className="h-4 w-4" />Check-in</Link></Button>
+        {checkinEnabled && <Button type="button" variant="ghost" size="sm" className="justify-start" asChild><Link to="/invitations/$id/checkin" params={{ id: inv.id }}><QrCode className="h-4 w-4" />Check-in</Link></Button>}
       </div>
     </details>
   </>;
