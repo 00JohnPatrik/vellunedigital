@@ -924,9 +924,11 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHe
           <ContextualPropertiesPanel blocks={blocks} selectedIds={selectedIds} assets={assets as any} onChange={(update, group) => h.set(update, group)} onDuplicate={duplicateByIds} onDelete={removeByIds} />
         </aside>}
       </div>
-      <div className="vellune-editor-mobile-bar shrink-0 flex items-center justify-between gap-1.5 rounded-2xl border border-primary/15 bg-card/95 p-2 shadow-2xl shadow-black/25 backdrop-blur-xl lg:hidden" role="toolbar" aria-label="Ferramentas móveis do editor"><button type="button" className="flex flex-1 flex-col items-center gap-0.5 rounded-xl px-1 py-1.5 text-[10px] text-muted-foreground transition hover:bg-primary/10 hover:text-primary" onClick={() => setMobileSheet("elements")}><PanelLeft className="h-4 w-4" />Elementos</button><button type="button" className="flex flex-1 flex-col items-center gap-0.5 rounded-xl px-1 py-1.5 text-[10px] text-muted-foreground transition hover:bg-primary/10 hover:text-primary" onClick={() => setMobileSheet("layers")}><Grid3X3 className="h-4 w-4" />Camadas</button><button type="button" className="flex flex-1 flex-col items-center gap-0.5 rounded-xl px-1 py-1.5 text-[10px] text-muted-foreground transition hover:bg-primary/10 hover:text-primary" onClick={() => setMobileSheet("properties")}><PanelRight className="h-4 w-4" />Propriedades</button><button type="button" className="flex flex-1 flex-col items-center gap-0.5 rounded-xl px-1 py-1.5 text-[10px] text-muted-foreground transition hover:bg-primary/10 hover:text-primary" onClick={() => setMobileSheet("background")}><Sparkles className="h-4 w-4" />Fundo</button><button type="button" className="flex flex-1 flex-col items-center gap-0.5 rounded-xl px-1 py-1.5 text-[10px] text-muted-foreground transition hover:bg-primary/10 hover:text-primary" onClick={() => setMobileSheet("view")}><Grid3X3 className="h-4 w-4" />Exibir</button></div>
+      <div className="vellune-editor-mobile-bar shrink-0 flex items-center justify-between gap-1.5 rounded-2xl border border-primary/15 bg-card/95 p-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))] shadow-2xl shadow-black/25 backdrop-blur-xl lg:hidden" role="toolbar" aria-label="Ferramentas móveis do editor"><button type="button" className="flex flex-1 flex-col items-center gap-0.5 rounded-xl px-1 py-1.5 text-[10px] text-muted-foreground transition hover:bg-primary/10 hover:text-primary" onClick={() => setMobileSheet("elements")}><PanelLeft className="h-4 w-4" />Elementos</button><button type="button" className="flex flex-1 flex-col items-center gap-0.5 rounded-xl px-1 py-1.5 text-[10px] text-muted-foreground transition hover:bg-primary/10 hover:text-primary" onClick={() => setMobileSheet("layers")}><Grid3X3 className="h-4 w-4" />Camadas</button><button type="button" className="flex flex-1 flex-col items-center gap-0.5 rounded-xl px-1 py-1.5 text-[10px] text-muted-foreground transition hover:bg-primary/10 hover:text-primary" onClick={() => setMobileSheet("properties")}><PanelRight className="h-4 w-4" />Propriedades</button><button type="button" className="flex flex-1 flex-col items-center gap-0.5 rounded-xl px-1 py-1.5 text-[10px] text-muted-foreground transition hover:bg-primary/10 hover:text-primary" onClick={() => setMobileSheet("background")}><Sparkles className="h-4 w-4" />Fundo</button><button type="button" className="flex flex-1 flex-col items-center gap-0.5 rounded-xl px-1 py-1.5 text-[10px] text-muted-foreground transition hover:bg-primary/10 hover:text-primary" onClick={() => setMobileSheet("view")}><Grid3X3 className="h-4 w-4" />Exibir</button></div>
       {compact && mobileSheet && (
-        <div className="fixed inset-x-2 bottom-2 z-50 max-h-[70vh] overflow-y-auto rounded-2xl border border-border/80 bg-card p-4 shadow-2xl">
+        <>
+          <button type="button" aria-label="Fechar painel" className="fixed inset-0 z-40 bg-black/35 backdrop-blur-[2px]" onClick={() => setMobileSheet(null)} />
+          <div className="fixed inset-x-2 bottom-2 z-50 max-h-[70vh] overflow-y-auto rounded-2xl border border-border/80 bg-card p-4 shadow-2xl">
           <div className="mb-3 flex items-center justify-between gap-3">
             <p className="text-sm font-semibold">
               {mobileSheet === "properties" ? "Propriedades" : mobileSheet === "background" ? "Fundo" : mobileSheet === "view" ? "Exibição" : "Elementos"}
@@ -994,7 +996,8 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHe
               })}
             </div>
           )}
-        </div>
+          </div>
+        </>
       )}
     </div>
   );
