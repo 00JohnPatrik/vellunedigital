@@ -1,7 +1,7 @@
 import { createFileRoute, Outlet, redirect, useMatchRoute, useRouteContext } from "@tanstack/react-router";
 import { AppShell } from "@/components/app-shell";
 import { VelluneCompanyShell } from "@/components/vellune-company-shell";
-import { adminNav, companyNav } from "@/lib/nav";
+import { adminNav } from "@/lib/nav";
 
 // PermissionGuard + CompanyScopeGuard: company_admin with active company, or super_admin (global).
 export const Route = createFileRoute("/_authenticated/invitations")({
