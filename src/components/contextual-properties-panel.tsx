@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { AlignCenter, AlignHorizontalDistributeCenter, AlignHorizontalJustifyCenter, AlignLeft, AlignRight, AlignVerticalDistributeCenter, ArrowDown, ArrowUp, ChevronDown, Copy, Eye, EyeOff, Layers3, Loader2, Lock, Move, Palette, RotateCcw, Trash2, Type, Unlock, Upload } from "lucide-react";
+import { AlignCenter, AlignHorizontalDistributeCenter, AlignHorizontalJustifyCenter, AlignLeft, AlignRight, AlignVerticalDistributeCenter, ArrowDown, ArrowUp, ChevronDown, Copy, Eye, EyeOff, Layers3, Loader2, Lock, Move, Palette, RotateCcw, Sparkles, Trash2, Type, Unlock, Upload } from "lucide-react";
 import type { AssetScope } from "@/lib/assets";
 import { ImagePropertiesPanel } from "@/components/image-properties-panel";
 import { GalleryPropertiesPanel } from "@/components/gallery-properties-panel";
