@@ -194,6 +194,195 @@ export const EDITOR_STOCK_IMAGES = {
   event: "https://images.unsplash.com/photo-1767050241759-a35754ea2471?auto=format&fit=crop&w=1000&q=82",
 } as const;
 
+
+export type CompositionKind = "hero" | "details" | "confirmation" | "gallery" | "closing";
+
+export const READY_COMPOSITIONS: Array<{
+  kind: CompositionKind;
+  label: string;
+  description: string;
+  requires: BlockType[];
+}> = [
+  { kind: "hero", label: "Abertura com foto", description: "Foto, título e mensagem já alinhados.", requires: ["image", "text"] },
+  { kind: "details", label: "Data e local", description: "Informações do evento em uma seção elegante.", requires: ["text", "date", "time", "location"] },
+  { kind: "confirmation", label: "Confirmação", description: "Presença + contato com os anfitriões.", requires: ["rsvp", "whatsapp"] },
+  { kind: "gallery", label: "Galeria", description: "Fotos em uma composição pronta para editar.", requires: ["gallery", "text"] },
+  { kind: "closing", label: "Encerramento", description: "Uma finalização leve para fechar o convite.", requires: ["text", "divider"] },
+];
+
+type CompositionBuildOptions = {
+  baseY: number;
+  canvasWidth: number;
+  zIndexStart: number;
+  includeRsvp?: boolean;
+};
+
+const compositionTone = {
+  ink: "hsl(var(--foreground))",
+  muted: "hsl(var(--muted-foreground))",
+  accent: "hsl(var(--primary))",
+  primaryForeground: "hsl(var(--primary-foreground))",
+} as const;
+
+function compositionFrame(canvasWidth: number) {
+  const width = Math.max(280, Math.min(390, Math.round(canvasWidth - 32)));
+  const x = Math.max(16, Math.round((canvasWidth - width) / 2));
+  return { x, width };
+}
+
+function compositionTextBlock(
+  text: string,
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  zIndex: number,
+  props: Record<string, string>,
+): Block {
+  return {
+    ...newBlock("text"),
+    x, y, width, height, zIndex,
+    props: { ...BLOCKS.text.defaults, ...props, text },
+  };
+}
+
+export function buildComposition(kind: CompositionKind, options: CompositionBuildOptions): Block[] {
+  const { baseY, canvasWidth, zIndexStart, includeRsvp = true } = options;
+  const { x, width } = compositionFrame(canvasWidth);
+  const blocks: Block[] = [];
+  let z = zIndexStart;
+
+  if (kind === "hero") {
+    blocks.push({
+      ...newBlock("image"),
+      x, y: baseY, width, height: 220, zIndex: z++,
+      animation: structuredClone(PREMIUM_IMAGE_ANIMATION),
+      props: {
+        ...BLOCKS.image.defaults,
+        url: EDITOR_STOCK_IMAGES.event,
+        alt: "Foto de abertura do convite",
+        width: "full",
+        height: "wide",
+        objectFit: "cover",
+        objectPosition: "center",
+        imageZoom: "108",
+      },
+    });
+    blocks.push(compositionTextBlock("UM MOMENTO ESPECIAL", x + 4, baseY + 240, width - 8, 24, z++, {
+      font: "sans", fontSize: "10", letterSpacing: "3", color: compositionTone.accent, align: "center", width: "full", textTransform: "uppercase",
+    }));
+    blocks.push(compositionTextBlock("Você está convidado", x, baseY + 280, width, 82, z++, {
+      font: "display", fontSize: "38", lineHeight: "1.04", letterSpacing: "-0.8", color: compositionTone.ink, align: "center", width: "full",
+    }));
+    blocks.push(compositionTextBlock("Uma celebração feita de detalhes, afeto e pessoas especiais.", x + 10, baseY + 378, width - 20, 66, z++, {
+      font: "sans", fontSize: "15", lineHeight: "1.45", color: compositionTone.muted, align: "center", width: "full",
+    }));
+    return blocks;
+  }
+
+  if (kind === "details") {
+    blocks.push(compositionTextBlock("DETALHES DO EVENTO", x, baseY, width, 28, z++, {
+      font: "sans", fontSize: "10", letterSpacing: "2.8", color: compositionTone.accent, align: "center", width: "full", textTransform: "uppercase",
+    }));
+    blocks.push({
+      ...newBlock("date"),
+      x: x + 18, y: baseY + 48, width: width - 36, height: 60, zIndex: z++,
+      props: { ...BLOCKS.date.defaults, source: "event", format: "weekday", label: "DATA", align: "center" },
+    });
+    blocks.push({
+      ...newBlock("time"),
+      x: x + 18, y: baseY + 118, width: width - 36, height: 60, zIndex: z++,
+      props: { ...BLOCKS.time.defaults, source: "event", format: "text", label: "HORÁRIO", align: "center" },
+    });
+    blocks.push({
+      ...newBlock("location"),
+      x: x + 8, y: baseY + 190, width: width - 16, height: 108, zIndex: z++,
+      props: { ...BLOCKS.location.defaults, source: "event", show_name: "1", show_address: "1", show_city: "1", show_directions: "1", align: "center" },
+    });
+    return blocks;
+  }
+
+  if (kind === "confirmation") {
+    if (includeRsvp) {
+      blocks.push({
+        ...newBlock("rsvp"),
+        x: x + 16, y: baseY, width: width - 32, height: 96, zIndex: z++,
+        props: {
+          ...BLOCKS.rsvp.defaults,
+          title: "Será uma alegria ter você conosco.",
+          label: "Confirmar presença",
+          preset: "pill",
+          style: "solid",
+          fontFamily: "sans",
+          fontSize: "15",
+          fontWeight: "600",
+          textColor: compositionTone.primaryForeground,
+          backgroundColor: compositionTone.accent,
+          borderColor: compositionTone.accent,
+          radius: "999",
+          paddingX: "26",
+          paddingY: "12",
+          shadow: "soft",
+          align: "center",
+        },
+      });
+    } else {
+      blocks.push(compositionTextBlock("JÁ CONFIRMOU?", x, baseY, width, 28, z++, {
+        font: "sans", fontSize: "10", letterSpacing: "2.8", color: compositionTone.accent, align: "center", width: "full", textTransform: "uppercase",
+      }));
+    }
+    const whatsappY = baseY + (includeRsvp ? 116 : 54);
+    blocks.push({
+      ...newBlock("whatsapp"),
+      x: x + 48, y: whatsappY, width: width - 96, height: 58, zIndex: z++,
+      props: { ...BLOCKS.whatsapp.defaults, label: "Fale pelo WhatsApp", style: "outline", width: "full", align: "center" },
+    });
+    blocks.push(compositionTextBlock("Precisa de ajuda? Fale diretamente com os anfitriões.", x + 12, whatsappY + 76, width - 24, 48, z++, {
+      font: "sans", fontSize: "13", lineHeight: "1.4", color: compositionTone.muted, align: "center", width: "full",
+    }));
+    return blocks;
+  }
+
+  if (kind === "gallery") {
+    blocks.push(compositionTextBlock("MOMENTOS", x, baseY, width, 28, z++, {
+      font: "sans", fontSize: "10", letterSpacing: "2.8", color: compositionTone.accent, align: "center", width: "full", textTransform: "uppercase",
+    }));
+    blocks.push({
+      ...newBlock("gallery"),
+      x, y: baseY + 48, width, height: 220, zIndex: z++,
+      props: {
+        ...BLOCKS.gallery.defaults,
+        images: JSON.stringify([
+          { url: EDITOR_STOCK_IMAGES.event, alt: "Momento do evento" },
+          { url: EDITOR_STOCK_IMAGES.wedding, alt: "Detalhe da celebração" },
+          { url: EDITOR_STOCK_IMAGES.birthday, alt: "Momento especial" },
+        ]),
+        mode: "grid", columns: "3", height: "square", captions: "0", align: "center",
+      },
+    });
+    blocks.push(compositionTextBlock("Substitua estas fotos pelas suas memórias.", x + 12, baseY + 286, width - 24, 48, z++, {
+      font: "sans", fontSize: "13", lineHeight: "1.4", color: compositionTone.muted, align: "center", width: "full",
+    }));
+    return blocks;
+  }
+
+  blocks.push(compositionTextBlock("PARA GUARDAR", x, baseY, width, 26, z++, {
+    font: "sans", fontSize: "10", letterSpacing: "2.8", color: compositionTone.accent, align: "center", width: "full", textTransform: "uppercase",
+  }));
+  blocks.push(compositionTextBlock("Que este dia fique na memória.", x, baseY + 42, width, 82, z++, {
+    font: "display", fontSize: "34", lineHeight: "1.05", letterSpacing: "-0.6", color: compositionTone.ink, align: "center", width: "full",
+  }));
+  blocks.push({
+    ...newBlock("divider"),
+    x: x + Math.round(width * 0.27), y: baseY + 142, width: Math.round(width * 0.46), height: 18, zIndex: z++,
+    props: { ...BLOCKS.divider.defaults, thickness: "1", width: "full", align: "center", style: "solid", borderColor: compositionTone.accent },
+  });
+  blocks.push(compositionTextBlock("Será um prazer viver este momento com você.", x + 16, baseY + 178, width - 32, 52, z++, {
+    font: "sans", fontSize: "14", lineHeight: "1.45", color: compositionTone.muted, align: "center", width: "full",
+  }));
+  return blocks;
+}
+
 const PREMIUM_PHOTO_IMAGES = EDITOR_STOCK_IMAGES;
 
 type PremiumPhotoOptions = {
