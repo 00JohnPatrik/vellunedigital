@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { AlertCircle, CalendarDays, CheckCircle2, ClipboardList, Eye, ExternalLink, Search, Users, XCircle } from "lucide-react";
+import { AlertCircle, CalendarDays, CheckCircle2, ClipboardList, Clock3, Eye, ExternalLink, Search, Users, XCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -50,7 +50,7 @@ function DashboardContent({ dashboard }: { dashboard: NonNullable<Extract<Awaite
         <header className="rounded-2xl border bg-card p-5 shadow-sm sm:p-8">
           <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
             <div>
-              <p className="text-sm font-medium text-primary">Painel do anfitrião</p>
+              <p className="text-sm font-medium text-primary">Portal do cliente</p>
               <h1 className="mt-1 font-display text-2xl font-semibold tracking-tight sm:text-3xl">{dashboard.invitation.name}</h1>
               <div className="mt-3 flex flex-wrap gap-x-4 gap-y-2 text-sm text-muted-foreground">
                 <span className="inline-flex items-center gap-1.5"><CalendarDays className="h-4 w-4" />{formatDate(dashboard.invitation.event_date)} às {dashboard.invitation.event_time.slice(0, 5)}</span>
@@ -66,7 +66,11 @@ function DashboardContent({ dashboard }: { dashboard: NonNullable<Extract<Awaite
               <Button variant="outline" size="sm" onClick={() => void copyPublicLink()}><ClipboardList className="h-4 w-4" />{copied ? "Link copiado" : "Copiar convite"}</Button>
             </div>
           </div>
-          {dashboard.invitation.message && <p className="mt-5 max-w-3xl border-t pt-5 text-sm leading-6 text-muted-foreground">{dashboard.invitation.message}</p>}
+          <div className="mt-5 flex flex-wrap items-center gap-2 border-t pt-5 text-xs text-muted-foreground">
+            <Clock3 className="h-4 w-4 text-primary" />
+            <span>Acesso do portal disponível até <strong className="font-semibold text-foreground">{formatDateTime(dashboard.portal.expires_at)}</strong>.</span>
+          </div>
+          {dashboard.invitation.message && <p className="mt-4 max-w-3xl text-sm leading-6 text-muted-foreground">{dashboard.invitation.message}</p>}
         </header>
 
         <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5" aria-label="Resumo do convite">
@@ -90,7 +94,7 @@ function DashboardContent({ dashboard }: { dashboard: NonNullable<Extract<Awaite
           </div>
           {rows.length === 0 ? <div className="p-10 text-center"><Search className="mx-auto h-6 w-6 text-muted-foreground" /><p className="mt-3 text-sm font-medium">Nenhuma resposta encontrada</p><p className="mt-1 text-sm text-muted-foreground">Ajuste a busca ou selecione outro filtro.</p></div> : <div className="divide-y">{rows.map((response) => <ResponseRow key={response.id} response={response} />)}</div>}
         </section>
-        <p className="text-center text-xs text-muted-foreground">Painel de acompanhamento · Vellune Digital</p>
+        <p className="text-center text-xs text-muted-foreground">Portal do cliente · acompanhamento em modo somente leitura · Vellune Digital</p>
       </div>
     </main>
   );
@@ -109,4 +113,7 @@ function StateMessage({ title, text }: { title: string; text: string }) {
 }
 
 function formatDate(value: string) { return new Date(`${value}T00:00:00`).toLocaleDateString("pt-BR", { dateStyle: "long" }); }
-function formatDateTime(value: string) { return new Date(value).toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" }); }
+function formatDateTime(value: string | null) {
+  if (!value) return "indefinido";
+  return new Date(value).toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" });
+}
