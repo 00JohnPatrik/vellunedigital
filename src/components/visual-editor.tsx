@@ -1169,7 +1169,7 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHe
       <div className="vellune-editor-body relative flex min-h-0 flex-1 flex-col lg:flex-row">
         <aside
           className={cn(
-            "vellune-editor-sidebar relative hidden shrink-0 grid-rows-[auto_minmax(0,1fr)] border-r border-white/[0.06] bg-[#0d0f14]/95 backdrop-blur-xl",
+            "vellune-editor-sidebar vellune-editor-experimental-sidebar relative hidden shrink-0 grid-rows-[auto_minmax(0,1fr)] border-r border-white/[0.06] bg-[#0d0f14]/95 backdrop-blur-xl",
             focusMode ? "lg:hidden" : "lg:grid",
           )}
           style={sidebarOpen ? {
@@ -1180,7 +1180,7 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHe
             gridTemplateColumns: "64px",
           }}
           aria-label="Ferramentas do editor">
-          <div className={cn("border-b border-white/[0.06] bg-[#101217]/80 p-3.5", sidebarOpen ? "col-span-2" : "hidden")}>
+          <div className={cn("vellune-editor-experimental-sidebar-header border-b border-white/[0.06] bg-[#101217]/80 p-3.5", sidebarOpen ? "col-span-2" : "hidden")}>
             <div className="flex items-center gap-2">
               <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary"><Sparkles className="h-4 w-4" /></div>
               <div className="min-w-0 flex-1">
@@ -1248,7 +1248,7 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHe
               )} />
             </button>
           )}
-          <div className={cn("row-start-2 col-start-2 min-h-0 overflow-y-auto bg-[#0f1117]/65 p-4", !sidebarOpen && "hidden")}>
+          <div className={cn("vellune-editor-experimental-sidebar-content row-start-2 col-start-2 min-h-0 overflow-y-auto bg-[#0f1117]/65 p-4", !sidebarOpen && "hidden")}>
             {toolCategory === "Modelos" && (
               <div className="space-y-3">
                 <div>
