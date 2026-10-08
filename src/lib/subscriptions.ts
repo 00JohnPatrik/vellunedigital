@@ -180,6 +180,15 @@ export function isSubscriptionUsable(overview: SubscriptionOverview) {
   return !overview.subscription.expires_at || new Date(overview.subscription.expires_at) >= new Date();
 }
 
+export function planHasFeature(plan: SubscriptionPlan | null | undefined, feature: string) {
+  return Boolean(plan?.features && plan.features[feature] === true);
+}
+
+export async function companyHasFeature(companyId: string, feature: string) {
+  const overview = await getSubscriptionOverview(companyId);
+  return isSubscriptionUsable(overview) && planHasFeature(overview.plan, feature);
+}
+
 export function limitReached(value: number, limit: number | null | undefined) {
   return limit != null && value >= limit;
 }
