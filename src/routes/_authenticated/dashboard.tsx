@@ -1,5 +1,6 @@
-import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
+import { createFileRoute, Outlet, redirect, useMatchRoute } from "@tanstack/react-router";
 import { AppShell } from "@/components/app-shell";
+import { VelluneCompanyShell } from "@/components/vellune-company-shell";
 import { companyNav } from "@/lib/nav";
 
 // PermissionGuard + CompanyScopeGuard: company_admin bound to an active company.
@@ -16,21 +17,17 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
 function DashboardLayout() {
   const { appUser: routeAppUser } = Route.useRouteContext();
   const appUser = routeAppUser!;
+  const matchRoute = useMatchRoute();
   const legacyLayout = typeof window !== "undefined" && new URLSearchParams(window.location.search).get("legacy") === "1";
-  const isDashboardHome = typeof window !== "undefined" && window.location.pathname.replace(/\/$/, "") === "/dashboard";
+  const isDashboardHome = Boolean(matchRoute({ to: "/dashboard/", fuzzy: false }));
 
-  // The premium shell is the default only for the dashboard home; secondary dashboard routes retain AppShell.
-  if (!legacyLayout && isDashboardHome) {
-    return (
-      <div className="dark min-h-[100dvh] w-full bg-[#0B0D12] text-[#F5F7FA]">
-        <Outlet />
-      </div>
-    );
+  if (legacyLayout) {
+    return <AppShell base="/dashboard" nav={companyNav} appUser={appUser}><Outlet /></AppShell>;
   }
 
-  return (
-    <AppShell base="/dashboard" nav={companyNav} appUser={appUser}>
-      <Outlet />
-    </AppShell>
-  );
+  if (isDashboardHome) {
+    return <div className="dark min-h-[100dvh] w-full bg-[#08090d] text-[#F5F7FA]"><Outlet /></div>;
+  }
+
+  return <VelluneCompanyShell appUser={appUser} activeItem="projects"><Outlet /></VelluneCompanyShell>;
 }
