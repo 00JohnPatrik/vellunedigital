@@ -26,6 +26,6 @@ export const companyNav: NavItem[] = [
   { slug: "configuracoes", label: "Configurações", icon: Settings },
 ];
 
-export const WHATSAPP_NUMBER = (import.meta.env.VITE_SUPPORT_WHATSAPP ?? "5585989335371").replace(/\D/g, "");
+export const WHATSAPP_NUMBER = "5585989335371";
 export const whatsappHref = (message = "Olá, preciso de ajuda com minha assinatura.") =>
   WHATSAPP_NUMBER ? `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}` : null;
