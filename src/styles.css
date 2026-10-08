@@ -1263,3 +1263,38 @@
     transition: none !important;
   }
 }
+
+
+/* -------------------------------------------------------------------------- */
+/* Vellune Auth CTA — restrained pointer-depth layer                           */
+/* -------------------------------------------------------------------------- */
+
+.vellune-auth-cta {
+  --vellune-cta-rx: 0deg;
+  --vellune-cta-ry: 0deg;
+  --vellune-cta-lift: 0px;
+}
+
+.vellune-auth-cta:not(:disabled):hover {
+  transform:
+    perspective(900px)
+    rotateX(var(--vellune-cta-rx))
+    rotateY(var(--vellune-cta-ry))
+    translateY(calc(-1px - var(--vellune-cta-lift)))
+    scale(1.002);
+}
+
+.vellune-auth-cta:not(:disabled):focus-visible {
+  transform: perspective(900px) rotateX(0deg) rotateY(0deg) translateY(-1px) scale(1.002);
+}
+
+.vellune-auth-cta.vellune-auth-cta-press {
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .vellune-auth-cta:not(:disabled):hover,
+  .vellune-auth-cta:not(:disabled):focus-visible {
+    transform: none !important;
+  }
+}
