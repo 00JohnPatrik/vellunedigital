@@ -1375,3 +1375,202 @@
       rgba(11,13,18,.86);
   }
 }
+
+
+/* -------------------------------------------------------------------------- */
+/* Vellune Editor Experimental v0.2 — mobile-first creation shell              */
+/* -------------------------------------------------------------------------- */
+.vellune-editor-experimental .vellune-editor-topbar-experimental {
+  min-height: 52px;
+  border-color: rgb(255 255 255 / 8%) !important;
+  background:
+    linear-gradient(180deg, rgb(17 20 27 / 88%), rgb(11 13 18 / 78%)) !important;
+  box-shadow:
+    0 1px 0 rgb(255 255 255 / 3%) inset,
+    0 14px 32px rgb(0 0 0 / 12%);
+}
+
+.vellune-editor-experimental .vellune-editor-topbar-experimental .vellune-editor-topbar-experimental,
+.vellune-editor-experimental .vellune-editor-topbar-experimental .vellune-app-header {
+  display: block;
+}
+
+@media (max-width: 1023px) {
+  .vellune-editor-experimental .vellune-editor-topbar:not(.vellune-editor-topbar-experimental) {
+    display: none !important;
+  }
+
+  .vellune-editor-experimental .vellune-editor-topbar-experimental {
+    position: relative;
+    z-index: 120;
+  }
+
+  .vellune-editor-experimental .vellune-editor-topbar-experimental .vellune-editor-topbar-experimental {
+    display: none;
+  }
+
+  .vellune-editor-experimental .vellune-editor-topbar-experimental h1 {
+    max-width: 42vw;
+  }
+
+  .vellune-editor-experimental .vellune-editor-topbar-experimental [data-state] {
+    max-width: 120px;
+  }
+
+  .vellune-editor-experimental .vellune-editor-body {
+    background:
+      radial-gradient(circle at 50% 10%, rgb(139 92 246 / 9%), transparent 32%),
+      #0b0d12;
+  }
+
+  .vellune-editor-experimental .vellune-editor-workspace {
+    gap: 0;
+    padding: 7px 7px 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  .vellune-editor-experimental .vellune-editor-viewport {
+    min-height: 0;
+    flex: 1 1 auto;
+    padding: 8px 8px 6px !important;
+    border: 0 !important;
+    border-radius: 22px !important;
+    background:
+      radial-gradient(circle at 50% 42%, rgb(139 92 246 / 8%), transparent 38%),
+      rgb(9 11 16 / 92%) !important;
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 3%),
+      0 24px 65px -52px rgb(139 92 246 / 42%) !important;
+  }
+
+  .vellune-editor-experimental .vellune-editor-viewport > div {
+    min-height: 100%;
+  }
+
+  .vellune-editor-experimental .vellune-editor-canvas {
+    max-width: 390px;
+    border-radius: 26px !important;
+    border-width: 4px !important;
+    box-shadow:
+      0 30px 72px -30px rgb(0 0 0 / 86%),
+      0 14px 28px -20px rgb(139 92 246 / 28%) !important;
+  }
+
+  .vellune-editor-experimental .vellune-editor-mobile-bar-experimental {
+    position: sticky;
+    bottom: 8px;
+    margin: -2px 8px 8px !important;
+    min-height: 68px;
+    border-color: rgb(255 255 255 / 9%) !important;
+    background:
+      linear-gradient(180deg, rgb(20 23 32 / 84%), rgb(12 14 20 / 92%)) !important;
+    box-shadow:
+      0 22px 60px -24px rgb(0 0 0 / 88%),
+      0 1px 0 rgb(255 255 255 / 5%) inset !important;
+  }
+
+  .vellune-editor-experimental .vellune-editor-mobile-bar-experimental button {
+    min-height: 46px;
+    border-radius: 16px;
+  }
+
+  .vellune-editor-experimental .vellune-editor-mobile-bar-experimental button[aria-label="Adicionar ao convite"] {
+    box-shadow:
+      0 16px 34px -10px rgb(139 92 246 / 75%),
+      0 1px 0 rgb(255 255 255 / 16%) inset;
+  }
+
+  .vellune-experimental-canvas-controls {
+    align-self: center;
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    margin: 3px auto 3px;
+    padding: 3px;
+    border: 1px solid rgb(255 255 255 / 8%);
+    border-radius: 999px;
+    background: rgb(17 20 27 / 84%);
+    box-shadow:
+      0 12px 34px -18px rgb(0 0 0 / 80%),
+      0 1px 0 rgb(255 255 255 / 4%) inset;
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+  }
+
+  .vellune-experimental-canvas-controls button {
+    display: inline-flex;
+    width: 30px;
+    height: 30px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    border: 0;
+    background: transparent;
+    color: rgb(255 255 255 / 62%);
+  }
+
+  .vellune-experimental-canvas-controls button:hover,
+  .vellune-experimental-canvas-controls button:active {
+    background: rgb(255 255 255 / 7%);
+    color: rgb(255 255 255 / 94%);
+  }
+
+  .vellune-experimental-canvas-controls span {
+    min-width: 43px;
+    padding: 0 4px;
+    text-align: center;
+    color: rgb(255 255 255 / 84%);
+    font-size: 10px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .vellune-editor-experimental .vellune-editor-body .vellune-editor-inspector {
+    z-index: 110;
+  }
+
+  .vellune-editor-experimental .vellune-editor-body + .vellune-editor-mobile-bar-experimental {
+    z-index: 130;
+  }
+
+  .vellune-experimental-sheet-tabs {
+    scrollbar-width: none;
+  }
+
+  .vellune-experimental-sheet-tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  .vellune-editor-experimental .fixed.inset-x-2.bottom-2 {
+    animation: velluneExperimentalSheetIn 180ms cubic-bezier(.22,1,.36,1);
+    border-color: rgb(255 255 255 / 8%) !important;
+    box-shadow:
+      0 30px 80px -28px rgb(0 0 0 / 88%),
+      0 1px 0 rgb(255 255 255 / 4%) inset !important;
+  }
+}
+
+@keyframes velluneExperimentalSheetIn {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(.985);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .vellune-editor-experimental .fixed.inset-x-2.bottom-2 {
+    animation: none !important;
+  }
+
+  .vellune-editor-experimental .vellune-editor-mobile-bar-experimental,
+  .vellune-experimental-canvas-controls {
+    transition: none !important;
+  }
+}
