@@ -3,7 +3,7 @@ import { BarChart3, Building2, Contact, CreditCard, FileText, LayoutDashboard, L
 export type NavItem = { slug: string; label: string; icon: LucideIcon; to?: string };
 
 export const adminNav: NavItem[] = [
-  { slug: "", label: "Dashboard", icon: LayoutDashboard },
+  { slug: "", label: "Dashboard", icon: LayoutDashboard, to: "/dashboard" },
   { slug: "companies", label: "Empresas", icon: Building2 },
   { slug: "users", label: "Usuários", icon: Users },
   { slug: "plans", label: "Planos", icon: CreditCard },
@@ -21,9 +21,9 @@ export const companyNav: NavItem[] = [
   { slug: "customers", label: "Clientes", icon: Users, to: "/customers" },
   { slug: "templates", label: "Modelos", icon: FileText, to: "/templates" },
   { slug: "reports", label: "Resultados", icon: BarChart3, to: "/reports" },
-  { slug: "assinatura", label: "Plano", icon: CreditCard },
+  { slug: "assinatura", label: "Plano", icon: CreditCard, to: "/dashboard/assinatura" },
   { slug: "marca", label: "Sua marca", icon: Palette, to: "/settings/brand" },
-  { slug: "configuracoes", label: "Configurações", icon: Settings },
+  { slug: "configuracoes", label: "Configurações", icon: Settings, to: "/dashboard/configuracoes" },
 ];
 
 export const WHATSAPP_NUMBER = "5585989335371";
