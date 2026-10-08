@@ -141,7 +141,7 @@ const ELEMENT_ICONS: Partial<Record<BlockType, ComponentType<{ className?: strin
 const GRID_UNIT = 16;
 export type EditorPoint = { x: number; y: number };
 
-export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra }: { h: BlocksHistory; ctx?: unknown; assets?: unknown; bg?: unknown; onBg?: (value: any) => void; toolbarExtra?: React.ReactNode }) {
+export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHeaderLeft, desktopHeaderRight, fullHeight = false }: { h: BlocksHistory; ctx?: unknown; assets?: unknown; bg?: unknown; onBg?: (value: any) => void; toolbarExtra?: React.ReactNode; desktopHeaderLeft?: React.ReactNode; desktopHeaderRight?: React.ReactNode; fullHeight?: boolean }) {
   const canvasRef = useRef<HTMLDivElement>(null);
   const viewportRef = useRef<HTMLDivElement>(null);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
@@ -152,7 +152,7 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra }: { h: Bl
   const [templateOpen, setTemplateOpen] = useState(false);
   const [startEditingTextId, setStartEditingTextId] = useState<string | null>(null);
   const [imageReplaceId, setImageReplaceId] = useState<string | null>(null);
-  const [device, setDevice] = useState<"mobile" | "tablet" | "desktop">("tablet");
+  const [device, setDevice] = useState<"mobile" | "tablet" | "desktop">("desktop");
   const [canvasDragOver, setCanvasDragOver] = useState(false);
   const canvasDragDepth = useRef(0);
   const compact = useIsCompact();
@@ -180,8 +180,10 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra }: { h: Bl
     observer.observe(node);
     return () => observer.disconnect();
   }, [compact, fitCanvasToViewport]);
-  const [marquee, setMarquee] = useState<{ x: number; y: number; width: number; height: number } | null>(null);
-  const interaction = useRef<{ mode: "drag" | "resize" | "marquee" | "background"; id?: string; startX: number; startY: number; originX?: number; originY?: number; originWidth?: number; originHeight?: number; selected?: string[] } | null>(null);
+  useEffect(() => {
+    if (compact) return;
+    requestAnimationFrame(fitCanvas);
+  }, [compact, device, fitCanvas]);
   const clipboard = useRef<any[]>([]);
   const blocks = Array.isArray(h?.blocks) ? h.blocks : [];
   const selected = blocks.filter((block: any) => selectedIds.includes(block.id));
@@ -504,112 +506,6 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra }: { h: Bl
       return [...current, ...targetIds.filter((targetId) => !current.includes(targetId))];
     });
   };
-  const startDrag = (event: React.PointerEvent<HTMLDivElement>, block: any, index: number) => {
-    if (block.locked) return;
-    const additive = event.shiftKey || event.ctrlKey || event.metaKey;
-    const activeIds = selectedIds.includes(block.id) && !additive ? selectedIds : additive ? (selectedIds.includes(block.id) ? selectedIds : [...selectedIds, block.id]) : [block.id];
-    const point = canvasPoint(event);
-    const position = getPosition(block, index);
-    select(block.id, additive);
-    interaction.current = {
-      mode: "drag",
-      id: block.id,
-      startX: point.x,
-      startY: point.y,
-      originX: position.x,
-      originY: position.y,
-      selected: activeIds,
-    };
-    event.currentTarget.setPointerCapture(event.pointerId); event.stopPropagation(); event.preventDefault();
-  };
-  const startResize = (event: React.PointerEvent<HTMLButtonElement>, block: any, index: number) => {
-    if (block.locked || block.visibility === false || block.hidden) return;
-    const point = canvasPoint(event); const position = getPosition(block, index); const size = getSize(block, index);
-    interaction.current = {
-      mode: "resize",
-      id: block.id,
-      startX: point.x,
-      startY: point.y,
-      originX: position.x,
-      originY: position.y,
-      originWidth: size.width,
-      originHeight: size.height,
-    };
-    event.currentTarget.setPointerCapture(event.pointerId); event.stopPropagation(); event.preventDefault();
-  };
-  const moveInteraction = (event: React.PointerEvent<HTMLDivElement>) => {
-    const current = interaction.current; if (!current) return;
-    const point = canvasPoint(event);
-    if (current.mode === "marquee") {
-      setMarquee({ x: Math.min(current.startX, point.x), y: Math.min(current.startY, point.y), width: Math.abs(point.x - current.startX), height: Math.abs(point.y - current.startY) }); return;
-    }
-    const dx = point.x - current.startX; const dy = point.y - current.startY;
-    if (current.mode === "background") {
-      onBg?.({
-        ...((bg as any) || {}),
-        imageOffsetX: Math.round((current.originX ?? 0) + dx),
-        imageOffsetY: Math.round((current.originY ?? 0) + dy),
-      });
-      return;
-    }
-    if (current.mode === "resize" && current.id) {
-      const originWidth = current.originWidth ?? 320;
-      const originHeight = current.originHeight ?? 92;
-      let width = Math.max(120, Math.round(originWidth + dx));
-      let height = Math.max(56, Math.round(originHeight + dy));
-      if (event.shiftKey) {
-        const ratio = originWidth / Math.max(1, originHeight);
-        if (Math.abs(dx) >= Math.abs(dy)) height = Math.max(56, Math.round(width / ratio));
-        else width = Math.max(120, Math.round(height * ratio));
-      }
-      h.set((items) => items.map((item: any) => item.id === current.id && !item.locked
-        ? { ...item, x: current.originX, y: current.originY, width, height }
-        : item), `resize:${current.id}`);
-      return;
-    }
-    if (current.mode === "drag" && current.id) {
-      const snap = event.shiftKey ? GRID_UNIT : 1;
-      const x = Math.max(0, Math.round(((current.originX ?? 0) + dx) / snap) * snap);
-      const y = Math.max(0, Math.round(((current.originY ?? 0) + dy) / snap) * snap);
-      const movingIds = current.selected?.length ? current.selected : [current.id];
-      const originBlock = blocks.find((item: any) => item.id === current.id);
-      const originPosition = originBlock ? getPosition(originBlock, blocks.indexOf(originBlock)) : { x: 24, y: 24 };
-      const deltaX = x - originPosition.x;
-      const deltaY = y - originPosition.y;
-      h.set((items) => items.map((item: any) => {
-        if (!movingIds.includes(item.id) || item.locked) return item;
-        const itemPosition = getPosition(item, items.indexOf(item));
-        return {
-          ...item,
-          x: Math.max(0, Math.round((itemPosition.x + deltaX) / snap) * snap),
-          y: Math.max(0, Math.round((itemPosition.y + deltaY) / snap) * snap),
-        };
-      }), `drag:${movingIds.join(",")}`);
-    }
-  };
-  const startBackgroundDrag = (event: React.PointerEvent<HTMLDivElement>) => {
-    if (!bg || !(bg as any).image) return;
-    const point = canvasPoint(event);
-    interaction.current = {
-      mode: "background",
-      startX: point.x,
-      startY: point.y,
-      originX: Number((bg as any).imageOffsetX) || 0,
-      originY: Number((bg as any).imageOffsetY) || 0,
-    };
-    setMobileSheet(compact ? "background" : mobileSheet);
-    event.currentTarget.setPointerCapture(event.pointerId);
-    event.stopPropagation();
-    event.preventDefault();
-  };
-  const stopInteraction = () => {
-    const current = interaction.current;
-    if (current?.mode === "marquee" && marquee) {
-      const next = blocks.filter((block: any, index: number) => { const p = getPosition(block, index); const s = getSize(block, index); return p.x < marquee.x + marquee.width && p.x + s.width > marquee.x && p.y < marquee.y + marquee.height && p.y + s.height > marquee.y; }).map((block: any) => block.id);
-      setSelectedIds(next);
-    }
-    interaction.current = null; setMarquee(null);
-  };
   const addElement = (type: BlockType) => {
     // Keep every insertion path on the same flow so text/images behave
     // identically whether added from desktop shortcuts, mobile drawer,
@@ -709,8 +605,45 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra }: { h: Bl
     h.set((items) => items.map((item: any) => selectedIds.includes(item.id) && !item.locked ? { ...item, props: { ...(item.props ?? {}), [key]: value } } : item), "selection:properties");
   };
   return (
-    <div className="vellune-editor-root flex min-h-[calc(100dvh-7rem)] flex-col overflow-hidden rounded-[1.25rem] border border-primary/10 bg-background/95 pb-20 shadow-2xl shadow-black/15 ring-1 ring-black/5 lg:min-h-[680px] lg:pb-0" style={{ "--color-primary": "#d4af37", "--color-primary-foreground": "#16130b" } as React.CSSProperties}>
-      <div className="vellune-editor-topbar flex flex-wrap items-center justify-between gap-2 border-b border-primary/10 bg-card/90 px-3 py-2.5 shadow-sm backdrop-blur-xl" role="toolbar" aria-label="Barra principal do editor">
+    <div className={cn("vellune-editor-root flex flex-col overflow-hidden border border-primary/10 bg-background/95 shadow-2xl shadow-black/15 ring-1 ring-black/5", fullHeight ? "h-full min-h-0 rounded-none border-0 pb-0 shadow-none ring-0" : "min-h-[calc(100dvh-7rem)] rounded-[1.25rem] pb-20 lg:min-h-[680px] lg:pb-0")} style={{ "--color-primary": "#d4af37", "--color-primary-foreground": "#16130b" } as React.CSSProperties}>
+      <div className="hidden h-14 shrink-0 items-center gap-3 border-b border-white/[0.07] bg-[#0b0d12]/95 px-4 shadow-[0_8px_30px_rgba(0,0,0,0.18)] backdrop-blur-xl lg:flex" role="toolbar" aria-label="Barra principal do editor">
+        <div className="min-w-0 flex-1">
+          {desktopHeaderLeft ?? (
+            <div className="flex min-w-0 items-center gap-2">
+              <Sparkles className="h-4 w-4 shrink-0 text-primary" />
+              <span className="truncate text-sm font-semibold text-foreground">Editor visual</span>
+            </div>
+          )}
+        </div>
+
+        <div className="flex shrink-0 items-center gap-1.5">
+          <div className="flex items-center gap-1 rounded-lg border border-white/[0.08] bg-white/[0.025] p-1">
+            <button type="button" aria-label="Desfazer" title="Desfazer (Ctrl/Cmd+Z)" disabled={!h.canUndo} onClick={h.undo} className="inline-flex h-8 w-8 items-center justify-center rounded-md text-white/55 transition hover:bg-white/[0.06] hover:text-white disabled:cursor-not-allowed disabled:opacity-35"><Undo2 className="h-3.5 w-3.5" /></button>
+            <button type="button" aria-label="Refazer" title="Refazer (Ctrl/Cmd+Shift+Z)" disabled={!h.canRedo} onClick={h.redo} className="inline-flex h-8 w-8 items-center justify-center rounded-md text-white/55 transition hover:bg-white/[0.06] hover:text-white disabled:cursor-not-allowed disabled:opacity-35"><Redo2 className="h-3.5 w-3.5" /></button>
+          </div>
+
+          <div className="flex items-center gap-1 rounded-lg border border-white/[0.08] bg-white/[0.025] p-1">
+            <button type="button" aria-label="Diminuir zoom" title="Diminuir zoom" onClick={() => setZoom((value) => Math.max(50, value - 10))} className="inline-flex h-8 w-8 items-center justify-center rounded-md text-white/55 transition hover:bg-white/[0.06] hover:text-white"><Minus className="h-3.5 w-3.5" /></button>
+            <span className="min-w-12 text-center text-[11px] font-medium tabular-nums text-white/75">{zoom}%</span>
+            <button type="button" aria-label="Aumentar zoom" title="Aumentar zoom" onClick={() => setZoom((value) => Math.min(150, value + 10))} className="inline-flex h-8 w-8 items-center justify-center rounded-md text-white/55 transition hover:bg-white/[0.06] hover:text-white"><Plus className="h-3.5 w-3.5" /></button>
+            <button type="button" aria-label="Ajustar canvas à área disponível" title="Ajustar canvas" onClick={fitCanvas} className="hidden h-8 items-center justify-center rounded-md px-2 text-[10px] font-medium text-white/50 transition hover:bg-white/[0.06] hover:text-white xl:inline-flex"><Maximize2 className="mr-1.5 h-3.5 w-3.5" />Ajustar</button>
+          </div>
+
+          <div className="flex items-center gap-1 rounded-lg border border-white/[0.08] bg-white/[0.025] p-1" role="group" aria-label="Tamanho da tela do convite">
+            {([["mobile", Smartphone, "Celular"], ["tablet", Tablet, "Tablet"], ["desktop", Monitor, "Desktop"]] as const).map(([value, Icon, label]) => (
+              <button key={value} type="button" aria-pressed={device === value} aria-label={label} title={`Visualizar em ${label.toLowerCase()}`} onClick={() => setDevice(value)} className={`inline-flex h-8 items-center gap-1 rounded-md px-2 text-[10px] transition-colors ${device === value ? "bg-primary/15 text-primary" : "text-white/45 hover:bg-white/[0.06] hover:text-white"}`}>
+                <Icon className="h-3.5 w-3.5" />
+                <span className="hidden xl:inline">{label}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="flex min-w-0 flex-1 items-center justify-end gap-1.5">
+          {desktopHeaderRight}
+        </div>
+      </div>
+      <div className="vellune-editor-topbar flex flex-wrap items-center justify-between gap-2 border-b border-primary/10 bg-card/90 px-3 py-2.5 shadow-sm backdrop-blur-xl lg:hidden" role="toolbar" aria-label="Barra principal do editor">
         <div className="flex min-w-0 items-center gap-2">
           <div className="vellune-editor-device-switcher hidden items-center gap-0.5 rounded-xl border border-primary/10 bg-background/80 p-1 shadow-sm sm:flex" role="group" aria-label="Tamanho da tela do convite">
             {([["mobile", Smartphone, "Celular"], ["tablet", Tablet, "Tablet"], ["desktop", Monitor, "Desktop"]] as const).map(([value, Icon, label]) => (
@@ -918,7 +851,7 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra }: { h: Bl
               <span className="rounded-lg bg-muted/70 px-2 py-1.5 text-[11px] font-medium tabular-nums text-foreground">{zoom}%</span>
             </div>
           </div>
-          <div ref={viewportRef} className="vellune-editor-viewport h-full overflow-auto overscroll-contain rounded-2xl border border-primary/10 bg-background/25 p-2 shadow-inner backdrop-blur-[2px] sm:p-4 lg:p-6"><div className="mx-auto origin-top transition-transform" style={{ width: `${100 / (zoom / 100)}%`, minHeight: canvasHeight / (zoom / 100) }}><div ref={canvasRef} className={`vellune-editor-canvas relative isolate mx-auto w-full ${DEVICE_W[device]} overflow-hidden rounded-2xl border bg-card shadow-sm ${showGrid ? "[background-image:linear-gradient(to_right,hsl(var(--border)/.25)_1px,transparent_1px),linear-gradient(to_bottom,hsl(var(--border)/.25)_1px,transparent_1px)] [background-size:16px_16px]" : ""}`} style={{ minHeight: canvasHeight, backgroundColor: bg && (bg as any).color ? (bg as any).color : undefined, transform: `scale(${zoom / 100})`, transformOrigin: "top center" }} onPointerDown={(event) => { if (event.target === event.currentTarget) { const p = canvasPoint(event); interaction.current = { mode: "marquee", startX: p.x, startY: p.y }; setSelectedIds([]); } }} onPointerMove={moveInteraction} onPointerUp={stopInteraction} onPointerCancel={stopInteraction}
+          <div ref={viewportRef} className="vellune-editor-viewport h-full overflow-auto overscroll-contain rounded-2xl border border-primary/10 bg-background/25 p-2 shadow-inner backdrop-blur-[2px] sm:p-4 lg:p-6"><div className="mx-auto origin-top transition-transform" style={{ width: `${100 / (zoom / 100)}%`, minHeight: canvasHeight / (zoom / 100) }}><div ref={canvasRef} className={`vellune-editor-canvas relative isolate mx-auto w-full ${DEVICE_W[device]} overflow-hidden rounded-2xl border bg-card shadow-sm ${showGrid ? "[background-image:linear-gradient(to_right,hsl(var(--border)/.25)_1px,transparent_1px),linear-gradient(to_bottom,hsl(var(--border)/.25)_1px,transparent_1px)] [background-size:16px_16px]" : ""}`} style={{ minHeight: canvasHeight, backgroundColor: bg && (bg as any).color ? (bg as any).color : undefined, transform: `scale(${zoom / 100})`, transformOrigin: "top center" }}
               onDragEnter={(event) => {
                 if (event.dataTransfer.types.includes("application/x-vellune-block-type")) {
                   canvasDragDepth.current += 1;
@@ -948,17 +881,7 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra }: { h: Bl
               }}
               aria-label="Área de edição do convite"><BackgroundLayers bg={bg as any} />
               {canvasDragOver && <div className="pointer-events-none absolute inset-3 z-[120] flex items-center justify-center rounded-xl border-2 border-dashed border-primary bg-primary/10 backdrop-blur-[2px]"><div className="rounded-full border border-primary/20 bg-background/90 px-4 py-2 text-xs font-semibold text-primary shadow-lg">Solte para adicionar ao convite</div></div>}
-              {(bg as any)?.image && (
-                <div
-                  className="absolute inset-0 z-[1] cursor-grab active:cursor-grabbing"
-                  onPointerDown={startBackgroundDrag}
-                  onPointerMove={moveInteraction}
-                  onPointerUp={stopInteraction}
-                  onPointerCancel={stopInteraction}
-                  title="Arraste para reposicionar o fundo"
-                  aria-label="Mover imagem de fundo"
-                />
-              )}{blocks.length === 0 && <div className="absolute inset-0 z-[30] flex items-center justify-center p-6"><div className="max-w-sm rounded-2xl border border-primary/15 bg-background/92 p-5 text-center shadow-xl backdrop-blur-md"><div className="mx-auto flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary"><Sparkles className="h-5 w-5" /></div><p className="mt-3 text-sm font-semibold text-foreground">Comece seu convite</p><p className="mt-1 text-xs leading-5 text-muted-foreground">Escolha um modelo ou adicione seu primeiro elemento. Depois, personalize tudo diretamente no canvas.</p><div className="mt-4 flex flex-wrap justify-center gap-2"><button type="button" onClick={() => setTemplateOpen(true)} className="rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground shadow-sm">Escolher modelo</button><button type="button" onClick={() => addBlockByType("text")} className="rounded-lg border px-3 py-2 text-xs font-medium text-foreground hover:bg-muted">Adicionar texto</button><button type="button" onClick={() => addBlockByType("image")} className="rounded-lg border px-3 py-2 text-xs font-medium text-foreground hover:bg-muted">Adicionar imagem</button></div></div></div>}{marquee && <div className="pointer-events-none absolute z-50 border border-primary bg-primary/10" style={{ left: marquee.x, top: marquee.y, width: marquee.width, height: marquee.height }} />}<VisualTransformCanvas
+{blocks.length === 0 && <div className="absolute inset-0 z-[30] flex items-center justify-center p-6"><div className="max-w-sm rounded-2xl border border-primary/15 bg-background/92 p-5 text-center shadow-xl backdrop-blur-md"><div className="mx-auto flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary"><Sparkles className="h-5 w-5" /></div><p className="mt-3 text-sm font-semibold text-foreground">Comece seu convite</p><p className="mt-1 text-xs leading-5 text-muted-foreground">Escolha um modelo ou adicione seu primeiro elemento. Depois, personalize tudo diretamente no canvas.</p><div className="mt-4 flex flex-wrap justify-center gap-2"><button type="button" onClick={() => setTemplateOpen(true)} className="rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground shadow-sm">Escolher modelo</button><button type="button" onClick={() => addBlockByType("text")} className="rounded-lg border px-3 py-2 text-xs font-medium text-foreground hover:bg-muted">Adicionar texto</button><button type="button" onClick={() => addBlockByType("image")} className="rounded-lg border px-3 py-2 text-xs font-medium text-foreground hover:bg-muted">Adicionar imagem</button></div></div></div>}<VisualTransformCanvas
               blocks={blocks}
               selectedIds={selectedIds}
               zoom={zoom}
