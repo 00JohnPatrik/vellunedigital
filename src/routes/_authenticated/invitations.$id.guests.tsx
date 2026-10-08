@@ -48,8 +48,14 @@ function GuestsPage() {
   const downloadCsv = async () => {
     try {
       const result = { rows: await listAllInvitationGuests(id) };
-      const url = URL.createObjectURL(new Blob([guestsToCsv(result.rows)], { type: "text/csv;charset=utf-8" }));
-      const a = document.createElement("a"); a.href = url; a.download = "convidados.csv"; a.click(); URL.revokeObjectURL(url);
+      const url = URL.createObjectURL(new Blob(["\uFEFF", guestsToCsv(result.rows)], { type: "text/csv;charset=utf-8" }));
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "convidados.csv";
+      a.click();
+      // Some browsers start the download asynchronously; revoking in the same
+      // tick can produce an empty or cancelled file. Release the URL shortly after.
+      window.setTimeout(() => URL.revokeObjectURL(url), 30_000);
     } catch { toast.error("Não foi possível exportar os convidados."); }
   };
 
