@@ -345,7 +345,15 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHe
       setToolCategory("Fotos");
       if (compact) setMobileSheet("elements");
       requestAnimationFrame(() => document.getElementById("editor-elements-library")?.scrollIntoView({ behavior: "smooth", block: "nearest" }));
+      return;
     }
+
+    setInspectorOpen(true);
+    if (compact) {
+      setMobileSheet("properties");
+      return;
+    }
+    requestAnimationFrame(() => document.getElementById("editor-contextual-properties")?.scrollIntoView({ behavior: "smooth", block: "nearest" }));
   };
   const cancelImageReplace = () => setImageReplaceId(null);
   const handleStartEditingHandled = useCallback(() => setStartEditingTextId(null), []);
