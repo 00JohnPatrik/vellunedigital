@@ -67,7 +67,7 @@ export type SmartComponentDefinition = {
 };
 
 export const SMART_COMPONENT_CATALOG: SmartComponentDefinition[] = [
-  { type: "rsvp", label: "RSVP", category: "Interação", tags: ["presença", "confirmação", "convidados"], description: "Confirmação de presença experimental", icon: "check" },
+  { type: "rsvp", label: "RSVP", category: "Interação", tags: ["presença", "confirmação", "convidados"], description: "Confirmação de presença", icon: "check" },
   { type: "countdown", label: "Contagem regressiva", category: "Evento", tags: ["tempo", "data", "relógio"], description: "Contagem em tempo real até o evento", icon: "clock" },
   { type: "location", label: "Localização", category: "Evento", tags: ["mapa", "endereço", "como chegar"], description: "Local do evento com link para mapa", icon: "map" },
   { type: "whatsapp", label: "WhatsApp", category: "Ações", tags: ["mensagem", "contato", "telefone"], description: "Atalho para conversa no WhatsApp", icon: "whatsapp" },
@@ -130,7 +130,7 @@ function Countdown({ target }: { target?: string }) {
 function LocalRsvp({ config }: { config: SmartFunctionalConfig }) {
   const [name, setName] = useState("");
   const [done, setDone] = useState(false);
-  if (done) return <div className="flex items-center gap-2 text-sm text-primary" role="status"><CheckCircle2 className="h-5 w-5" />Confirmação registrada apenas neste preview experimental.</div>;
+  if (done) return <div className="flex items-center gap-2 text-sm text-primary" role="status"><CheckCircle2 className="h-5 w-5" />Confirmação registrada neste preview.</div>;
   return <form className="space-y-2" onSubmit={(event) => { event.preventDefault(); if (name.trim()) setDone(true); }}><p className="text-sm font-medium">{config.rsvpTitle || "Você poderá participar?"}</p><Input value={name} onChange={(event) => setName(event.target.value)} placeholder="Seu nome" aria-label="Nome para confirmação" /><Button type="submit" className="w-full"><CheckCircle2 className="mr-2 h-4 w-4" />{config.rsvpLabel || "Confirmar presença"}</Button></form>;
 }
 

@@ -145,7 +145,7 @@ export function ExperimentalMediaLibrary({ onInsert }: Props) {
   };
 
   return (
-    <div className="space-y-3" aria-label="Biblioteca local de mídia experimental">
+    <div className="space-y-3" aria-label="Biblioteca local de mídia">
       <div className="flex items-center gap-2">
         <ImagePlus className="h-4 w-4 text-primary" />
         <div className="min-w-0 flex-1">

@@ -43,7 +43,7 @@ export function ExperimentalMobileBar({
   onSelectSection,
 }: Props) {
   return (
-    <div className="fixed inset-x-2 bottom-2 z-50 space-y-2 lg:hidden" role="toolbar" aria-label="Controles móveis do editor experimental">
+    <div className="fixed inset-x-2 bottom-2 z-50 space-y-2 lg:hidden" role="toolbar" aria-label="Controles móveis do editor">
       <div className="flex items-center gap-1 overflow-x-auto rounded-xl border bg-card/95 p-1.5 shadow-lg backdrop-blur">
         {presets.map(({ value, label, shortLabel, icon: Icon }) => (
           <Button
