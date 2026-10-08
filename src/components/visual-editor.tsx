@@ -999,15 +999,28 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHe
             ))}
           </div>
 
-          <button type="button" onClick={() => setSnapEnabled((value) => !value)} className={cn("hidden h-9 items-center gap-2 rounded-lg border px-2.5 text-[10px] font-medium transition xl:inline-flex", snapEnabled ? "border-primary/25 bg-primary/10 text-primary" : "border-white/[0.08] bg-white/[0.025] text-white/45 hover:bg-white/[0.06] hover:text-white")} title={snapEnabled ? "Desativar magnetismo de alinhamento" : "Ativar magnetismo de alinhamento"} aria-label={snapEnabled ? "Desativar magnetismo de alinhamento" : "Ativar magnetismo de alinhamento"} aria-pressed={snapEnabled}>
-            <Magnet className="h-3.5 w-3.5" /><span>Magnetismo</span>
-          </button>
-          <button type="button" onClick={() => setCommandOpen(true)} className="hidden h-9 items-center gap-2 rounded-lg border border-white/[0.08] bg-white/[0.025] px-2.5 text-[10px] font-medium text-white/50 transition hover:border-white/[0.12] hover:bg-white/[0.06] hover:text-white xl:inline-flex" title="Buscar e adicionar (Ctrl/Cmd+K)" aria-label="Buscar e adicionar">
-            <Search className="h-3.5 w-3.5" /><span>Buscar / adicionar</span><kbd className="rounded border border-white/[0.08] bg-black/10 px-1.5 py-0.5 text-[9px] text-white/30">⌘K</kbd>
-          </button>
-          <button type="button" onClick={() => setFocusMode((value) => !value)} className={cn("inline-flex h-9 w-9 items-center justify-center rounded-lg border text-white/50 transition hover:bg-white/[0.06] hover:text-white", focusMode ? "border-primary/25 bg-primary/10 text-primary" : "border-white/[0.08] bg-white/[0.025]")} title={focusMode ? "Sair do modo foco" : "Modo foco"} aria-label={focusMode ? "Sair do modo foco" : "Ativar modo foco"} aria-pressed={focusMode}>
-            {focusMode ? <Minimize2 className="h-3.5 w-3.5" /> : <Maximize2 className="h-3.5 w-3.5" />}
-          </button>
+          <details className="relative hidden xl:block">
+            <summary className="inline-flex h-9 cursor-pointer list-none items-center gap-2 rounded-lg border border-white/[0.08] bg-white/[0.025] px-2.5 text-[10px] font-medium text-white/50 transition hover:border-white/[0.12] hover:bg-white/[0.06] hover:text-white [&::-webkit-details-marker]:hidden">
+              <MoreHorizontal className="h-3.5 w-3.5" /><span>Ferramentas</span>
+            </summary>
+            <div className="absolute right-0 top-11 z-[140] grid min-w-[220px] gap-1 rounded-xl border border-white/[0.08] bg-[#111318] p-1.5 text-white shadow-2xl">
+              <button type="button" onClick={() => { setCommandOpen(true); setToolCategory("Adicionar"); setSidebarOpen(true); }} className="flex items-center gap-2 rounded-lg px-2.5 py-2 text-left text-[11px] text-white/70 transition hover:bg-white/[0.06] hover:text-white">
+                <Search className="h-3.5 w-3.5" /><span><strong className="font-medium text-white">Buscar / adicionar</strong><span className="ml-1 text-white/35">⌘K</span></span>
+              </button>
+              <button type="button" onClick={() => setSnapEnabled((value) => !value)} className="flex items-center justify-between gap-2 rounded-lg px-2.5 py-2 text-left text-[11px] text-white/70 transition hover:bg-white/[0.06] hover:text-white">
+                <span className="inline-flex items-center gap-2"><Magnet className="h-3.5 w-3.5" />Magnetismo</span>
+                <span className="text-[10px] text-white/35">{snapEnabled ? "Ativo" : "Desligado"}</span>
+              </button>
+              <button type="button" onClick={() => setShowGrid((value) => !value)} className="flex items-center justify-between gap-2 rounded-lg px-2.5 py-2 text-left text-[11px] text-white/70 transition hover:bg-white/[0.06] hover:text-white">
+                <span className="inline-flex items-center gap-2"><Grid3X3 className="h-3.5 w-3.5" />Guias e grade</span>
+                <span className="text-[10px] text-white/35">{showGrid ? "Ativas" : "Desligadas"}</span>
+              </button>
+              <button type="button" onClick={() => setFocusMode((value) => !value)} className="flex items-center justify-between gap-2 rounded-lg px-2.5 py-2 text-left text-[11px] text-white/70 transition hover:bg-white/[0.06] hover:text-white">
+                <span className="inline-flex items-center gap-2">{focusMode ? <Minimize2 className="h-3.5 w-3.5" /> : <Maximize2 className="h-3.5 w-3.5" />}Modo foco</span>
+                <span className="text-[10px] text-white/35">{focusMode ? "Ativo" : "Desligado"}</span>
+              </button>
+            </div>
+          </details>
         </div>
 
         <div className="flex min-w-0 flex-1 items-center justify-end gap-1.5">
@@ -1068,9 +1081,7 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHe
             </button>
             {[
               ["Modelos", Sparkles, "Comece por um modelo pronto"],
-              ["Texto", Type, "Títulos, subtítulos e mensagens"],
-              ["Fotos", ImageIcon, "Imagens e galerias"],
-              ["Elementos", LayoutGrid, "Data, local, botões e mais"],
+              ["Adicionar", LayoutGrid, "Texto, fotos, eventos, botões e interações"],
               ["Fundo", Palette, "Cor e imagem de fundo"],
               ["Organizar", MoreHorizontal, "Camadas, visibilidade e ajustes avançados"],
             ].map(([key, Icon, description]) => {
@@ -1117,44 +1128,22 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHe
                 </button>
                 <div className="rounded-xl border border-dashed border-primary/20 bg-white/[0.015] p-3">
                   <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Depois</p>
-                  <p className="mt-1 text-xs font-medium text-foreground">Texto → Fotos → Elementos → Visualizar → Publicar</p>
+                  <p className="mt-1 text-xs font-medium text-foreground">Modelos → Adicionar → Fundo → Organizar → Prévia → Publicar</p>
                 </div>
               </div>
             )}
 
-            {toolCategory === "Texto" && (
-              <ElementsLibrary
-                id="editor-text-library"
-                availableTypes={["text"]}
-                assets={assets as any}
-                onAdd={(type) => { addBlockByType(type); }}
-                onAddImage={addImageByUrl}
-                imageMode="add"
-              />
-            )}
-
-            {toolCategory === "Fotos" && (
-              <ElementsLibrary
-                id="editor-photo-library"
-                availableTypes={["image", "gallery"]}
-                assets={assets as any}
-                onAdd={(type) => { addBlockByType(type); }}
-                onAddImage={addImageByUrl}
-                imageMode={imageReplaceId ? "replace" : "add"}
-                onSelectImage={replaceSelectedImage}
-                onCancelImageReplace={cancelImageReplace}
-              />
-            )}
-
-            {toolCategory === "Elementos" && (
+            {toolCategory === "Adicionar" && (
               <ElementsLibrary
                 id="editor-elements-library"
-                availableTypes={(Object.keys(BLOCKS) as BlockType[]).filter((type) => !["text", "image", "gallery"].includes(type))}
+                availableTypes={Object.keys(BLOCKS) as BlockType[]}
                 assets={assets as any}
                 onAdd={(type) => { addBlockByType(type); }}
                 onAddComposition={addComposition}
                 onAddImage={addImageByUrl}
-                imageMode="add"
+                imageMode={imageReplaceId ? "replace" : "add"}
+                onSelectImage={replaceSelectedImage}
+                onCancelImageReplace={cancelImageReplace}
               />
             )}
 
@@ -1408,7 +1397,7 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHe
               }}
             /></div></div></div>
         </main>
-        {inspectorOpen && <aside id="editor-contextual-properties" className={cn("vellune-editor-inspector hidden w-[280px] shrink-0 overflow-y-auto rounded-2xl border border-primary/10 bg-card/75 p-3 shadow-xl shadow-black/10 backdrop-blur-xl lg:block", focusMode && "!hidden")} aria-label="Ajustes avançados do elemento">
+        {inspectorOpen && <aside id="editor-contextual-properties" className={cn("vellune-editor-inspector hidden w-[288px] shrink-0 overflow-y-auto rounded-2xl border border-primary/10 bg-card/75 p-3 shadow-xl shadow-black/10 backdrop-blur-xl lg:block", focusMode && "lg:hidden")} aria-label="Ajustes avançados do elemento">
           <div className="mb-2 flex items-center justify-between gap-2 rounded-xl border border-primary/10 bg-background/35 px-3 py-2.5">
             <div className="flex min-w-0 items-center gap-2">
               <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary"><PanelRight className="h-3.5 w-3.5" /></div>
