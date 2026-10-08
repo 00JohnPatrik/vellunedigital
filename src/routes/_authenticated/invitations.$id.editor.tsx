@@ -2,11 +2,13 @@ import { buildContent, type Background } from "@/lib/templates";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { AlertCircle, ArrowLeft, Check, Eye, Loader2, MoreHorizontal, QrCode, Save, Send, Settings2, Share2, SlidersHorizontal, UserCheck, Users } from "lucide-react";
+import { AlertCircle, ArrowLeft, Check, Eye, Loader2, LogOut, MoreHorizontal, QrCode, Save, Send, Settings2, Share2, SlidersHorizontal, UserCheck, Users } from "lucide-react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { ShareDialog } from "@/components/share-dialog";
 import { RsvpPanel } from "@/components/rsvp-panel";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { applyTheme } from "@/lib/app-user";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -67,6 +69,14 @@ function EditorForm({ inv, experimentalLayout = false, checkinEnabled = false }:
   const [rsvpOpen, setRsvpOpen] = useState(false);
   const [publishing, setPublishing] = useState(false);
   const navigate = useNavigate();
+
+  async function signOut() {
+    await qc.cancelQueries();
+    qc.clear();
+    await supabase.auth.signOut();
+    applyTheme(null);
+    void navigate({ to: "/login", replace: true });
+  }
 
   const openEditorPreview = () => {
     try {
@@ -270,6 +280,7 @@ function EditorForm({ inv, experimentalLayout = false, checkinEnabled = false }:
         <Button type="button" variant="ghost" size="sm" className="justify-start" onClick={() => setRsvpOpen(true)}><UserCheck className="h-4 w-4" />RSVP</Button>
         <Button type="button" variant="ghost" size="sm" className="justify-start" asChild><Link to="/invitations/$id/guests" params={{ id: inv.id }}><Users className="h-4 w-4" />Convidados</Link></Button>
         {checkinEnabled && <Button type="button" variant="ghost" size="sm" className="justify-start" asChild><Link to="/invitations/$id/checkin" params={{ id: inv.id }}><QrCode className="h-4 w-4" />Check-in</Link></Button>}
+        <Button type="button" variant="ghost" size="sm" className="justify-start text-destructive hover:text-destructive" onClick={() => void signOut()}><LogOut className="h-4 w-4" />Sair da conta</Button>
       </div>
     </details>
   </>;
@@ -380,6 +391,7 @@ function EditorForm({ inv, experimentalLayout = false, checkinEnabled = false }:
   return (
     <div className="dark h-[100dvh] w-full overflow-hidden bg-[#08090d] text-foreground">
       <VisualEditor
+        onSignOut={signOut}
         h={h}
         bg={bg}
         onBg={setBg}
