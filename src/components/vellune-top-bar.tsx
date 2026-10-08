@@ -81,7 +81,7 @@ export function VelluneTopBar({
       </div>
 
       <div className="flex min-w-0 flex-1 items-center justify-end gap-1.5 sm:gap-2">
-        <div className="hidden items-center gap-1 sm:flex lg:gap-1.5">{mobileActions}</div>
+        <div className="flex items-center gap-1 lg:gap-1.5">{mobileActions}</div>
         {trailingActions}
         <button
           type="button"
