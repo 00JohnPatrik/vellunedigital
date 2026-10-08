@@ -81,7 +81,7 @@
   --accent: oklch(0.968 0.007 247.896);
   --accent-foreground: oklch(0.208 0.042 265.755);
   --destructive: oklch(0.577 0.245 27.325);
-  --destructive-foreground: oklch(0.984 0.003 247.858);
+  --destructive-foreground: oklch(0.97547 0.00453 258.325);
   --border: oklch(0.929 0.013 255.508);
   --input: oklch(0.929 0.013 255.508);
   --ring: oklch(0.704 0.04 256.788);
@@ -93,7 +93,7 @@
   --sidebar: oklch(0.984 0.003 247.858);
   --sidebar-foreground: oklch(0.129 0.042 264.695);
   --sidebar-primary: oklch(0.48 0.1 195);
-  --sidebar-primary-foreground: oklch(0.984 0.003 247.858);
+  --sidebar-primary-foreground: oklch(0.97547 0.00453 258.325);
   --sidebar-accent: oklch(0.968 0.007 247.896);
   --sidebar-accent-foreground: oklch(0.208 0.042 265.755);
   --sidebar-border: oklch(0.929 0.013 255.508);
@@ -101,21 +101,21 @@
 }
 
 .dark {
-  --background: oklch(0.129 0.042 264.695);
-  --foreground: oklch(0.984 0.003 247.858);
-  --card: oklch(0.208 0.042 265.755);
-  --card-foreground: oklch(0.984 0.003 247.858);
-  --popover: oklch(0.208 0.042 265.755);
-  --popover-foreground: oklch(0.984 0.003 247.858);
-  --primary: oklch(0.72 0.11 190);
-  --primary-foreground: oklch(0.18 0.03 200);
-  --secondary: oklch(0.279 0.041 260.031);
-  --secondary-foreground: oklch(0.984 0.003 247.858);
-  --muted: oklch(0.279 0.041 260.031);
-  --muted-foreground: oklch(0.704 0.04 256.788);
-  --accent: oklch(0.279 0.041 260.031);
-  --accent-foreground: oklch(0.984 0.003 247.858);
-  --destructive: oklch(0.704 0.191 22.216);
+  --background: oklch(0.14053 0.00902 273.174);
+  --foreground: oklch(0.97547 0.00453 258.325);
+  --card: oklch(0.18687 0.01068 268.112);
+  --card-foreground: oklch(0.97547 0.00453 258.325);
+  --popover: oklch(0.18687 0.01068 268.112);
+  --popover-foreground: oklch(0.97547 0.00453 258.325);
+  --primary: oklch(0.76653 0.13868 91.059);
+  --primary-foreground: oklch(0.18 0.01 270);
+  --secondary: oklch(0.22169 0.01683 264.145);
+  --secondary-foreground: oklch(0.97547 0.00453 258.325);
+  --muted: oklch(0.22169 0.01683 264.145);
+  --muted-foreground: oklch(0.75847 0.02196 261.756);
+  --accent: oklch(0.22169 0.01683 264.145);
+  --accent-foreground: oklch(0.97547 0.00453 258.325);
+  --destructive: oklch(0.63683 0.20785 25.331);
   --destructive-foreground: oklch(0.984 0.003 247.858);
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);
@@ -125,12 +125,12 @@
   --chart-3: oklch(0.769 0.188 70.08);
   --chart-4: oklch(0.627 0.265 303.9);
   --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.208 0.042 265.755);
-  --sidebar-foreground: oklch(0.984 0.003 247.858);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
+  --sidebar: oklch(0.18687 0.01068 268.112);
+  --sidebar-foreground: oklch(0.97547 0.00453 258.325);
+  --sidebar-primary: oklch(0.76653 0.13868 91.059);
   --sidebar-primary-foreground: oklch(0.984 0.003 247.858);
-  --sidebar-accent: oklch(0.279 0.041 260.031);
-  --sidebar-accent-foreground: oklch(0.984 0.003 247.858);
+  --sidebar-accent: oklch(0.22169 0.01683 264.145);
+  --sidebar-accent-foreground: oklch(0.97547 0.00453 258.325);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.551 0.027 264.364);
 }
@@ -875,11 +875,11 @@
   --vellune-platform-line-strong: color-mix(in oklch, var(--color-primary) 28%, transparent);
   --vellune-platform-surface: oklch(0.165 0.026 254);
   --vellune-platform-soft: oklch(0.19 0.03 254);
-  --vellune-platform-glow: oklch(0.72 0.11 190 / 8%);
+  --vellune-platform-glow: oklch(0.76653 0.13868 91.059 / 9%);
   background:
     radial-gradient(circle at 88% -10%, var(--vellune-platform-glow), transparent 30rem),
-    radial-gradient(circle at 0% 18%, oklch(0.72 0.11 190 / 4%), transparent 36rem),
-    oklch(0.115 0.024 254);
+    radial-gradient(circle at 0% 18%, oklch(0.76653 0.13868 91.059 / 4%), transparent 36rem),
+    oklch(0.14053 0.00902 273.174);
 }
 
 .vellune-app-sidebar {
@@ -894,7 +894,7 @@
 
 .dark .vellune-app-sidebar {
   background:
-    linear-gradient(180deg, oklch(0.145 0.026 254 / 98%), oklch(0.095 0.02 254 / 98%));
+    linear-gradient(180deg, oklch(0.18687 0.01068 268.112 / 98%), oklch(0.14053 0.00902 273.174 / 98%));
   box-shadow:
     18px 0 50px -34px oklch(0 0 0 / 55%),
     inset -1px 0 0 oklch(1 0 0 / 3%);
@@ -952,7 +952,7 @@
 }
 
 .dark .vellune-app-header {
-  background: oklch(0.11 0.024 254 / 82%) !important;
+  background: oklch(0.14053 0.00902 273.174 / 82%) !important;
   box-shadow: 0 12px 36px -28px oklch(0 0 0 / 65%);
 }
 
