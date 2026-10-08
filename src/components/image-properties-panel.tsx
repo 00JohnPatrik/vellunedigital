@@ -123,14 +123,30 @@ export function ImagePropertiesPanel({ selected, assets, onChange }: ImagePanelP
             </select>
           </div>
           <div className="space-y-1">
-            <Label className="text-[11px] text-muted-foreground">Posição</Label>
-            <select value={position} onChange={(event) => update("objectPosition", event.target.value)} className="flex h-8 w-full rounded-md border border-input bg-background px-2 text-xs text-foreground">
-              <option value="center">Centro</option>
-              <option value="top">Topo</option>
-              <option value="bottom">Base</option>
-              <option value="left">Esquerda</option>
-              <option value="right">Direita</option>
-            </select>
+            <Label className="text-[11px] text-muted-foreground">Foco</Label>
+            <p className="flex h-8 items-center rounded-md border border-input bg-background px-2 text-[10px] text-muted-foreground">{position.replace(" ", " · ")}</p>
+          </div>
+        </div>
+        <div className="space-y-1">
+          <Label className="text-[11px] text-muted-foreground">Enquadramento</Label>
+          <div className="grid grid-cols-3 gap-1 rounded-xl border border-border/70 bg-background/45 p-1.5" role="group" aria-label="Foco da imagem">
+            {[
+              ["left top", "↖"], ["center top", "↑"], ["right top", "↗"],
+              ["left center", "←"], ["center", "●"], ["right center", "→"],
+              ["left bottom", "↙"], ["center bottom", "↓"], ["right bottom", "↘"],
+            ].map(([value, label]) => (
+              <button
+                key={value}
+                type="button"
+                aria-label={`Foco ${value}`}
+                title={`Foco ${value}`}
+                aria-pressed={position === value}
+                onClick={() => update("objectPosition", value)}
+                className={`flex h-8 items-center justify-center rounded-md text-sm transition ${position === value ? "bg-primary/15 text-primary ring-1 ring-primary/30" : "text-muted-foreground hover:bg-muted hover:text-foreground"}`}
+              >
+                {label}
+              </button>
+            ))}
           </div>
         </div>
         <label className="block space-y-1 text-[11px] text-muted-foreground">
