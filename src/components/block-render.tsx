@@ -374,7 +374,7 @@ export function BackgroundLayers({ bg }: { bg?: Background | undefined }) {
 }
 
 /** Read-only rendering of a whole invitation (hidden blocks are skipped). */
-export function InvitationCanvas({ blocks, ctx, className, background }: { blocks: Block[]; ctx?: EventCtx | undefined; className?: string | undefined; background?: Background | undefined }) {
+export function InvitationCanvas({ blocks, ctx, className, background, immersive = false }: { blocks: Block[]; ctx?: EventCtx | undefined; className?: string | undefined; background?: Background | undefined; immersive?: boolean }) {
   const canvasHostRef = useRef<HTMLDivElement | null>(null);
   const visible = blocks.filter((b) => b.visibility !== false && !b.hidden);
   const geometries = visible.map((block) => getBlockGeometry(block));
@@ -428,7 +428,7 @@ export function InvitationCanvas({ blocks, ctx, className, background }: { block
           transformOrigin: "center",
           boxSizing: "border-box",
         } : {};
-        return <div key={b.id} className={cn("min-w-0", free && "overflow-visible")} style={frame}><BlockView block={b} ctx={ctx} interactive index={index} /></div>;
+        return <div key={b.id} data-invitation-block={b.type} className={cn("min-w-0", free && "overflow-visible")} style={frame}><BlockView block={b} ctx={ctx} interactive index={index} /></div>;
       }) : <p className="py-10 text-center text-sm text-muted-foreground">Este convite ainda não possui blocos.</p>}
     </>
   );
@@ -437,14 +437,14 @@ export function InvitationCanvas({ blocks, ctx, className, background }: { block
     <div
       ref={canvasHostRef}
       className={cn(
-        "relative isolate mx-auto w-full max-w-md overflow-hidden rounded-2xl border bg-card shadow-sm",
+        cn(\n          "relative isolate mx-auto w-full overflow-hidden bg-card",\n          immersive\n            ? "max-w-none rounded-none border-0 shadow-none sm:max-w-3xl sm:rounded-2xl sm:border sm:shadow-2xl"\n            : "max-w-md rounded-2xl border shadow-sm",\n        ),
         hasFreeCanvasBlock ? "min-h-[640px] p-0" : "flex flex-col gap-5 p-6",
         className,
       )}
       style={{
         ...bgColorStyle(background),
         ...(hasFreeCanvasBlock
-          ? { minHeight: canvasHeight * freeScale }
+          ? { minHeight: immersive ? `max(${canvasHeight * freeScale}px, 100svh)` : canvasHeight * freeScale }
           : {}),
       }}
     >
