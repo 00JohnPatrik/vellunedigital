@@ -15,7 +15,7 @@ export const CATEGORIES = [
 export type Category = (typeof CATEGORIES)[number]["value"];
 export const categoryLabel = (c: string) => CATEGORIES.find((x) => x.value === c)?.label ?? c;
 
-export type BlockType = "text" | "image" | "gallery" | "date" | "time" | "location" | "countdown" | "rsvp" | "whatsapp" | "button" | "qr_code" | "divider" | "shape" | "decoration";
+export type BlockType = "text" | "image" | "gallery" | "date" | "time" | "location" | "countdown" | "rsvp" | "whatsapp" | "button" | "qr_code" | "gifts" | "divider" | "shape" | "decoration";
 
 /** Block catalogue: single source of truth for labels and defaults (property controls live in the visual editor). */
 export const BLOCKS: Record<BlockType, { label: string; defaults: Record<string, string> }> = {
@@ -30,6 +30,7 @@ export const BLOCKS: Record<BlockType, { label: string; defaults: Record<string,
   whatsapp: { label: "WhatsApp", defaults: { label: "Fale pelo WhatsApp", phone: "", message: "", style: "outline", width: "auto", align: "center" } },
   button: { label: "Botão", defaults: { label: "Saiba mais", url: "", style: "solid", width: "auto", align: "center" } },
   qr_code: { label: "QR Code", defaults: { value: "", size: "md", align: "center" } },
+  gifts: { label: "Presentes / Pix", defaults: { title: "Lista de presentes", description: "Sua presença já é um presente. Caso queira presentear, deixamos algumas opções.", pix_key: "", pix_name: "", gift_url: "", gift_label: "Ver lista de presentes", align: "center" } },
   divider: { label: "Divisor", defaults: { thickness: "1", width: "full", align: "center", style: "solid" } },
   shape: { label: "Forma", defaults: { shape: "rectangle", fill: "solid", fillColor: "#d4af37", borderWidth: "0", borderStyle: "solid", borderColor: "#d4af37", borderRadius: "12", shadow: "none" } },
   decoration: { label: "Decoração", defaults: { shape: "line", fill: "none", fillColor: "", borderWidth: "2", borderStyle: "solid", borderColor: "#d4af37", borderRadius: "0", shadow: "none" } },
@@ -84,6 +85,7 @@ export const DEFAULT_BLOCK_GEOMETRY: Record<BlockType, { width: number; height: 
   whatsapp: { width: 260, height: 56 },
   button: { width: 260, height: 56 },
   qr_code: { width: 160, height: 190 },
+  gifts: { width: 340, height: 210 },
   divider: { width: 320, height: 24 },
   shape: { width: 180, height: 120 },
   decoration: { width: 280, height: 24 },
