@@ -31,8 +31,8 @@ export const BLOCKS: Record<BlockType, { label: string; defaults: Record<string,
   button: { label: "Botão", defaults: { label: "Saiba mais", url: "", style: "solid", width: "auto", align: "center" } },
   qr_code: { label: "QR Code", defaults: { value: "", size: "md", align: "center" } },
   divider: { label: "Divisor", defaults: { thickness: "1", width: "full", align: "center", style: "solid" } },
-  shape: { label: "Forma", defaults: { shape: "rectangle", fill: "solid", fillColor: "#7c3aed", borderWidth: "0", borderStyle: "solid", borderColor: "#7c3aed", borderRadius: "12", shadow: "none" } },
-  decoration: { label: "Decoração", defaults: { shape: "line", fill: "none", fillColor: "", borderWidth: "2", borderStyle: "solid", borderColor: "#7c3aed", borderRadius: "0", shadow: "none" } },
+  shape: { label: "Forma", defaults: { shape: "rectangle", fill: "solid", fillColor: "#d4af37", borderWidth: "0", borderStyle: "solid", borderColor: "#d4af37", borderRadius: "12", shadow: "none" } },
+  decoration: { label: "Decoração", defaults: { shape: "line", fill: "none", fillColor: "", borderWidth: "2", borderStyle: "solid", borderColor: "#d4af37", borderRadius: "0", shadow: "none" } },
 };
 
 export type Block = {
