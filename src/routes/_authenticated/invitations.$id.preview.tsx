@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import { ArrowLeft, Check, Eye, Monitor, Pencil, Share2, Smartphone } from "lucide-react";
+import { ArrowLeft, Check, Eye, Monitor, Pencil, RefreshCw, Share2, Smartphone } from "lucide-react";
 import { ShareDialog } from "@/components/share-dialog";
 import { Button } from "@/components/ui/button";
 import { EmptyState, LoadingState, PageHeader } from "@/components/admin-ui";
@@ -62,6 +62,18 @@ function PreviewPage() {
   const activeEvent = snapshot?.event;
 
   const [viewport, setViewport] = useState<"mobile" | "desktop">("mobile");
+  const [refreshing, setRefreshing] = useState(false);
+
+  const refreshPreview = async () => {
+    setRefreshing(true);
+    try {
+      const result = await q.refetch();
+      setSnapshot(readEditorSnapshot(id));
+      if (result.error) throw result.error;
+    } finally {
+      setRefreshing(false);
+    }
+  };
 
   return (
     <main className="min-h-[calc(100vh-2rem)] rounded-[1.5rem] border border-border/60 bg-[radial-gradient(circle_at_top_right,hsl(var(--primary)/.08),transparent_28%),linear-gradient(145deg,hsl(var(--background)),hsl(var(--muted)/.35))] p-3 text-foreground shadow-2xl sm:p-5 lg:p-6">
@@ -85,7 +97,8 @@ function PreviewPage() {
                 </div>
                 <div className="flex items-center gap-1.5">
                   {(inv.status === "published" || inv.status === "closed") && <Button variant="outline" size="sm" onClick={() => setShare(true)}><Share2 className="h-4 w-4" /><span className="hidden sm:inline">Compartilhar</span></Button>}
-                  <Button size="sm" asChild><Link to="/invitations/$id/editor" params={{ id: inv.id }}><Pencil className="h-4 w-4" />Editar</Link></Button>
+                  <Button type="button" variant="outline" size="sm" onClick={() => void refreshPreview()} disabled={refreshing} title="Recarregar a prévia e conferir o estado mais recente"><RefreshCw className={refreshing ? "h-4 w-4 animate-spin" : "h-4 w-4"} /><span className="hidden sm:inline">Atualizar prévia</span></Button>
+                  {snapshot ? <Button size="sm" asChild><a href={`/invitations/${inv.id}/editor?experimental=1`}><Pencil className="h-4 w-4" />Editar</a></Button> : <Button size="sm" asChild><Link to="/invitations/$id/editor" params={{ id: inv.id }}><Pencil className="h-4 w-4" />Editar</Link></Button>}
                 </div>
               </div>
               <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-border/60 pt-3">
