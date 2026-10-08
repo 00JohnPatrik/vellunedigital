@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useRouteContext } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
-import { AlertCircle, BarChart3, CheckCircle2, CircleDashed, Copy, Eye, Link2, MessageCircle, MoreHorizontal, Pencil, Plus, Search, Trash2 } from "lucide-react";
+import { AlertCircle, BarChart3, CalendarDays, CheckCircle2, CircleDashed, Copy, Eye, Link2, Mail, MessageCircle, MoreHorizontal, Pencil, Plus, Search, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,7 +10,7 @@ import {
   AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { EmptyState, fmtDate, LoadingState, PageHeader } from "@/components/admin-ui";
-import { InvitationStatusBadge } from "@/components/invitation-ui";
+import { InvitationRender, InvitationStatusBadge } from "@/components/invitation-ui";
 import { deleteInvitation, fmtEventDate, invitationsKey, listInvitations, publicUrl, whatsappShareUrl, type Invitation } from "@/lib/invitations";
 import { cn } from "@/lib/utils";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -188,33 +188,43 @@ function InvitationsPage() {
         </div>
       ) : (
         <>
-          <div className="vellune-data-surface hidden overflow-x-auto lg:block">
-            <table className="w-full text-sm">
-              <thead className="bg-muted/50 text-left text-muted-foreground">
-                <tr>
-                  <th className="px-4 py-3 font-medium">Nome</th>
-                  <th className="px-4 py-3 font-medium">Cliente</th>
-                  <th className="px-4 py-3 font-medium">Evento</th>
-                  <th className="px-4 py-3 font-medium">Status</th>
-                  <th className="px-4 py-3 font-medium">Atualizado</th>
-                  <th className="px-4 py-3 text-right font-medium">Ações</th>
-                </tr>
-              </thead>
-              <tbody>
-                {rows.map((i) => (
-                  <tr key={i.id} className="border-t transition-colors hover:bg-muted/30">
-                    <td className="px-4 py-3 font-medium">{i.name}</td>
-                    <td className="px-4 py-3">{i.customer?.name ?? "—"}</td>
-                    <td className="px-4 py-3">{fmtEventDate(i.event_date)} · {String(i.event_time ?? "").slice(0, 5) || "—"}</td>
-                    <td className="px-4 py-3"><InvitationStatusBadge status={i.status} /></td>
-                    <td className="px-4 py-3">{fmtDate(i.updated_at)}</td>
-                    <td className="px-4 py-3"><div className="flex flex-wrap justify-end gap-1">{actions(i, "ghost")}</div></td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <div className="hidden gap-4 lg:grid lg:grid-cols-2 xl:grid-cols-3">
+  {rows.map((i) => (
+    <article key={i.id} className="group overflow-hidden rounded-[22px] border border-[#2a2b31] bg-[#111318] shadow-[0_18px_55px_-42px_rgba(0,0,0,0.95)] transition duration-200 hover:-translate-y-0.5 hover:border-[#d4af37]/45 hover:shadow-[0_26px_65px_-40px_rgba(212,175,55,0.28)]">
+      <Link to="/invitations/$id/editor" params={{ id: i.id }} className="block">
+        <div className="relative h-[270px] overflow-hidden bg-[#08090d]">
+          <div className="absolute inset-0 flex items-start justify-center overflow-hidden">
+            <div className="h-[700px] w-[390px] origin-top scale-[0.54]">
+              <InvitationRender
+                background={i.content?.settings?.background}
+                blocks={i.content?.blocks ?? []}
+                ctx={{ event_date: i.event_date, event_time: i.event_time, venue_name: i.venue_name, address: i.address, city: i.city, state: i.state, publicUrl: publicUrl(i.slug) }}
+              />
+            </div>
           </div>
-          <div className="grid gap-3 sm:grid-cols-2 lg:hidden">
+          <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-[#111318] via-[#111318]/55 to-transparent" />
+          <div className="absolute left-3 top-3"><InvitationStatusBadge status={i.status} /></div>
+          <span className="absolute bottom-3 right-3 rounded-full border border-[#2a2b31] bg-[#08090d]/80 p-2 text-[#F5F7FA] backdrop-blur-md transition group-hover:text-[#d4af37]"><Eye className="h-4 w-4" /></span>
+        </div>
+      </Link>
+      <div className="p-4">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <h2 className="truncate font-display text-base font-semibold text-[#F5F7FA]">{i.name}</h2>
+            <p className="mt-1 truncate text-xs text-[#A9B1BF]">{i.customer?.name ?? "Sem cliente"}</p>
+          </div>
+          <Mail className="mt-0.5 h-4 w-4 shrink-0 text-[#d4af37]" />
+        </div>
+        <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[10px] text-[#A9B1BF]">
+          <span className="inline-flex items-center gap-1.5"><CalendarDays className="h-3.5 w-3.5" />{fmtEventDate(i.event_date)}</span>
+          <span>{fmtDate(i.updated_at)}</span>
+        </div>
+        <div className="mt-4 flex flex-wrap gap-1.5">{actions(i, "outline")}</div>
+      </div>
+    </article>
+  ))}
+</div>
+<div className="grid gap-3 sm:grid-cols-2 lg:hidden">
             {rows.map((i) => (
               <div key={i.id} className="vellune-platform-card p-4">
                 <div className="flex items-start justify-between gap-2">
