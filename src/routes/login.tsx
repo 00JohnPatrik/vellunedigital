@@ -57,6 +57,7 @@ function LoginPage() {
   const passwordRef = useRef<HTMLInputElement | null>(null);
   const recoveryEmailRef = useRef<HTMLInputElement | null>(null);
   const authScrollRef = useRef<HTMLElement | null>(null);
+  const loginPressTimerRef = useRef<number | null>(null);
   const requestLockRef = useRef(false);
 
   useEffect(() => {
@@ -79,6 +80,21 @@ function LoginPage() {
       body.style.colorScheme = previous.bodyColorScheme;
     };
   }, []);
+
+  useEffect(() => {
+    return () => {
+      if (loginPressTimerRef.current !== null) window.clearTimeout(loginPressTimerRef.current);
+    };
+  }, []);
+
+  function triggerLoginButtonPress() {
+    setLoginButtonPress(true);
+    if (loginPressTimerRef.current !== null) window.clearTimeout(loginPressTimerRef.current);
+    loginPressTimerRef.current = window.setTimeout(() => {
+      setLoginButtonPress(false);
+      loginPressTimerRef.current = null;
+    }, 460);
+  }
 
   useEffect(() => {
     if (requestedMode === "recovery") return;
@@ -580,7 +596,7 @@ function LoginPage() {
                     </div>
                   )}
 
-                  <Button type="submit" disabled={loading || loginCooldown > 0} onPointerDown={() => setLoginButtonPress(true)} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") setLoginButtonPress(true); }} onAnimationEnd={() => setLoginButtonPress(false)} className={`vellune-auth-cta group mt-2 flex h-12 w-full min-h-12 items-center justify-center rounded-xl bg-[#d4af37] font-semibold text-[#16130b] shadow-[0_12px_34px_rgba(212,175,55,0.10)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#e5c66b] hover:shadow-[0_16px_38px_rgba(212,175,55,0.16)] active:translate-y-0 disabled:cursor-default disabled:opacity-100 ${loginButtonPress ? "vellune-auth-cta-press" : ""}`}>
+                  <Button type="submit" disabled={loading || loginCooldown > 0} onPointerDown={triggerLoginButtonPress} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") triggerLoginButtonPress(); }} className={`vellune-auth-cta group mt-2 flex h-12 w-full min-h-12 items-center justify-center rounded-xl bg-[#d4af37] font-semibold text-[#16130b] shadow-[0_12px_34px_rgba(212,175,55,0.10)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#e5c66b] hover:shadow-[0_16px_38px_rgba(212,175,55,0.16)] active:translate-y-0 disabled:cursor-default disabled:opacity-100 ${loginButtonPress ? "vellune-auth-cta-press" : ""}`}>
                     {loginSuccess ? (
                       <span className="flex items-center justify-center gap-2">
                         <CheckCircle2 className="h-4 w-4" style={{ animation: "velluneSuccess 260ms cubic-bezier(.22,1,.36,1)" }} />
