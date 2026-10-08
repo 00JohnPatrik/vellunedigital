@@ -48,21 +48,23 @@ export const normalizePhone = (v: string) => {
   return digits;
 };
 
-type AuthRateBucket = { windowStartedAt: number; count: number };
-const authRateBuckets = new Map<string, AuthRateBucket>();
-
-function allowAuthRequest(scope: string, value: string, limit: number, windowSeconds: number): boolean {
-  const now = Date.now();
+async function allowAuthRequest(scope: string, value: string, limit: number, windowSeconds: number): Promise<boolean> {
   const key = `${scope}:${value.trim().toLowerCase()}`;
-  const current = authRateBuckets.get(key);
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const { data, error } = await supabaseAdmin.rpc("consume_auth_rate_limit", {
+    p_key: key,
+    p_limit: limit,
+    p_window_seconds: windowSeconds,
+  });
 
-  if (!current || now - current.windowStartedAt >= windowSeconds * 1000) {
-    authRateBuckets.set(key, { windowStartedAt: now, count: 1 });
-    return true;
+  if (error) {
+    // Fail closed when the shared limiter is unavailable: authentication
+    // should never silently fall back to an instance-local limiter.
+    console.error("auth rate limit", error.message);
+    return false;
   }
 
-  current.count += 1;
-  return current.count <= limit;
+  return data === true;
 }
 
 async function authenticateEmail(email: string, password: string) {
