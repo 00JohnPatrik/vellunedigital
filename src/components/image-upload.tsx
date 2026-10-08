@@ -31,11 +31,11 @@ export function ImageUpload({ scope, value, onChange }: { scope: AssetScope | un
 
   return (
     <div className="space-y-2">
-      <input ref={input} type="file" accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp" className="hidden" onChange={(e) => onFile(e.target.files?.[0])} />
+      <input ref={input} type="file" accept="image/jpeg,image/png,image/webp,image/gif,.jpg,.jpeg,.png,.webp,.gif" className="hidden" onChange={(e) => onFile(e.target.files?.[0])} />
       <Button type="button" size="sm" variant="outline" className="w-full" disabled={busy} onClick={() => input.current?.click()}>
         {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}Enviar imagem
       </Button>
-      <p className="text-[11px] text-muted-foreground">JPG, PNG ou WebP, até 10 MB.</p>
+      <p className="text-[11px] text-muted-foreground">JPG, PNG, WebP ou GIF, até 10 MB.</p>
       {!!files.data?.length && (
         <div className="grid grid-cols-4 gap-1.5">
           {files.data.map((f) => <Thumb key={f.id} f={f} active={value === STORAGE_PREFIX + f.storage_path} onPick={() => onChange(STORAGE_PREFIX + f.storage_path)} />)}
