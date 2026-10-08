@@ -467,7 +467,7 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHe
     h.set(structuredClone(content.blocks ?? []), "template:apply");
     onBg?.(structuredClone(content.settings?.background ?? {}));
     setSelectedIds([]);
-    setToolCategory("Elementos");
+    setToolCategory("Adicionar");
   };
   const addBlockByType = (type: BlockType, initialProps?: Record<string, string>, dropPoint?: { x: number; y: number }) => {
     if (type === "rsvp" && blocks.some((block: any) => block.type === "rsvp")) {
@@ -529,7 +529,7 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHe
     setSelectedIds(created.map((block) => block.id));
     setStartEditingTextId(null);
     setImageReplaceId(null);
-    setToolCategory("Elementos");
+    setToolCategory("Adicionar");
   };
 
   const alignSelectedOnCanvas = (mode: "left" | "center" | "right" | "top" | "middle" | "bottom" | "distributeX" | "distributeY" | "canvasCenterX" | "canvasCenterY", ids: string[]) => {
@@ -1424,7 +1424,7 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHe
               aria-label="Área de edição do convite"
               onPointerDown={() => { setSelectedIds([]); setInspectorOpen(false); }}><BackgroundLayers bg={bg as any} />
               {canvasDragOver && <div className="pointer-events-none absolute inset-3 z-[120] flex items-center justify-center rounded-xl border-2 border-dashed border-primary bg-primary/10 backdrop-blur-[2px]"><div className="rounded-full border border-primary/20 bg-background/90 px-4 py-2 text-xs font-semibold text-primary shadow-lg">Solte para adicionar ao convite</div></div>}
-{blocks.length === 0 && <div className="absolute inset-0 z-[30] flex items-center justify-center p-6"><div className="max-w-sm rounded-2xl border border-primary/15 bg-background/92 p-5 text-center shadow-xl backdrop-blur-md"><div className="mx-auto flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary"><Sparkles className="h-5 w-5" /></div><p className="mt-3 text-sm font-semibold text-foreground">Comece seu convite</p><p className="mt-1 text-xs leading-5 text-muted-foreground">Comece com uma seção pronta ou escolha um modelo completo. Depois, personalize tudo diretamente no canvas.</p><div className="mt-4 flex flex-wrap justify-center gap-2"><button type="button" onClick={() => addComposition("hero")} className="rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground shadow-sm">Começar com composição</button><button type="button" onClick={() => setTemplateOpen(true)} className="rounded-lg border px-3 py-2 text-xs font-medium text-foreground hover:bg-muted">Escolher modelo</button><button type="button" onClick={() => { if (compact) { setMobileSheet("elements"); } else { setSidebarOpen(true); setToolCategory("Elementos"); } }} className="rounded-lg border border-dashed px-3 py-2 text-xs font-medium text-muted-foreground hover:bg-muted hover:text-foreground">Montar do zero</button></div></div></div>}<VisualTransformCanvas
+{blocks.length === 0 && <div className="absolute inset-0 z-[30] flex items-center justify-center p-6"><div className="max-w-sm rounded-2xl border border-primary/15 bg-background/92 p-5 text-center shadow-xl backdrop-blur-md"><div className="mx-auto flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary"><Sparkles className="h-5 w-5" /></div><p className="mt-3 text-sm font-semibold text-foreground">Comece seu convite</p><p className="mt-1 text-xs leading-5 text-muted-foreground">Comece com uma seção pronta ou escolha um modelo completo. Depois, personalize tudo diretamente no canvas.</p><div className="mt-4 flex flex-wrap justify-center gap-2"><button type="button" onClick={() => addComposition("hero")} className="rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground shadow-sm">Começar com composição</button><button type="button" onClick={() => setTemplateOpen(true)} className="rounded-lg border px-3 py-2 text-xs font-medium text-foreground hover:bg-muted">Escolher modelo</button><button type="button" onClick={() => { if (compact) { setMobileSheet("elements"); } else { setSidebarOpen(true); setToolCategory("Adicionar"); } }} className="rounded-lg border border-dashed px-3 py-2 text-xs font-medium text-muted-foreground hover:bg-muted hover:text-foreground">Montar do zero</button></div></div></div>}<VisualTransformCanvas
               blocks={blocks}
               selectedIds={selectedIds}
               zoom={zoom}
