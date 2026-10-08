@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useMatchRoute, useNavigate } from "@tanstack/react-router";
 import { FileText, LayoutTemplate, Search, UserRound, X } from "lucide-react";
 import { VelluneTopBar } from "@/components/vellune-top-bar";
@@ -8,6 +8,8 @@ import type { AppUser } from "@/lib/app-user";
 import { adminNav } from "@/lib/nav";
 import { searchWorkspaceContent } from "@/lib/global-search";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
+import { applyTheme } from "@/lib/app-user";
 
 const MODULES = adminNav.map((item) => ({
   label: item.label,
@@ -26,6 +28,7 @@ export function VelluneAdminShell({ appUser, children, className }: { appUser: A
   const [searchOpen, setSearchOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const matchRoute = useMatchRoute();
 
   useEffect(() => {
@@ -67,6 +70,14 @@ export function VelluneAdminShell({ appUser, children, className }: { appUser: A
     void navigate({ to });
   };
 
+  async function signOut() {
+    await queryClient.cancelQueries();
+    queryClient.clear();
+    await supabase.auth.signOut();
+    applyTheme(null);
+    void navigate({ to: "/login", replace: true });
+  }
+
   return (
     <div className={cn("vellune-platform-root dark min-h-[100dvh] bg-[#08090d] text-[#F5F7FA]", className)}>
       <VelluneTopBar
@@ -76,6 +87,7 @@ export function VelluneAdminShell({ appUser, children, className }: { appUser: A
         searchPlaceholder="Buscar empresas, clientes, convites ou áreas"
         onSearchActivate={() => setSearchOpen(true)}
         onAvatarClick={() => go("/admin/configuracoes")}
+        onSignOut={signOut}
         showNotifications={false}
         trailingActions={<NotificationCenter appUser={appUser} />}
       />
