@@ -157,7 +157,7 @@ function EditorForm({ inv, experimentalLayout = false, checkinEnabled = false }:
     }
   }, [localDraftKey]);
 
-  const save = useCallback(async (manual = false): Promise<boolean> =>
+  const save = useCallback(async (manual = false): Promise<boolean> => {
     if (timer.current) { clearTimeout(timer.current); timer.current = null; }
     if (inFlight.current) {
       await new Promise<void>((resolve) => setTimeout(resolve, 100));
