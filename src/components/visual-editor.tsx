@@ -810,7 +810,7 @@ export function VisualEditor({ h, ctx, assets, bg, onBg, toolbarExtra, desktopHe
       else if (command && key === "v" && clipboard.current.length) {
         event.preventDefault();
         const pastedIds = clipboard.current.filter((block: any) => block.type !== "rsvp").map((block: any) => block.id);
-        if (!pastedIds.length) { window.alert(RSVP_DUP); return; }
+        if (!pastedIds.length) { toast.error(RSVP_DUP); return; }
         const before = blocks;
         const source = clipboard.current.filter((block: any) => block.type !== "rsvp");
         const groupMap = new Map<string, string>();
