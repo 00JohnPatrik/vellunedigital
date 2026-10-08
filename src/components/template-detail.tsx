@@ -55,16 +55,26 @@ export function TemplateDetail({ id, canEdit, back, extraActions, startEditing =
             }} />}
           </div>
         } />
-      <div className="grid gap-6 md:grid-cols-[280px_1fr]">
-        <div className="overflow-hidden rounded-xl border">
-        <PreviewImage
-          src={t.preview_image}
-          name={t.name}
-          blocks={t.content?.blocks ?? []}
-          background={t.content?.settings?.background}
-        />
-      </div>
-        <BlocksPreview blocks={t.content?.blocks ?? []} background={t.content?.settings?.background} />
+      <div className="grid gap-6 lg:grid-cols-[330px_1fr]">
+        <div className="overflow-hidden rounded-[24px] border border-[#2a2b31] bg-[#111318] p-2 shadow-[0_24px_70px_-45px_rgba(212,175,55,0.25)]">
+          <PreviewImage
+            src={t.preview_image}
+            name={t.name}
+            blocks={t.content?.blocks ?? []}
+            background={t.content?.settings?.background}
+            className="aspect-[4/5] rounded-[18px]"
+          />
+        </div>
+        <div className="rounded-[24px] border border-[#2a2b31] bg-[#111318] p-4 sm:p-5">
+          <div className="mb-4 flex items-center justify-between gap-3">
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[#A9B1BF]">Estrutura</p>
+              <h2 className="mt-1 font-display text-lg font-semibold tracking-[-0.02em] text-[#F5F7FA]">Prévia do conteúdo</h2>
+            </div>
+            <span className="rounded-full border border-[#2a2b31] bg-[#08090d] px-2.5 py-1 text-[10px] font-semibold text-[#A9B1BF]">{t.content?.blocks?.length ?? 0} blocos</span>
+          </div>
+          <BlocksPreview blocks={t.content?.blocks ?? []} background={t.content?.settings?.background} />
+        </div>
       </div>
     </div>
   );
