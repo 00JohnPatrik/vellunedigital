@@ -10,6 +10,7 @@
 <!-- LOVABLE:END -->
 
 ## Architecture rules
+- Authenticated visual chrome uses scoped semantic tokens in styles.css and shared VelluneTopBar, VelluneCreativeDock and VelluneCard components — prevents duplicated palettes while leaving public/auth screens and invitation artwork independent.
 - Tenant data carries `company_id`; RLS uses `is_super_admin()` / `current_company_id()` security-definer helpers — keeps isolation in the DB, avoids policy recursion.
 - Roles live in `public.users.role` (not client-editable: guarded by `guard_user_self_update` trigger) — spec requires the `users` table; trigger prevents privilege escalation.
 - Public signup is disabled; accounts are pre-registered and activated via `/first-access` server fn — no open registration.
