@@ -12,6 +12,10 @@ import {
   FolderOpen,
   Image as ImageIcon,
   Layers3,
+  Instagram,
+  Clapperboard,
+  Monitor,
+  FileText,
   Mail,
   MapPin,
   MoreHorizontal,
@@ -21,7 +25,8 @@ import {
   Users,
 } from "lucide-react";
 import { InvitationRender, InvitationStatusBadge } from "@/components/invitation-ui";
-import { LoadingState } from "@/components/admin-ui";
+import { Button } from "@/components/ui/button";
+import { VelluneCard } from "@/components/vellune-card";
 import { listInvitations, fmtEventDate, invitationsKey, type Invitation } from "@/lib/invitations";
 import { type ReportRow, type RecentResponse } from "@/lib/reports";
 import type { AppUser } from "@/lib/app-user";
@@ -34,47 +39,18 @@ type Props = {
 };
 
 const CREATION_ACTIONS = [
-  {
-    id: "invitation",
-    title: "Novo convite",
-    description: "Comece um convite digital completo.",
-    icon: Mail,
-    to: "/invitations/new",
-  },
-  {
-    id: "template",
-    title: "Explorar modelos",
-    description: "Escolha uma composição pronta para personalizar.",
-    icon: Layers3,
-    to: "/templates",
-  },
-  {
-    id: "media",
-    title: "Fotos e elementos",
-    description: "Abra a biblioteca e continue uma criação.",
-    icon: ImageIcon,
-    to: "/invitations",
-  },
-  {
-    id: "results",
-    title: "Resultados",
-    description: "Acompanhe confirmações e desempenho.",
-    icon: BarChart3,
-    to: "/reports",
-  },
+  { id: "post", title: "Post Instagram", description: "Uma composição para compartilhar", icon: Instagram, to: "/templates" },
+  { id: "reel", title: "Vídeo Reel", description: "Organize a arte do seu convite", icon: Clapperboard, to: "/invitations" },
+  { id: "banner", title: "Banner Web", description: "Comece uma nova composição", icon: Monitor, to: "/invitations/new" },
+  { id: "document", title: "Documentos", description: "Revisite seus projetos", icon: FileText, to: "/invitations" },
 ] as const;
-
-function initials(name: string) {
-  const words = name.trim().split(/\\s+/).filter(Boolean);
-  return (words.slice(0, 2).map((word) => word[0]).join("") || "VD").toUpperCase();
-}
 
 function ProjectThumbnail({ invitation }: { invitation: Invitation }) {
   const background = invitation.content?.settings?.background;
   const blocks = invitation.content?.blocks ?? [];
   return (
-    <div className="relative h-44 overflow-hidden rounded-2xl border border-[#2a2b31] bg-[#08090d]">
-      <div className="absolute inset-0 flex items-start justify-center overflow-hidden bg-[#111318]">
+    <div className="relative h-44 overflow-hidden rounded-2xl border border-border bg-background">
+      <div className="absolute inset-0 flex items-start justify-center overflow-hidden bg-card">
         <div className="h-[640px] w-[390px] origin-top scale-[0.46]">
           <InvitationRender
             background={background}
@@ -91,12 +67,12 @@ function ProjectThumbnail({ invitation }: { invitation: Invitation }) {
           />
         </div>
       </div>
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-[#08090d]/90 to-transparent" />
-      <div className="absolute left-3 top-3 flex items-center gap-2 rounded-full border border-[#2a2b31] bg-[#111318]/88 px-2.5 py-1 text-[9px] font-semibold text-[#F5F7FA] backdrop-blur-md">
-        <span className="h-1.5 w-1.5 rounded-full bg-[#22C55E]" />
-        {invitation.status === "published" ? "Publicado" : "Rascunho"}
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-background/90 to-transparent" />
+      <div className="absolute left-3 top-3 flex items-center gap-2 rounded-full border border-border bg-card/88 px-2.5 py-1 text-[9px] font-semibold text-foreground backdrop-blur-md">
+        <span className="h-1.5 w-1.5 rounded-full bg-success" />
+        {invitation.status === "published" ? "Publicado" : invitation.status === "closed" ? "Encerrado" : "Rascunho"}
       </div>
-      <span className="absolute bottom-3 right-3 rounded-full border border-[#2a2b31] bg-[#111318]/88 p-1.5 text-[#F5F7FA] backdrop-blur-md">
+      <span className="absolute bottom-3 right-3 rounded-full border border-border bg-card/88 p-1.5 text-foreground backdrop-blur-md">
         <ArrowUpRight className="h-3.5 w-3.5" />
       </span>
     </div>
@@ -167,192 +143,92 @@ export function ExperimentalCompanyDashboard({ appUser, reportRows, recentRespon
 
 
   return (
-    <div className="w-full">
-      <main className="w-full">
-        <section className="relative overflow-hidden rounded-[28px] border border-[#2a2b31] bg-[#111318] px-5 py-6 shadow-[0_30px_100px_-55px_rgba(212,175,55,0.6)] sm:px-7 sm:py-8 lg:px-10 lg:py-10">
-          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_75%_0%,rgba(212,175,55,0.14),transparent_34%),radial-gradient(circle_at_8%_100%,rgba(212,175,55,0.035),transparent_32%)]" />
-          <div className="relative grid gap-8 xl:grid-cols-[1.35fr_0.65fr] xl:items-end">
-            <div>
-              <div className="inline-flex items-center gap-2 rounded-full border border-[#2a2b31] bg-[#08090d]/65 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-[#A9B1BF] backdrop-blur-md">
-                <Sparkles className="h-3.5 w-3.5 text-[#d4af37]" />
-                Hub de criação
-              </div>
-              <h1 className="mt-5 max-w-3xl font-display text-3xl font-semibold tracking-[-0.04em] text-[#F5F7FA] sm:text-4xl lg:text-5xl">
-                O que vamos criar hoje?
-              </h1>
-              <p className="mt-3 max-w-2xl text-sm leading-6 text-[#A9B1BF] sm:text-base">
-                Entre em uma criação, escolha um modelo ou refine um convite existente sem sair do seu fluxo.
-              </p>
-              <div className="mt-6 flex flex-wrap items-center gap-2">
-                <Link to="/invitations/new" className="inline-flex h-11 items-center gap-2 rounded-full bg-[#d4af37] px-5 text-sm font-semibold text-[#F5F7FA] shadow-[0_16px_40px_-18px_rgba(212,175,55,0.9)] transition hover:bg-[#e5c66b] active:scale-[0.98]">
-                  <Plus className="h-4 w-4" />
-                  Criar convite
+    <div className="vellune-content-enter w-full">
+      <div className="w-full">
+        <section className="pb-8 pt-3 sm:pt-6" aria-label="Hub de criação">
+          <div className="mb-6 grid grid-cols-[minmax(0,1fr)_auto] items-end gap-3">
+            <div className="min-w-0">
+              <p className="mb-3 text-xs font-medium text-muted-foreground">SEU ESTÚDIO CRIATIVO</p>
+              <h1 className="font-display text-2xl font-semibold sm:text-4xl">✦ O que vamos criar hoje?</h1>
+            </div>
+            <Button asChild variant="ghost" size="icon" className="rounded-full text-primary" aria-label="Criar convite"><Link to="/invitations/new"><Plus /></Link></Button>
+          </div>
+          <div className="grid grid-cols-2 gap-3 lg:grid-cols-4" data-testid="creation-grid">
+            {CREATION_ACTIONS.map((action) => (
+              <Button asChild key={action.id} variant="creative" className="vellune-creation-card group h-auto min-h-40 flex-col items-start justify-between whitespace-normal rounded-2xl p-4 text-left sm:min-h-44 sm:p-5">
+                <Link to={action.to}>
+                  <span className="flex w-full items-start justify-between"><span className="grid h-11 w-11 place-items-center rounded-xl bg-primary/10 text-primary"><action.icon className="size-5" /></span><ArrowUpRight className="size-4 text-muted-foreground transition group-hover:text-foreground" /></span>
+                  <span className="mt-5 block min-w-0"><span className="block text-sm font-semibold sm:text-base">{action.title}</span><span className="mt-1 block text-xs leading-5 text-muted-foreground">{action.description}</span></span>
                 </Link>
-                <Link to="/invitations" className="inline-flex h-11 items-center gap-2 rounded-full border border-[#2a2b31] bg-[#08090d]/45 px-5 text-sm font-medium text-[#F5F7FA] transition hover:border-[#d4af37]/50 hover:bg-[#111318]">
-                  Ver meus convites
-                  <ChevronRight className="h-4 w-4 text-[#A9B1BF]" />
-                </Link>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 xl:grid-cols-2">
-              {([
-                ["Convites", totals.invitations, Mail],
-                ["Visualizações", totals.views, Eye],
-                ["Confirmações", totals.confirmed, CheckCircle2],
-                ["Pessoas", totals.people, Users],
-              ] as const).map(([label, value, Icon]) => (
-                <div key={label as string} className="rounded-2xl border border-[#2a2b31] bg-[#08090d]/45 p-3.5 backdrop-blur-md">
-                  <Icon className="h-4 w-4 text-[#d4af37]" />
-                  <p className="mt-3 text-[10px] uppercase tracking-[0.12em] text-[#A9B1BF]">{label as string}</p>
-                  <p className="mt-1 font-display text-2xl font-semibold tabular-nums text-[#F5F7FA]">{Number(value).toLocaleString("pt-BR")}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <section className="mt-6 grid gap-4 xl:grid-cols-[1.2fr_0.8fr]">
-          <div className="rounded-[24px] border border-[#d4af37]/28 bg-[#111318] p-5 shadow-[0_22px_70px_-48px_rgba(212,175,55,0.55)] sm:p-6">
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#d4af37]">{nextAction.eyebrow}</p>
-                <h2 className="mt-2 font-display text-xl font-semibold tracking-[-0.025em] text-[#F5F7FA]">{nextAction.title}</h2>
-                <p className="mt-2 max-w-xl text-xs leading-5 text-[#A9B1BF]">{nextAction.description}</p>
-              </div>
-              <span className="hidden h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#d4af37]/10 text-[#d4af37] sm:flex"><Sparkles className="h-5 w-5" /></span>
-            </div>
-            <div className="mt-5">
-              {"params" in nextAction ? (
-                <Link to={nextAction.to} params={nextAction.params} className="inline-flex h-10 items-center gap-2 rounded-full bg-[#d4af37] px-4 text-xs font-semibold text-[#16130b] transition hover:bg-[#e5c66b]">{nextAction.label}<ArrowUpRight className="h-3.5 w-3.5" /></Link>
-              ) : (
-                <Link to={nextAction.to} className="inline-flex h-10 items-center gap-2 rounded-full bg-[#d4af37] px-4 text-xs font-semibold text-[#16130b] transition hover:bg-[#e5c66b]">{nextAction.label}<ArrowUpRight className="h-3.5 w-3.5" /></Link>
-              )}
-            </div>
-          </div>
-          <div className="rounded-[24px] border border-[#2a2b31] bg-[#111318] p-5 shadow-[0_20px_70px_-52px_rgba(212,175,55,0.4)] sm:p-6">
-            <div className="flex items-center justify-between gap-3">
-              <div><p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#A9B1BF]">Agora</p><h2 className="mt-1 font-display text-lg font-semibold text-[#F5F7FA]">Atividade recente</h2></div>
-              <Clock3 className="h-5 w-5 text-[#d4af37]" />
-            </div>
-            <div className="mt-4 space-y-2.5">
-              {activity.length ? activity.map((item) => (
-                <div key={item.id} className="flex items-center gap-3 rounded-2xl border border-[#2a2b31] bg-[#08090d] p-3">
-                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#d4af37]/10 text-[#d4af37]"><CheckCircle2 className="h-3.5 w-3.5" /></span>
-                  <div className="min-w-0 flex-1"><p className="truncate text-[11px] font-semibold text-[#F5F7FA]">{item.title}</p><p className="truncate text-[10px] text-[#A9B1BF]">{item.description}</p></div>
-                  <span className="shrink-0 text-[9px] text-[#A9B1BF]">{new Date(item.date).toLocaleDateString("pt-BR")}</span>
-                </div>
-              )) : <div className="rounded-2xl border border-dashed border-[#2a2b31] bg-[#08090d] p-5 text-center text-[10px] text-[#A9B1BF]">Sua atividade aparecerá aqui conforme você criar e publicar.</div>}
-            </div>
-          </div>
-        </section>
-
-        {continueInvitation && (
-          <section className="mt-6">
-            <div className="rounded-[24px] border border-[#2a2b31] bg-[#111318] p-4 shadow-[0_20px_70px_-52px_rgba(212,175,55,0.55)] sm:p-5">
-              <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-                <div className="w-full shrink-0 sm:w-[180px]"><ProjectThumbnail invitation={continueInvitation} /></div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#A9B1BF]">{continueInvitation.status === "draft" ? "Continuar trabalhando" : "Revisar criação"}</p>
-                  <h2 className="mt-1 truncate font-display text-xl font-semibold tracking-[-0.03em] text-[#F5F7FA]">{continueInvitation.name}</h2>
-                  <p className="mt-1 truncate text-xs text-[#A9B1BF]">{continueInvitation.customer?.name ?? "Sem cliente"} · atualizado em {new Date(continueInvitation.updated_at).toLocaleDateString("pt-BR")}</p>
-                  <div className="mt-4 flex flex-wrap gap-2">
-                    <Link to="/invitations/$id/editor" params={{ id: continueInvitation.id }} className="inline-flex h-10 items-center gap-2 rounded-full bg-[#d4af37] px-4 text-xs font-semibold text-[#16130b] shadow-[0_14px_32px_-18px_rgba(212,175,55,0.85)] transition hover:bg-[#e5c66b] active:scale-[0.98]">{continueInvitation.status === "draft" ? "Continuar edição" : "Editar criação"}<ArrowUpRight className="h-3.5 w-3.5" /></Link>
-                    <Link to="/invitations/$id/preview" params={{ id: continueInvitation.id }} className="inline-flex h-10 items-center gap-2 rounded-full border border-[#2a2b31] bg-[#08090d] px-4 text-xs font-semibold text-[#F5F7FA] transition hover:border-[#d4af37]/45"><Eye className="h-3.5 w-3.5" />Prévia</Link>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </section>
-        )}
-
-        <section className="mt-8">
-          <div className="mb-4 flex items-end justify-between gap-3">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#A9B1BF]">Começar agora</p>
-              <h2 className="mt-1 font-display text-xl font-semibold tracking-[-0.02em] text-[#F5F7FA]">Atalhos de criação</h2>
-            </div>
-          </div>
-          <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-            {CREATION_ACTIONS.map((action) => {
-              const Icon = action.icon;
-              return (
-                <Link key={action.id} to={action.to} className="group min-h-[150px] rounded-2xl border border-[#2a2b31] bg-[#111318] p-4 transition duration-200 hover:-translate-y-0.5 hover:border-[#d4af37]/55 hover:bg-[#111318] hover:shadow-[0_20px_45px_-30px_rgba(212,175,55,0.7)] sm:p-5">
-                  <span className="flex h-11 w-11 items-center justify-center rounded-2xl border border-[#2a2b31] bg-[#08090d] text-[#d4af37] transition group-hover:bg-[#d4af37]/10">
-                    <Icon className="h-5 w-5" />
-                  </span>
-                  <p className="mt-5 text-sm font-semibold text-[#F5F7FA]">{action.title}</p>
-                  <p className="mt-1 text-[11px] leading-5 text-[#A9B1BF]">{action.description}</p>
-                </Link>
-              );
-            })}
+              </Button>
+            ))}
           </div>
         </section>
 
         <section className="mt-10">
           <div className="mb-4 flex items-end justify-between gap-3">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#A9B1BF]">Seu espaço de trabalho</p>
-              <h2 className="mt-1 font-display text-xl font-semibold tracking-[-0.02em] text-[#F5F7FA]">Seus designs recentes</h2>
+              <p className="text-xs font-semibold uppercase tracking-normal text-muted-foreground">Seu espaço de trabalho</p>
+              <h2 className="mt-1 font-display text-xl font-semibold tracking-normal text-foreground">📊 Seus designs recentes</h2>
             </div>
-            <Link to="/invitations" className="hidden items-center gap-1 text-xs font-medium text-[#d4af37] transition hover:text-[#e5c66b] sm:inline-flex">
+            <Link to="/invitations" className="hidden items-center gap-1 text-xs font-medium text-primary transition hover:text-primary-hover sm:inline-flex">
               Ver todos
               <ArrowUpRight className="h-3.5 w-3.5" />
             </Link>
           </div>
 
           {invitations.isLoading ? (
-            <div className="rounded-2xl border border-[#2a2b31] bg-[#111318] p-10"><LoadingState /></div>
+            <div className="rounded-2xl border border-border bg-card p-10"><div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3" role="status" aria-label="Carregando designs">{[0,1,2].map((i) => <div key={i} className="h-64 animate-pulse rounded-2xl bg-muted" />)}</div></div>
           ) : invitations.isError ? (
-            <div className="rounded-2xl border border-[#2a2b31] bg-[#111318] p-8 text-center">
-              <p className="text-sm font-medium text-[#F5F7FA]">Não foi possível carregar seus designs.</p>
-              <p className="mt-1 text-xs text-[#A9B1BF]">Você ainda pode criar um novo convite normalmente.</p>
-              <Link to="/invitations/new" className="mt-4 inline-flex h-10 items-center gap-2 rounded-full bg-[#d4af37] px-4 text-xs font-semibold text-[#F5F7FA] hover:bg-[#e5c66b]">
+            <div className="rounded-2xl border border-border bg-card p-8 text-center">
+              <p className="text-sm font-medium text-foreground">Não foi possível carregar seus designs.</p>
+              <p className="mt-1 text-xs text-muted-foreground">Você ainda pode criar um novo convite normalmente.</p>
+              <Link to="/invitations/new" className="mt-4 inline-flex h-10 items-center gap-2 rounded-full bg-primary px-4 text-xs font-semibold text-foreground hover:bg-primary-hover">
                 <Plus className="h-4 w-4" />Criar convite
               </Link>
             </div>
           ) : recentInvitations.length === 0 ? (
-            <div className="rounded-2xl border border-dashed border-[#2a2b31] bg-[#111318] p-10 text-center">
-              <FolderOpen className="mx-auto h-7 w-7 text-[#A9B1BF]" />
-              <p className="mt-3 text-sm font-semibold text-[#F5F7FA]">Seu espaço começa aqui</p>
-              <p className="mt-1 text-xs text-[#A9B1BF]">Crie o primeiro convite da sua empresa e ele aparecerá aqui.</p>
-              <Link to="/invitations/new" className="mt-4 inline-flex h-10 items-center gap-2 rounded-full bg-[#d4af37] px-4 text-xs font-semibold text-[#F5F7FA] hover:bg-[#e5c66b]"><Plus className="h-4 w-4" />Criar primeiro convite</Link>
+            <div className="rounded-2xl border border-dashed border-border bg-card p-10 text-center">
+              <FolderOpen className="mx-auto h-7 w-7 text-muted-foreground" />
+              <p className="mt-3 text-sm font-semibold text-foreground">Seu espaço começa aqui</p>
+              <p className="mt-1 text-xs text-muted-foreground">Crie o primeiro convite da sua empresa e ele aparecerá aqui.</p>
+              <Link to="/invitations/new" className="mt-4 inline-flex h-10 items-center gap-2 rounded-full bg-primary px-4 text-xs font-semibold text-foreground hover:bg-primary-hover"><Plus className="h-4 w-4" />Criar primeiro convite</Link>
             </div>
           ) : (
             <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
               {recentInvitations.map((invitation) => (
-                <article key={invitation.id} className="group relative overflow-visible rounded-2xl border border-[#2a2b31] bg-[#111318] transition duration-200 hover:-translate-y-0.5 hover:border-[#d4af37]/45 hover:shadow-[0_24px_55px_-38px_rgba(212,175,55,0.75)]">
+                <article key={invitation.id} className="group relative overflow-visible rounded-2xl border border-border bg-card transition duration-200 hover:-translate-y-0.5 hover:border-primary/45 hover:shadow-vellune">
                   <Link to="/invitations/$id/editor" params={{ id: invitation.id }} className="block overflow-hidden rounded-2xl">
                     <ProjectThumbnail invitation={invitation} />
                     <div className="p-4 sm:p-5">
                       <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0">
-                          <p className="truncate text-sm font-semibold text-[#F5F7FA]">{invitation.name}</p>
-                          <p className="mt-1 truncate text-xs text-[#A9B1BF]">{invitation.customer?.name ?? "Sem cliente"}</p>
+                          <p className="truncate text-sm font-semibold text-foreground">{invitation.name}</p>
+                          <p className="mt-1 truncate text-xs text-muted-foreground">{invitation.customer?.name ?? "Sem cliente"}</p>
                         </div>
                         <InvitationStatusBadge status={invitation.status} />
                       </div>
-                      <div className="mt-4 flex items-center justify-between gap-3 text-[10px] text-[#A9B1BF]">
+                      <div className="mt-4 flex items-center justify-between gap-3 text-[10px] text-muted-foreground">
                         <span className="inline-flex items-center gap-1.5"><CalendarDays className="h-3.5 w-3.5" />{fmtEventDate(invitation.event_date)}</span>
                         <span>{new Date(invitation.updated_at).toLocaleDateString("pt-BR")}</span>
                       </div>
                     </div>
                   </Link>
                   <div className="absolute right-3 top-[135px] z-20 flex items-center gap-1 opacity-100 sm:opacity-0 sm:transition sm:group-hover:opacity-100">
-                    <Link to="/invitations/$id/editor" params={{ id: invitation.id }} className="inline-flex h-8 items-center gap-1.5 rounded-full border border-[#2a2b31] bg-[#111318]/92 px-2.5 text-[10px] font-semibold text-[#F5F7FA] backdrop-blur-md hover:border-[#d4af37]/45" aria-label="Editar convite" title="Editar" onClick={(event) => event.stopPropagation()}>
+                    <Link to="/invitations/$id/editor" params={{ id: invitation.id }} className="inline-flex h-8 items-center gap-1.5 rounded-full border border-border bg-card/92 px-2.5 text-[10px] font-semibold text-foreground backdrop-blur-md hover:border-primary/45" aria-label="Editar convite" title="Editar" onClick={(event) => event.stopPropagation()}>
                       <Pencil className="h-3.5 w-3.5" />Editar
                     </Link>
-                    <Link to="/invitations/$id/preview" params={{ id: invitation.id }} className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-[#2a2b31] bg-[#111318]/92 text-[#A9B1BF] backdrop-blur-md hover:text-[#F5F7FA]" aria-label="Prévia" title="Prévia" onClick={(event) => event.stopPropagation()}>
+                    <Link to="/invitations/$id/preview" params={{ id: invitation.id }} className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-border bg-card/92 text-muted-foreground backdrop-blur-md hover:text-foreground" aria-label="Prévia" title="Prévia" onClick={(event) => event.stopPropagation()}>
                       <Eye className="h-3.5 w-3.5" />
                     </Link>
-                    <button type="button" className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-[#2a2b31] bg-[#111318]/92 text-[#A9B1BF] backdrop-blur-md hover:text-[#F5F7FA]" aria-label="Mais ações" title="Mais ações" onClick={(event) => { event.preventDefault(); event.stopPropagation(); setOpenProjectMenu((current) => current === invitation.id ? null : invitation.id); }}>
+                    <Button variant="ghost" type="button" className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-border bg-card/92 text-muted-foreground backdrop-blur-md hover:text-foreground" aria-label="Mais ações" title="Mais ações" onClick={(event) => { event.preventDefault(); event.stopPropagation(); setOpenProjectMenu((current) => current === invitation.id ? null : invitation.id); }}>
                       <MoreHorizontal className="h-3.5 w-3.5" />
-                    </button>
+                    </Button>
                     {openProjectMenu === invitation.id && (
-                      <div className="absolute right-0 top-10 grid min-w-[170px] gap-1 rounded-2xl border border-[#2a2b31] bg-[#111318]/98 p-1.5 shadow-[0_24px_60px_-24px_rgba(11,13,18,0.95)] backdrop-blur-xl">
-                        <Link to="/invitations/$id/report" params={{ id: invitation.id }} onClick={() => setOpenProjectMenu(null)} className="rounded-xl px-3 py-2 text-left text-[11px] text-[#A9B1BF] hover:bg-[#08090d] hover:text-[#F5F7FA]">Resultados do convite</Link>
-                        <Link to="/invitations/$id/guests" params={{ id: invitation.id }} onClick={() => setOpenProjectMenu(null)} className="rounded-xl px-3 py-2 text-left text-[11px] text-[#A9B1BF] hover:bg-[#08090d] hover:text-[#F5F7FA]">Convidados</Link>
-                        <Link to="/invitations/$id/preview" params={{ id: invitation.id }} onClick={() => setOpenProjectMenu(null)} className="rounded-xl px-3 py-2 text-left text-[11px] text-[#A9B1BF] hover:bg-[#08090d] hover:text-[#F5F7FA]">Abrir prévia</Link>
+                      <div className="absolute right-0 top-10 grid min-w-[170px] gap-1 rounded-2xl border border-border bg-card/98 p-1.5 shadow-vellune backdrop-blur-xl">
+                        <Link to="/invitations/$id/report" params={{ id: invitation.id }} onClick={() => setOpenProjectMenu(null)} className="rounded-xl px-3 py-2 text-left text-[11px] text-muted-foreground hover:bg-background hover:text-foreground">Resultados do convite</Link>
+                        <Link to="/invitations/$id/guests" params={{ id: invitation.id }} onClick={() => setOpenProjectMenu(null)} className="rounded-xl px-3 py-2 text-left text-[11px] text-muted-foreground hover:bg-background hover:text-foreground">Convidados</Link>
+                        <Link to="/invitations/$id/preview" params={{ id: invitation.id }} onClick={() => setOpenProjectMenu(null)} className="rounded-xl px-3 py-2 text-left text-[11px] text-muted-foreground hover:bg-background hover:text-foreground">Abrir prévia</Link>
                       </div>
                     )}
                   </div>
@@ -362,84 +238,141 @@ export function ExperimentalCompanyDashboard({ appUser, reportRows, recentRespon
           )}
         </section>
 
+        <section className="mt-8 grid grid-cols-2 gap-3 lg:grid-cols-4" aria-label="Resumo da empresa">
+          {([["Convites", totals.invitations, Mail], ["Visualizações", totals.views, Eye], ["Confirmações", totals.confirmed, CheckCircle2], ["Pessoas", totals.people, Users]] as const).map(([label, value, Icon]) => <VelluneCard key={label} className="p-4"><div className="flex items-center gap-2 text-muted-foreground"><Icon className="size-4 text-primary" /><span className="text-xs">{label}</span></div><p className="mt-3 font-display text-2xl font-semibold tabular-nums">{value.toLocaleString("pt-BR")}</p></VelluneCard>)}
+        </section>
+        <section className="mt-6 grid gap-4 xl:grid-cols-[1.2fr_0.8fr]">
+          <div className="rounded-[24px] border border-primary/28 bg-card p-5 shadow-vellune sm:p-6">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="text-[10px] font-semibold uppercase tracking-normal text-primary">{nextAction.eyebrow}</p>
+                <h2 className="mt-2 font-display text-xl font-semibold tracking-normal text-foreground">{nextAction.title}</h2>
+                <p className="mt-2 max-w-xl text-xs leading-5 text-muted-foreground">{nextAction.description}</p>
+              </div>
+              <span className="hidden h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary sm:flex"><Sparkles className="h-5 w-5" /></span>
+            </div>
+            <div className="mt-5">
+              {"params" in nextAction ? (
+                <Link to={nextAction.to} params={nextAction.params} className="inline-flex h-10 items-center gap-2 rounded-full bg-primary px-4 text-xs font-semibold text-primary-foreground transition hover:bg-primary-hover">{nextAction.label}<ArrowUpRight className="h-3.5 w-3.5" /></Link>
+              ) : (
+                <Link to={nextAction.to} className="inline-flex h-10 items-center gap-2 rounded-full bg-primary px-4 text-xs font-semibold text-primary-foreground transition hover:bg-primary-hover">{nextAction.label}<ArrowUpRight className="h-3.5 w-3.5" /></Link>
+              )}
+            </div>
+          </div>
+          <div className="rounded-[24px] border border-border bg-card p-5 shadow-vellune sm:p-6">
+            <div className="flex items-center justify-between gap-3">
+              <div><p className="text-[10px] font-semibold uppercase tracking-normal text-muted-foreground">Agora</p><h2 className="mt-1 font-display text-lg font-semibold text-foreground">Atividade recente</h2></div>
+              <Clock3 className="h-5 w-5 text-primary" />
+            </div>
+            <div className="mt-4 space-y-2.5">
+              {activity.length ? activity.map((item) => (
+                <div key={item.id} className="flex items-center gap-3 rounded-2xl border border-border bg-background p-3">
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary"><CheckCircle2 className="h-3.5 w-3.5" /></span>
+                  <div className="min-w-0 flex-1"><p className="truncate text-[11px] font-semibold text-foreground">{item.title}</p><p className="truncate text-[10px] text-muted-foreground">{item.description}</p></div>
+                  <span className="shrink-0 text-[9px] text-muted-foreground">{new Date(item.date).toLocaleDateString("pt-BR")}</span>
+                </div>
+              )) : <div className="rounded-2xl border border-dashed border-border bg-background p-5 text-center text-[10px] text-muted-foreground">Sua atividade aparecerá aqui conforme você criar e publicar.</div>}
+            </div>
+          </div>
+        </section>
+
+        {continueInvitation && (
+          <section className="mt-6">
+            <div className="rounded-[24px] border border-border bg-card p-4 shadow-vellune sm:p-5">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+                <div className="w-full shrink-0 sm:w-[180px]"><ProjectThumbnail invitation={continueInvitation} /></div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-[10px] font-semibold uppercase tracking-normal text-muted-foreground">{continueInvitation.status === "draft" ? "Continuar trabalhando" : "Revisar criação"}</p>
+                  <h2 className="mt-1 truncate font-display text-xl font-semibold tracking-normal text-foreground">{continueInvitation.name}</h2>
+                  <p className="mt-1 truncate text-xs text-muted-foreground">{continueInvitation.customer?.name ?? "Sem cliente"} · atualizado em {new Date(continueInvitation.updated_at).toLocaleDateString("pt-BR")}</p>
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    <Link to="/invitations/$id/editor" params={{ id: continueInvitation.id }} className="inline-flex h-10 items-center gap-2 rounded-full bg-primary px-4 text-xs font-semibold text-primary-foreground shadow-vellune transition hover:bg-primary-hover active:scale-[0.98]">{continueInvitation.status === "draft" ? "Continuar edição" : "Editar criação"}<ArrowUpRight className="h-3.5 w-3.5" /></Link>
+                    <Link to="/invitations/$id/preview" params={{ id: continueInvitation.id }} className="inline-flex h-10 items-center gap-2 rounded-full border border-border bg-background px-4 text-xs font-semibold text-foreground transition hover:border-primary/45"><Eye className="h-3.5 w-3.5" />Prévia</Link>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+        )}
+
         <section className="mt-10 grid gap-4 xl:grid-cols-[1.2fr_0.8fr]">
-          <div className="rounded-2xl border border-[#2a2b31] bg-[#111318] p-5 sm:p-6">
+          <div className="rounded-2xl border border-border bg-card p-5 sm:p-6">
             <div className="flex items-center justify-between gap-3">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#A9B1BF]">Próximo momento</p>
-                <h2 className="mt-1 font-display text-lg font-semibold text-[#F5F7FA]">Agenda do convite</h2>
+                <p className="text-xs font-semibold uppercase tracking-normal text-muted-foreground">Próximo momento</p>
+                <h2 className="mt-1 font-display text-lg font-semibold text-foreground">Agenda do convite</h2>
               </div>
-              <Clock3 className="h-5 w-5 text-[#d4af37]" />
+              <Clock3 className="h-5 w-5 text-primary" />
             </div>
             {nextEvent ? (
-              <div className="mt-5 rounded-2xl border border-[#2a2b31] bg-[#08090d] p-4">
+              <div className="mt-5 rounded-2xl border border-border bg-background p-4">
                 <div className="flex flex-wrap items-center gap-2">
                   <InvitationStatusBadge status={nextEvent.status} />
-                  <span className="text-xs text-[#A9B1BF]">{nextEvent.customer_name ?? "Sem cliente"}</span>
+                  <span className="text-xs text-muted-foreground">{nextEvent.customer_name ?? "Sem cliente"}</span>
                 </div>
-                <p className="mt-3 text-base font-semibold text-[#F5F7FA]">{nextEvent.name}</p>
-                <div className="mt-2 flex flex-wrap gap-x-4 gap-y-2 text-xs text-[#A9B1BF]">
+                <p className="mt-3 text-base font-semibold text-foreground">{nextEvent.name}</p>
+                <div className="mt-2 flex flex-wrap gap-x-4 gap-y-2 text-xs text-muted-foreground">
                   <span className="inline-flex items-center gap-1.5"><CalendarDays className="h-3.5 w-3.5" />{fmtEventDate(nextEvent.event_date)}</span>
                   <span className="inline-flex items-center gap-1.5"><Clock3 className="h-3.5 w-3.5" />{nextEvent.event_time.slice(0, 5)}</span>
                 </div>
-                <Link to="/invitations/$id/editor" params={{ id: nextEvent.id }} className="mt-4 inline-flex items-center gap-1.5 text-xs font-semibold text-[#d4af37] hover:text-[#e5c66b]">
+                <Link to="/invitations/$id/editor" params={{ id: nextEvent.id }} className="mt-4 inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:text-primary-hover">
                   Abrir convite
                   <ChevronRight className="h-3.5 w-3.5" />
                 </Link>
               </div>
             ) : (
-              <div className="mt-5 rounded-2xl border border-dashed border-[#2a2b31] bg-[#08090d] p-5">
-                <p className="text-sm font-medium text-[#F5F7FA]">Nenhum evento futuro.</p>
-                <p className="mt-1 text-xs leading-5 text-[#A9B1BF]">Quando houver um próximo evento, ele aparecerá nesta área.</p>
+              <div className="mt-5 rounded-2xl border border-dashed border-border bg-background p-5">
+                <p className="text-sm font-medium text-foreground">Nenhum evento futuro.</p>
+                <p className="mt-1 text-xs leading-5 text-muted-foreground">Quando houver um próximo evento, ele aparecerá nesta área.</p>
               </div>
             )}
           </div>
 
-          <div className="rounded-2xl border border-[#2a2b31] bg-[#111318] p-5 sm:p-6">
+          <div className="rounded-2xl border border-border bg-card p-5 sm:p-6">
             <div className="flex items-center justify-between gap-3">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#A9B1BF]">Últimas respostas</p>
-                <h2 className="mt-1 font-display text-lg font-semibold text-[#F5F7FA]">RSVP em destaque</h2>
+                <p className="text-xs font-semibold uppercase tracking-normal text-muted-foreground">Últimas respostas</p>
+                <h2 className="mt-1 font-display text-lg font-semibold text-foreground">RSVP em destaque</h2>
               </div>
-              <CheckCircle2 className="h-5 w-5 text-[#22C55E]" />
+              <CheckCircle2 className="h-5 w-5 text-success" />
             </div>
             <div className="mt-5 space-y-2">
               {recentResponses.length ? recentResponses.slice(0, 4).map((response) => (
-                <div key={response.id} className="flex items-center gap-3 rounded-2xl border border-[#2a2b31] bg-[#08090d] p-3">
-                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#d4af37]/10 text-[#d4af37]"><CheckCircle2 className="h-4 w-4" /></span>
+                <div key={response.id} className="flex items-center gap-3 rounded-2xl border border-border bg-background p-3">
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary"><CheckCircle2 className="h-4 w-4" /></span>
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-xs font-semibold text-[#F5F7FA]">{response.name}</p>
-                    <p className="truncate text-[10px] text-[#A9B1BF]">{response.invitation?.name ?? "Convite"} · {response.people_count} pessoa(s)</p>
+                    <p className="truncate text-xs font-semibold text-foreground">{response.name}</p>
+                    <p className="truncate text-[10px] text-muted-foreground">{response.invitation?.name ?? "Convite"} · {response.people_count} pessoa(s)</p>
                   </div>
-                  <span className="text-[9px] text-[#A9B1BF]">{new Date(response.created_at).toLocaleDateString("pt-BR")}</span>
+                  <span className="text-[9px] text-muted-foreground">{new Date(response.created_at).toLocaleDateString("pt-BR")}</span>
                 </div>
               )) : (
-                <div className="rounded-2xl border border-dashed border-[#2a2b31] bg-[#08090d] p-5 text-center text-xs text-[#A9B1BF]">
+                <div className="rounded-2xl border border-dashed border-border bg-background p-5 text-center text-xs text-muted-foreground">
                   Nenhuma confirmação recente.
                 </div>
               )}
             </div>
-            <Link to="/reports" className="mt-4 inline-flex items-center gap-1.5 text-xs font-semibold text-[#d4af37] hover:text-[#e5c66b]">
+            <Link to="/reports" className="mt-4 inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:text-primary-hover">
               Ver resultados
               <ChevronRight className="h-3.5 w-3.5" />
             </Link>
           </div>
         </section>
 
-        <section className="mt-10 flex flex-col gap-4 rounded-2xl border border-[#2a2b31] bg-[#111318] p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
+        <section className="mt-10 flex flex-col gap-4 rounded-2xl border border-border bg-card p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
           <div className="flex items-start gap-3">
-            <span className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#d4af37]/10 text-[#d4af37]"><MapPin className="h-5 w-5" /></span>
+            <span className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary"><MapPin className="h-5 w-5" /></span>
             <div>
-              <p className="text-sm font-semibold text-[#F5F7FA]">Tudo pronto para a próxima etapa</p>
-              <p className="mt-1 max-w-2xl text-xs leading-5 text-[#A9B1BF]">Abra seus convites, ajuste o design no editor e acompanhe as respostas quando o evento estiver no ar.</p>
+              <p className="text-sm font-semibold text-foreground">Tudo pronto para a próxima etapa</p>
+              <p className="mt-1 max-w-2xl text-xs leading-5 text-muted-foreground">Abra seus convites, ajuste o design no editor e acompanhe as respostas quando o evento estiver no ar.</p>
             </div>
           </div>
-          <Link to="/invitations" className="inline-flex h-10 items-center justify-center gap-2 rounded-full border border-[#2a2b31] bg-[#08090d] px-4 text-xs font-semibold text-[#F5F7FA] hover:border-[#d4af37]/45">
+          <Link to="/invitations" className="inline-flex h-10 items-center justify-center gap-2 rounded-full border border-border bg-background px-4 text-xs font-semibold text-foreground hover:border-primary/45">
             Ir para convites
-            <ArrowUpRight className="h-4 w-4 text-[#d4af37]" />
+            <ArrowUpRight className="h-4 w-4 text-primary" />
           </Link>
         </section>
-      </main>
+      </div>
 
     </div>
   );

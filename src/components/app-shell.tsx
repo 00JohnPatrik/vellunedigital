@@ -218,7 +218,7 @@ export function AppShell({ base, nav, appUser, children }: Props) {
   }, [nav, search]);
 
   return (
-    <div className={cn("vellune-platform-root dark min-h-[100dvh] bg-[#08090d] text-[#F5F7FA]", density === "compact" && "[& main]:p-3 [& main]:sm:p-4 [& main]:lg:p-6")}>
+    <div className={cn("vellune-platform-root dark min-h-[100dvh] bg-background text-foreground", density === "compact" && "[& main]:p-3 [& main]:sm:p-4 [& main]:lg:p-6")}>
       <aside
         aria-label="Navegação principal"
         className={cn(
@@ -295,7 +295,7 @@ export function AppShell({ base, nav, appUser, children }: Props) {
             {isOnline ? <Wifi className="h-3.5 w-3.5" aria-hidden="true" /> : <WifiOff className="h-3.5 w-3.5" aria-hidden="true" />}
             {isOnline ? (
               <>
-                <span className="h-2 w-2 rounded-full bg-emerald-500" />
+                <span className="h-2 w-2 rounded-full bg-success" />
                 <Users className="h-3.5 w-3.5" aria-hidden="true" />
                 <span>{onlineCount === null ? "Conectando…" : `${onlineCount} online`}</span>
               </>
@@ -313,7 +313,7 @@ export function AppShell({ base, nav, appUser, children }: Props) {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-64">
-              <DropdownMenuLabel className="font-normal"><span className="block truncate font-medium">{appUser.email}</span><span className="mt-1 flex items-center gap-1 text-xs font-normal text-muted-foreground"><span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />Conta ativa</span></DropdownMenuLabel>
+              <DropdownMenuLabel className="font-normal"><span className="block truncate font-medium">{appUser.email}</span><span className="mt-1 flex items-center gap-1 text-xs font-normal text-muted-foreground"><span className="h-1.5 w-1.5 rounded-full bg-success" />Conta ativa</span></DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => navigate({ to: "/settings" })}><Settings className="mr-2 h-4 w-4" />Configurações</DropdownMenuItem>
               <DropdownMenuLabel className="text-xs text-muted-foreground">Tema</DropdownMenuLabel>

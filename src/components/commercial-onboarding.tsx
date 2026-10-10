@@ -49,20 +49,19 @@ export function CommercialOnboarding({ userId, userName }: { userId: string; use
   };
 
   return (
-    <section className="relative mb-6 overflow-hidden rounded-[26px] border border-[#d4af37]/25 bg-[linear-gradient(135deg,#111318_0%,#151820_62%,#0c0e13_100%)] p-5 shadow-[0_28px_90px_-50px_rgba(212,175,55,0.6)] sm:p-6" aria-label="Comece com a Vellune">
-      <div className="pointer-events-none absolute -right-20 -top-20 h-48 w-48 rounded-full bg-[#d4af37]/10 blur-3xl" />
+    <section className="relative mb-6 overflow-hidden rounded-[26px] border border-primary/25 bg-card p-5 shadow-vellune sm:p-6" aria-label="Comece com a Vellune">
       <div className="relative">
         <div className="flex items-start justify-between gap-4">
           <div className="min-w-0">
-            <div className="inline-flex items-center gap-2 rounded-full border border-[#d4af37]/20 bg-[#d4af37]/8 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-[#e5c66b]">
+            <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/8 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-normal text-primary-hover">
               <Sparkles className="h-3 w-3" /> Primeiro passo
             </div>
-            <h2 className="mt-3 font-display text-xl font-semibold tracking-[-0.025em] text-[#F5F7FA]">
+            <h2 className="mt-3 font-display text-xl font-semibold tracking-normal text-foreground">
               {userName ? `Olá, ${userName.split(" ")[0]}` : "Bem-vindo à Vellune"}
             </h2>
-            <p className="mt-1 max-w-2xl text-xs leading-5 text-[#A9B1BF]">Siga este caminho rápido para transformar um cliente em um convite publicado, sem complicação.</p>
+            <p className="mt-1 max-w-2xl text-xs leading-5 text-muted-foreground">Siga este caminho rápido para transformar um cliente em um convite publicado, sem complicação.</p>
           </div>
-          <button type="button" onClick={dismiss} className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[#A9B1BF] transition hover:bg-white/[0.06] hover:text-[#F5F7FA]" aria-label="Fechar guia inicial" title="Fechar guia">
+          <button type="button" onClick={dismiss} className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-muted-foreground transition hover:bg-muted hover:text-foreground" aria-label="Fechar guia inicial" title="Fechar guia">
             <X className="h-4 w-4" />
           </button>
         </div>
@@ -75,32 +74,32 @@ export function CommercialOnboarding({ userId, userName }: { userId: string; use
             return (
               <button key={item.id} type="button" onClick={() => setActive(index)} className={cn(
                 "group rounded-2xl border p-3 text-left transition-all",
-                current ? "border-[#d4af37]/45 bg-[#d4af37]/10 shadow-[0_12px_30px_-18px_rgba(212,175,55,0.6)]" : "border-white/[0.07] bg-white/[0.025] hover:border-white/[0.14] hover:bg-white/[0.05]",
+                current ? "border-primary/45 bg-primary/10 shadow-vellune" : "border-border bg-background/30 hover:border-primary-hover hover:bg-muted",
               )} aria-current={current ? "step" : undefined}>
                 <div className="flex items-center justify-between gap-2">
-                  <span className={cn("flex h-8 w-8 items-center justify-center rounded-xl", current ? "bg-[#d4af37]/15 text-[#d4af37]" : "bg-white/[0.05] text-[#A9B1BF]")}>
+                  <span className={cn("flex h-8 w-8 items-center justify-center rounded-xl", current ? "bg-primary/15 text-primary" : "bg-muted text-muted-foreground")}>
                     {done ? <CircleCheck className="h-4 w-4" /> : <Icon className="h-4 w-4" />}
                   </span>
-                  <span className="text-[9px] font-semibold tabular-nums text-[#737b89]">{index + 1}/4</span>
+                  <span className="text-[9px] font-semibold tabular-nums text-muted-foreground">{index + 1}/4</span>
                 </div>
-                <p className="mt-2 text-[11px] font-semibold text-[#F5F7FA]">{item.title}</p>
-                <p className="mt-1 line-clamp-2 text-[10px] leading-4 text-[#8e97a7]">{item.description}</p>
+                <p className="mt-2 text-[11px] font-semibold text-foreground">{item.title}</p>
+                <p className="mt-1 line-clamp-2 text-[10px] leading-4 text-muted-foreground">{item.description}</p>
               </button>
             );
           })}
         </div>
 
-        <div className="mt-4 flex flex-col gap-3 rounded-2xl border border-white/[0.07] bg-[#08090d]/65 p-3.5 sm:flex-row sm:items-center sm:justify-between">
+        <div className="mt-4 flex flex-col gap-3 rounded-2xl border border-border bg-background/65 p-3.5 sm:flex-row sm:items-center sm:justify-between">
           <div className="min-w-0">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[#d4af37]">Agora</p>
-            <p className="mt-1 text-xs font-medium text-[#F5F7FA]">{step.title}</p>
-            <p className="mt-0.5 text-[10px] leading-4 text-[#8e97a7]">{step.description}</p>
+            <p className="text-[10px] font-semibold uppercase tracking-normal text-primary">Agora</p>
+            <p className="mt-1 text-xs font-medium text-foreground">{step.title}</p>
+            <p className="mt-0.5 text-[10px] leading-4 text-muted-foreground">{step.description}</p>
           </div>
           <div className="flex shrink-0 items-center gap-2">
-            {step.to && <Button asChild size="sm" className="h-9 rounded-full bg-[#d4af37] px-4 text-[11px] font-semibold text-[#16130b] hover:bg-[#e5c66b]">
+            {step.to && <Button asChild size="sm" className="h-9 rounded-full bg-primary px-4 text-[11px] font-semibold text-primary-foreground hover:bg-primary-hover">
               <Link to={step.to}>{active === visibleSteps.length - 1 ? "Abrir convites" : "Continuar"}<ChevronRight className="h-3.5 w-3.5" /></Link>
             </Button>}
-            <Button type="button" size="sm" variant="ghost" onClick={complete} className="h-9 rounded-full px-3 text-[10px] text-[#A9B1BF] hover:bg-white/[0.05] hover:text-[#F5F7FA]">
+            <Button type="button" size="sm" variant="ghost" onClick={complete} className="h-9 rounded-full px-3 text-[10px] text-muted-foreground hover:bg-muted hover:text-foreground">
               {active === visibleSteps.length - 1 ? <><Check className="h-3.5 w-3.5" />Concluir guia</> : "Marcar como visto"}
             </Button>
           </div>
