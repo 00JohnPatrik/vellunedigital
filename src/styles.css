@@ -35,6 +35,11 @@
   --color-card-foreground: var(--card-foreground);
   --color-popover: var(--popover);
   --color-popover-foreground: var(--popover-foreground);
+  --color-primary-hover: var(--primary-hover);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-info: var(--info);
+  --shadow-vellune: 0 18px 50px -26px color-mix(in srgb, var(--background) 85%, transparent);
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
   --color-secondary: var(--secondary);
@@ -199,7 +204,7 @@
   html:has(.vellune-platform-root),
   body:has(.vellune-platform-root),
   #root:has(.vellune-platform-root) {
-    background-color: #08090d;
+    background-color: #0B0D12;
     color-scheme: dark;
     overscroll-behavior-y: none;
   }
@@ -874,30 +879,55 @@
 /* keep their own visual language.                                            */
 /* -------------------------------------------------------------------------- */
 
-.vellune-platform-root {
-  width: 100%;
-  min-height: 100dvh;
-  --vellune-platform-line: color-mix(in oklch, var(--color-foreground) 8%, transparent);
-  --vellune-platform-line-strong: color-mix(in oklch, var(--color-primary) 22%, transparent);
-  --vellune-platform-surface: color-mix(in oklch, var(--color-card) 94%, var(--color-background));
-  --vellune-platform-soft: color-mix(in oklch, var(--color-muted) 54%, var(--color-background));
-  --vellune-platform-glow: color-mix(in oklch, var(--color-primary) 8%, transparent);
-  background:
-    radial-gradient(circle at 88% -10%, var(--vellune-platform-glow), transparent 28rem),
-    radial-gradient(circle at 0% 20%, color-mix(in oklch, var(--color-primary) 4%, transparent), transparent 34rem),
-    var(--color-background);
-}
-
+.vellune-platform-root,
 .vellune-platform-root.dark {
-  --vellune-platform-line: color-mix(in oklch, oklch(1 0 0) 8%, transparent);
-  --vellune-platform-line-strong: color-mix(in oklch, var(--color-primary) 28%, transparent);
-  --vellune-platform-surface: oklch(0.165 0.026 254);
-  --vellune-platform-soft: oklch(0.19 0.03 254);
-  --vellune-platform-glow: oklch(0.76653 0.13868 91.059 / 9%);
-  background:
-    radial-gradient(circle at 88% -10%, var(--vellune-platform-glow), transparent 30rem),
-    radial-gradient(circle at 0% 18%, oklch(0.76653 0.13868 91.059 / 4%), transparent 36rem),
-    oklch(0.14053 0.00902 273.174);
+  --background: #0B0D12;
+  --card: #171B23;
+  --foreground: #F5F7FA;
+  --card-foreground: var(--foreground);
+  --popover: var(--card);
+  --popover-foreground: var(--foreground);
+  --border: #292F3A;
+  --input: var(--border);
+  --muted: var(--card);
+  --muted-foreground: #A9B1BF;
+  --primary: #8B5CF6;
+  --primary-hover: #9D74F8;
+  --primary-foreground: var(--foreground);
+  --secondary: var(--card);
+  --secondary-foreground: var(--foreground);
+  --accent: var(--card);
+  --accent-foreground: var(--foreground);
+  --success: #22C55E;
+  --warning: #F59E0B;
+  --destructive: #EF4444;
+  --destructive-foreground: var(--foreground);
+  --info: #3B82F6;
+  --ring: var(--primary);
+  --chart-1: var(--primary);
+  --chart-2: var(--success);
+  --chart-3: var(--warning);
+  --chart-4: var(--info);
+  --chart-5: var(--destructive);
+  --sidebar: var(--card);
+  --sidebar-foreground: var(--foreground);
+  --sidebar-primary: var(--primary);
+  --sidebar-primary-foreground: var(--foreground);
+  --sidebar-accent: var(--card);
+  --sidebar-accent-foreground: var(--foreground);
+  --sidebar-border: var(--border);
+  --sidebar-ring: var(--primary);
+  --vellune-platform-line: var(--border);
+  --vellune-platform-line-strong: var(--primary-hover);
+  --vellune-platform-surface: var(--card);
+  --vellune-platform-soft: var(--card);
+  --vellune-platform-glow: color-mix(in srgb, var(--primary) 8%, transparent);
+  width: 100%;
+  min-width: 0;
+  min-height: 100dvh;
+  background: var(--background);
+  color: var(--foreground);
+  color-scheme: dark;
 }
 
 .vellune-app-sidebar {
@@ -1656,4 +1686,33 @@
   .vellune-editor-experimental .vellune-experimental-sheet {
     transition: none !important;
   }
+}
+
+/* Portaled menus inherit the authenticated palette without affecting public artwork. */
+html:has(.vellune-platform-root) {
+  --background: #0B0D12; --card: #171B23; --popover: #171B23;
+  --foreground: #F5F7FA; --card-foreground: #F5F7FA; --popover-foreground: #F5F7FA;
+  --border: #292F3A; --input: #292F3A; --muted: #171B23; --muted-foreground: #A9B1BF;
+  --primary: #8B5CF6; --primary-hover: #9D74F8; --primary-foreground: #F5F7FA;
+  --accent: #171B23; --accent-foreground: #F5F7FA; --ring: #8B5CF6;
+  --success: #22C55E; --warning: #F59E0B; --destructive: #EF4444; --info: #3B82F6;
+}
+.vellune-platform-root .vellune-topbar { background: color-mix(in srgb, var(--background) 86%, transparent); }
+.vellune-platform-root .vellune-app-sidebar,
+.vellune-platform-root .vellune-app-header { background: color-mix(in srgb, var(--background) 90%, transparent) !important; box-shadow: none; }
+.vellune-platform-root .vellune-app-main { background: none; }
+.vellune-platform-root :where(a,button) { letter-spacing: 0; }
+.vellune-platform-root :where(a,button):focus-visible { outline: 2px solid var(--primary-hover); outline-offset: 3px; }
+.vellune-card { transition: border-color 180ms ease, box-shadow 180ms ease; }
+.vellune-creation-card:hover { transform: translateY(-2px); box-shadow: 0 12px 36px -22px color-mix(in srgb, var(--primary) 32%, transparent); }
+.vellune-platform-root .vellune-creation-card:active { transform: scale(.98); }
+.vellune-dock { bottom: calc(14px + env(safe-area-inset-bottom)); }
+.vellune-dock-create { box-shadow: 0 8px 28px color-mix(in srgb, var(--primary) 25%, transparent); }
+.vellune-platform-root .vellune-dock-create:hover { transform: translateY(-2px); }
+.vellune-platform-root .vellune-dock-create:active { transform: scale(.96); }
+.vellune-content-enter { animation: velluneContentEnter 220ms ease-out; }
+@keyframes velluneContentEnter { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+@media (prefers-reduced-motion: reduce) {
+  .vellune-platform-root *, .vellune-platform-root *::before, .vellune-platform-root *::after { animation: none !important; transition: none !important; }
+  .vellune-platform-root :where(a,button):hover, .vellune-platform-root :where(a,button):active { transform: none !important; }
 }

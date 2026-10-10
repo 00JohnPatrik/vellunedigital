@@ -185,6 +185,76 @@ export type Database = {
           },
         ]
       }
+      company_subscription_history: {
+        Row: {
+          action: string
+          changed_by: string | null
+          company_id: string
+          created_at: string
+          from_expires_at: string | null
+          from_plan_id: string | null
+          from_status: string | null
+          id: string
+          notes: string | null
+          subscription_id: string
+          to_expires_at: string | null
+          to_plan_id: string | null
+          to_status: string | null
+        }
+        Insert: {
+          action: string
+          changed_by?: string | null
+          company_id: string
+          created_at?: string
+          from_expires_at?: string | null
+          from_plan_id?: string | null
+          from_status?: string | null
+          id?: string
+          notes?: string | null
+          subscription_id: string
+          to_expires_at?: string | null
+          to_plan_id?: string | null
+          to_status?: string | null
+        }
+        Update: {
+          action?: string
+          changed_by?: string | null
+          company_id?: string
+          created_at?: string
+          from_expires_at?: string | null
+          from_plan_id?: string | null
+          from_status?: string | null
+          id?: string
+          notes?: string | null
+          subscription_id?: string
+          to_expires_at?: string | null
+          to_plan_id?: string | null
+          to_status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "company_subscription_history_changed_by_fkey"
+            columns: ["changed_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "company_subscription_history_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "company_subscription_history_subscription_id_fkey"
+            columns: ["subscription_id"]
+            isOneToOne: false
+            referencedRelation: "company_subscriptions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       company_subscriptions: {
         Row: {
           activated_at: string | null
@@ -249,90 +319,6 @@ export type Database = {
           {
             foreignKeyName: "company_subscriptions_plan_fk"
             columns: ["plan_id"]
-            isOneToOne: false
-            referencedRelation: "subscription_plans"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      company_subscription_history: {
-        Row: {
-          action: string
-          changed_by: string | null
-          company_id: string
-          created_at: string
-          from_expires_at: string | null
-          from_plan_id: string | null
-          from_status: string | null
-          id: string
-          notes: string | null
-          subscription_id: string
-          to_expires_at: string | null
-          to_plan_id: string | null
-          to_status: string | null
-        }
-        Insert: {
-          action: string
-          changed_by?: string | null
-          company_id: string
-          created_at?: string
-          from_expires_at?: string | null
-          from_plan_id?: string | null
-          from_status?: string | null
-          id?: string
-          notes?: string | null
-          subscription_id: string
-          to_expires_at?: string | null
-          to_plan_id?: string | null
-          to_status?: string | null
-        }
-        Update: {
-          action?: string
-          changed_by?: string | null
-          company_id?: string
-          created_at?: string
-          from_expires_at?: string | null
-          from_plan_id?: string | null
-          from_status?: string | null
-          id?: string
-          notes?: string | null
-          subscription_id?: string
-          to_expires_at?: string | null
-          to_plan_id?: string | null
-          to_status?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "company_subscription_history_changed_by_fkey"
-            columns: ["changed_by"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "company_subscription_history_company_id_fkey"
-            columns: ["company_id"]
-            isOneToOne: false
-            referencedRelation: "companies"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "company_subscription_history_from_plan_id_fkey"
-            columns: ["from_plan_id"]
-            isOneToOne: false
-            referencedRelation: "subscription_plans"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "company_subscription_history_subscription_id_fkey"
-            columns: ["subscription_id"]
-            isOneToOne: false
-            referencedRelation: "company_subscriptions"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "company_subscription_history_to_plan_id_fkey"
-            columns: ["to_plan_id"]
             isOneToOne: false
             referencedRelation: "subscription_plans"
             referencedColumns: ["id"]
@@ -509,6 +495,47 @@ export type Database = {
           },
         ]
       }
+      invitation_automation_settings: {
+        Row: {
+          auto_close_after_hours: number
+          auto_close_enabled: boolean
+          client_portal_enabled: boolean
+          client_portal_hours_after_event: number
+          created_at: string
+          invitation_id: string
+          timezone: string
+          updated_at: string
+        }
+        Insert: {
+          auto_close_after_hours?: number
+          auto_close_enabled?: boolean
+          client_portal_enabled?: boolean
+          client_portal_hours_after_event?: number
+          created_at?: string
+          invitation_id: string
+          timezone?: string
+          updated_at?: string
+        }
+        Update: {
+          auto_close_after_hours?: number
+          auto_close_enabled?: boolean
+          client_portal_enabled?: boolean
+          client_portal_hours_after_event?: number
+          created_at?: string
+          invitation_id?: string
+          timezone?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invitation_automation_settings_invitation_id_fkey"
+            columns: ["invitation_id"]
+            isOneToOne: true
+            referencedRelation: "invitations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       invitation_favorites: {
         Row: {
           created_at: string
@@ -613,47 +640,6 @@ export type Database = {
             foreignKeyName: "invitation_guests_invitation_fk"
             columns: ["invitation_id"]
             isOneToOne: false
-            referencedRelation: "invitations"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      invitation_automation_settings: {
-        Row: {
-          auto_close_after_hours: number;
-          auto_close_enabled: boolean;
-          client_portal_enabled: boolean;
-          client_portal_hours_after_event: number;
-          created_at: string;
-          invitation_id: string;
-          timezone: string;
-          updated_at: string;
-        }
-        Insert: {
-          auto_close_after_hours?: number;
-          auto_close_enabled?: boolean;
-          client_portal_enabled?: boolean;
-          client_portal_hours_after_event?: number;
-          created_at?: string;
-          invitation_id: string;
-          timezone?: string;
-          updated_at?: string;
-        }
-        Update: {
-          auto_close_after_hours?: number;
-          auto_close_enabled?: boolean;
-          client_portal_enabled?: boolean;
-          client_portal_hours_after_event?: number;
-          created_at?: string;
-          invitation_id?: string;
-          timezone?: string;
-          updated_at?: string;
-        }
-        Relationships: [
-          {
-            foreignKeyName: "invitation_automation_settings_invitation_id_fkey"
-            columns: ["invitation_id"]
-            isOneToOne: true
             referencedRelation: "invitations"
             referencedColumns: ["id"]
           },
@@ -1146,12 +1132,20 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      apply_invitation_automation: {
+        Args: { _invitation_id: string }
+        Returns: Json
+      }
       consume_auth_rate_limit: {
         Args: { p_key: string; p_limit: number; p_window_seconds: number }
         Returns: boolean
       }
       current_company_id: { Args: never; Returns: string }
       get_public_invitation: { Args: { _slug: string }; Returns: Json }
+      invitation_automation_state: {
+        Args: { _invitation_id: string }
+        Returns: Json
+      }
       invitation_company: { Args: { _invitation_id: string }; Returns: string }
       invitation_report: {
         Args: { _company_id?: string }
