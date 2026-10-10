@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useNavigate } from "@tanstack/react-router";
-import { FileText, LayoutTemplate, Search, UserRound, X } from "lucide-react";
+import { FileText, LayoutTemplate, Search, UserRound, X, Menu } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel } from "@/components/ui/dropdown-menu";
 import { VelluneTopBar } from "@/components/vellune-top-bar";
 import { VelluneCreativeDock } from "@/components/vellune-creative-dock";
 import { NotificationCenter } from "@/components/phase7-ui";
@@ -19,7 +21,7 @@ type Props = {
   className?: string;
 };
 
-const MODULES = companyNav.filter((item) => Boolean(item.to)).map((item) => ({ label: item.label, to: item.to!, icon: item.icon }));
+const MODULES = companyNav.filter((item) => Boolean(item.to)).map((item) => ({ label: item.label, to: item.to ?? "/dashboard", icon: item.icon }));
 
 
 
@@ -82,6 +84,7 @@ export function VelluneCompanyShell({ appUser, children, activeItem = "home", cl
   return (
     <div className={cn("vellune-platform-root dark min-h-[100dvh] bg-background text-foreground", className)}>
       <VelluneTopBar
+        navigationAction={<DropdownMenu><DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="shrink-0 rounded-full text-muted-foreground" aria-label="Todas as áreas"><Menu className="size-4" /></Button></DropdownMenuTrigger><DropdownMenuContent align="start" className="w-56"><DropdownMenuLabel>Seu espaço</DropdownMenuLabel>{MODULES.map(item => <DropdownMenuItem key={item.to} asChild><Link to={item.to}><item.icon className="size-4" />{item.label}</Link></DropdownMenuItem>)}</DropdownMenuContent></DropdownMenu>}
         avatarFallback={initials(appUser.name)}
         searchValue={search}
         onSearchChange={setSearch}
@@ -93,7 +96,7 @@ export function VelluneCompanyShell({ appUser, children, activeItem = "home", cl
         trailingActions={<NotificationCenter appUser={appUser} />}
       />
 
-      <main className="mx-auto w-full max-w-[1540px] px-4 pb-32 pt-20 sm:px-6 sm:pt-24 lg:px-8">
+      <main className="mx-auto w-full max-w-[1440px] px-4 pb-[calc(8rem+env(safe-area-inset-bottom))] pt-20 sm:px-6 sm:pt-24 lg:px-10">
         {children}
       </main>
 
@@ -114,7 +117,7 @@ export function VelluneCompanyShell({ appUser, children, activeItem = "home", cl
             <div className="mx-auto mb-3 h-1.5 w-12 rounded-full bg-border" aria-hidden="true" />
             <div className="flex items-start justify-between gap-3">
               <div><p className="text-[10px] font-semibold uppercase tracking-normal text-muted-foreground">Criação rápida</p><h2 className="mt-1 font-display text-xl font-semibold text-foreground">O que vamos criar?</h2></div>
-              <button type="button" onClick={() => setCreateOpen(false)} className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-border bg-background text-muted-foreground hover:text-foreground" aria-label="Fechar">×</button>
+              <Button variant="ghost" type="button" onClick={() => setCreateOpen(false)} className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-border bg-background text-muted-foreground hover:text-foreground" aria-label="Fechar">×</Button>
             </div>
             <div className="mt-5 grid gap-2.5 sm:grid-cols-3">
               {[
@@ -156,14 +159,14 @@ export function VelluneCompanyShell({ appUser, children, activeItem = "home", cl
                 className="min-w-0 flex-1 bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground"
                 aria-label="Buscar convites, clientes, modelos ou áreas"
               />
-              <button
+              <Button variant="ghost"
                 type="button"
                 onClick={() => setSearchOpen(false)}
                 className="inline-flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground hover:bg-card hover:text-foreground"
                 aria-label="Fechar busca"
               >
                 <X className="h-4 w-4" />
-              </button>
+              </Button>
             </div>
             <div className="max-h-[min(68vh,36rem)] overflow-y-auto p-2">
               {filtered.length > 0 && (

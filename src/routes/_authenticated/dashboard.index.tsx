@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useRouterState } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { LoadingState, PageHeader } from "@/components/admin-ui";
 import { RecentResponses, Section, StatCard, StatGrid, UpcomingList } from "@/components/reports-ui";
@@ -9,16 +9,27 @@ import { CommercialOnboarding } from "@/components/commercial-onboarding";
 import { SubscriptionStatusBanner } from "@/components/subscription-ui";
 
 export const Route = createFileRoute("/_authenticated/dashboard/")({
+  head: () => ({ meta: [
+    { title: "Estúdio criativo — Vellune Digital" },
+    { name: "description", content: "Seu espaço para criar convites, continuar designs e acompanhar confirmações na Vellune Digital." },
+    { property: "og:title", content: "Estúdio criativo — Vellune Digital" },
+    { property: "og:description", content: "Crie, organize e acompanhe os convites da sua empresa." },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary" },
+    { name: "robots", content: "noindex" },
+  ] }),
   component: CompanyDashboard,
 });
 
 function CompanyDashboard() {
   const { appUser } = Route.useRouteContext();
-  const experimentalLayout = typeof window !== "undefined" && new URLSearchParams(window.location.search).get("legacy") !== "1";
+  const experimentalLayout = useRouterState({ select: state => new URLSearchParams(state.location.searchStr).get("legacy") !== "1" });
   const report = useQuery({ queryKey: ["reports", "company"], queryFn: () => fetchReport() });
   const recent = useQuery({ queryKey: ["reports", "recent"], queryFn: () => recentResponses(5) });
 
-  if (report.isLoading) return <LoadingState />;
+  if (!appUser?.company) return null;
+
+  if (report.isLoading) return <div role="status" aria-label="Carregando dashboard" className="grid grid-cols-2 gap-3 lg:grid-cols-4">{[0,1,2,3].map(i => <div key={i} className="h-44 animate-pulse rounded-2xl border border-border bg-card" />)}</div>;
 
   if (report.error) {
     return (
@@ -35,20 +46,19 @@ function CompanyDashboard() {
   if (experimentalLayout) {
     return (
       <>
-        <SubscriptionStatusBanner companyId={appUser!.company!.id} />
-        <CommercialOnboarding userId={appUser!.id} userName={appUser!.name} />
         <ExperimentalCompanyDashboard
-          appUser={appUser!}
+          appUser={appUser}
           reportRows={rows}
           recentResponses={recent.data ?? []}
         />
+        <div className="mt-8"><SubscriptionStatusBanner companyId={appUser.company.id} /><CommercialOnboarding userId={appUser.id} userName={appUser.name} /></div>
       </>
     );
   }
 
   return (
     <>
-      <CommercialOnboarding userId={appUser!.id} userName={appUser!.name} />
+      <CommercialOnboarding userId={appUser.id} userName={appUser.name} />
       <div>
         <PageHeader title="Dashboard" description="Resumo da sua empresa." />
         <StatGrid>
@@ -66,7 +76,7 @@ function CompanyDashboard() {
             </div>
           ) : <RecentResponses rows={recent.data ?? []} />}
         </Section>
-        <CompanyDashboardEnhancements companyId={appUser!.company!.id} />
+        <CompanyDashboardEnhancements companyId={appUser.company.id} />
       </div>
     </>
   );
